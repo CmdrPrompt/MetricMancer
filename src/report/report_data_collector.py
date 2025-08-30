@@ -22,9 +22,14 @@ class ReportDataCollector:
             if not f.grade:
                 f.grade = grade(f.complexity, self.threshold_low, self.threshold_high)
         avg_grade = average_grade(files, self.threshold_low, self.threshold_high)
+        complexities = [f.complexity for f in files] if files else []
+        min_complexity = min(complexities) if complexities else 0.0
+        max_complexity = max(complexities) if complexities else 0.0
         return RootInfo(
             path=root,
             average=avg_grade['value'] if isinstance(avg_grade, dict) else avg_grade,
+            min_complexity=min_complexity,
+            max_complexity=max_complexity,
             files=files
         )
 

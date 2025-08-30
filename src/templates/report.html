@@ -12,7 +12,7 @@
     </style>
 </head>
 <body>
-    <h1>Cyclomatic Complexity – Project Analysis</h1>
+    <h1>Cyclomatic Complexity – Workspace Analysis</h1>
     <section>
         <h2>What is Cyclomatic Complexity?</h2>
         <p>
@@ -86,7 +86,12 @@
         <h2>Language: {{ lang.name }}</h2>
         {% for root in lang.roots %}
             <h3>Folder: {{ root.path }}</h3>
-            <p><strong>Average complexity:</strong> {{ root.average.formatted }}</p>
+            <div style="margin-bottom: 10px;">
+                <strong>Complexity summary:</strong><br>
+                &nbsp;&nbsp;Average: <strong>{{ root.average | round(1) }}</strong><br>
+                &nbsp;&nbsp;Min: <strong>{{ root.min_complexity | round(1) }}</strong><br>
+                &nbsp;&nbsp;Max: <strong>{{ root.max_complexity | round(1) }}</strong>
+            </div>
             <table>
                 <tr>
                     <th>Path</th>
@@ -102,8 +107,6 @@
                         <td>{{ f.grade }}</td>
                     </tr>
                 {% endfor %}
-            </table>
-            <!-- Note moved to description section above -->
             </table>
         {% endfor %}
     {% endfor %}
