@@ -1,0 +1,24 @@
+import os
+from config import LANGUAGES
+
+class Scanner:
+    def __init__(self, config):
+        self.config = config
+
+    def scan(self, directories):
+        files = []
+        for root_dir in directories:
+            if not os.path.isdir(root_dir):
+                print(f"⚠️ Mappen '{root_dir}' finns inte – hoppar över.")
+                continue
+            for root, _, file_list in os.walk(root_dir):
+                for file in file_list:
+                    ext = os.path.splitext(file)[1]
+                    if ext in LANGUAGES:
+                        full_path = os.path.join(root, file)
+                        files.append({
+                            'path': full_path,
+                            'root': root_dir,
+                            'ext': ext
+                        })
+        return files
