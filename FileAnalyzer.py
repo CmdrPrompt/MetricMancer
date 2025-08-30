@@ -1,4 +1,8 @@
 
+
+import re
+import os
+
 class FileAnalyzer:
     def __init__(self, filepath, root_dir, config):
         self.filepath = filepath
