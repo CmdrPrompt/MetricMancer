@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyclomatic Complexity – Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 95%; margin-bottom: 40px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h1, h2, h3 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Cyclomatic Complexity – Project Analysis</h1>
+    <section>
+        <h2>What is Cyclomatic Complexity?</h2>
+        <p>
+            Cyclomatic complexity is a software metric used to measure the number of independent paths through a program's source code. It is commonly used in software development to:
+        </p>
+        <ul>
+            <li>Assess code maintainability: High complexity can indicate code that is harder to understand, test, and maintain.</li>
+            <li>Identify risk areas: Functions or files with high complexity are more likely to contain bugs and be difficult to modify safely.</li>
+            <li>Guide refactoring: Developers often target highly complex code for simplification or splitting into smaller units.</li>
+            <li>Plan testing: Cyclomatic complexity suggests the minimum number of test cases needed to cover all possible code paths.</li>
+            <li>Enforce coding standards: Many teams set complexity thresholds and require action if these are exceeded.</li>
+        </ul>
+        <p>
+            <em>Note: The cyclomatic complexity value for each file corresponds to the minimum number of test cases required to cover all possible code paths. However, this does not account for data validation, edge cases, or combinations of multiple decision points.</em>
+        </p>
+        <p>
+            In summary, cyclomatic complexity measurement helps improve code quality, reduce risk, and optimize testing and maintenance efforts.
+        </p>
+    </section>
+    <p>
+        <strong>Thresholds:</strong><br>
+        &nbsp;&nbsp;Low: <strong>&le;10.0</strong><br>
+        &nbsp;&nbsp;Medium: <strong>&gt;10.0</strong> to <strong>&le;20.0</strong><br>
+        &nbsp;&nbsp;High: <strong>&gt;20.0</strong><br>
+        <br>
+        
+        <em>No file threshold set. The column <strong>Problematic Files</strong> is hidden.</em>
+        
+    </p>
+
+    
+    <h2>🚨 Summary: Root folders exceeding threshold ()</h2>
+    <table>
+        <tr>
+            <th>Language</th>
+            <th>Folder</th>
+            <th>Average Complexity</th>
+            <th>Rating</th>
+            
+        </tr>
+        
+        <tr>
+            <td>Python</td>
+            <td>src</td>
+            <td>6.8</td>
+            <td>Low ✅</td>
+            
+        </tr>
+        
+    </table>
+    
+
+    
+        <h2>Language: Python</h2>
+        
+            <h3>Folder: src</h3>
+            <p><strong>Average complexity:</strong> </p>
+            <table>
+                <tr>
+                    <th>Path</th>
+                    <th>Function Count</th>
+                    <th>Complexity</th>
+                    <th>Rating</th>
+                </tr>
+                
+                    <tr>
+                        <td>__init__.py</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>analyzer.py</td>
+                        <td>2</td>
+                        <td>6</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>app.py</td>
+                        <td>2</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>collector.py</td>
+                        <td>1</td>
+                        <td>9</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>config.py</td>
+                        <td>1</td>
+                        <td>3</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>fileanalyzer.py</td>
+                        <td>6</td>
+                        <td>12</td>
+                        <td>Medium ⚠️</td>
+                    </tr>
+                
+                    <tr>
+                        <td>main.py</td>
+                        <td>1</td>
+                        <td>19</td>
+                        <td>Medium ⚠️</td>
+                    </tr>
+                
+                    <tr>
+                        <td>metrics.py</td>
+                        <td>1</td>
+                        <td>6</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/__init__.py</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/file_info.py</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/report.py</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/report_data.py</td>
+                        <td>1</td>
+                        <td>22</td>
+                        <td>High ❌</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/report_data_analyzer.py</td>
+                        <td>1</td>
+                        <td>12</td>
+                        <td>Medium ⚠️</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/report_data_collector.py</td>
+                        <td>1</td>
+                        <td>22</td>
+                        <td>High ❌</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/report_generator.py</td>
+                        <td>2</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/report_renderer.py</td>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/report_writer.py</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/root_info.py</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>scanner.py</td>
+                        <td>2</td>
+                        <td>7</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+            </table>
+            <!-- Note moved to description section above -->
+            </table>
+        
+    
+
+
+    <hr>
+    <section>
+        <h2>Usage</h2>
+        <p>
+            <strong>Command line parameters:</strong><br>
+            <code>python -m src.main &lt;directories&gt; [--threshold-low &lt;value&gt;] [--threshold-high &lt;value&gt;] [--problem-file-threshold &lt;value&gt;] [--auto-report-filename] [--report-filename &lt;filename&gt;] [--with-date]</code>
+        </p>
+        <ul>
+            <li><code>&lt;directories&gt;</code>: One or more root folders to scan for code complexity.</li>
+            <li><code>--threshold-low</code>: Sets the threshold for low complexity. <strong>Default: 10</strong>. Files/folders with complexity ≤ this value are rated "Low".</li>
+            <li><code>--threshold-high</code>: Sets the threshold for high complexity. <strong>Default: 20</strong>. Files/folders with complexity &gt; this value are rated "High".</li>
+            <li><code>--problem-file-threshold</code> (optional): Sets the threshold for individual file complexity. If set, files above this value are listed under each problematic folder in the summary and the column <strong>Problematic Files</strong> is shown.</li>
+            <li><code>--auto-report-filename</code> (optional): Automatically generate a unique report filename based on date and scanned directories.</li>
+            <li><code>--report-filename &lt;filename&gt;</code> (optional): Set the report filename directly. If used, scanned directories are not included in the filename. Optionally add <code>--with-date</code> to append date/time.</li>
+            <li><code>--with-date</code> (optional): If used with <code>--report-filename</code>, appends date and time to the filename before extension.</li>
+        </ul>
+        <p>
+            Example with file threshold:<br>
+            <code>python -m src.main src test --threshold-low 10 --threshold-high 20 --problem-file-threshold 15</code><br>
+            Example with defaults:<br>
+            <code>python -m src.main src test</code><br>
+            Example with auto-generated filename:<br>
+            <code>python -m src.main src test --auto-report-filename</code><br>
+            Example with custom filename:<br>
+            <code>python -m src.main src test --report-filename myreport.html</code><br>
+            Example with custom filename and date/time:<br>
+            <code>python -m src.main src test --report-filename myreport.html --with-date</code>
+        </p>
+    </section>
+</body>
+</html>
