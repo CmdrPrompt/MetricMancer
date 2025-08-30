@@ -39,18 +39,57 @@
         &nbsp;&nbsp;High: <strong>&gt;20.0</strong><br>
         <br>
         
-        <strong>File threshold:</strong> Individual files with complexity above <strong>20.0</strong> (set via <code>--problem-file-threshold</code>) are highlighted in the summary below.<br>
+        <strong>File threshold:</strong> Individual files with complexity above <strong>15.0</strong> (set via <code>--problem-file-threshold</code>) are highlighted in the summary below.<br>
         The column <strong>Problematic Files</strong> is only shown if <code>--problem-file-threshold</code> is set.
         
     </p>
 
+    
+    <h2>🚨 Summary: Root folders exceeding threshold ()</h2>
+    <table>
+        <tr>
+            <th>Language</th>
+            <th>Folder</th>
+            <th>Average Complexity</th>
+            <th>Rating</th>
+            
+            <th>Problematic Files (&gt;15.0)</th>
+            
+        </tr>
+        
+        <tr>
+            <td>Python</td>
+            <td>src</td>
+            <td>6.5</td>
+            <td>Low ✅</td>
+            
+            <td>
+                
+                <ul>
+                    
+                    <li>cli_helpers.py (20)</li>
+                    
+                    <li>report/file_helpers.py (16)</li>
+                    
+                </ul>
+                
+            </td>
+            
+        </tr>
+        
+    </table>
     
 
     
         <h2>Language: Python</h2>
         
             <h3>Folder: src</h3>
-            <p><strong>Average complexity:</strong> </p>
+            <div style="margin-bottom: 10px;">
+                <strong>Complexity summary:</strong><br>
+                &nbsp;&nbsp;Average: <strong>6.5</strong><br>
+                &nbsp;&nbsp;Min: <strong>1</strong><br>
+                &nbsp;&nbsp;Max: <strong>20</strong>
+            </div>
             <table>
                 <tr>
                     <th>Path</th>
@@ -167,8 +206,8 @@
                     <tr>
                         <td>report/report_data_collector.py</td>
                         <td>1</td>
-                        <td>8</td>
-                        <td>Low ✅</td>
+                        <td>12</td>
+                        <td>Medium ⚠️</td>
                     </tr>
                 
                     <tr>
@@ -214,11 +253,14 @@
                     </tr>
                 
             </table>
-            <!-- Note moved to description section above -->
-            </table>
         
             <h3>Folder: tests</h3>
-            <p><strong>Average complexity:</strong> </p>
+            <div style="margin-bottom: 10px;">
+                <strong>Complexity summary:</strong><br>
+                &nbsp;&nbsp;Average: <strong>2.8</strong><br>
+                &nbsp;&nbsp;Min: <strong>1</strong><br>
+                &nbsp;&nbsp;Max: <strong>9</strong>
+            </div>
             <table>
                 <tr>
                     <th>Path</th>
@@ -311,8 +353,6 @@
                         <td>Low ✅</td>
                     </tr>
                 
-            </table>
-            <!-- Note moved to description section above -->
             </table>
         
     
