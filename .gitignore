@@ -2,4 +2,4 @@ __pycache__/
 *.pyc
 *.pyo
 *.html
-!complexity_report.html
+!docs/complexity_report.html

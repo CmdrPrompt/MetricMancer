@@ -51,7 +51,7 @@ python -m src.main src test --report-filename myreport.html --with-date
 - The report is generated as `complexity_report.html` by default, or with a custom/dynamic name if specified
 - The summary section highlights folders and files exceeding the thresholds
 - Usage instructions are included at the bottom of the report
-- [Example report output](complexity_report.html)
+- [Example report output](docs/complexity_report.html)
 
 ## Extending
 - Add support for more languages in `src/config.py`
