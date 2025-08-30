@@ -18,21 +18,34 @@ class FileAnalyzer:
 			return False
 
 	def analyze(self):
-		# The sorting should be handled when aggregating results, but if you want to ensure
-		# the path is always normalized for sorting, you can do it here. Otherwise, sort in report generation.
+		if 'parser' in self.config:
+			parser_class_name = self.config['parser']
+			module_name = parser_class_name.replace('ComplexityParser', '').lower()
+			parser_module = f"src.parsers.{module_name}"
+			parser_class = getattr(__import__(parser_module, fromlist=[parser_class_name]), parser_class_name)
+			parser = parser_class()
+			complexity = parser.compute_complexity(self.code)
+			# Ada har ingen count_functions, returnera None om ej implementerad
+			function_count = getattr(parser, 'count_functions', lambda code: None)(self.code)
+		else:
+			complexity = self._calculate_complexity()
+			function_count = self._count_functions()
 		return {
 			'language': self.config['name'],
 			'root': self.root_dir,
 			'path': self._relative_path(),
-			'functions': self._count_functions(),
-			'complexity': self._calculate_complexity(),
+			'functions': function_count,
+			'complexity': complexity,
 		}
 
 	def _calculate_complexity(self):
-		return 1 + sum(len(re.findall(p, self.code)) for p in self.config['patterns'])
+		return 1 + sum(len(re.findall(p, self.code)) for p in self.config.get('patterns', []))
 
 	def _count_functions(self):
-		return len(re.findall(self.config['function_pattern'], self.code))
+		pattern = self.config.get('function_pattern')
+		if pattern:
+			return len(re.findall(pattern, self.code))
+		return 0
 
 	def _relative_path(self):
 		return os.path.relpath(self.filepath, self.root_dir)
