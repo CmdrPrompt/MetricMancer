@@ -36,7 +36,7 @@ def main():
         sys.exit(0)
     args = parser.parse_args()
 
-    output_file = 'komplexitet_rapport.html'
+    output_file = 'complexity_report.html'
     if args.report_filename:
         output_file = args.report_filename
         if args.with_date:
