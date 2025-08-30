@@ -1,0 +1,13 @@
+[project]
+name = "complexityscanner"
+version = "0.1.0"
+description = "Cyclomatic complexity scanner and report generator"
+authors = ["Thomas Lindqvist fixaren54_eon@icloud.com"]
+license = "MIT"
+
+[project.dependencies]
+jinja2 = "*"
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
