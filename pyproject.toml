@@ -2,7 +2,9 @@
 name = "complexityscanner"
 version = "0.1.0"
 description = "Cyclomatic complexity scanner and report generator"
-authors = ["Thomas Lindqvist fixaren54_eon@icloud.com"]
+authors = [
+  { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
+]
 license = "MIT"
 
 [project.dependencies]
