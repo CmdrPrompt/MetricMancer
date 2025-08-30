@@ -9,8 +9,15 @@ class TestCollector(unittest.TestCase):
     
     @patch('src.collector.os.path.isdir')
     def test_collect_results_dir_not_exists(self, mock_isdir):
+        import sys
+        from io import StringIO
         mock_isdir.return_value = False
-        results, report_filename = collect_results(['/does/not/exist'])
+        old_stdout = sys.stdout
+        sys.stdout = StringIO()
+        try:
+            results, report_filename = collect_results(['/does/not/exist'])
+        finally:
+            sys.stdout = old_stdout
         self.assertEqual(dict(results), {})
 
     @patch('src.collector.os.path.isdir')
