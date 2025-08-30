@@ -4,6 +4,7 @@ from .root_info import RootInfo
 from ..metrics import grade
 from .report_data_collector import ReportDataCollector
 
+
 class ReportDataAnalyzer:
     """
     Analyserar och filtrerar data för komplexitetsrapporten.
