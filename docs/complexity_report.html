@@ -39,30 +39,11 @@
         &nbsp;&nbsp;High: <strong>&gt;20.0</strong><br>
         <br>
         
-        <em>No file threshold set. The column <strong>Problematic Files</strong> is hidden.</em>
+        <strong>File threshold:</strong> Individual files with complexity above <strong>20.0</strong> (set via <code>--problem-file-threshold</code>) are highlighted in the summary below.<br>
+        The column <strong>Problematic Files</strong> is only shown if <code>--problem-file-threshold</code> is set.
         
     </p>
 
-    
-    <h2>🚨 Summary: Root folders exceeding threshold ()</h2>
-    <table>
-        <tr>
-            <th>Language</th>
-            <th>Folder</th>
-            <th>Average Complexity</th>
-            <th>Rating</th>
-            
-        </tr>
-        
-        <tr>
-            <td>Python</td>
-            <td>src</td>
-            <td>7.1</td>
-            <td>Low ✅</td>
-            
-        </tr>
-        
-    </table>
     
 
     
@@ -100,6 +81,13 @@
                     </tr>
                 
                     <tr>
+                        <td>cli_helpers.py</td>
+                        <td>2</td>
+                        <td>20</td>
+                        <td>Medium ⚠️</td>
+                    </tr>
+                
+                    <tr>
                         <td>collector.py</td>
                         <td>1</td>
                         <td>9</td>
@@ -122,9 +110,9 @@
                 
                     <tr>
                         <td>main.py</td>
-                        <td>1</td>
-                        <td>21</td>
-                        <td>High ❌</td>
+                        <td>2</td>
+                        <td>5</td>
+                        <td>Low ✅</td>
                     </tr>
                 
                     <tr>
@@ -139,6 +127,13 @@
                         <td>0</td>
                         <td>1</td>
                         <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>report/file_helpers.py</td>
+                        <td>0</td>
+                        <td>16</td>
+                        <td>Medium ⚠️</td>
                     </tr>
                 
                     <tr>
@@ -158,8 +153,8 @@
                     <tr>
                         <td>report/report_data.py</td>
                         <td>1</td>
-                        <td>22</td>
-                        <td>High ❌</td>
+                        <td>8</td>
+                        <td>Low ✅</td>
                     </tr>
                 
                     <tr>
@@ -172,8 +167,8 @@
                     <tr>
                         <td>report/report_data_collector.py</td>
                         <td>1</td>
-                        <td>22</td>
-                        <td>High ❌</td>
+                        <td>8</td>
+                        <td>Low ✅</td>
                     </tr>
                 
                     <tr>
@@ -205,9 +200,114 @@
                     </tr>
                 
                     <tr>
+                        <td>report_helpers.py</td>
+                        <td>2</td>
+                        <td>14</td>
+                        <td>Medium ⚠️</td>
+                    </tr>
+                
+                    <tr>
                         <td>scanner.py</td>
                         <td>2</td>
                         <td>7</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+            </table>
+            <!-- Note moved to description section above -->
+            </table>
+        
+            <h3>Folder: tests</h3>
+            <p><strong>Average complexity:</strong> </p>
+            <table>
+                <tr>
+                    <th>Path</th>
+                    <th>Function Count</th>
+                    <th>Complexity</th>
+                    <th>Rating</th>
+                </tr>
+                
+                    <tr>
+                        <td>__init__.py</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_analyzer.py</td>
+                        <td>9</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_cli_helpers.py</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_collector.py</td>
+                        <td>6</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_main_helpers.py</td>
+                        <td>7</td>
+                        <td>5</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_report_data.py</td>
+                        <td>4</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_report_data_analyzer.py</td>
+                        <td>3</td>
+                        <td>9</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_report_data_collector.py</td>
+                        <td>6</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_report_generator.py</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_report_renderer.py</td>
+                        <td>2</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_root_info.py</td>
+                        <td>1</td>
+                        <td>2</td>
+                        <td>Low ✅</td>
+                    </tr>
+                
+                    <tr>
+                        <td>test_scanner.py</td>
+                        <td>1</td>
+                        <td>3</td>
                         <td>Low ✅</td>
                     </tr>
                 

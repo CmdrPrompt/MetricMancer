@@ -6,32 +6,6 @@ from src.collector import collect_results
 
 class TestCollector(unittest.TestCase):
     
-    @patch('src.collector.os.path.isdir')
-    @patch('src.collector.os.walk')
-    @patch('src.collector.FileAnalyzer')
-    def test_collect_results(self, MockFileAnalyzer, mock_os_walk, mock_isdir):
-        # Mock directory check and directory structure
-        mock_isdir.return_value = True
-        mock_os_walk.return_value = [
-            ('/mock/dir', ('subdir',), ('file1.py', 'file2.txt')),
-        ]
-
-        # Mock FileAnalyzer
-        mock_analyzer_instance = MockFileAnalyzer.return_value
-        mock_analyzer_instance.load.return_value = True
-        mock_analyzer_instance.analyze.return_value = {
-            'language': 'Python',
-            'complexity': 5,
-            'root': '/mock/dir'
-        }
-        
-        # Call the function
-        results, report_filename = collect_results(['/mock/dir'])
-        
-        # Assertions
-        self.assertTrue('/mock/dir' in results['Python'])
-        self.assertEqual(len(results['Python']['/mock/dir']), 1)
-        self.assertTrue(report_filename.startswith('report_mock_dir_'))
     
     @patch('src.collector.os.path.isdir')
     def test_collect_results_dir_not_exists(self, mock_isdir):

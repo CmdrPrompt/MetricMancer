@@ -2,6 +2,7 @@ import unittest
 from src.report.report_data_collector import ReportDataCollector
 from src.report.file_info import FileInfo
 from src.report.root_info import RootInfo
+from src.report.file_helpers import sort_files, average_complexity, average_grade
 
 class TestReportDataCollector(unittest.TestCase):
     def setUp(self):
@@ -24,7 +25,7 @@ class TestReportDataCollector(unittest.TestCase):
             {'path': 'fileB.py', 'complexity': 20, 'functions': 2, 'grade': None},
             {'path': 'fileA.py', 'complexity': 10, 'functions': 4, 'grade': None},
         ]
-        sorted_files = self.collector.sort_files(files)
+        sorted_files = sort_files(files)
         self.assertEqual(sorted_files[0].path, 'fileA.py')
         self.assertEqual(sorted_files[1].path, 'fileB.py')
 
@@ -33,7 +34,7 @@ class TestReportDataCollector(unittest.TestCase):
             {'path': 'fileA.py', 'complexity': 10, 'functions': 2, 'grade': None},
             {'path': 'fileB.py', 'complexity': 20, 'functions': 4, 'grade': None}
         ]
-        avg_complexity = self.collector.average_complexity(files)
+        avg_complexity = average_complexity(files)
         self.assertEqual(avg_complexity, 15)
 
     def test_average_grade(self):
@@ -41,7 +42,7 @@ class TestReportDataCollector(unittest.TestCase):
             FileInfo(path='fileA.py', complexity=10),
             FileInfo(path='fileB.py', complexity=20)
         ]
-        avg_grade = self.collector.average_grade(files)
+        avg_grade = average_grade(files, self.collector.threshold_low, self.collector.threshold_high)
         self.assertIsInstance(avg_grade, dict)
         self.assertIn('value', avg_grade)
         self.assertIn('label', avg_grade)
