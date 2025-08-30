@@ -12,7 +12,7 @@ class ReportGenerator:
 		self.template_dir = template_dir
 		self.template_file = template_file
 
-	def generate(self, output_file='komplexitet_rapport.html'):
+	def generate(self, output_file='complexity_report.html'):
 		collector = ReportDataCollector(self.results, self.threshold_low, self.threshold_high)
 		analyzer = ReportDataAnalyzer(self.results, self.threshold_high, self.problem_file_threshold, self.threshold_low, self.threshold_high)
 		renderer = ReportRenderer(self.template_dir, self.template_file, self.threshold_low, self.threshold_high)

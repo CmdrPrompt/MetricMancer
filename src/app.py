@@ -4,7 +4,7 @@ from src.analyzer import Analyzer
 from src.report.report_generator import ReportGenerator
 
 class ComplexityScannerApp:
-    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='komplexitet_rapport.html'):
+    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html'):
         self.config = Config()
         self.scanner = Scanner(self.config)
         self.analyzer = Analyzer(self.config, threshold_low, threshold_high)
