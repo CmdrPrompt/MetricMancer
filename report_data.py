@@ -35,9 +35,10 @@ class ReportDataBuilder:
             for root, files in roots.items():
                 if not files:
                     continue
-                avg = sum(f['complexity'] for f in files) / len(files)
+                files_sorted = sorted(files, key=lambda x: x['path'])
+                avg = sum(f['complexity'] for f in files_sorted) / len(files_sorted)
                 # Problemfiler: de med komplexitet över threshold
-                problem_files = [f for f in files if f['complexity'] > self.threshold]
+                problem_files = [f for f in files_sorted if f['complexity'] > self.threshold]
                 if avg > self.threshold:
                     summary.append({
                         'language': language,
