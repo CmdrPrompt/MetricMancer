@@ -6,11 +6,18 @@ class TestRootInfo(unittest.TestCase):
     def test_root_info_initialization(self):
         file1 = FileInfo(path='file1.py', complexity=10.0)
         file2 = FileInfo(path='file2.py', complexity=20.0)
-        
-        root_info = RootInfo(path='root1', average=15.0, files=[file1, file2])
+        root_info = RootInfo(
+            path='root1',
+            average=15.0,
+            min_complexity=10.0,
+            max_complexity=20.0,
+            files=[file1, file2]
+        )
 
         self.assertEqual(root_info.path, 'root1')
         self.assertEqual(root_info.average, 15.0)
+        self.assertEqual(root_info.min_complexity, 10.0)
+        self.assertEqual(root_info.max_complexity, 20.0)
         self.assertEqual(len(root_info.files), 2)
         self.assertEqual(root_info.files[0].path, 'file1.py')
         self.assertEqual(root_info.files[1].path, 'file2.py')
