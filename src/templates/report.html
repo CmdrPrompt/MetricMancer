@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyclomatic Complexity – Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        table { border-collapse: collapse; width: 95%; margin-bottom: 40px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        h1, h2, h3 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>Cyclomatic Complexity – Project Analysis</h1>
+    <section>
+        <h2>What is Cyclomatic Complexity?</h2>
+        <p>
+            Cyclomatic complexity is a software metric used to measure the number of independent paths through a program's source code. It is commonly used in software development to:
+        </p>
+        <ul>
+            <li>Assess code maintainability: High complexity can indicate code that is harder to understand, test, and maintain.</li>
+            <li>Identify risk areas: Functions or files with high complexity are more likely to contain bugs and be difficult to modify safely.</li>
+            <li>Guide refactoring: Developers often target highly complex code for simplification or splitting into smaller units.</li>
+            <li>Plan testing: Cyclomatic complexity suggests the minimum number of test cases needed to cover all possible code paths.</li>
+            <li>Enforce coding standards: Many teams set complexity thresholds and require action if these are exceeded.</li>
+        </ul>
+        <p>
+            <em>Note: The cyclomatic complexity value for each file corresponds to the minimum number of test cases required to cover all possible code paths. However, this does not account for data validation, edge cases, or combinations of multiple decision points.</em>
+        </p>
+        <p>
+            In summary, cyclomatic complexity measurement helps improve code quality, reduce risk, and optimize testing and maintenance efforts.
+        </p>
+    </section>
+    <p>
+        <strong>Thresholds:</strong><br>
+        &nbsp;&nbsp;Low: <strong>&le;{{ threshold_low }}</strong><br>
+        &nbsp;&nbsp;Medium: <strong>&gt;{{ threshold_low }}</strong> to <strong>&le;{{ threshold_high }}</strong><br>
+        &nbsp;&nbsp;High: <strong>&gt;{{ threshold_high }}</strong><br>
+        <br>
+        {% if problem_file_threshold is not none %}
+        <strong>File threshold:</strong> Individual files with complexity above <strong>{{ problem_file_threshold }}</strong> (set via <code>--problem-file-threshold</code>) are highlighted in the summary below.<br>
+        The column <strong>Problematic Files</strong> is only shown if <code>--problem-file-threshold</code> is set.
+        {% else %}
+        <em>No file threshold set. The column <strong>Problematic Files</strong> is hidden.</em>
+        {% endif %}
+    </p>
+
+    {% if problem_roots %}
+    <h2>🚨 Summary: Root folders exceeding threshold ({{ threshold }})</h2>
+    <table>
+        <tr>
+            <th>Language</th>
+            <th>Folder</th>
+            <th>Average Complexity</th>
+            <th>Rating</th>
+            {% if problem_file_threshold is not none %}
+            <th>Problematic Files (&gt;{{ problem_file_threshold }})</th>
+            {% endif %}
+        </tr>
+        {% for item in problem_roots %}
+        <tr>
+            <td>{{ item.language }}</td>
+            <td>{{ item.root }}</td>
+            <td>{{ item.average | round(1) }}</td>
+            <td>{{ item.grade }}</td>
+            {% if problem_file_threshold is not none %}
+            <td>
+                {% if item.problem_files and item.problem_files|length > 0 %}
+                <ul>
+                    {% for f in item.problem_files %}
+                    <li>{{ f.path }} ({{ f.complexity }})</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <em>None</em>
+                {% endif %}
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+
+    {% for lang in languages %}
+        <h2>Language: {{ lang.name }}</h2>
+        {% for root in lang.roots %}
+            <h3>Folder: {{ root.path }}</h3>
+            <p><strong>Average complexity:</strong> {{ root.average.formatted }}</p>
+            <table>
+                <tr>
+                    <th>Path</th>
+                    <th>Function Count</th>
+                    <th>Complexity</th>
+                    <th>Rating</th>
+                </tr>
+                {% for f in root.files %}
+                    <tr>
+                        <td>{{ f.path }}</td>
+                        <td>{{ f.functions }}</td>
+                        <td>{{ f.complexity }}</td>
+                        <td>{{ f.grade }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <!-- Note moved to description section above -->
+            </table>
+        {% endfor %}
+    {% endfor %}
+
+
+    <hr>
+    <section>
+        <h2>Usage</h2>
+        <p>
+            <strong>Command line parameters:</strong><br>
+            <code>python -m src.main &lt;directories&gt; [--threshold-low &lt;value&gt;] [--threshold-high &lt;value&gt;] [--problem-file-threshold &lt;value&gt;]</code>
+        </p>
+        <ul>
+            <li><code>&lt;directories&gt;</code>: One or more root folders to scan for code complexity.</li>
+            <li><code>--threshold-low</code>: Sets the threshold for low complexity. <strong>Default: 10</strong>. Files/folders with complexity ≤ this value are rated "Low".</li>
+            <li><code>--threshold-high</code>: Sets the threshold for high complexity. <strong>Default: 20</strong>. Files/folders with complexity &gt; this value are rated "High".</li>
+            <li><code>--problem-file-threshold</code> (optional): Sets the threshold for individual file complexity. If set, files above this value are listed under each problematic folder in the summary and the column <strong>Problematic Files</strong> is shown.</li>
+        </ul>
+        <p>
+            Example with file threshold:<br>
+            <code>python -m src.main src test --threshold-low 10 --threshold-high 20 --problem-file-threshold 15</code><br>
+            Example with defaults:<br>
+            <code>python -m src.main src test</code>
+        </p>
+    </section>
+</body>
+</html>
