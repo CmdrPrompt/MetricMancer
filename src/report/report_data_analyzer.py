@@ -23,7 +23,7 @@ class ReportDataAnalyzer:
                     continue
                 root_info = self.collector.build_root_info(language, root, files)
                 if self.problem_file_threshold is not None:
-                    problem_files = [f for f in root_info.files if f.complexity > self.problem_file_threshold]
+                    problem_files = [f for f in root_info.files if f.complexity >= self.problem_file_threshold]
                 else:
                     problem_files = []
                 if root_info.average > self.threshold or (self.problem_file_threshold is not None and problem_files):
