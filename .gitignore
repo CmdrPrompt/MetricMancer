@@ -3,3 +3,4 @@ __pycache__/
 *.pyo
 *.html
 !docs/complexity_report.html
+.qodo/testConfig.toml
