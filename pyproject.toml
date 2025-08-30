@@ -5,14 +5,6 @@ description = "Cyclomatic complexity scanner and report generator"
 authors = [
   { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
 ]
-
-[project]
-name = "complexityscanner"
-version = "0.1.0"
-description = "Cyclomatic complexity scanner and report generator"
-authors = [
-  { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
-]
 license = "MIT"
 dependencies = [
   "jinja2"
