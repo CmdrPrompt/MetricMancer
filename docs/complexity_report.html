@@ -57,7 +57,7 @@
         <tr>
             <td>Python</td>
             <td>src</td>
-            <td>6.8</td>
+            <td>7.1</td>
             <td>Low ✅</td>
             
         </tr>
@@ -88,7 +88,7 @@
                     <tr>
                         <td>analyzer.py</td>
                         <td>2</td>
-                        <td>6</td>
+                        <td>8</td>
                         <td>Low ✅</td>
                     </tr>
                 
@@ -123,8 +123,8 @@
                     <tr>
                         <td>main.py</td>
                         <td>1</td>
-                        <td>19</td>
-                        <td>Medium ⚠️</td>
+                        <td>21</td>
+                        <td>High ❌</td>
                     </tr>
                 
                     <tr>
@@ -223,7 +223,7 @@
         <h2>Usage</h2>
         <p>
             <strong>Command line parameters:</strong><br>
-            <code>python -m src.main &lt;directories&gt; [--threshold-low &lt;value&gt;] [--threshold-high &lt;value&gt;] [--problem-file-threshold &lt;value&gt;] [--auto-report-filename] [--report-filename &lt;filename&gt;] [--with-date]</code>
+            <code>python -m src.main &lt;directories&gt; [--threshold-low &lt;value&gt;] [--threshold-high &lt;value&gt;] [--problem-file-threshold &lt;value&gt;] [--auto-report-filename] [--report-filename &lt;filename&gt;] [--with-date] [--report-folder &lt;folder&gt;]</code>
         </p>
         <ul>
             <li><code>&lt;directories&gt;</code>: One or more root folders to scan for code complexity.</li>
@@ -233,6 +233,7 @@
             <li><code>--auto-report-filename</code> (optional): Automatically generate a unique report filename based on date and scanned directories.</li>
             <li><code>--report-filename &lt;filename&gt;</code> (optional): Set the report filename directly. If used, scanned directories are not included in the filename. Optionally add <code>--with-date</code> to append date/time.</li>
             <li><code>--with-date</code> (optional): If used with <code>--report-filename</code>, appends date and time to the filename before extension.</li>
+            <li><code>--report-folder &lt;folder&gt;</code> (optional): Folder to write the report to. Default is current directory.</li>
         </ul>
         <p>
             Example with file threshold:<br>
@@ -244,7 +245,9 @@
             Example with custom filename:<br>
             <code>python -m src.main src test --report-filename myreport.html</code><br>
             Example with custom filename and date/time:<br>
-            <code>python -m src.main src test --report-filename myreport.html --with-date</code>
+            <code>python -m src.main src test --report-filename myreport.html --with-date</code><br>
+            Example with custom report folder:<br>
+            <code>python -m src.main src test --report-folder reports</code>
         </p>
     </section>
 </body>
