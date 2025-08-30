@@ -1,5 +1,5 @@
 
-#   class FileAnalyzer:
+class FileAnalyzer:
     def __init__(self, filepath, root_dir, config):
         self.filepath = filepath
         self.root_dir = root_dir
@@ -16,6 +16,8 @@
             return False
 
     def analyze(self):
+        # The sorting should be handled when aggregating results, but if you want to ensure
+        # the path is always normalized for sorting, you can do it here. Otherwise, sort in report generation.
         return {
             'language': self.config['name'],
             'root': self.root_dir,
