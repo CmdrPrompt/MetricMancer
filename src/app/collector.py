@@ -1,6 +1,6 @@
 import os
 from collections import defaultdict
-from src.config import LANGUAGES
+from src.languages.config import LANGUAGES
 from src.complexity.fileanalyzer import FileAnalyzer
 from src.complexity.metrics import grade
 

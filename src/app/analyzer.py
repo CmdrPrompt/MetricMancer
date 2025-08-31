@@ -1,6 +1,6 @@
 
 from src.complexity.fileanalyzer import FileAnalyzer
-from src.config import LANGUAGES
+from src.languages.config import LANGUAGES
 from src.complexity.metrics import grade
 from src.churn.code_churn import FileMetrics
 from src.complexity.metrics_collector import MetricsCollector

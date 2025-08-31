@@ -6,7 +6,7 @@ class Scanner:
         self.config = config
 
     def scan(self, directories):
-        from src.utilities.debug import debug_print
+        from src.debug import debug_print
         files = []
         debug_print(f"[DEBUG] Scanner.scan: directories={directories}")
         for root_dir in directories:
