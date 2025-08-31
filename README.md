@@ -47,8 +47,20 @@ python -m src.main src test --report-filename myreport.html
 python -m src.main src test --report-filename myreport.html --with-date
 ```
 
+
 ## Output
 - The report is generated as `complexity_report.html` by default, or with a custom/dynamic name if specified
+- Hotspot-score (complexity × churn) visas för varje fil där båda mätvärden finns, både i HTML-rapporten och CLI-rapporten.
+- CLI-rapporten presenteras som en trädstruktur per repository, där varje fil visar komplexitet, churn, hotspot-score och grade. Exempel:
+
+```
+.
+repo_name
+│   Scan-dir: src (Language: python)
+│   | [C:12.3, Min:5.0, Max:22.0, Churn:18.1, Grade:Medium ⚠️]
+│   ├── main.py [C:15, Churn:20, Hotspot:300, Grade:Medium]
+│   └── utils.py [C:7, Churn:5, Hotspot:35, Grade:Low]
+```
 - The summary section highlights folders and files exceeding the thresholds
 - Usage instructions are included at the bottom of the report
 

@@ -45,4 +45,5 @@ def parse_args():
                         help="Set the report filename directly. If used, scanned directories are not included in the filename. Optionally add --with-date to append date/time.")
     parser.add_argument("--with-date", action="store_true",
                         help="If used with --report-filename, appends date and time to the filename before extension.")
+    parser.add_argument('--cli-report', action='store_true', help='Print CLI tree report to the console')
     return parser

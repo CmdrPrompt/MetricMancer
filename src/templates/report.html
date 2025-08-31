@@ -12,7 +12,20 @@
     </style>
 </head>
 <body>
-    <h1>Cyclomatic Complexity – Workspace Analysis</h1>
+    <h1>Workspace Analysis</h1>
+    <section>
+        <h2>What is Code Churn?</h2>
+        <p>
+            <strong>Code churn</strong> refers to the amount of code that is added, modified, or deleted over time. It is a key indicator of change activity in a codebase and is closely linked to software quality and risk.
+        </p>
+        <ul>
+            <li><strong>Adam Tornhill, "Your Code as a Crime Scene":</strong> Code churn highlights hotspots—files that change frequently and are more likely to contain defects. High churn combined with high complexity is a strong predictor of problematic code that may need refactoring or extra testing.</li>
+            <li><strong>Microsoft Research, "Code Churn: The Link Between Change and Defects":</strong> Studies show that files with high churn are statistically more likely to have defects. Monitoring churn helps teams identify risky areas and prioritize code reviews and testing.</li>
+        </ul>
+        <p>
+            <em>In summary, code churn is a valuable metric for understanding the stability and maintainability of your code. Combining churn with complexity analysis provides deeper insight into potential risks and areas for improvement.</em>
+        </p>
+    </section>
     <section>
         <h2>What is Cyclomatic Complexity?</h2>
         <p>
@@ -46,10 +59,12 @@
         {% endif %}
     </p>
 
+
     {% if problem_roots %}
     <h2>🚨 Summary: Root folders exceeding threshold ({{ threshold }})</h2>
     <table>
         <tr>
+            <th>Repo Root</th>
             <th>Language</th>
             <th>Folder</th>
             <th>Average Complexity</th>
@@ -57,9 +72,11 @@
             {% if problem_file_threshold is not none %}
             <th>Problematic Files (&gt;{{ problem_file_threshold }})</th>
             {% endif %}
+            <th>Hotspot Risk Files</th>
         </tr>
         {% for item in problem_roots %}
         <tr>
+            <td>{{ item.repo_root | basename }}</td>
             <td>{{ item.language }}</td>
             <td>{{ item.root }}</td>
             <td>{{ item.average | round(1) }}</td>
@@ -77,14 +94,37 @@
                 {% endif %}
             </td>
             {% endif %}
+            <td>
+                {% if item.files %}
+                <ul>
+                    {% for f in item.files %}
+                        {% if f.complexity is not none and f.churn is not none %}
+                            {% set hs_score = f.complexity * f.churn %}
+                            {% if hs_score > 300 or (f.complexity > 15 and f.churn > 15) %}
+                                <li><strong style="color: red;">{{ f.path }} (Hotspot: {{ hs_score | round(1) }}, High risk)</strong></li>
+                            {% elif hs_score >= 100 %}
+                                <li><span style="color: orange;">{{ f.path }} (Hotspot: {{ hs_score | round(1) }}, Medium risk)</span></li>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <em>None</em>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </table>
     {% endif %}
 
-    {% for lang in languages %}
-        <h2>Language: {{ lang.name }}</h2>
-        {% for root in lang.roots %}
+    {% for repo in structured %}
+        <h2><strong>Repository:</strong> {{ repo.repo_root | basename }}</h2>
+        {% if repo.roots and repo.roots[0].language %}
+            <div style="margin-bottom: 5px; color: #666; font-size: 0.95em;">
+                <strong>Language:</strong> {{ repo.roots[0].language }}
+            </div>
+        {% endif %}
+        {% for root in repo.roots %}
             <h3>Folder: {{ root.path }}</h3>
             <div style="margin-bottom: 10px;">
                 <strong>Complexity summary:</strong><br>
@@ -97,6 +137,8 @@
                     <th>Path</th>
                     <th>Function Count</th>
                     <th>Complexity</th>
+                    <th>Churn</th>
+                    <th>Hotspot-score</th>
                     <th>Rating</th>
                 </tr>
                 {% for f in root.files %}
@@ -104,6 +146,8 @@
                         <td>{{ f.path }}</td>
                         <td>{{ f.functions }}</td>
                         <td>{{ f.complexity }}</td>
+                        <td>{{ f.churn }}</td>
+                        <td>{% if f.complexity is not none and f.churn is not none %}{{ (f.complexity * f.churn) | round(1) }}{% else %}-{% endif %}</td>
                         <td>{{ f.grade }}</td>
                     </tr>
                 {% endfor %}
@@ -120,7 +164,7 @@
             <code>python -m src.main &lt;directories&gt; [--threshold-low &lt;value&gt;] [--threshold-high &lt;value&gt;] [--problem-file-threshold &lt;value&gt;] [--auto-report-filename] [--report-filename &lt;filename&gt;] [--with-date] [--report-folder &lt;folder&gt;]</code>
         </p>
         <ul>
-            <li><code>&lt;directories&gt;</code>: One or more root folders to scan for code complexity.</li>
+            <li><code>&lt;directories&gt;</code>: One or more root folders to scan for code complexity and churn.</li>
             <li><code>--threshold-low</code>: Sets the threshold for low complexity. <strong>Default: 10</strong>. Files/folders with complexity ≤ this value are rated "Low".</li>
             <li><code>--threshold-high</code>: Sets the threshold for high complexity. <strong>Default: 20</strong>. Files/folders with complexity &gt; this value are rated "High".</li>
             <li><code>--problem-file-threshold</code> (optional): Sets the threshold for individual file complexity. If set, files above this value are listed under each problematic folder in the summary and the column <strong>Problematic Files</strong> is shown.</li>
@@ -130,6 +174,19 @@
             <li><code>--report-folder &lt;folder&gt;</code> (optional): Folder to write the report to. Default is current directory.</li>
         </ul>
         <p>
+            <strong>Hotspot-score:</strong> I både HTML- och CLI-rapporten visas nu hotspot-score för varje fil där både komplexitet och churn finns. Hotspot-score beräknas som <code>complexity × churn</code> och används för att identifiera riskfyllda filer.<br>
+            <br>
+            <strong>CLI-rapport:</strong> Hotspot-score visas i filstatistik, t.ex. <code>[C:15, Churn:20, Hotspot:300, Grade:Medium]</code>.<br>
+            CLI-rapporten presenteras som en trädstruktur per repository, där varje fil visar komplexitet, churn, hotspot-score och grade. Exempel:
+            <pre>
+.
+repo_name
+│   Scan-dir: src (Language: python)
+│   | [C:12.3, Min:5.0, Max:22.0, Churn:18.1, Grade:Medium ⚠️]
+│   ├── main.py [C:15, Churn:20, Hotspot:300, Grade:Medium]
+│   └── utils.py [C:7, Churn:5, Hotspot:35, Grade:Low]
+</pre>
+            <br>
             Example with file threshold:<br>
             <code>python -m src.main src test --threshold-low 10 --threshold-high 20 --problem-file-threshold 15</code><br>
             Example with defaults:<br>
