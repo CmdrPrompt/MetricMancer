@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.java import JavaComplexityParser
+from src.languages.parsers.java import JavaComplexityParser
 
 class TestJavaComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):

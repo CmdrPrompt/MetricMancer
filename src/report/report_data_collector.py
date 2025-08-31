@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Union
 from .file_info import FileInfo
 from .root_info import RootInfo
 from .file_helpers import sort_files, average_complexity, average_grade
-from ..metrics import grade
+from src.complexity.metrics import grade
 
 
 class ReportDataCollector:

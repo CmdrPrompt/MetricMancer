@@ -13,7 +13,7 @@ class CLIReportGenerator(ReportInterface):
         self.problem_file_threshold = problem_file_threshold
 
     def generate(self, output_file=None):
-        from src.debug import debug_print
+        from src.utilities.debug import debug_print
         # from src.debug import debug_print
         for repo_info in self.repo_infos:
             repo_root = repo_info.repo_root

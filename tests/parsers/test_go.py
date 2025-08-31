@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.go import GoComplexityParser
+from src.languages.parsers.go import GoComplexityParser
 
 class TestGoComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):

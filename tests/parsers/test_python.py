@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.python import PythonComplexityParser
+from src.languages.parsers.python import PythonComplexityParser
 
 class TestPythonComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):

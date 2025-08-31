@@ -1,8 +1,8 @@
 import os
 from collections import defaultdict
 from src.config import LANGUAGES
-from src.fileanalyzer import FileAnalyzer
-from src.metrics import grade
+from src.complexity.fileanalyzer import FileAnalyzer
+from src.complexity.metrics import grade
 
 def collect_results(directories):
     results = defaultdict(lambda: defaultdict(list))

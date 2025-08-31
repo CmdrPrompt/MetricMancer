@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.base import ComplexityParser
+from src.languages.parsers.base import ComplexityParser
 
 class DummyParser(ComplexityParser):
     pass

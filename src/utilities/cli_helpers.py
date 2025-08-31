@@ -11,7 +11,7 @@ def print_usage():
     print("  python -m src.main <directories> [--threshold-low <value>] [--threshold-high <value>] [--problem-file-threshold <value>] [--auto-report-filename] [--report-filename <filename>] [--with-date] [--report-folder <folder>]")
     print("\nPARAMETERS:")
     print("  <directories>                One or more root folders to scan for code complexity.")
-    print("  --threshold-low              Sets the threshold for low complexity. Default: 10. Files/folders with complexity ≤ this value are rated 'Low'.")
+    print("  --threshold-low              Sets the threshold for low complexity. Default: 10. Files/folders with complexity  this value are rated 'Low'.")
     print("  --threshold-high             Sets the threshold for high complexity. Default: 20. Files/folders with complexity > this value are rated 'High'.")
     print("  --problem-file-threshold     (Optional) Sets the threshold for individual file complexity. Files above this value are listed under each problematic folder in the summary.")
     print("  --auto-report-filename       (Optional) Automatically generate a unique report filename based on date and directories.")

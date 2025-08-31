@@ -3,7 +3,7 @@
 import unittest
 from unittest.mock import patch
 from io import StringIO
-from src.cli_helpers import print_usage, parse_args
+from src.utilities.cli_helpers import print_usage, parse_args
 
 class TestCLIHelpers(unittest.TestCase):
     

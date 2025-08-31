@@ -1,18 +1,16 @@
-from .code_churn import FileMetrics, CodeChurnAnalyzer
-
+from src.churn.code_churn import FileMetrics, CodeChurnAnalyzer
 
 class MetricsCollector:
     def __init__(self, scanner, repo_path='.', scan_dirs=None):
         self.scanner = scanner
         self.repo_path = repo_path
         self.scan_dirs = scan_dirs if scan_dirs else [repo_path]
-        # Skapa lista av (repo_root, scan_dir)-par
         self.repo_scan_pairs = [(self.repo_path, scan_dir) for scan_dir in self.scan_dirs]
         self.churn_analyzer = CodeChurnAnalyzer(self.repo_scan_pairs)
 
     def collect(self, filepaths, root_dir=''):
         import os
-        from src.fileanalyzer import FileAnalyzer
+        from src.complexity.fileanalyzer import FileAnalyzer
         from src.config import LANGUAGES
         churn = self.churn_analyzer.analyze()
         metrics = []

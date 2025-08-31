@@ -2,12 +2,12 @@
 
 import unittest
 from unittest.mock import patch, MagicMock
-from src.scanner import Scanner
+from src.utilities.scanner import Scanner
 
 class TestScanner(unittest.TestCase):
     
-    @patch('src.scanner.os.path.isdir')
-    @patch('src.scanner.os.walk')
+    @patch('src.utilities.scanner.os.path.isdir')
+    @patch('src.utilities.scanner.os.walk')
     def test_scan(self, mock_os_walk, mock_isdir):
         # Setup the mock data
         mock_isdir.return_value = True

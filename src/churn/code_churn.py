@@ -1,5 +1,5 @@
 import os
-from src.debug import debug_print
+from src.utilities.debug import debug_print
 
 class FileMetrics:
     def __init__(self, filename, churn=0, complexity=0):
@@ -12,7 +12,8 @@ class CodeChurnAnalyzer:
     def __init__(self, repo_scan_pairs):
         # repo_scan_pairs: List of (repo_root, scan_dir)
         self.repo_scan_pairs = [(os.path.abspath(repo), os.path.abspath(scan)) for repo, scan in repo_scan_pairs]
-    # ...existing code...
+        self.churn_data = {}
+        # ...existing code...
 
     @staticmethod
     def find_repo_root(scan_dirs):
@@ -35,7 +36,7 @@ class CodeChurnAnalyzer:
 
     def analyze(self):
         from pydriller import Repository
-        import os
+        from src.churn.code_churn import FileMetrics  # Updated import path
         churn_data = {}
         for repo_root, scan_dir in self.repo_scan_pairs:
             if not os.path.isdir(os.path.join(repo_root, '.git')):

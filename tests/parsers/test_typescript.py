@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.typescript import TypeScriptComplexityParser
+from src.languages.parsers.typescript import TypeScriptComplexityParser
 
 class TestTypeScriptComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):

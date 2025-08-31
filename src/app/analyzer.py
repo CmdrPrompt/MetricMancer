@@ -13,7 +13,7 @@ class Analyzer:
         # Ingen global metrics_collector, hanteras per repo-root
 
     def analyze(self, files):
-    from src.utilities.debug import debug_print
+        from src.utilities.debug import debug_print
         from src.churn.code_churn import CodeChurnAnalyzer
         from collections import defaultdict
         # Gruppér filer per repo-root
