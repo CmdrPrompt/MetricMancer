@@ -2,6 +2,12 @@ import re
 from .base import ComplexityParser
 
 class CSharpComplexityParser(ComplexityParser):
+
+    def compute_complexity(self, code: str) -> int:
+        complexity = 1
+        for pattern in self.CONTROL_KEYWORDS:
+            complexity += len(re.findall(pattern, code))
+        return complexity
     CONTROL_KEYWORDS = [
         r'\bif\b', r'\bfor\b', r'\bwhile\b', r'\bswitch\b',
         r'\bcase\b', r'\bcatch\b', r'\bthrow\b', r'\breturn\b',

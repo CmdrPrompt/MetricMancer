@@ -28,7 +28,7 @@ class TestReportRenderer(unittest.TestCase):
 
         mock_get_template.assert_called_once_with(self.template_file)
         mock_template.render.assert_called_once_with(
-            languages=structured,
+            structured=structured,
             problem_roots=problem_roots,
             threshold_low=8.0,
             threshold_high=18.0,

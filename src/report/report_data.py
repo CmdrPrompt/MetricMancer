@@ -1,10 +1,11 @@
+
 from .file_info import FileInfo
 from .root_info import RootInfo
 from .report_data_collector import ReportDataCollector
 from typing import Any, Dict, List, Union
 
 
-
+class ReportDataBuilder:
 	def __init__(self, repo_info, threshold_low: float = 10.0, threshold_high: float = 20.0, problem_file_threshold: Union[float, None] = None):
 		self.repo_info = repo_info
 		self.results = repo_info.results
@@ -12,8 +13,7 @@ from typing import Any, Dict, List, Union
 		self.threshold_high = threshold_high
 		self.problem_file_threshold = problem_file_threshold
 
-	self.collector = ReportDataCollector(repo_info, threshold_low, threshold_high)
-
+		self.collector = ReportDataCollector(repo_info, threshold_low, threshold_high)
 
 	# Use shared helpers instead of duplicate methods
 

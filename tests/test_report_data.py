@@ -6,7 +6,7 @@ from src.report.file_helpers import sort_files, average_complexity, average_grad
 class TestReportDataBuilder(unittest.TestCase):
     def setUp(self):
         # Example data
-        self.results = {
+        results = {
             'python': {
                 'root1': [
                     {'path': 'file1.py', 'complexity': 15, 'functions': 3, 'grade': None},
@@ -17,7 +17,11 @@ class TestReportDataBuilder(unittest.TestCase):
                 ]
             }
         }
-        self.builder = ReportDataBuilder(self.results)
+        class RepoInfo:
+            pass
+        repo_info = RepoInfo()
+        repo_info.results = results
+        self.builder = ReportDataBuilder(repo_info)
 
     def test_sort_files(self):
         # Test sorting functionality

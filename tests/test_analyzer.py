@@ -26,12 +26,14 @@ class TestAnalyzer(unittest.TestCase):
         }
         analyzer = Analyzer(self.config)
         results = analyzer.analyze(self.files)
-
-        self.assertIn('python', results)
-        self.assertIn('/path/to/project', results['python'])
-        self.assertEqual(len(results['python']['/path/to/project']), 2)
-        self.assertEqual(results['python']['/path/to/project'][0]['complexity'], 12)
-        self.assertEqual(results['python']['/path/to/project'][0]['grade'], 'Medium ⚠️')
+        # results is {repo_root: GitRepoInfo}
+        for repo_info in results.values():
+            res = repo_info.results
+            self.assertIn('python', res)
+            self.assertIn('/path/to/project', res['python'])
+            self.assertEqual(len(res['python']['/path/to/project']), 2)
+            self.assertEqual(res['python']['/path/to/project'][0]['complexity'], 12)
+            self.assertEqual(res['python']['/path/to/project'][0]['grade'], 'Medium ⚠️')
 
     @patch('src.analyzer.FileAnalyzer')
     def test_analyze_load_false(self, MockFileAnalyzer):
@@ -39,7 +41,9 @@ class TestAnalyzer(unittest.TestCase):
         mock_analyzer_instance.load.return_value = False
         analyzer = Analyzer(self.config)
         results = analyzer.analyze(self.files)
-        self.assertEqual(results, {})
+        # Should be empty results in all repo_infos
+        for repo_info in results.values():
+            self.assertEqual(repo_info.results, {})
 
     def test_analyze_empty_files(self):
         analyzer = Analyzer(self.config)
@@ -57,7 +61,9 @@ class TestAnalyzer(unittest.TestCase):
         }
         analyzer = Analyzer(self.config)
         results = analyzer.analyze(self.files)
-        self.assertEqual(results['python']['/path/to/project'][0]['grade'], 'Low ✅')
+        for repo_info in results.values():
+            res = repo_info.results
+            self.assertEqual(res['python']['/path/to/project'][0]['grade'], 'Low ✅')
 
     @patch('src.analyzer.FileAnalyzer')
     def test_analyze_grade_high(self, MockFileAnalyzer):
@@ -70,7 +76,9 @@ class TestAnalyzer(unittest.TestCase):
         }
         analyzer = Analyzer(self.config)
         results = analyzer.analyze(self.files)
-        self.assertEqual(results['python']['/path/to/project'][0]['grade'], 'High ❌')
+        for repo_info in results.values():
+            res = repo_info.results
+            self.assertEqual(res['python']['/path/to/project'][0]['grade'], 'High ❌')
 
     @patch('src.analyzer.FileAnalyzer')
     def test_analyze_missing_ext(self, MockFileAnalyzer):
@@ -89,7 +97,8 @@ class TestAnalyzer(unittest.TestCase):
         analyzer = Analyzer(self.config)
         results = analyzer.analyze(self.files)
         # Should not add anything to results since language/root missing
-        self.assertEqual(results, {})
+        for repo_info in results.values():
+            self.assertEqual(repo_info.results, {})
 
 if __name__ == '__main__':
     unittest.main()

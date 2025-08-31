@@ -39,3 +39,4 @@ class ReportDataAnalyzer:
                         'files': root_info.files,
                         'hotspot_risk_files': hotspot_risk_files
                     })
+        return summary

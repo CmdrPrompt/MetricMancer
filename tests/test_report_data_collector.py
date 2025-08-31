@@ -7,7 +7,7 @@ from src.report.file_helpers import sort_files, average_complexity, average_grad
 class TestReportDataCollector(unittest.TestCase):
     def setUp(self):
         # Test data setup
-        self.results = {
+        results = {
             'python': {
                 'root1': [
                     {'path': 'fileA.py', 'complexity': 15, 'functions': 3, 'grade': None},
@@ -18,7 +18,11 @@ class TestReportDataCollector(unittest.TestCase):
                 ]
             }
         }
-        self.collector = ReportDataCollector(self.results)
+        class RepoInfo:
+            pass
+        repo_info = RepoInfo()
+        repo_info.results = results
+        self.collector = ReportDataCollector(repo_info)
 
     def test_sort_files(self):
         files = [
@@ -49,15 +53,16 @@ class TestReportDataCollector(unittest.TestCase):
         self.assertIn('formatted', avg_grade)
 
     def test_build_root_info(self):
-        root_info = self.collector.build_root_info('python', 'root1', self.results['python']['root1'])
+        root_info = self.collector.build_root_info('python', 'root1', self.collector.repo_info.results['python']['root1'])
         self.assertIsInstance(root_info, RootInfo)
         self.assertEqual(root_info.path, 'root1')
 
     def test_prepare_structured_data(self):
         structured_data = self.collector.prepare_structured_data()
         self.assertIsInstance(structured_data, list)
-        self.assertEqual(len(structured_data), 1)  # One language 'python'
-        self.assertEqual(structured_data[0]['name'], 'python')
+        self.assertIn('repo_root', structured_data[0])
+        self.assertIn('roots', structured_data[0])
+        self.assertEqual(len(structured_data[0]['roots']), 2)
 
 if __name__ == '__main__':
     unittest.main()
