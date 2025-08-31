@@ -14,49 +14,49 @@ class CLIReportGenerator(ReportInterface):
 
     def generate(self, output_file=None):
         from src.utilities.debug import debug_print
-        # from src.debug import debug_print
         for repo_info in self.repo_infos:
             repo_root = repo_info.repo_root
-            repo_name = repo_info.repo_name or os.path.basename(repo_root)
+            # Always use the actual git repo root folder name
+            import subprocess
+            try:
+                repo_name = subprocess.check_output(['basename', subprocess.check_output(['git', 'rev-parse', '--show-toplevel']).strip()]).decode().strip()
+            except Exception:
+                repo_name = os.path.basename(repo_root)
             scan_dirs = repo_info.scan_dirs
             results = repo_info.results
-            print(f". {repo_name}")
+            # Gather all files for repo summary stats
+            all_files = []
+            for language in results:
+                for root in results[language]:
+                    all_files.extend(results[language][root])
+            complexities = [f.get('complexity', 0) for f in all_files]
+            churns = [f.get('churn', 0) for f in all_files]
+            grades = [f.get('grade', '') for f in all_files]
+            avg_complexity = round(sum(complexities)/len(complexities), 1) if complexities else 0
+            min_complexity = round(min(complexities), 1) if complexities else 0
+            max_complexity = round(max(complexities), 1) if complexities else 0
+            avg_churn = round(sum(churns)/len(churns), 1) if churns else 0
+            grade = Counter(grades).most_common(1)[0][0] if grades else ''
+            grade_icon = '✅' if grade.lower() == 'low' else ('⚠️' if grade.lower() == 'medium' else '🔥')
+            stats = f"[C:{avg_complexity}, Min:{min_complexity}, Max:{max_complexity}, Churn:{avg_churn}, Grade:{grade} {grade_icon}]"
+            print(f". {repo_name} {stats}")
+            # Print scan-dirs and file trees under repo root
             for language in results:
                 for root in results[language]:
                     files = results[language][root]
-                    # Prepare stats for summary
-                    complexities = [f.get('complexity', 0) for f in files]
-                    churns = [f.get('churn', 0) for f in files]
-                    grades = [f.get('grade', '') for f in files]
-                    avg_complexity = round(sum(complexities)/len(complexities), 1) if complexities else 0
-                    min_complexity = round(min(complexities), 1) if complexities else 0
-                    max_complexity = round(max(complexities), 1) if complexities else 0
-                    avg_churn = round(sum(churns)/len(churns), 1) if churns else 0
-                    grade = Counter(grades).most_common(1)[0][0] if grades else ''
-                    grade_icon = '✅' if grade.lower() == 'low' else ('⚠️' if grade.lower() == 'medium' else '🔥')
-                    stats = f"[C:{avg_complexity}, Min:{min_complexity}, Max:{max_complexity}, Churn:{avg_churn}, Grade:{grade} {grade_icon}]"
                     print(f"│   Scan-dir: {root} (Language: {language})")
-                    print(f"│   | {stats}")
-                    # Build tree structure for files in this scan-dir
                     file_tuples = []
                     for f in files:
                         abs_path = os.path.abspath(os.path.join(root, f['path']))
                         root_abs = os.path.abspath(root)
                         debug_print(f"[DEBUG] CLIReportGenerator: f['path']={f['path']}, abs_path={abs_path}, root_abs={root_abs}")
-                        # Robust path inclusion: include if abs_path is under root_abs
                         try:
                             if os.path.commonpath([abs_path, root_abs]) != root_abs:
                                 continue
                         except ValueError:
                             continue
                         rel_path = os.path.relpath(abs_path, root_abs)
-                        # Always fetch churn using absolute path to match MetricsCollector
                         churn_value = f.get('churn', 0)
-                        # Use abs_path for churn mapping if present
-                        if 'abs_path' in f and f['abs_path']:
-                            churn_value = f.get('churn', 0)
-                            if churn_value == 0:
-                                churn_value = f.get('churn', 0)
                         if f.get('complexity') is not None and churn_value is not None:
                             hotspot_score = round(f['complexity'] * churn_value, 1)
                         else:
