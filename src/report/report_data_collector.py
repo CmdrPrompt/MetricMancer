@@ -4,12 +4,14 @@ from .root_info import RootInfo
 from .file_helpers import sort_files, average_complexity, average_grade
 from ..metrics import grade
 
+
 class ReportDataCollector:
     """
     Samlar och strukturerar data för komplexitetsrapporten.
     """
-    def __init__(self, results: Dict[str, Dict[str, List[Dict[str, Any]]]], threshold_low: float = 10.0, threshold_high: float = 20.0):
-        self.results = results
+    def __init__(self, repo_info, threshold_low: float = 10.0, threshold_high: float = 20.0):
+        self.repo_info = repo_info
+        self.results = repo_info.results
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
 
@@ -25,20 +27,29 @@ class ReportDataCollector:
         complexities = [f.complexity for f in files] if files else []
         min_complexity = min(complexities) if complexities else 0.0
         max_complexity = max(complexities) if complexities else 0.0
+        # Try to get repo_root from first file in list
+        repo_root = getattr(files[0], 'repo_root', '') if files else ''
         return RootInfo(
             path=root,
             average=avg_grade['value'] if isinstance(avg_grade, dict) else avg_grade,
             min_complexity=min_complexity,
             max_complexity=max_complexity,
-            files=files
+            files=files,
+            repo_root=repo_root
         )
 
     def prepare_structured_data(self) -> List[Dict[str, Any]]:
-        structured: List[Dict[str, Any]] = []
-        for language in sorted(self.results):
-            language_section = {'name': language, 'roots': []}
-            for root in sorted(self.results[language]):
+        # Group all roots by repo_root
+        repo_map = {}
+        for language in self.results:
+            for root in self.results[language]:
                 root_info = self.build_root_info(language, root, self.results[language][root])
-                language_section['roots'].append(root_info)
-            structured.append(language_section)
+                repo_root = root_info.repo_root or '<unknown>'
+                if repo_root not in repo_map:
+                    repo_map[repo_root] = []
+                repo_map[repo_root].append(root_info)
+        # Build structured list for template
+        structured = []
+        for repo_root, roots in repo_map.items():
+            structured.append({'repo_root': repo_root, 'roots': roots})
         return structured

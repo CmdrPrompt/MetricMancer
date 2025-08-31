@@ -10,3 +10,4 @@ class RootInfo:
     min_complexity: float
     max_complexity: float
     files: List[FileInfo] = field(default_factory=list)
+    repo_root: str = ""
