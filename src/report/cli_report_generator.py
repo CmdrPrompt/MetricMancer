@@ -64,8 +64,12 @@ class CLIReportGenerator(ReportInterface):
                         stats_str = f"[C:{f.get('complexity', '?')}, Churn:{churn_value}, Hotspot:{hotspot_score}, Grade:{f.get('grade', '?')}]"
                         file_tuples.append((rel_path, stats_str))
                     def build_tree(paths):
+                        # Sort: files directly in root first, then folders
+                        direct_files = [(p, s) for p, s in paths if os.sep not in p]
+                        sub_files = [(p, s) for p, s in paths if os.sep in p]
+                        sorted_paths = direct_files + sub_files
                         tree = {}
-                        for path, stats in paths:
+                        for path, stats in sorted_paths:
                             parts = path.split(os.sep)
                             node = tree
                             for part in parts[:-1]:
@@ -73,7 +77,12 @@ class CLIReportGenerator(ReportInterface):
                             node[parts[-1]] = stats
                         return tree
                     def print_tree(node, prefix="", is_last=True):
-                        items = sorted(node.items(), key=lambda x: x[0].lower())
+                        # Sort: files (not dict) first, then folders (dict), both alphabetically
+                        files = [(name, value) for name, value in node.items() if not isinstance(value, dict)]
+                        folders = [(name, value) for name, value in node.items() if isinstance(value, dict)]
+                        files_sorted = sorted(files, key=lambda x: x[0].lower())
+                        folders_sorted = sorted(folders, key=lambda x: x[0].lower())
+                        items = files_sorted + folders_sorted
                         for idx, (name, value) in enumerate(items):
                             connector = "└── " if idx == len(items)-1 else "├── "
                             if isinstance(value, dict):
