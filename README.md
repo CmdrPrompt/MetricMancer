@@ -81,8 +81,12 @@ repo_name
 - Customize the report appearance in `src/templates/report.html`
 
 ## Requirements
+
 - Python 3.7+
-- Jinja2 (`pip install jinja2`)
+- jinja2
+- pytest
+- coverage
+- pydriller
 
 ## Cyclomatic Complexity
 
