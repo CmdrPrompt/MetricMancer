@@ -20,14 +20,17 @@ class ReportDataCollector:
 
     def build_root_info(self, language: str, root: str, files: List[Union[Dict[str, Any], FileInfo]]) -> RootInfo:
         files = sort_files(files)
+        # Filtrera bort dubbletter baserat på path
+        unique_files = {}
         for f in files:
             if not f.grade:
                 f.grade = grade(f.complexity, self.threshold_low, self.threshold_high)
+            unique_files[f.path] = f
+        files = list(unique_files.values())
         avg_grade = average_grade(files, self.threshold_low, self.threshold_high)
         complexities = [f.complexity for f in files] if files else []
         min_complexity = min(complexities) if complexities else 0.0
         max_complexity = max(complexities) if complexities else 0.0
-        # Try to get repo_root from first file in list
         repo_root = getattr(files[0], 'repo_root', '') if files else ''
         return RootInfo(
             path=root,

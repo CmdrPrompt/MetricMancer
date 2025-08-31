@@ -66,7 +66,7 @@ class CLIReportGenerator(ReportInterface):
                             node[parts[-1]] = stats
                         return tree
                     def print_tree(node, prefix="", is_last=True):
-                        items = list(node.items())
+                        items = sorted(node.items(), key=lambda x: x[0].lower())
                         for idx, (name, value) in enumerate(items):
                             connector = "└── " if idx == len(items)-1 else "├── "
                             if isinstance(value, dict):
