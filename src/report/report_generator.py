@@ -6,7 +6,7 @@ from .report_interface import ReportInterface
 
 
 class ReportGenerator(ReportInterface):
-	def __init__(self, repo_info, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, template_dir='src/templates', template_file='report.html'):
+	def __init__(self, repo_info, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, template_dir='src/report/templates', template_file='report.html'):
 		self.repo_info = repo_info
 		self.results = repo_info.results
 		self.threshold_low = threshold_low

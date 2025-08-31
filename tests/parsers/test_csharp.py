@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.csharp import CSharpComplexityParser
+from src.languages.parsers.csharp import CSharpComplexityParser
 
 class TestCSharpComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):

@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.cpp import CppComplexityParser
+from src.languages.parsers.cpp import CppComplexityParser
 
 class TestCppComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from src.analyzer import Analyzer
-from src.fileanalyzer import FileAnalyzer
+from src.app.analyzer import Analyzer
+from src.complexity.fileanalyzer import FileAnalyzer
 
 class MockConfig:
     def __init__(self, languages):
@@ -15,7 +15,7 @@ class TestAnalyzer(unittest.TestCase):
         ]
         self.config = MockConfig({'py': {}, 'js': {}})
 
-    @patch('src.analyzer.FileAnalyzer')
+    @patch('src.app.analyzer.FileAnalyzer')
     def test_analyze(self, MockFileAnalyzer):
         mock_analyzer_instance = MockFileAnalyzer.return_value
         mock_analyzer_instance.load.return_value = True
@@ -35,7 +35,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertEqual(res['python']['/path/to/project'][0]['complexity'], 12)
             self.assertEqual(res['python']['/path/to/project'][0]['grade'], 'Medium ⚠️')
 
-    @patch('src.analyzer.FileAnalyzer')
+    @patch('src.app.analyzer.FileAnalyzer')
     def test_analyze_load_false(self, MockFileAnalyzer):
         mock_analyzer_instance = MockFileAnalyzer.return_value
         mock_analyzer_instance.load.return_value = False
@@ -50,7 +50,7 @@ class TestAnalyzer(unittest.TestCase):
         results = analyzer.analyze([])
         self.assertEqual(results, {})
 
-    @patch('src.analyzer.FileAnalyzer')
+    @patch('src.app.analyzer.FileAnalyzer')
     def test_analyze_grade_low(self, MockFileAnalyzer):
         mock_analyzer_instance = MockFileAnalyzer.return_value
         mock_analyzer_instance.load.return_value = True
@@ -65,7 +65,7 @@ class TestAnalyzer(unittest.TestCase):
             res = repo_info.results
             self.assertEqual(res['python']['/path/to/project'][0]['grade'], 'Low ✅')
 
-    @patch('src.analyzer.FileAnalyzer')
+    @patch('src.app.analyzer.FileAnalyzer')
     def test_analyze_grade_high(self, MockFileAnalyzer):
         mock_analyzer_instance = MockFileAnalyzer.return_value
         mock_analyzer_instance.load.return_value = True
@@ -80,14 +80,14 @@ class TestAnalyzer(unittest.TestCase):
             res = repo_info.results
             self.assertEqual(res['python']['/path/to/project'][0]['grade'], 'High ❌')
 
-    @patch('src.analyzer.FileAnalyzer')
+    @patch('src.app.analyzer.FileAnalyzer')
     def test_analyze_missing_ext(self, MockFileAnalyzer):
         files = [{'path': 'file1.py', 'root': '/path/to/project'}]
         analyzer = Analyzer(self.config)
         with self.assertRaises(KeyError):
             analyzer.analyze(files)
 
-    @patch('src.analyzer.FileAnalyzer')
+    @patch('src.app.analyzer.FileAnalyzer')
     def test_analyze_missing_language_or_root(self, MockFileAnalyzer):
         mock_analyzer_instance = MockFileAnalyzer.return_value
         mock_analyzer_instance.load.return_value = True

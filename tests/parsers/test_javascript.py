@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.javascript import JavaScriptComplexityParser
+from src.languages.parsers.javascript import JavaScriptComplexityParser
 
 class TestJavaScriptComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):

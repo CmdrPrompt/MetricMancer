@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
 
 class ReportRenderer:
-    def __init__(self, template_dir='src/templates', template_file='report.html', threshold_low=10.0, threshold_high=20.0):
+    def __init__(self, template_dir='src/report/templates', template_file='report.html', threshold_low=10.0, threshold_high=20.0):
         import os
         self.env = Environment(loader=FileSystemLoader(template_dir))
         self.env.filters['basename'] = lambda path: os.path.basename(path) if path else ""

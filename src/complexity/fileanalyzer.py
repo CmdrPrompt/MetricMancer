@@ -21,11 +21,10 @@ class FileAnalyzer:
 		if 'parser' in self.config:
 			parser_class_name = self.config['parser']
 			module_name = parser_class_name.replace('ComplexityParser', '').lower()
-			parser_module = f"src.parsers.{module_name}"
+			parser_module = f"src.languages.parsers.{module_name}"
 			parser_class = getattr(__import__(parser_module, fromlist=[parser_class_name]), parser_class_name)
 			parser = parser_class()
 			complexity = parser.compute_complexity(self.code)
-			# Ada har ingen count_functions, returnera None om ej implementerad
 			function_count = getattr(parser, 'count_functions', lambda code: None)(self.code)
 		else:
 			complexity = self._calculate_complexity()

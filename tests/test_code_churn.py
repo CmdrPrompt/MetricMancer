@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from src.code_churn import CodeChurnAnalyzer
+from src.churn.code_churn import CodeChurnAnalyzer
 
 class TestCodeChurnAnalyzer(unittest.TestCase):
     @patch('pydriller.Repository')

@@ -1,5 +1,5 @@
 import unittest
-from src.parsers.ada import AdaComplexityParser
+from src.languages.parsers.ada import AdaComplexityParser
 
 class TestAdaComplexityParser(unittest.TestCase):
     def test_compute_complexity(self):
