@@ -16,6 +16,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Updated dependencies in `pyproject.toml` for coverage and CI stability.
 
+
+## [1.2.0] - 2025-08-31
+
+### Added
+- CLI report now lists files in the root directory before all folders, improving readability of file trees.
+- Debug output is now controlled by the debug flag for all CLI and app runs.
+- Repo root name detection in CLI report is now accurate and robust.
+
+### Changed
+- Major refactoring: moved core modules to subfolders (`app`, `languages`, etc.) for better structure and maintainability.
+- `collector.py`, `scanner.py`, and `config.py` relocated to logical subfolders; all imports updated accordingly.
+- Improved modularity and separation of concerns throughout the codebase.
+- All test files and mocks updated to reflect new module structure.
+
+### Fixed
+- Indentation and import errors in several modules after refactoring.
+- All tests and CLI runs validated after each change to ensure stability.
+
+### Removed
+- Old/duplicate files in root (`collector.py`, `scanner.py`, `app.py`, `config.py`) deleted after migration to subfolders.
+
+### Security
+- No security changes in this release.
+
+### Deprecated
+- No deprecations in this release.
+
 ## [Unreleased]
 
 ### Planned / In Development

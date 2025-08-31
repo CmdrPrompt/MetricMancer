@@ -1,6 +1,6 @@
 [project]
 name = "complexityscanner"
-version = "1.1.1"
+version = "1.2.0"
 description = "Cyclomatic complexity scanner and report generator"
 authors = [
   { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
