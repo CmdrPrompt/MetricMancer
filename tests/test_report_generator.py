@@ -5,7 +5,7 @@ from src.report.report_generator import ReportGenerator
 class TestReportGenerator(unittest.TestCase):
     def setUp(self):
         # Example data
-        self.results = {
+        results = {
             'python': {
                 'root1': [
                     {'path': 'file1.py', 'complexity': 15, 'functions': 3, 'grade': None},
@@ -16,6 +16,10 @@ class TestReportGenerator(unittest.TestCase):
                 ]
             }
         }
+        class RepoInfo:
+            pass
+        self.repo_info = RepoInfo()
+        self.repo_info.results = results
 
     @patch('src.report.report_generator.ReportDataCollector')
     @patch('src.report.report_generator.ReportDataAnalyzer')
@@ -32,7 +36,7 @@ class TestReportGenerator(unittest.TestCase):
         mock_renderer = MockReportRenderer.return_value
         mock_renderer.render.return_value = 'html_content'
 
-        generator = ReportGenerator(self.results)
+        generator = ReportGenerator(self.repo_info)
         generator.generate(output_file='test_output.html')
 
         mock_collector.prepare_structured_data.assert_called_once()

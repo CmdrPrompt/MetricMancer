@@ -41,15 +41,7 @@ class Analyzer:
         debug_print(f"[DEBUG] Analyzer.analyze: filepaths:")
         for file in files:
             debug_print(f"  {file['path']}")
-        for file in files:
-            scan_dir = file['root']
-            if scan_dir not in repo_root_cache:
-                repo_root_cache[scan_dir] = CodeChurnAnalyzer.find_repo_root([scan_dir])
-            repo_root = repo_root_cache[scan_dir]
-            file['repo_root'] = repo_root
-            files_by_root[repo_root].append(file)
-            scan_dirs_by_root[repo_root].add(scan_dir)
-
+        # Only one loop to group files by repo_root
         from src.report.git_repo_info import GitRepoInfo
         summary = {}
         for repo_root in sorted(files_by_root.keys()):
