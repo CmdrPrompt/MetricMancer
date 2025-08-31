@@ -9,7 +9,7 @@ import os
 from src.utilities.debug import debug_print
 
 def main():
-    print(f"[DEBUG] main: sys.argv={sys.argv}")
+    debug_print(f"[DEBUG] main: sys.argv={sys.argv}")
     if len(sys.argv) == 1:
         print_usage()
         sys.exit(0)

@@ -1,6 +1,6 @@
 from src.languages.config import Config
-from src.utilities.scanner import Scanner
-from src.app.analyzer import Analyzer
+from src.scanner import Scanner
+from src.analyzer import Analyzer
 from src.report.report_generator import ReportGenerator
 
 class ComplexityScannerApp:
@@ -18,7 +18,7 @@ class ComplexityScannerApp:
         self.report_generator_cls = report_generator_cls or ReportGenerator
 
     def run(self):
-        from src.utilities.debug import debug_print
+        from src.debug import debug_print
         debug_print(f"[DEBUG] scan dirs: {self.directories}")
         files = self.scanner.scan(self.directories)
         debug_print(f"[DEBUG] scanned files: {len(files)}")

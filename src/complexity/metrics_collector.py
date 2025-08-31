@@ -11,7 +11,7 @@ class MetricsCollector:
     def collect(self, filepaths, root_dir=''):
         import os
         from src.complexity.fileanalyzer import FileAnalyzer
-        from src.config import LANGUAGES
+        from src.languages.config import LANGUAGES
         churn = self.churn_analyzer.analyze()
         metrics = []
         for filepath in filepaths:
