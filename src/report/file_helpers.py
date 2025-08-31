@@ -32,3 +32,36 @@ def average_grade(files: List[Union[Dict[str, Any], FileInfo]], threshold_low: f
         'label': grade(avg, threshold_low, threshold_high),
         'formatted': f"{grade(avg, threshold_low, threshold_high)} ({avg:.1f})"
     }
+
+def filter_problem_files(files: List[FileInfo], problem_file_threshold: float) -> List[FileInfo]:
+    """
+    Returnerar filer med komplexitet >= problem_file_threshold.
+    """
+    return [f for f in files if f.complexity is not None and f.complexity >= problem_file_threshold]
+
+def filter_hotspot_risk_files(files: List[FileInfo], high_score: float = 300, medium_score: float = 100, complexity_limit: float = 15, churn_limit: float = 15) -> List[FileInfo]:
+    """
+    Returnerar filer som är hotspots baserat på churn och komplexitet.
+    """
+    hotspot_risk_files = []
+    for f in files:
+        if f.complexity is not None and f.churn is not None:
+            hs_score = f.complexity * f.churn
+            if hs_score > high_score or (f.complexity > complexity_limit and f.churn > churn_limit):
+                hotspot_risk_files.append(f)
+            elif hs_score >= medium_score:
+                hotspot_risk_files.append(f)
+    return hotspot_risk_files
+
+def summarize_and_sort_report(summary: List[dict], sort_key: str = 'average', secondary_keys: List[str] = ['language', 'root'], reverse: bool = True) -> List[dict]:
+    """
+    Sorterar och summerar rapportdata efter angivna nycklar.
+    """
+    def sort_tuple(x):
+        keys = [x.get(sort_key, 0)]
+        for k in secondary_keys:
+            keys.append(x.get(k, ''))
+        # Om reverse, sortera första nyckeln fallande
+        keys[0] = -keys[0] if reverse and isinstance(keys[0], (int, float)) else keys[0]
+        return tuple(keys)
+    return sorted(summary, key=sort_tuple)
