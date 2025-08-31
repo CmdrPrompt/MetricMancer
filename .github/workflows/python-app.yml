@@ -13,6 +13,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Ensure full git history
+      run: git fetch --unshallow || git fetch --depth=1000
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
