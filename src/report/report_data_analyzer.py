@@ -18,26 +18,15 @@ class ReportDataAnalyzer:
         self.collector = ReportDataCollector(self.repo_info, threshold_low, threshold_high)
 
     def find_problematic_roots(self) -> List[Dict[str, Any]]:
+        from .file_helpers import filter_problem_files, filter_hotspot_risk_files
         summary: List[Dict[str, Any]] = []
         for language, roots in self.results.items():
             for root, files in roots.items():
                 if not files:
                     continue
                 root_info = self.collector.build_root_info(language, root, files)
-                if self.problem_file_threshold is not None:
-                    problem_files = [f for f in root_info.files if f.complexity >= self.problem_file_threshold]
-                else:
-                    problem_files = []
-
-                # Hotspot-risk: medium (>=100) och hög (>300)
-                hotspot_risk_files = []
-                for f in root_info.files:
-                    if f.complexity is not None and f.churn is not None:
-                        hs_score = f.complexity * f.churn
-                        if hs_score > 300 or (f.complexity > 15 and f.churn > 15):
-                            hotspot_risk_files.append(f)
-                        elif hs_score >= 100:
-                            hotspot_risk_files.append(f)
+                problem_files = filter_problem_files(root_info.files, self.problem_file_threshold) if self.problem_file_threshold is not None else []
+                hotspot_risk_files = filter_hotspot_risk_files(root_info.files)
 
                 if root_info.average > self.threshold or (self.problem_file_threshold is not None and problem_files) or hotspot_risk_files:
                     summary.append({
@@ -50,4 +39,3 @@ class ReportDataAnalyzer:
                         'files': root_info.files,
                         'hotspot_risk_files': hotspot_risk_files
                     })
-        return sorted(summary, key=lambda x: (-x['average'], x['language'], x['root']))
