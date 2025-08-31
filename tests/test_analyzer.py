@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from src.app.analyzer import Analyzer
 from src.complexity.fileanalyzer import FileAnalyzer
 
@@ -14,6 +14,13 @@ class TestAnalyzer(unittest.TestCase):
             {'ext': 'js', 'path': 'file2.js', 'root': '/path/to/project'}
         ]
         self.config = MockConfig({'py': {}, 'js': {}})
+        # Patch open and file existence for dummy files
+        self.patcher_exists = patch('os.path.exists', return_value=True)
+        self.patcher_open = patch('builtins.open', mock_open(read_data="dummy code"))
+        self.patcher_exists.start()
+        self.patcher_open.start()
+        self.addCleanup(self.patcher_exists.stop)
+        self.addCleanup(self.patcher_open.stop)
 
     @patch('src.app.analyzer.FileAnalyzer')
     def test_analyze(self, MockFileAnalyzer):

@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from src.report.report_data_analyzer import ReportDataAnalyzer
 from src.report.file_info import FileInfo
 
@@ -20,6 +20,12 @@ class TestReportDataAnalyzer(unittest.TestCase):
             pass
         self.repo_info = RepoInfo()
         self.repo_info.results = results
+        self.patcher_exists = patch('os.path.exists', return_value=True)
+        self.patcher_open = patch('builtins.open', mock_open(read_data="dummy code"))
+        self.patcher_exists.start()
+        self.patcher_open.start()
+        self.addCleanup(self.patcher_exists.stop)
+        self.addCleanup(self.patcher_open.stop)
 
     def test_find_problematic_roots(self):
         analyzer = ReportDataAnalyzer(self.repo_info, threshold=20.0, problem_file_threshold=20.0)

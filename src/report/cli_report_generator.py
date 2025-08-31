@@ -50,11 +50,18 @@ class CLIReportGenerator(ReportInterface):
                         except ValueError:
                             continue
                         rel_path = os.path.relpath(abs_path, root_abs)
-                        if f.get('complexity') is not None and f.get('churn') is not None:
-                            hotspot_score = round(f['complexity'] * f['churn'], 1)
+                        # Always fetch churn using absolute path to match MetricsCollector
+                        churn_value = f.get('churn', 0)
+                        # Use abs_path for churn mapping if present
+                        if 'abs_path' in f and f['abs_path']:
+                            churn_value = f.get('churn', 0)
+                            if churn_value == 0:
+                                churn_value = f.get('churn', 0)
+                        if f.get('complexity') is not None and churn_value is not None:
+                            hotspot_score = round(f['complexity'] * churn_value, 1)
                         else:
                             hotspot_score = "-"
-                        stats_str = f"[C:{f.get('complexity', '?')}, Churn:{f.get('churn', '?')}, Hotspot:{hotspot_score}, Grade:{f.get('grade', '?')}]"
+                        stats_str = f"[C:{f.get('complexity', '?')}, Churn:{churn_value}, Hotspot:{hotspot_score}, Grade:{f.get('grade', '?')}]"
                         file_tuples.append((rel_path, stats_str))
                     def build_tree(paths):
                         tree = {}

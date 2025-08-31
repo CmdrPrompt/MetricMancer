@@ -8,5 +8,7 @@ class GitRepoInfo:
     scan_dirs: List[str] = field(default_factory=list)
     files: List[str] = field(default_factory=list)
     churn_data: dict = field(default_factory=dict)
+    complexity_data: dict = field(default_factory=dict)
+    hotspot_data: dict = field(default_factory=dict)
     commits: List[str] = field(default_factory=list)
     results: dict = field(default_factory=dict)  # analyserade filer och data
