@@ -7,10 +7,3 @@ class AdaComplexityParser(ComplexityParser):
         r'\bloop\b', r'\bwhile\b', r'\bfor\b', r'\bexit\b', r'\bexception\b'
     ]
 
-    def compute_complexity(self, code: str) -> int:
-        complexity = 1
-        code = re.sub(r'end if;', '', code, flags=re.IGNORECASE)  # Remove 'end if;' before matching
-        for pattern in self.CONTROL_KEYWORDS:
-            matches = re.findall(pattern, code, re.IGNORECASE)
-            complexity += len(matches)
-        return complexity

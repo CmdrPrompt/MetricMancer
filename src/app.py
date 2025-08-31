@@ -31,15 +31,24 @@ class ComplexityScannerApp:
         import os
         # Generate one HTML report per repo_info
         for idx, repo_info in enumerate(repo_infos):
-            output_file = self.output_file
+            output_file = self.output_file or "complexity_report.html"
             # If multiple repos, append index to filename
             if len(repo_infos) > 1:
-                base, ext = os.path.splitext(self.output_file)
+                base, ext = os.path.splitext(output_file)
                 output_file = f"{base}_{idx+1}{ext}"
-            report = self.report_generator_cls(
-                repo_info,
-                self.threshold_low,
-                self.threshold_high,
-                self.problem_file_threshold
-            )
+            # Use correct input type for each generator
+            if self.report_generator_cls.__name__ == "CLIReportGenerator":
+                report = self.report_generator_cls(
+                    [repo_info],
+                    self.threshold_low,
+                    self.threshold_high,
+                    self.problem_file_threshold
+                )
+            else:
+                report = self.report_generator_cls(
+                    repo_info,
+                    self.threshold_low,
+                    self.threshold_high,
+                    self.problem_file_threshold
+                )
             report.generate(output_file)
