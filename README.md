@@ -3,11 +3,23 @@
 
 Analyze cyclomatic complexity in your codebase and generate a modern, customizable HTML report.
 
+
 ## Features
-- Scans specified directories for Python, JavaScript, TypeScript, Java, and C# files
+- Scans specified directories for code files in the following languages:
+	- Python
+	- JavaScript
+	- TypeScript
+	- Java
+	- C#
+	- C
+	- C++
+	- Go
+	- Ada
 - Calculates cyclomatic complexity and function count per file
+- Computes code churn (change frequency) for each file
+- Hotspot analysis: highlights files with high complexity and high churn
 - Grades complexity (Low, Medium, High) and summarizes per language and root folder
-- Highlights problematic folders and files exceeding configurable thresholds
+- Highlights problematic folders and files exceeding configurable thresholds of complexity
 - Flexible CLI: set thresholds, file thresholds, and report filename options
 - Generates a modern HTML report with summary, details, and usage instructions
 
@@ -83,5 +95,28 @@ Cyclomatic complexity is a software metric used to measure the number of indepen
 
 **Note:** The cyclomatic complexity value for each file corresponds to the minimum number of test cases required to cover all possible code paths. However, this does not account for data validation, edge cases, or combinations of multiple decision points.
 
-## License
+
+## Future Plans
+
+The following features and KPIs are planned for future releases:
+
+- **Git/Bitbucket-based KPIs:**
+	- Code Ownership: Measures how many different developers have modified a file. Identifies files with low ownership (high risk for bugs).
+	- Review Latency: Time from pull request creation to first comment. Highlights bottlenecks in the review process.
+	- Merge Time: Time from PR creation to merge. Measures collaboration and delivery speed.
+	- Comment Density: Number of comments per PR. Indicator of code review quality.
+
+- **Jira-based KPIs:**
+	- Cycle Time: Time from "In Progress" to "Done". Measures delivery speed.
+	- Lead Time: Time from issue creation to delivery. Identifies bottlenecks in planning and prioritization.
+	- Issue Reopen Rate: How often issues are reopened after being closed. Indicator of solution quality and test coverage.
+	- Sprint Accuracy: Amount of planned work actually delivered. Measures team predictability.
+	- Flow Efficiency: Active time vs. waiting time in the issue flow. Identifies waste in the process.
+
+- **Combined Metric Ideas:**
+	- Risk Index = churn × complexity × ownership diversity
+	- Review Health Score = comment density ÷ review latency
+	- Delivery Score = sprint accuracy × flow efficiency
+	- Stability Score = low churn × high complexity × low reopen rate
+
 MIT
