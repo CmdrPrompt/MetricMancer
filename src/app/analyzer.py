@@ -13,6 +13,7 @@ class Analyzer:
         # Ingen global metrics_collector, hanteras per repo-root
 
     def analyze(self, files):
+        import os
         from src.utilities.debug import debug_print
         from src.churn.code_churn import CodeChurnAnalyzer
         from collections import defaultdict
@@ -47,7 +48,16 @@ class Analyzer:
             metrics_collector = MetricsCollector(scanner=FileAnalyzer, repo_path=repo_root, scan_dirs=scan_dirs)
             metrics_list = metrics_collector.collect(filepaths)
             results = {}
-            churn_data = {m.filename: m.churn for m in metrics_list}
+            # Sätt churn_data, complexity_data och hotspot_data direkt från MetricsCollector (alla absoluta paths)
+            debug_print("[DEBUG] Fetched churn values from metrics_list:")
+            for m in metrics_list:
+                debug_print(f"  {os.path.abspath(m.filename)}: churn={m.churn}")
+            churn_data = {os.path.abspath(m.filename): m.churn for m in metrics_list}
+            complexity_data = {os.path.abspath(m.filename): m.complexity for m in metrics_list}
+            hotspot_data = {os.path.abspath(m.filename): m.complexity * m.churn for m in metrics_list}
+            debug_print("[DEBUG] churn_data to be stored in GitRepoInfo:")
+            for k, v in churn_data.items():
+                debug_print(f"  {k}: churn={v}")
             for file, metrics in zip(files_in_repo, metrics_list):
                 ext = file.get('ext')
                 if ext is None or ext not in self.config:
@@ -58,6 +68,7 @@ class Analyzer:
                     result = analyzer.analyze()
                     result['grade'] = grade(result['complexity'], self.threshold_low, self.threshold_high)
                     result['churn'] = metrics.churn
+                    result['abs_path'] = metrics.abs_path
                     result['metrics'] = metrics
                     result['repo_root'] = file.get('repo_root', repo_root)
                     lang = result.get('language')
@@ -76,6 +87,8 @@ class Analyzer:
                 scan_dirs=scan_dirs,
                 files=filepaths,
                 churn_data=churn_data,
+                complexity_data=complexity_data,
+                hotspot_data=hotspot_data,
                 commits=[], # Kan fyllas på vid behov
                 results=results
             )

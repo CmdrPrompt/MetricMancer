@@ -24,10 +24,10 @@ class MetricsCollector:
             else:
                 complexity = 0
             abs_path = os.path.abspath(filepath)
-            relpath = os.path.relpath(abs_path, self.repo_path)
-            churn_value = churn.get(relpath, 0)
+            churn_value = churn.get(abs_path, 0)
             metrics.append(FileMetrics(
                 filename=filepath,
+                abs_path=abs_path,
                 churn=churn_value,
                 complexity=complexity
             ))

@@ -1,7 +1,7 @@
 # tests/test_scanner.py
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from src.utilities.scanner import Scanner
 
 class TestScanner(unittest.TestCase):
@@ -28,6 +28,15 @@ class TestScanner(unittest.TestCase):
         # Assert that the scan result is correct
         expected_result = [{'path': '/mock/dir/file1.py', 'root': '/mock/dir', 'ext': '.py'}]
         self.assertEqual(result, expected_result)
+
+    def setUp(self):
+        # Patch open and file existence for dummy files
+        self.patcher_exists = patch('os.path.exists', return_value=True)
+        self.patcher_open = patch('builtins.open', mock_open(read_data="dummy code"))
+        self.patcher_exists.start()
+        self.patcher_open.start()
+        self.addCleanup(self.patcher_exists.stop)
+        self.addCleanup(self.patcher_open.stop)
 
 if __name__ == '__main__':
     unittest.main()

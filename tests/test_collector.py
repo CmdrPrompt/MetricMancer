@@ -1,12 +1,19 @@
 # tests/test_collector.py
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, mock_open
 from src.collector import collect_results
 
 class TestCollector(unittest.TestCase):
-    
-    
+    def setUp(self):
+        # Patch open and file existence for dummy files
+        self.patcher_exists = patch('os.path.exists', return_value=True)
+        self.patcher_open = patch('builtins.open', mock_open(read_data="dummy code"))
+        self.patcher_exists.start()
+        self.patcher_open.start()
+        self.addCleanup(self.patcher_exists.stop)
+        self.addCleanup(self.patcher_open.stop)
+
     @patch('src.collector.os.path.isdir')
     def test_collect_results_dir_not_exists(self, mock_isdir):
         import sys

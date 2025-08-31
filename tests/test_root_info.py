@@ -1,8 +1,18 @@
 import unittest
+from unittest.mock import patch, MagicMock, mock_open
 from src.report.root_info import RootInfo
 from src.report.file_info import FileInfo
 
 class TestRootInfo(unittest.TestCase):
+    def setUp(self):
+        # Patch open and file existence for dummy files
+        self.patcher_exists = patch('os.path.exists', return_value=True)
+        self.patcher_open = patch('builtins.open', mock_open(read_data="dummy code"))
+        self.patcher_exists.start()
+        self.patcher_open.start()
+        self.addCleanup(self.patcher_exists.stop)
+        self.addCleanup(self.patcher_open.stop)
+
     def test_root_info_initialization(self):
         file1 = FileInfo(path='file1.py', complexity=10.0)
         file2 = FileInfo(path='file2.py', complexity=20.0)
