@@ -14,7 +14,7 @@ class FileAnalyzer:
 				self.code = f.read()
 			return True
 		except Exception as e:
-			print(f"⚠️ Kunde inte läsa {self.filepath}: {e}")
+			print(f"⚠️ Unable to read {self.filepath}: {e}")
 			return False
 
 	def analyze(self):
