@@ -39,6 +39,7 @@ python -m src.main <directories> [--threshold-low <value>] [--threshold-high <va
 - `--auto-report-filename`: Automatically generate a unique report filename based on date and scanned directories
 - `--report-filename <filename>`: Set the report filename directly (directories not included in name)
 - `--with-date`: If used with `--report-filename`, appends date and time to the filename before extension
+- `--cli-report`: Outputs the report to the command line in a `tree` like structure
 
 ### Examples
 
