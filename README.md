@@ -1,7 +1,7 @@
-# ComplexityScanner
+# MetricMancer
 
 
-Analyze cyclomatic complexity in your codebase and generate a modern, customizable HTML report.
+MetricMancer is a flexible and powerful application for collecting, analyzing, and visualizing various types of metrics data. With a focus on usability and adaptability, MetricMancer provides tools to easily integrate and manage measurements from multiple sources. The application is designed for developers, analysts, and organizations who want to gain deeper insights into their data and make more informed decisions.
 
 
 ## Features
