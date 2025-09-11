@@ -20,15 +20,17 @@ def collect_results(directories):
             continue
 
         for root, _, files in os.walk(root_dir):
-            for file in files:
-                ext = os.path.splitext(file)[1]
-                if ext in LANGUAGES:
-                    full_path = os.path.join(root, file)
-                    analyzer = FileAnalyzer(full_path, root_dir, LANGUAGES[ext])
-                    if analyzer.load():
-                        result = analyzer.analyze()
-                        result['grade'] = grade(result['complexity'], threshold_low, threshold_high)
-                        results[result['language']][result['root']].append(result)
+            valid_files = (
+                (file, os.path.splitext(file)[1])
+                for file in files if os.path.splitext(file)[1] in LANGUAGES
+            )
+            for file, ext in valid_files:
+                full_path = os.path.join(root, file)
+                analyzer = FileAnalyzer(full_path, root_dir, LANGUAGES[ext])
+                if analyzer.load():
+                    result = analyzer.analyze()
+                    result['grade'] = grade(result['complexity'], threshold_low, threshold_high)
+                    results[result['language']][result['root']].append(result)
 
     # Skapa ett dynamiskt rapportfilnamn
     import datetime

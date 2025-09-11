@@ -28,10 +28,10 @@ class TestReportGenerator(unittest.TestCase):
         self.addCleanup(self.patcher_exists.stop)
         self.addCleanup(self.patcher_open.stop)
 
-    @patch('src.report.report_generator.ReportDataCollector')
-    @patch('src.report.report_generator.ReportDataAnalyzer')
-    @patch('src.report.report_generator.ReportRenderer')
-    @patch('src.report.report_generator.ReportWriter')
+    @patch('src.report.html_report_format.ReportDataCollector')
+    @patch('src.report.html_report_format.ReportDataAnalyzer')
+    @patch('src.report.html_report_format.ReportRenderer')
+    @patch('src.report.html_report_format.ReportWriter')
     def test_generate(self, MockReportWriter, MockReportRenderer, MockReportDataAnalyzer, MockReportDataCollector):
         # Mocking the external components
         mock_collector = MockReportDataCollector.return_value
