@@ -19,18 +19,8 @@ def main():
     import src.utilities.debug
     src.utilities.debug.DEBUG = getattr(args, 'debug', False)
     debug_print(f"[DEBUG] main: args={args}")
-    if getattr(args, 'cli_report', False):
-        debug_print("[DEBUG] main: CLI report mode")
-        app = ComplexityScannerApp(
-            directories=args.directories,
-            threshold_low=args.threshold_low,
-            threshold_high=args.threshold_high,
-            problem_file_threshold=args.problem_file_threshold,
-            output_file=None,
-            report_generator_cls=CLIReportGenerator
-        )
-        app.run()
-    else:
+    # Default: human-readable CLI report unless HTML output is explicitly requested
+    if getattr(args, 'report_filename', None) or getattr(args, 'auto_report_filename', False):
         debug_print("[DEBUG] main: HTML report mode")
         app = ComplexityScannerApp(
             directories=args.directories,
@@ -39,6 +29,17 @@ def main():
             problem_file_threshold=args.problem_file_threshold,
             output_file=get_output_filename(args),
             report_generator_cls=None
+        )
+        app.run()
+    else:
+        debug_print("[DEBUG] main: CLI report mode (default)")
+        app = ComplexityScannerApp(
+            directories=args.directories,
+            threshold_low=args.threshold_low,
+            threshold_high=args.threshold_high,
+            problem_file_threshold=args.problem_file_threshold,
+            output_file=None,
+            report_generator_cls=CLIReportGenerator
         )
         app.run()
 
