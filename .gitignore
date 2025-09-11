@@ -5,3 +5,6 @@ __pycache__/
 !docs/complexity_report.html
 .qodo/testConfig.toml
 .DS_Store
+.env
+.vscode/*
+!.vscode/settings.json
