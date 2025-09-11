@@ -16,17 +16,14 @@ class ReportGenerator(ReportInterface):
 		self.template_file = template_file
 
 	def generate(self, output_file='complexity_report.html'):
-		collector = ReportDataCollector(self.repo_info, self.threshold_low, self.threshold_high)
-		analyzer = ReportDataAnalyzer(self.repo_info, self.threshold_high, self.problem_file_threshold, self.threshold_low, self.threshold_high)
-		renderer = ReportRenderer(self.template_dir, self.template_file, self.threshold_low, self.threshold_high)
-		structured = collector.prepare_structured_data()
-		problem_roots = analyzer.find_problematic_roots()
-		html = renderer.render(
-			structured,
-			problem_roots,
-			problem_file_threshold=self.problem_file_threshold,
+		from .html_report_format import HTMLReportFormat
+		from src.utilities.debug import debug_print
+		format_strategy = HTMLReportFormat(self.template_dir, self.template_file)
+		format_strategy.print_report(
+			self.repo_info,
+			debug_print,
+			output_file=output_file,
 			threshold_low=self.threshold_low,
-			threshold_high=self.threshold_high
+			threshold_high=self.threshold_high,
+			problem_file_threshold=self.problem_file_threshold
 		)
-		ReportWriter.write_html(html, output_file)
-		print(f"\u2705 Report generated: {output_file}")
