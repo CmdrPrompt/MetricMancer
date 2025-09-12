@@ -9,12 +9,13 @@ class ReportRenderer:
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
 
-    def render(self, structured, problem_roots, problem_file_threshold=None, threshold_low=None, threshold_high=None):
+    def render(self, structured, problem_roots, problem_file_threshold=None, threshold_low=None, threshold_high=None, report_links=None):
         template = self.env.get_template(self.template_file)
         return template.render(
             structured=structured,
             problem_roots=problem_roots,
             threshold_low=threshold_low if threshold_low is not None else self.threshold_low,
             threshold_high=threshold_high if threshold_high is not None else self.threshold_high,
-            problem_file_threshold=problem_file_threshold
+            problem_file_threshold=problem_file_threshold,
+            report_links=report_links
         )

@@ -8,3 +8,5 @@ __pycache__/
 .env
 .vscode/*
 .vscode/settings.json
+*-log.txt
+terminal.log
