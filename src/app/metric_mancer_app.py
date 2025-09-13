@@ -1,13 +1,13 @@
 from src.languages.config import Config
-from src.utilities.scanner import Scanner
+from src.app.scanner import Scanner
 from src.app.analyzer import Analyzer
 from src.report.report_generator import ReportGenerator
 
-class ComplexityScannerApp:
+class MetricMancerApp:
     def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None):
         self.config = Config()
-        self.scanner = Scanner(self.config)
-        self.analyzer = Analyzer(self.config, threshold_low, threshold_high)
+        self.scanner = Scanner(self.config.languages)
+        self.analyzer = Analyzer(self.config.languages, threshold_low=threshold_low, threshold_high=threshold_high)
         self.directories = directories
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
@@ -26,7 +26,7 @@ class ComplexityScannerApp:
         debug_print(f"[DEBUG] summary keys: {list(summary.keys())}")
         repo_infos = []
         for repo_root, repo_info in summary.items():
-            debug_print(f"[DEBUG] repo_info: root={repo_info.repo_root}, name={repo_info.repo_name}, files={len(repo_info.files)}, results-languages={list(repo_info.results.keys())}")
+            debug_print(f"[DEBUG] repo_info: root={repo_info.repo_root_path}, name={repo_info.repo_name}")
             repo_infos.append(repo_info)
         import os
         # Prepare report_links for cross-linking if multiple repos
@@ -55,19 +55,13 @@ class ComplexityScannerApp:
             else:
                 links_for_this = []
             # Use correct input type for each generator
-            if self.report_generator_cls.__name__ == "CLIReportGenerator":
+            if self.report_generator_cls.__name__ in ["CLIReportGenerator", "JSONReportGenerator"]:
                 report = self.report_generator_cls(
-                    [repo_info],
-                    self.threshold_low,
-                    self.threshold_high,
-                    self.problem_file_threshold
+                    [repo_info], self.threshold_low, self.threshold_high, self.problem_file_threshold
                 )
                 report.generate(output_file)
             else:
                 report = self.report_generator_cls(
-                    repo_info,
-                    self.threshold_low,
-                    self.threshold_high,
-                    self.problem_file_threshold
+                    repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
                 )
                 report.generate(output_file, report_links=links_for_this)

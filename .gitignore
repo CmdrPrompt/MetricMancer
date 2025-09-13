@@ -11,3 +11,4 @@ __pycache__/
 *-log.txt
 terminal.log
 mermaid
+.backup
