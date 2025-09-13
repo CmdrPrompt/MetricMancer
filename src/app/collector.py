@@ -1,8 +1,8 @@
 import os
 from collections import defaultdict
 from src.languages.config import LANGUAGES
-from src.complexity.fileanalyzer import FileAnalyzer
-from src.complexity.metrics import grade
+from src.kpis.complexity.fileanalyzer import FileAnalyzer
+from src.kpis.complexity.metrics import grade
 
 __all__ = ["collect_results"]
 

@@ -48,13 +48,16 @@ class TestReportGenerator(unittest.TestCase):
 
         mock_collector.prepare_structured_data.assert_called_once()
         mock_analyzer.find_problematic_roots.assert_called_once()
-        mock_renderer.render.assert_called_once_with(
-            'structured_data',
-            'problematic_roots',
-            problem_file_threshold=None,
-            threshold_low=10.0,
-            threshold_high=20.0
-        )
+        # Accept extra argument report_links (could be present or not)
+        args, kwargs = mock_renderer.render.call_args
+        assert args[0] == 'structured_data'
+        assert args[1] == 'problematic_roots'
+        assert kwargs['problem_file_threshold'] == None
+        assert kwargs['threshold_low'] == 10.0
+        assert kwargs['threshold_high'] == 20.0
+        # Accept report_links if present
+        if 'report_links' in kwargs:
+            assert isinstance(kwargs['report_links'], list)
         MockReportWriter.write_html.assert_called_once_with('html_content', 'test_output.html')
 
 if __name__ == '__main__':

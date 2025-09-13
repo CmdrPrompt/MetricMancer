@@ -1,9 +1,9 @@
 
-from src.complexity.fileanalyzer import FileAnalyzer
 from src.languages.config import LANGUAGES
-from src.complexity.metrics import grade
-from src.churn.code_churn import FileMetrics
-from src.complexity.metrics_collector import MetricsCollector
+from src.kpis.churn.code_churn import FileMetrics
+from src.kpis.complexity.fileanalyzer import FileAnalyzer
+from src.kpis.complexity.metrics import grade
+from src.kpis.complexity.metrics_collector import MetricsCollector
 
 class Analyzer:
     def __init__(self, config, threshold_low=10.0, threshold_high=20.0):
@@ -15,7 +15,7 @@ class Analyzer:
     def analyze(self, files):
         import os
         from src.utilities.debug import debug_print
-        from src.churn.code_churn import CodeChurnAnalyzer
+        from src.kpis.churn.code_churn import CodeChurnAnalyzer
         from collections import defaultdict
         # Gruppér filer per repo-root
         files_by_root = defaultdict(list)

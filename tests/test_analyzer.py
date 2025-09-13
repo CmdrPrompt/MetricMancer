@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, MagicMock, mock_open
 from src.app.analyzer import Analyzer
-from src.complexity.fileanalyzer import FileAnalyzer
+from src.kpis.complexity.fileanalyzer import FileAnalyzer
 
 class MockConfig:
     def __init__(self, languages):
