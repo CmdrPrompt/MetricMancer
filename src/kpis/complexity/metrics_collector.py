@@ -1,4 +1,4 @@
-from src.churn.code_churn import FileMetrics, CodeChurnAnalyzer
+from src.kpis.churn.code_churn import FileMetrics, CodeChurnAnalyzer
 
 class MetricsCollector:
     def __init__(self, scanner, repo_path='.', scan_dirs=None):
@@ -10,7 +10,7 @@ class MetricsCollector:
 
     def collect(self, filepaths, root_dir=''):
         import os
-        from src.complexity.fileanalyzer import FileAnalyzer
+        from src.kpis.complexity.fileanalyzer import FileAnalyzer
         from src.languages.config import LANGUAGES
         churn = self.churn_analyzer.analyze()
         metrics = []

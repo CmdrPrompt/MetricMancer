@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from src.churn.code_churn import CodeChurnAnalyzer
+from src.kpis.churn.code_churn import CodeChurnAnalyzer
 
 class TestCodeChurnAnalyzer(unittest.TestCase):
     @patch('pydriller.Repository')
@@ -14,7 +14,7 @@ class TestCodeChurnAnalyzer(unittest.TestCase):
         self.assertIsInstance(churn, dict)
 
     def test_churn_in_src_with_repo_root_dot(self):
-        from src.churn.code_churn import CodeChurnAnalyzer
+        from src.kpis.churn.code_churn import CodeChurnAnalyzer
         import os
         repo_root = os.path.abspath('.')
         scan_dir = os.path.abspath('./src')
