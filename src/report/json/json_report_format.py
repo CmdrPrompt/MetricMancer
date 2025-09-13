@@ -1,193 +1,82 @@
 import json
+import os
+from dataclasses import is_dataclass, asdict
 from src.report.report_format_strategy import ReportFormatStrategy
+from src.kpis.model import RepoInfo, ScanDir, File, Function
+from src.kpis.base_kpi import BaseKPI
+from typing import Any, List
 
 class JSONReportFormat(ReportFormatStrategy):
-    def print_report(self, repo_info, debug_print, level="file"):
-        import os
-        import json
-        root = getattr(repo_info, 'repo_root', None)
-        repo_name = getattr(repo_info, 'git_folder_name', None) or getattr(repo_info, 'repo_name', None)
-        timestamp = getattr(repo_info, 'timestamp', None)
-        component = getattr(repo_info, 'component', None)
-        team = getattr(repo_info, 'team', None)
-        results = getattr(repo_info, 'results', {})
-        output = []
-        # File-level: print all files in a single JSON array
-        if level == 'file':
-            for language in results:
-                for scan_root in results[language]:
-                    files = results[language][scan_root]
-                    for file in files:
-                        file_path = file.get('path', '')
-                        abs_path = os.path.abspath(file_path) if not os.path.isabs(file_path) else file_path
-                        rel_path = os.path.relpath(abs_path, root) if root else file_path
-                        rel_path = rel_path.replace('..', '').lstrip('/')
-                        complexity = file.get('complexity', None)
-                        churn = file.get('churn', None)
-                        grade = file.get('grade', None)
-                        if complexity is not None and churn is not None:
-                            try:
-                                hotspot_score = round(float(complexity) * float(churn), 1)
-                            except Exception:
-                                hotspot_score = None
-                        else:
-                            hotspot_score = None
-                        file_json = {
-                            "filename": rel_path,
-                            "cyclomatic_complexity": complexity,
-                            "churn": churn,
-                            "hotspot_score": hotspot_score,
-                            "grade": grade,
-                            "repo_name": repo_name,
-                            "component": component,
-                            "team": team,
-                            "timestamp": timestamp
-                        }
-                        output.append(file_json)
-            print(json.dumps(output, ensure_ascii=False))
-        # Function-level: print all functions in a single JSON array
-        elif level == 'function':
-            for language in results:
-                for scan_root in results[language]:
-                    files = results[language][scan_root]
-                    for file in files:
-                        file_path = file.get('path', '')
-                        abs_path = os.path.abspath(file_path) if not os.path.isabs(file_path) else file_path
-                        rel_path = os.path.relpath(abs_path, root) if root else file_path
-                        rel_path = rel_path.replace('..', '').lstrip('/')
-                        complexity = file.get('complexity', None)
-                        churn = file.get('churn', None)
-                        grade = file.get('grade', None)
-                        hotspot_score = None
-                        if complexity is not None and churn is not None:
-                            try:
-                                hotspot_score = round(float(complexity) * float(churn), 1)
-                            except Exception:
-                                hotspot_score = None
-                        if 'functions' in file and isinstance(file['functions'], list):
-                            for func in file['functions']:
-                                func_json = {
-                                    "function_name": func.get("name", ""),
-                                    "cyclomatic_complexity": func.get("complexity", None),
-                                    "churn": churn,
-                                    "hotspot_score": func.get("hotspot_score", hotspot_score),
-                                    "grade": grade,
-                                    "lines_of_code": func.get("lines_of_code", None),
-                                    "filename": rel_path,
-                                    "repo_name": repo_name,
-                                    "component": component,
-                                    "team": team,
-                                    "timestamp": timestamp
-                                }
-                                output.append(func_json)
-                        else:
-                            # fallback to file-level if no functions
-                            file_json = {
-                                "function_name": None,
-                                "cyclomatic_complexity": complexity,
-                                "churn": churn,
-                                "hotspot_score": hotspot_score,
-                                "grade": grade,
-                                "lines_of_code": None,
-                                "filename": rel_path,
-                                "repo_name": repo_name,
-                                "component": component,
-                                "team": team,
-                                "timestamp": timestamp
-                            }
-                            output.append(file_json)
-            print(json.dumps(output, ensure_ascii=False))
-    def get_repo_json(self, repo_info, debug_print, level="file"):
-        import os
-        timestamp = getattr(repo_info, 'timestamp', None)
-        root = getattr(repo_info, 'repo_root', None)
-        repo_name = getattr(repo_info, 'git_folder_name', None) or getattr(repo_info, 'repo_name', None)
-        scan_directories = []
-        for language in getattr(repo_info, 'results', {}):
-            for scan_root in repo_info.results[language]:
-                files = repo_info.results[language][scan_root]
-                # Gruppera filer per package
-                package_map = {}
-                for file in files:
-                    file_path = file.get('path', '')
-                    abs_path = os.path.abspath(file_path) if not os.path.isabs(file_path) else file_path
-                    rel_path = os.path.relpath(abs_path, root) if root else file_path
-                    rel_path = rel_path.replace('..', '').lstrip('/')  # Remove any leading ../
-                    complexity = file.get('complexity', None)
-                    churn = file.get('churn', None)
-                    grade = file.get('grade', None)
-                    package = repo_info.get_package(abs_path) if hasattr(repo_info, 'get_package') else None
-                    if complexity is not None and churn is not None:
-                        try:
-                            hotspot_score = round(float(complexity) * float(churn), 1)
-                        except Exception:
-                            hotspot_score = None
-                    else:
-                        hotspot_score = None
-                    file_json = {
-                        "filename": rel_path,
-                        "cyclomatic_complexity": complexity,
-                        "churn": churn,
-                        "hotspot_score": hotspot_score,
-                        "grade": grade
-                    }
-                    if level == "function" and 'functions' in file and isinstance(file['functions'], list):
-                        file_json["functions"] = [
-                            {
-                                "function_name": func.get("name", ""),
-                                "cyclomatic_complexity": func.get("complexity", None),
-                                "churn": churn,
-                                "hotspot_score": func.get("hotspot_score", hotspot_score),
-                                "grade": grade,
-                                "lines_of_code": func.get("lines_of_code", None)
-                            }
-                            for func in file['functions']
-                        ]
-                    if package not in package_map:
-                        package_map[package] = []
-                    package_map[package].append(file_json)
-                # Lägg till package-tagg per package
-                packages_out = []
-                for package, files_out in sorted(package_map.items()):
-                    # Beräkna genomsnittliga KPI:er för package
-                    complexities = [f.get("cyclomatic_complexity") for f in files_out if f.get("cyclomatic_complexity") is not None]
-                    churns = [f.get("churn") for f in files_out if f.get("churn") is not None]
-                    hotspot_scores = [f.get("hotspot_score") for f in files_out if f.get("hotspot_score") is not None]
-                    grades = [f.get("grade") for f in files_out if f.get("grade") is not None]
-                    def avg(lst):
-                        return round(sum(lst)/len(lst), 1) if lst else None
-                    from collections import Counter
-                    avg_complexity = avg(complexities)
-                    avg_churn = avg(churns)
-                    avg_hotspot = avg(hotspot_scores)
-                    # Definiera grade-ordning: High > Medium > Low
-                    grade_order = {
-                        'High ❌': 3,
-                        'Medium ⚠️': 2,
-                        'Low ✅': 1
-                    }
-                    def grade_sort_key(g):
-                        return grade_order.get(g, 0)
-                    max_grade = max(grades, key=grade_sort_key) if grades else None
-                    packages_out.append({
-                        "package": package,
-                        "avg_cyclomatic_complexity": avg_complexity,
-                        "avg_churn": avg_churn,
-                        "avg_hotspot_score": avg_hotspot,
-                        "max_grade": max_grade,
-                        "files": files_out
+
+    def _to_dict(self, obj: Any) -> Any:
+        """
+        Recursively converts dataclass objects (RepoInfo, ScanDir, File, etc.)
+        into a dictionary suitable for JSON serialization.
+        """
+        if isinstance(obj, dict):
+            return {k: self._to_dict(v) for k, v in obj.items()}
+        if isinstance(obj, list):
+            return [self._to_dict(v) for v in obj]
+        if is_dataclass(obj):
+            # Use asdict for a deep conversion of the dataclass
+            return self._to_dict(asdict(obj))
+        return obj
+
+    def _collect_flat_list(self, scan_dir: ScanDir, level: str) -> List[dict]:
+        """
+        Recursively traverses the data model to produce a flat list of
+        file or function data, suitable for machine processing.
+        """
+        items = []
+        
+        # Add metadata from the top-level repo_info object
+        repo_name = getattr(scan_dir, 'repo_name', None)
+        timestamp = getattr(scan_dir, 'timestamp', None) if hasattr(scan_dir, 'timestamp') else None
+        component = getattr(scan_dir, 'component', None) if hasattr(scan_dir, 'component') else None
+        team = getattr(scan_dir, 'team', None) if hasattr(scan_dir, 'team') else None
+
+        for file_obj in scan_dir.files.values():
+            file_churn = file_obj.kpis.get('churn', {}).get('value')
+
+            if level == "function":
+                for func_obj in file_obj.functions:
+                    func_complexity = func_obj.kpis.get('complexity', {}).get('value')
+                    items.append({
+                        "filename": file_obj.file_path,
+                        "function_name": func_obj.name,
+                        "cyclomatic_complexity": func_complexity,
+                        "churn": file_churn,
+                        "hotspot_score": func_complexity * file_churn if func_complexity and file_churn else 0,
+                        "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
                     })
-                scan_directories.append({
-                    "scan_directory": os.path.basename(scan_root),
-                    "scan_directory_path": scan_root,
-                    "packages": packages_out
+            else: # level == "file"
+                items.append({
+                    "filename": file_obj.file_path,
+                    "cyclomatic_complexity": file_obj.kpis.get('complexity', {}).get('value'),
+                    "churn": file_churn,
+                    "hotspot_score": file_obj.kpis.get('hotspot', {}).get('value'),
+                    "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
                 })
-        return {
-            "repo_name": repo_name,
-            "repo_root": root,
-            "timestamp": timestamp,
-            "component": getattr(repo_info, 'component', None),
-            "team": getattr(repo_info, 'team', None),
-            "scan_directories": scan_directories
-        }
-        print(json.dumps(output, indent=2, ensure_ascii=False))
+
+        for sub_dir in scan_dir.scan_dirs.values():
+            items.extend(self._collect_flat_list(sub_dir, level))
+
+        return items
+
+    def get_report_data(self, repo_info: RepoInfo, level: str = "file", hierarchical: bool = False) -> Any:
+        """
+        Serializes the RepoInfo object into a JSON-compatible data structure.
+
+        Args:
+            repo_info: The RepoInfo object to serialize.
+            level: 'file' or 'function' for flat list output.
+            hierarchical: If True, prints the full hierarchical structure.
+                          Otherwise, prints a flat list based on 'level'.
+        
+        Returns:
+            A dictionary (for hierarchical) or a list of dictionaries (for flat).
+        """
+        if hierarchical:
+            return self._to_dict(repo_info)
+        else:
+            return self._collect_flat_list(repo_info, level)
