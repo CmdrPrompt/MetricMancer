@@ -1,3 +1,6 @@
+"""
+Defines supported programming languages and their associated complexity parser classes.
+"""
 LANGUAGES = {
 	'.js': {
 		'name': 'JavaScript',
@@ -38,5 +41,9 @@ LANGUAGES = {
 }
 
 class Config:
+	"""
+	Configuration class for language support in MetricMancer.
+	Provides access to the supported languages and their parsers.
+	"""
 	def __init__(self):
 		self.languages = LANGUAGES
