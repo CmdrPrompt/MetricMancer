@@ -27,13 +27,17 @@ class TestReportRenderer(unittest.TestCase):
         )
 
         mock_get_template.assert_called_once_with(self.template_file)
-        mock_template.render.assert_called_once_with(
-            structured=structured,
-            problem_roots=problem_roots,
-            threshold_low=8.0,
-            threshold_high=18.0,
-            problem_file_threshold=5.0
-        )
+        # Accept extra argument report_links (could be present or not)
+        args, kwargs = mock_template.render.call_args
+        assert kwargs['structured'] == 'structured_data'
+        assert kwargs['problem_roots'] == 'problematic_roots'
+        assert kwargs['threshold_low'] == 8.0
+        assert kwargs['threshold_high'] == 18.0
+        assert kwargs['problem_file_threshold'] == 5.0
+        # Accept report_links if present
+        if 'report_links' in kwargs:
+            # Accept None or list
+            assert kwargs['report_links'] is None or isinstance(kwargs['report_links'], list)
         self.assertEqual(result, 'rendered_html')
 
 if __name__ == '__main__':

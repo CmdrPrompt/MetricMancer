@@ -1,7 +1,7 @@
 from typing import Any, Dict, List, Union
 from .file_info import FileInfo
 from .root_info import RootInfo
-from src.complexity.metrics import grade
+from src.kpis.complexity.metrics import grade
 from .report_data_collector import ReportDataCollector
 
 
