@@ -15,7 +15,7 @@ class ReportGenerator(ReportInterface):
 		self.template_dir = template_dir
 		self.template_file = template_file
 
-	def generate(self, output_file='complexity_report.html'):
+	def generate(self, output_file='complexity_report.html', report_links=None):
 		from .html_report_format import HTMLReportFormat
 		from src.utilities.debug import debug_print
 		format_strategy = HTMLReportFormat(self.template_dir, self.template_file)
