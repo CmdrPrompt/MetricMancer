@@ -1,8 +1,14 @@
 import re
 from src.languages.parsers.base import ComplexityParser
 
-class PythonComplexityParser(ComplexityParser):
+	"""
+	Complexity parser for Python source code.
+	Computes cyclomatic complexity and counts functions using regex patterns.
+	"""
 	def compute_complexity(self, code: str) -> int:
+		"""
+		Compute the cyclomatic complexity of the given Python code string.
+		"""
 		complexity = 1
 		for pattern in self.CONTROL_KEYWORDS:
 			complexity += len(re.findall(pattern, code))

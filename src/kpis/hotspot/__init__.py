@@ -1,5 +1,3 @@
-"""
-hotspots package
-----------------
-Identifies and calculates hotspots (high-risk files) in the codebase.
-"""
+"""Hotspot KPI package."""
+from .hotspot_kpi import HotspotKPI
+
