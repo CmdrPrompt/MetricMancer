@@ -3,8 +3,8 @@ import argparse
 import sys
 from src.app.app import ComplexityScannerApp
 from src.utilities.cli_helpers import print_usage, parse_args
-from src.report.report_helpers import get_output_filename, ensure_report_folder
-from src.report.cli_report_generator import CLIReportGenerator
+from src.report.report_helpers import get_output_filename # This function is not in the provided context, but the import is being kept as per the original file.
+from src.report.cli.cli_report_generator import CLIReportGenerator # This path is already correct in the provided context.
 import os
 from src.utilities.debug import debug_print
 
