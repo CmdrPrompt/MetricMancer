@@ -8,7 +8,6 @@ class FileMetrics:
         self.churn = churn
         self.complexity = complexity
 
-
 class CodeChurnAnalyzer:
     def __init__(self, repo_scan_pairs):
         # repo_scan_pairs: List of (repo_root, scan_dir)
@@ -26,7 +25,6 @@ class CodeChurnAnalyzer:
                 current = parent
             self.repo_scan_pairs.append((current, scan_abs))
         self.churn_data = {}
-        # ...existing code...
 
     @staticmethod
     def find_repo_root(scan_dirs):
@@ -45,7 +43,6 @@ class CodeChurnAnalyzer:
             current = parent
         debug_print(f"[DEBUG] find_repo_root: fallback to {os.getcwd()}")
         return os.getcwd()  # fallback
-
 
     def analyze(self):
         from src.utilities.debug import debug_print
@@ -85,7 +82,6 @@ class CodeChurnAnalyzer:
                 aggregated_churn[alias] = total
         # Merge aggregated churn into churn_data
         churn_data.update(aggregated_churn)
-        from src.utilities.debug import debug_print
         debug_print('[DEBUG] Key churn values:')
         key_files = [
             '/Users/thomas/Code/VSCode/ComplexityScanner/src/analyzer.py',
@@ -93,15 +89,4 @@ class CodeChurnAnalyzer:
         ]
         for kf in key_files:
             debug_print(f'  {kf}: churn={churn_data.get(kf, "(not found)")}')
-        return churn_data
-        for path, aliases in path_aliases.items():
-            total = sum(churn_data.get(alias, 0) for alias in aliases)
-            for alias in aliases:
-                aggregated_churn[alias] = total
-        # Merge aggregated churn into churn_data
-        churn_data.update(aggregated_churn)
-        from src.utilities.debug import debug_print
-        debug_print("[DEBUG] Churn values per file (with moves/renames):")
-        for file, churn in churn_data.items():
-            debug_print(f"  {file}: churn={churn}")
         return churn_data

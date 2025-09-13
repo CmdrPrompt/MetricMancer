@@ -29,6 +29,18 @@ class ComplexityScannerApp:
             debug_print(f"[DEBUG] repo_info: root={repo_info.repo_root}, name={repo_info.repo_name}, files={len(repo_info.files)}, results-languages={list(repo_info.results.keys())}")
             repo_infos.append(repo_info)
         import os
+        # Prepare report_links for cross-linking if multiple repos
+        report_links = []
+        if len(repo_infos) > 1:
+            for idx, repo_info in enumerate(repo_infos):
+                output_file = self.output_file or "complexity_report.html"
+                base, ext = os.path.splitext(output_file)
+                filename = f"{base}_{idx+1}{ext}"
+                report_links.append({
+                    'href': filename,
+                    'name': getattr(repo_info, 'repo_name', f'Repo {idx+1}'),
+                    'selected': False
+                })
         # Generate one HTML report per repo_info
         for idx, repo_info in enumerate(repo_infos):
             output_file = self.output_file or "complexity_report.html"
@@ -36,6 +48,12 @@ class ComplexityScannerApp:
             if len(repo_infos) > 1:
                 base, ext = os.path.splitext(output_file)
                 output_file = f"{base}_{idx+1}{ext}"
+                # Mark the current as selected
+                for link in report_links:
+                    link['selected'] = (link['href'] == output_file)
+                links_for_this = [l for l in report_links if l['href'] != output_file]
+            else:
+                links_for_this = []
             # Use correct input type for each generator
             if self.report_generator_cls.__name__ == "CLIReportGenerator":
                 report = self.report_generator_cls(
@@ -44,6 +62,7 @@ class ComplexityScannerApp:
                     self.threshold_high,
                     self.problem_file_threshold
                 )
+                report.generate(output_file)
             else:
                 report = self.report_generator_cls(
                     repo_info,
@@ -51,4 +70,4 @@ class ComplexityScannerApp:
                     self.threshold_high,
                     self.problem_file_threshold
                 )
-            report.generate(output_file)
+                report.generate(output_file, report_links=links_for_this)
