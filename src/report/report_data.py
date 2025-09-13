@@ -1,3 +1,17 @@
+class ReportData:
+	"""
+	Holds data for report generation.
+	Stores summary and detailed report data.
+	"""
+	def __init__(self, summary, details):
+		"""
+		Initialize the ReportData object.
+		Args:
+			summary: Summary data for the report.
+			details: Detailed data for the report.
+		"""
+		self.summary = summary
+		self.details = details
 
 from .file_info import FileInfo
 from .root_info import RootInfo
@@ -19,7 +33,9 @@ class ReportDataBuilder:
 
 	def prepare_structured_data(self) -> List[Dict[str, Any]]:
 		"""
-		Returnerar strukturerad data för rapporten per språk och root.
+		Prepare structured data for the report, organized by language and root.
+		Returns:
+			List of dictionaries, each containing language name and root information.
 		"""
 		structured: List[Dict[str, Any]] = []
 		for language in sorted(self.results):

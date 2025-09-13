@@ -4,15 +4,20 @@ from src.app.analyzer import Analyzer
 from src.report.report_generator import ReportGenerator
 
 class MetricMancerApp:
-    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None):
+    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human"):
         self.config = Config()
         self.scanner = Scanner(self.config.languages)
         self.analyzer = Analyzer(self.config.languages, threshold_low=threshold_low, threshold_high=threshold_high)
         self.directories = directories
+        # Report settings
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
         self.problem_file_threshold = problem_file_threshold
         self.output_file = output_file
+        self.level = level
+        self.hierarchical = hierarchical
+        self.output_format = output_format
+
         # Allow swapping report generator
         from src.report.report_generator import ReportGenerator
         self.report_generator_cls = report_generator_cls or ReportGenerator
@@ -53,15 +58,16 @@ class MetricMancerApp:
                     link['selected'] = (link['href'] == output_file)
                 links_for_this = [l for l in report_links if l['href'] != output_file]
             else:
-                links_for_this = []
-            # Use correct input type for each generator
-            if self.report_generator_cls.__name__ in ["CLIReportGenerator", "JSONReportGenerator"]:
-                report = self.report_generator_cls(
-                    [repo_info], self.threshold_low, self.threshold_high, self.problem_file_threshold
-                )
-                report.generate(output_file)
-            else:
-                report = self.report_generator_cls(
-                    repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
-                )
-                report.generate(output_file, report_links=links_for_this)
+                links_for_this = report_links
+
+            # All generators now accept a single repo_info object, making the call uniform.
+            report = self.report_generator_cls(
+                repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
+            )
+            report.generate(
+                output_file=output_file,
+                level=self.level,
+                hierarchical=self.hierarchical,
+                output_format=self.output_format,
+                report_links=links_for_this
+            )

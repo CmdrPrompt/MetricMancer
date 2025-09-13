@@ -11,11 +11,3 @@ class AdaComplexityParser(ComplexityParser):
 		r'\bif(?!\s*;)\b', r'\belsif\b', r'\bcase\b', r'\bwhen\b',
 		r'\bloop\b', r'\bwhile\b', r'\bfor\b', r'\bexit\b', r'\bexception\b'
 	]
-	"""
-	Complexity parser for Ada source code.
-	Computes cyclomatic complexity using regex patterns for control flow keywords.
-	"""
-	def compute_complexity(self, code: str) -> int:
-		"""
-		Compute the cyclomatic complexity of the given Ada code string.
-		"""

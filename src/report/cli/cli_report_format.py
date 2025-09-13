@@ -1,131 +1,84 @@
 from src.report.report_format_strategy import ReportFormatStrategy
-
-# Placera MachineCLIReportFormat sist för att undvika importproblem
-
-class MachineCLIReportFormat(ReportFormatStrategy):
-    def print_report(self, repo_info, debug_print, level="file"):
-        import os
-        import sys
-        import csv
-        results = repo_info.results
-        writer = csv.writer(sys.stdout, delimiter=';', lineterminator='\n')
-        # Header
-        if level == "function":
-            writer.writerow(["filename", "function_name", "cyclomatic_complexity", "churn", "hotspot_score", "grade", "lines_of_code", "repo_name"])
-        else:
-            writer.writerow(["filename", "cyclomatic_complexity", "churn", "hotspot_score", "grade", "repo_name"])
-        for language in results:
-            for root in results[language]:
-                files = results[language][root]
-                for f in files:
-                    rel_path = os.path.relpath(f.get('path', ''), repo_info.repo_root) if repo_info.repo_root else f.get('path', '')
-                    complexity = f.get('complexity', None)
-                    churn = f.get('churn', None)
-                    grade = f.get('grade', None)
-                    repo_name = getattr(repo_info, 'git_folder_name', None) or getattr(repo_info, 'repo_name', None)
-                    if complexity is not None and churn is not None:
-                        try:
-                            hotspot_score = round(float(complexity) * float(churn), 1)
-                        except Exception:
-                            hotspot_score = None
-                    else:
-                        hotspot_score = None
-                    if level == "function" and 'functions' in f and isinstance(f['functions'], list):
-                        for func in f['functions']:
-                            writer.writerow([
-                                rel_path,
-                                func.get("name", ""),
-                                func.get("complexity", None),
-                                churn,
-                                func.get("hotspot_score", hotspot_score),
-                                grade,
-                                func.get("lines_of_code", None),
-                                repo_name
-                            ])
-                    else:
-                        writer.writerow([
-                            rel_path,
-                            complexity,
-                            churn,
-                            hotspot_score,
-                            grade,
-                            repo_name
-                        ])
-
-from src.report.report_format_strategy import ReportFormatStrategy
 from src.utilities.tree_printer import TreePrinter
+from src.kpis.model import RepoInfo, ScanDir, File, Function
+from typing import List, Tuple
+import os
 
 class CLIReportFormat(ReportFormatStrategy):
-    def print_report(self, repo_info, debug_print, level="file", with_churn=False, with_complexity=False):
-        repo_name = self._get_repo_name(repo_info)
-        stats = self._get_repo_stats(repo_info, with_churn=True, with_complexity=True)
-        timestamp = getattr(repo_info, 'timestamp', None)
-        if timestamp:
-            print(f"# Timestamp: {timestamp}")
+    def print_report(self, repo_info: RepoInfo, debug_print, level="file", **kwargs):
+        """
+        Prints a report for the given RepoInfo object directly to the console.
+        This method now works directly with the hierarchical RepoInfo data model.
+        """
+        repo_name = repo_info.repo_name
+        stats, all_files = self._get_repo_stats(repo_info)
         print(f". {repo_name} {stats}")
-        self._print_repo_file_trees(repo_info, debug_print, level=level, with_churn=True, with_complexity=True)
 
-    def _get_repo_name(self, repo_info):
-        import os
-        repo_root = repo_info.repo_root
-        repo_name = os.path.basename(repo_root) if repo_root else ""
-        return repo_name
+        # Start the recursive printing from the root of the repo_info object.
+        self._print_dir_recursively(repo_info, level, prefix="│   ")
 
-    def _get_repo_stats(self, repo_info, with_churn=False, with_complexity=False):
-        stats = repo_info.repo_stats
-        grade_icon = '✅' if stats['grade'].lower() == 'low' else ('⚠️' if stats['grade'].lower() == 'medium' else '🔥')
-        parts = []
-        parts.append(f"C:{stats['avg_complexity']}")
-        parts.append(f"Min:{stats['min_complexity']}")
-        parts.append(f"Max:{stats['max_complexity']}")
-        parts.append(f"Churn:{stats['avg_churn']}")
-        parts.append(f"Grade:{stats['grade']} {grade_icon}")
-        return "[" + ", ".join(parts) + "]"
+    def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
+        """Recursively collects all File objects from a ScanDir tree."""
+        files = list(scan_dir.files.values())
+        for sub_dir in scan_dir.scan_dirs.values():
+            files.extend(self._collect_all_files(sub_dir))
+        return files
 
-    def _print_repo_file_trees(self, repo_info, debug_print, level="file", with_churn=False, with_complexity=False):
-        tree_printer = TreePrinter(debug_print=debug_print)
-        results = repo_info.results
-        for language in results:
-            for root in results[language]:
-                files = results[language][root]
-                print(f"│   Scan-dir: {root} (Language: {language})")
-                file_tuples = self._get_file_tuples(files, root, debug_print, level=level, with_churn=True, with_complexity=True)
-                tree = tree_printer.build_tree(file_tuples)
-                tree_printer.print_tree(tree, prefix="│   ")
+    def _get_repo_stats(self, repo_info: RepoInfo) -> Tuple[str, List[File]]:
+        """Calculates statistics for the entire repository by traversing the model."""
+        all_files = self._collect_all_files(repo_info)
+        if not all_files:
+            return "[No files analyzed]", []
 
-    def _get_file_tuples(self, files, root, debug_print, level="file", with_churn=False, with_complexity=False):
-        import os
-        file_tuples = []
-        for f in files:
-            abs_path = os.path.abspath(os.path.join(root, f['path']))
-            root_abs = os.path.abspath(root)
-            debug_print(f"[DEBUG] CLIReportFormat: f['path']={f['path']}, abs_path={abs_path}, root_abs={root_abs}")
-            try:
-                if os.path.commonpath([abs_path, root_abs]) != root_abs:
-                    continue
-            except ValueError:
-                continue
-            rel_path = os.path.relpath(abs_path, root_abs)
-            churn_value = f.get('churn', 0)
-            if f.get('complexity') is not None and churn_value is not None:
-                hotspot_score = round(f['complexity'] * churn_value, 1)
-            else:
-                hotspot_score = "-"
-            if level == "function" and 'functions' in f and isinstance(f['functions'], list):
-                for func in f['functions']:
-                    func_stats = []
-                    func_stats.append(f"Func:{func.get('name','')}")
-                    func_stats.append(f"C:{func.get('complexity','?')}")
-                    func_stats.append(f"Churn:{churn_value}")
-                    func_stats.append(f"Hotspot:{round(func.get('complexity',0)*churn_value,1) if func.get('complexity') is not None else '-'}")
-                    func_stats.append(f"Grade:{func.get('grade','?')}")
-                    func_stats.append(f"LOC:{func.get('lines_of_code','?')}")
-                    file_tuples.append((f"{rel_path}:{func.get('name','')}", "[" + ", ".join(func_stats) + "]"))
-            else:
-                stats = []
-                stats.append(f"C:{f.get('complexity', '?')}")
-                stats.append(f"Churn:{churn_value}")
-                stats.append(f"Hotspot:{hotspot_score}")
-                stats.append(f"Grade:{f.get('grade', '?')}")
-                file_tuples.append((rel_path, "[" + ", ".join(stats) + "]"))
-        return file_tuples
+        complexities = [f.kpis['complexity'].value for f in all_files if f.kpis.get('complexity')]
+        churns = [f.kpis['churn'].value for f in all_files if f.kpis.get('churn')]
+
+        avg_complexity = round(sum(complexities) / len(complexities), 1) if complexities else 0
+        min_complexity = round(min(complexities), 1) if complexities else 0
+        max_complexity = round(max(complexities), 1) if complexities else 0
+        avg_churn = round(sum(churns) / len(churns), 1) if churns else 0
+        
+        stats_str = f"[Avg. C:{avg_complexity}, Min C:{min_complexity}, Max C:{max_complexity}, Avg. Churn:{avg_churn}]"
+        return stats_str, all_files
+
+    def _print_dir_recursively(self, scan_dir: ScanDir, level: str, prefix: str = ""):
+        """
+        Recursively prints the directory structure, its files, and their KPIs.
+        """
+        dirs = sorted(scan_dir.scan_dirs.values(), key=lambda d: d.dir_name)
+        files = sorted(scan_dir.files.values(), key=lambda f: f.name)
+        items = dirs + files
+
+        for i, item in enumerate(items):
+            is_last = (i == len(items) - 1)
+            connector = "└── " if is_last else "├── "
+            
+            if isinstance(item, ScanDir):
+                print(f"{prefix}{connector}{item.dir_name}/")
+                new_prefix = prefix + ("    " if is_last else "│   ")
+                self._print_dir_recursively(item, level, new_prefix)
+            
+            elif isinstance(item, File):
+                stats_str = self._format_file_stats(item)
+                print(f"{prefix}{connector}{item.name} {stats_str}")
+                if level == "function" and item.functions:
+                    self._print_functions(item.functions, prefix, is_last)
+
+    def _format_file_stats(self, file_obj: File) -> str:
+        """Formats the KPI statistics string for a single file."""
+        c_val = file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') else '?'
+        ch_val = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') else '?'
+        h_val = file_obj.kpis.get('hotspot').value if file_obj.kpis.get('hotspot') else '?'
+        return f"[C:{c_val}, Churn:{ch_val}, Hotspot:{h_val}]"
+
+    def _print_functions(self, functions: List[Function], prefix: str, is_file_last: bool):
+        """Prints the functions for a given file."""
+        func_prefix = prefix + ("    " if is_file_last else "│   ")
+        
+        for i, func in enumerate(sorted(functions, key=lambda f: f.name)):
+            is_last_func = (i == len(functions) - 1)
+            connector = "└── " if is_last_func else "├── "
+            
+            c_val = func.kpis.get('complexity').value if func.kpis.get('complexity') else '?'
+            stats_str = f"[C:{c_val}]"
+            print(f"{func_prefix}{connector}{func.name}() {stats_str}")

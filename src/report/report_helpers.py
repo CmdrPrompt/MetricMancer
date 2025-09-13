@@ -1,3 +1,55 @@
+def grade(value: float, threshold_low: float, threshold_high: float) -> dict:
+    """
+    Return a grade label and color for a given value based on thresholds.
+    Args:
+        value: The value to grade (e.g., complexity score).
+        threshold_low: Lower threshold for best grade.
+        threshold_high: Upper threshold for medium grade.
+    Returns:
+        dict: Dictionary with 'label' (A/B/C) and 'color' (hex color code).
+    """
+    if value < threshold_low:
+        return {"label": "A", "color": "#4CAF50"}  # Green
+    elif value < threshold_high:
+        return {"label": "B", "color": "#FFC107"}  # Amber
+    else:
+        return {"label": "C", "color": "#F44336"}  # Red
+def get_file_extension(filename: str) -> str:
+    """
+    Get the file extension for a given filename.
+    Args:
+        filename: The name of the file.
+    Returns:
+        str: The file extension (without dot), or empty string if none.
+    """
+    return filename.split('.')[-1] if '.' in filename else ''
+def get_language_from_extension(extension: str) -> str:
+    """
+    Get the programming language for a given file extension.
+    Args:
+        extension: The file extension (without dot).
+    Returns:
+        str: The programming language name, or 'Unknown' if not mapped.
+    """
+    mapping = {
+        'py': 'Python',
+        'js': 'JavaScript',
+        'ts': 'TypeScript',
+        'java': 'Java',
+        'cpp': 'C++',
+        'c': 'C',
+        'cs': 'C#',
+        'go': 'Go',
+        'rb': 'Ruby',
+        'php': 'PHP',
+        'swift': 'Swift',
+        'kt': 'Kotlin',
+        'scala': 'Scala',
+        'rs': 'Rust',
+        'm': 'Objective-C',
+        'ada': 'Ada',
+    }
+    return mapping.get(extension, 'Unknown')
 """
 Helper functions for report filename and folder handling for ComplexityScanner.
 """
