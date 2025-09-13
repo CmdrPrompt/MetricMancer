@@ -1,6 +1,6 @@
 import unittest
 import os
-from src.main import get_output_filename, ensure_report_folder
+from src.report.report_helpers import get_output_filename, ensure_report_folder
 
 class Args:
     def __init__(self, report_filename=None, with_date=False, auto_report_filename=False, directories=None, report_folder=None):
