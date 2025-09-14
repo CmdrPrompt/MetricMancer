@@ -32,14 +32,14 @@ class CLIReportFormat(ReportFormatStrategy):
         """Calculates statistics for the entire repository by traversing the model."""
         from collections import Counter
 
-        all_files = self._collect_all_files(repo_info)
-        if not all_files:
-            return "[No files analyzed]", []
+    all_files = self._collect_all_files(repo_info)
+    if not all_files:
+        return "[No files analyzed]", []
 
-        complexities = [f.kpis['complexity'].value for f in all_files if 'complexity' in f.kpis]
-        churns = [f.kpis['churn'].value for f in all_files if 'churn' in f.kpis]
-        # Grades are not stored on the new model, they are calculated on the fly.
-        # This part can be added if grading is needed at the repo level.
+    complexities = [f.kpis['complexity'].value for f in all_files if 'complexity' in f.kpis]
+    churns = [f.kpis['churn'].value for f in all_files if 'churn' in f.kpis]
+    # Grades are not stored on the new model, they are calculated on the fly.
+    # This part can be added if grading is needed at the repo level.
 
     avg_complexity = round(sum(complexities) / len(complexities), 1) if complexities else 0
     min_complexity = round(min(complexities), 1) if complexities else 0
