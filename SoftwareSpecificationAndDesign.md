@@ -18,6 +18,9 @@
     - [3.3. Data Model](#33-data-model)
       - [3.3.1. UML Diagram (PlantUML)](#331-uml-diagram-plantuml)
   - [4. Detailed Requirements](#4-detailed-requirements)
+    - [Requirements Table](#requirements-table)
+    - [Traceability Matrix: User Stories to Requirements](#traceability-matrix-user-stories-to-requirements)
+    - [Traceability Matrix: Requirements to Test Cases](#traceability-matrix-requirements-to-test-cases)
     - [4.1 Functional Requirements](#41-functional-requirements)
       - [4.1.1 Core Functional Requirements](#411-core-functional-requirements)
       - [4.1.2 Issue Tracker Integration and Defect Correlation](#412-issue-tracker-integration-and-defect-correlation)
@@ -504,6 +507,90 @@ ScanDir --|> BaseDir
 > - If you encounter issues, see the extension documentation for troubleshooting and configuration tips.
 
 ## 4. Detailed Requirements
+
+### Requirements Table
+### Traceability Matrix: User Stories to Requirements
+
+### Traceability Matrix: Requirements to Test Cases
+
+| Requirement | Test Case(s) / File(s) |
+|-------------|------------------------|
+| FR1         | tests/app/test_complexity_analyzer.py:test_calculate_for_file_success, test_analyze_functions_success |
+| FR2         | tests/app/test_code_churn_analyzer.py:test_analyze_churn_data |
+| FR3         | tests/app/test_hotspot_kpi_edge.py:test_calculate_with_only_complexity, test_calculate_with_only_churn, test_calculate_with_zero |
+| FR4         | tests/app/test_metric_mancer_app.py:test_run_single_repo, test_run_multiple_repos |
+| FR5         | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format, test_generate_machine_calls_cli_csv_report_format, tests/report/test_report_writer.py:test_write_html_creates_file_and_writes_content |
+| FR6         | (Manual/Planned) |
+| FR7         | (Manual/Planned) |
+| FR8         | (Manual/Planned) |
+| FR9         | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format |
+| FR10        | tests/app/test_metric_mancer_app.py:test_run_single_repo |
+| FR11        | (Manual/Planned) |
+| FR12        | (Manual/Planned) |
+| FR13        | (Manual/Planned) |
+| FR14        | (Manual/Planned) |
+| FR15        | (Manual/Planned) |
+| FR16        | (Manual/Planned) |
+| FR17        | (Manual/Planned) |
+| FR18        | (Manual/Planned) |
+| FR19        | (Manual/Planned) |
+| FR20        | (Manual/Planned) |
+| NFR1        | tests/app/test_metric_mancer_app.py:test_run_single_repo |
+| NFR2        | (Manual/Planned) |
+| NFR3        | (Manual/Planned) |
+| NFR4        | tests/app/test_metric_mancer_app_edge.py:test_run_with_report_generate_exception |
+
+| User Story / Persona                                             | FR1 | FR2 | FR3 | FR4 | FR5 | FR6 | FR7 | FR8 | FR9 | FR10 | FR11 | FR12 | FR13 | FR14 | FR15 | FR16 | FR17 | FR18 | FR19 | FR20 | NFR1 | NFR2 | NFR3 | NFR4 |
+|------------------------------------------------------------------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|------|------|------|------|------|------|------|------|------|------|------|------|------|
+| Alice: Identify high complexity/churn files                      |  X  |  X  |  X  |     |     |     |     |     |     |      |      |      |      |      |      |  X   |      |      |      |      |      |      |      |      |
+| Alice: See hotspots/risk zones                                  |  X  |  X  |  X  |     |     |     |     |     |  X  |      |      |      |      |      |      |      |      |      |      |      |      |      |      |      |
+| Alice: Generate HTML reports                                    |     |     |     |     |  X  |     |     |     |  X  |      |      |      |      |      |      |      |      |      |      |      |      |      |      |      |
+| Bob: Run in CI pipeline                                         |     |     |     |     |     |     |     |     |     |  X   |      |      |      |      |      |      |      |      |      |      |  X   |      |  X   |      |
+| Bob: Export JSON for dashboards                                 |     |     |     |     |     |     |     |     |     |      |  X   |      |      |      |      |      |      |      |      |  X   |      |      |      |      |
+| Bob: Receive alerts on churn/complexity                         |  X  |  X  |     |     |     |     |     |     |     |      |      |  X   |      |      |      |      |  X   |      |      |      |      |      |      |      |
+| Carol: Track code quality trends                                |  X  |  X  |  X  |     |     |     |     |     |  X  |      |      |      |  X   |      |      |      |      |      |      |      |      |      |      |      |
+| Carol: Identify low code ownership                              |     |     |     |     |     |     |  X  |     |     |      |      |      |      |  X   |      |      |      |      |      |      |      |      |      |      |
+| Carol: Use reports for planning                                 |     |     |     |     |  X  |     |     |     |  X  |      |      |      |      |      |      |      |      |  X   |      |      |      |      |      |      |
+| Dave: Find complex/risky code for onboarding                    |  X  |  X  |  X  |     |     |     |     |     |     |      |      |      |      |      |      |  X   |      |      |      |      |      |      |      |      |
+| Dave: See hotspots for help/review                              |  X  |  X  |  X  |     |     |     |     |     |  X  |      |      |      |      |      |      |      |      |      |      |      |      |      |      |      |
+| Sam: Track org-wide code quality trends                         |  X  |  X  |  X  |     |     |     |     |     |  X  |      |      |      |  X   |      |      |      |      |  X   |      |      |      |      |      |      |
+| Sam: Set/monitor quality gates                                  |     |     |     |     |     |     |     |     |     |      |      |      |      |      |      |      |  X   |      |      |      |      |      |      |      |
+| Sam: Receive dashboards/risk reports                            |     |     |     |     |     |     |     |     |     |      |      |      |      |      |      |      |      |  X   |      |      |      |      |      |      |
+| Sam: Correlate metrics with business outcomes                   |     |     |     |     |     |     |     |     |     |      |      |      |      |      |      |      |      |      |  X   |      |      |      |      |      |
+| Erin: Integrate in QA process/monitor trends                    |  X  |  X  |  X  |     |     |     |     |     |  X  |      |      |      |  X   |      |      |      |      |      |      |      |      |      |      |      |
+| Erin: Automated risk reports                                    |  X  |  X  |  X  |     |     |     |     |     |  X  |      |      |      |      |      |      |      |      |      |      |      |      |      |      |      |
+| Erin: Correlate code metrics with defect data                   |     |     |     |     |     |  X  |     |     |     |      |      |      |      |      |      |      |      |      |      |      |      |      |      |      |
+| Erin: Export results to dashboards                              |     |     |     |     |     |     |     |     |     |      |  X   |      |      |      |      |      |      |      |      |  X   |      |      |      |      |
+
+| ID    | Type         | Description                                                                 | Acceptance Criteria                                      |
+|-------|--------------|-----------------------------------------------------------------------------|----------------------------------------------------------|
+| FR1   | Functional   | The tool shall calculate cyclomatic complexity for all functions/methods.   | Complexity is reported for all functions in the report.  |
+| FR2   | Functional   | The tool shall calculate code churn for all files.                          | Churn is reported for all files in the report.           |
+| FR3   | Functional   | The tool shall identify hotspots (high churn × high complexity).            | Hotspot files are highlighted in the report.             |
+| FR4   | Functional   | The tool shall support multi-language analysis.                             | User can analyze at least two languages in one run.      |
+| FR5   | Functional   | The tool shall generate CLI, HTML, and JSON reports.                        | All formats are available and contain the same KPIs.     |
+| FR6   | Functional   | The tool shall support integration with issue trackers.                     | Defect density is shown if issue data is provided.       |
+| FR7   | Functional   | The tool shall calculate code ownership per file.                           | Ownership is reported and low-ownership files flagged.   |
+| FR8   | Functional   | The tool shall calculate logical and temporal coupling.                     | Coupling metrics are included in the report.             |
+| FR9   | Functional   | The tool shall visualize KPIs in HTML reports.                              | HTML report contains charts/tables for all KPIs.         |
+| NFR1  | Non-Functional| The tool shall process a medium repo (<10k files) in under 5 minutes.      | Analysis completes within 5 minutes for test repo.       |
+| NFR2  | Non-Functional| The tool shall be extensible for new KPIs and languages.                   | New KPIs/languages can be added with minimal changes.    |
+| NFR3  | Non-Functional| The tool shall run on Windows, macOS, and Linux.                           | All platforms supported and tested.                      |
+| NFR4  | Non-Functional| The tool shall provide clear error messages for invalid input.             | User receives actionable error messages.                 |
+
+| FR10  | Functional   | The tool shall allow scheduled/automated runs in CI/CD pipelines.           | MetricMancer can be triggered and run headless in CI.    |
+| FR11  | Functional   | The tool shall export JSON reports suitable for dashboards/monitoring.      | JSON output is compatible with dashboard tools.          |
+| FR12  | Functional   | The tool shall provide configurable alerting if churn/complexity exceeds threshold. | Alerts are generated when thresholds are breached. |
+| FR13  | Functional   | The tool shall track and visualize code quality trends over time.           | Trend graphs/tables are present in reports.              |
+| FR14  | Functional   | The tool shall identify and flag files with low code ownership.              | Low-ownership files are highlighted in reports.          |
+| FR15  | Functional   | The tool shall support knowledge sharing recommendations for low-ownership files. | Reports include suggestions for knowledge sharing.   |
+| FR16  | Functional   | The tool shall provide onboarding support by highlighting complex/hotspot files. | New users can easily find and review risky code.     |
+| FR17  | Functional   | The tool shall allow quality gates to be set and enforced (e.g., max churn/complexity). | Builds fail or warn if gates are not met.         |
+| FR18  | Functional   | The tool shall provide summary dashboards and risk reports for management.   | Dashboards/reports are available for managers/SQAM.      |
+| FR19  | Functional   | The tool shall allow correlation of code metrics with business outcomes (e.g., defect rates, release stability). | Reports show metric/business outcome links. |
+| FR20  | Functional   | The tool shall support export/integration with external quality dashboards.  | Results can be exported to third-party dashboards.       |
+
+<!-- Add or update requirements as needed. Map user stories to these IDs. -->
 [ToC](#table-of-contents)
 src/utils.py
 src/db.py
