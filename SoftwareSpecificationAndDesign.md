@@ -44,6 +44,7 @@
         - [Persona 2: Bob – The DevOps Engineer](#persona-2-bob--the-devops-engineer)
         - [Persona 3: Carol – The Engineering Manager](#persona-3-carol--the-engineering-manager)
         - [Persona 4: Dave – The New Team Member](#persona-4-dave--the-new-team-member)
+        - [Persona 6: Sam – The Software Quality Assurance Manager (SQAM)](#persona-6-sam--the-software-quality-assurance-manager-sqam)
     - [8. Requirement Prioritization \& Risk Management](#8-requirement-prioritization--risk-management)
     - [9. Validation \& Verification](#9-validation--verification)
     - [10. Change Management](#10-change-management)
@@ -696,6 +697,12 @@ These thresholds shall be configurable by the user.
 ---
 
 #### 4.1.5 Functional Requirements
+| FR25 | The tool shall provide onboarding support and documentation for new team members. | Planned | This requirement will be fulfilled by including onboarding guides, usage examples, and documentation aimed at new users. |
+| FR26 | The tool shall support role-based or customizable report views (e.g., summary for managers, detailed for developers). | Planned | This requirement will be fulfilled by allowing users to select or configure report sections and detail levels based on their role or needs. |
+| FR27 | The tool shall support organization-wide aggregation and cross-project reporting. | Planned | This requirement will be fulfilled by enabling aggregation of metrics across multiple repositories or projects for organization-level insights. |
+| FR28 | The tool shall support automated periodic reporting (e.g., scheduled email or dashboard updates). | Planned | This requirement will be fulfilled by allowing users to schedule regular report generation and delivery. |
+| FR29 | The tool shall support integration with notification systems (e.g., Slack, Teams) for alerts and summaries. | Planned | This requirement will be fulfilled by enabling alert and summary notifications to be sent to collaboration tools. |
+| FR30 | The tool shall support user-configurable report sections and custom KPIs. | Planned | This requirement will be fulfilled by allowing users to define which report sections and KPIs are included in outputs. |
 |-----|----------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------|
 | FR1 | The tool shall scan a source code repository recursively, excluding hidden directories/files. | Implemented   | Hidden folders (e.g., .git, .venv) are not scanned.         |
 | FR1a| The tool shall exclude binary files from analysis.                                            | Implemented   | Binary files (e.g., images, executables) are detected and skipped. |
@@ -880,6 +887,7 @@ To further clarify the needs and goals of different stakeholders, the following 
 - As an engineering manager, I want to identify files with low code ownership so that I can encourage knowledge sharing and reduce risk.
 - As an engineering manager, I want to use MetricMancer’s reports to justify technical debt reduction in planning meetings.
 
+
 ##### Persona 4: Dave – The New Team Member
 
 **Background:** Dave recently joined the team and is onboarding to a large, unfamiliar codebase.
@@ -888,6 +896,27 @@ To further clarify the needs and goals of different stakeholders, the following 
 
 - As a new team member, I want to use MetricMancer’s reports to find the most complex or risky parts of the code so I can focus my learning.
 - As a new team member, I want to see which files are hotspots so I can ask for help or code review when working in those areas.
+
+
+##### Persona 6: Sam – The Software Quality Assurance Manager (SQAM)
+
+**Background:** Sam oversees the quality assurance strategy for the organization. He is responsible for defining quality standards, ensuring process compliance, and reporting on quality metrics to leadership. Sam coordinates with engineering, QA, and management to drive continuous improvement and risk mitigation.
+
+**User Stories:**
+
+- As a SQAM, I want to use MetricMancer to track organization-wide code quality trends so that I can report on progress and justify quality initiatives to leadership.
+- As a SQAM, I want to set and monitor quality gates (e.g., maximum allowed complexity or churn) so that teams are held accountable to quality standards.
+- As a SQAM, I want to receive summary dashboards and risk reports from MetricMancer so that I can prioritize audits and allocate resources effectively.
+- As a SQAM, I want to correlate MetricMancer metrics with business outcomes (e.g., defect rates, release stability) so that I can demonstrate the value of quality improvements.
+
+**Background:** Erin is responsible for ensuring the overall quality of the software product. She focuses on process compliance, risk identification, and continuous improvement. Erin collaborates with developers, managers, and DevOps to integrate quality metrics and drive quality initiatives.
+
+**User Stories:**
+
+- As a SQAE, I want to integrate MetricMancer into the quality assurance process so that I can monitor code quality trends and enforce quality gates.
+- As a SQAE, I want to receive automated reports highlighting files or modules with high risk (e.g., high churn, complexity, or defect density) so that I can proactively address quality issues.
+- As a SQAE, I want to correlate code metrics with defect data from issue trackers so that I can identify root causes and recommend targeted improvements.
+- As a SQAE, I want to export MetricMancer results to quality dashboards and share them with stakeholders for transparency and compliance.
 
 ---
 
