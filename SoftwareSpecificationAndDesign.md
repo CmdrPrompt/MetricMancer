@@ -6,6 +6,7 @@
 
 ## Table of Contents
 
+
 - [Requirements and Design](#requirements-and-design)
   - [Table of Contents](#table-of-contents)
   - [1. Introduction](#1-introduction)
@@ -13,6 +14,8 @@
     - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
   - [3. System Overview](#3-system-overview)
     - [3.1. Application Overview](#31-application-overview)
+    - [3.2. Architecture](#32-architecture)
+      - [3.2.1. Scanner Flow](#321-scanner-flow)
       - [3.2.2. App Run Flow](#322-app-run-flow)
       - [3.2.3. Analyzer Analyze Flow](#323-analyzer-analyze-flow)
       - [3.2.4. ReportGenerator Flow](#324-reportgenerator-flow)
@@ -28,6 +31,7 @@
       - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
       - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
       - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
+      - [4.1.7 Persona 7: Mia – The Executive Manager](#417-persona-7-mia--the-executive-manager)
     - [4.2 Functional Requirements](#42-functional-requirements)
       - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
       - [4.2.2 Issue Tracker Integration and Defect Correlation](#422-issue-tracker-integration-and-defect-correlation)
@@ -193,7 +197,7 @@ graph TD
   JSONReport --> JSONOutput[JSON File]
   ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
   ErrorHandling -.-> App
-```text
+```
 
 **Figure: Application Overview.**
 This diagram shows the high-level architecture and main data flow in MetricMancer. The application starts with the `MetricMancerApp`, which delegates scanning to the `Scanner`. The scanner produces a list of files, which are analyzed by the `Analyzer` using various KPI analyzers (e.g., code churn, complexity, hotspots). The results are aggregated into `RepoInfo` objects and passed to the `ReportGenerator`, which can output reports in CLI, HTML, or JSON format. Error and edge case handling is integrated throughout the process.
@@ -522,7 +526,7 @@ MetricMancer is intended for software development teams, technical leads, archit
 - **Managers:** Track trends and risks to inform resource allocation and process improvements.
 
 #### 4.1.1 Persona 1: Alice – The Senior Developer
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 **Background:** Alice is responsible for maintaining a large Python codebase. She is experienced in refactoring and cares about code quality and technical debt.
 
@@ -533,7 +537,7 @@ MetricMancer is intended for software development teams, technical leads, archit
 - As a senior developer, I want to generate HTML reports to share with my team during code review meetings.
 
 #### 4.1.2 Persona 2: Bob – The DevOps Engineer
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 **Background:** Bob manages CI/CD pipelines and is responsible for integrating quality checks into the build process.
 
@@ -544,18 +548,16 @@ MetricMancer is intended for software development teams, technical leads, archit
 - As a DevOps engineer, I want to receive alerts if code churn or complexity exceeds certain thresholds.
 
 #### 4.1.3 Persona 3: Carol – The Engineering Manager
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 **Background:** Carol leads a distributed development team and is responsible for long-term code health and resource allocation.
 
 **User Stories:**
 
-- As an engineering manager, I want to track trends in code quality over time so that I can measure the impact of process changes.
-- As an engineering manager, I want to identify files with low code ownership so that I can encourage knowledge sharing and reduce risk.
-- As an engineering manager, I want to use MetricMancer’s reports to justify technical debt reduction in planning meetings.
+<!-- Add Carol's user stories here (to be filled in next step) -->
 
 #### 4.1.4 Persona 4: Dave – The New Team Member
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 **Background:** Dave recently joined the team and is onboarding to a large, unfamiliar codebase.
 
@@ -565,7 +567,7 @@ MetricMancer is intended for software development teams, technical leads, archit
 - As a new team member, I want to see which files are hotspots so I can ask for help or code review when working in those areas.
 
 #### 4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 **Background:** Sam oversees the quality assurance strategy for the organization. He is responsible for defining quality standards, ensuring process compliance, and reporting on quality metrics to leadership. Sam coordinates with engineering, QA, and management to drive continuous improvement and risk mitigation.
 
@@ -577,7 +579,7 @@ MetricMancer is intended for software development teams, technical leads, archit
 - As a SQAM, I want to correlate MetricMancer metrics with business outcomes (e.g., defect rates, release stability) so that I can demonstrate the value of quality improvements.
 
 #### 4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 **Background:** Erin is responsible for ensuring the overall quality of the software product. She focuses on process compliance, risk identification, and continuous improvement. Erin collaborates with developers, managers, and DevOps to integrate quality metrics and drive quality initiatives.
 
@@ -587,6 +589,15 @@ MetricMancer is intended for software development teams, technical leads, archit
 - As a SQAE, I want to receive automated reports highlighting files or modules with high risk (e.g., high churn, complexity, or defect density) so that I can proactively address quality issues.
 - As a SQAE, I want to correlate code metrics with defect data from issue trackers so that I can identify root causes and recommend targeted improvements.
 - As a SQAE, I want to export MetricMancer results to quality dashboards and share them with stakeholders for transparency and compliance.
+
+#### 4.1.7 Persona 7: Mia – The Executive Manager
+[ToC](#table-of-contents)
+
+**Background:** Mia is a senior executive responsible for multiple development teams and overall software delivery. She needs high-level insights to support strategic decisions and communicate with stakeholders.
+
+**User Stories:**
+
+- As an executive manager, I want to receive concise, high-level summaries of code quality and technical debt across all projects so that I can make informed decisions and report to upper management or the board.
 
 ### 4.2 Functional Requirements
 
