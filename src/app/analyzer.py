@@ -58,7 +58,7 @@ class Analyzer:
                 with file_path.open('r', encoding='utf-8', errors='ignore') as f:
                     content = f.read()
             except Exception as e:
-                debug_print(f"⚠️  Unable to read {file_path}: {e}")
+                debug_print(f"[WARN] Unable to read {file_path}: {e}")
                 continue
 
             # Create and populate KPI objects for the file

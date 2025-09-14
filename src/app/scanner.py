@@ -13,7 +13,7 @@ class Scanner:
         for scan_dir_str in directories:
             scan_dir = Path(scan_dir_str).resolve()
             if not scan_dir.is_dir():
-                debug_print(f"⚠️ Folder '{scan_dir}' doesn't exist – skipping.")
+                debug_print(f"[WARN] Folder '{scan_dir}' doesn't exist – skipping.")
                 continue
             # If the root directory itself is hidden, skip it entirely
             if scan_dir.name.startswith('.'):

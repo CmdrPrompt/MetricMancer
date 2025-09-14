@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import os
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 
 class TestCodeChurnAnalyzerEdgeCases(unittest.TestCase):
@@ -12,7 +13,8 @@ class TestCodeChurnAnalyzerEdgeCases(unittest.TestCase):
     def test_find_git_repo_root_none(self, mock_find_git):
         analyzer = CodeChurnAnalyzer([('/repo', '/repo/scan')])
         # None as git root should still be handled gracefully
-        self.assertIn((None, '/repo/scan'), analyzer.repo_scan_pairs)
+        expected_scan = os.path.abspath('/repo/scan')
+        self.assertIn((None, expected_scan), analyzer.repo_scan_pairs)
 
     @patch('src.kpis.codechurn.code_churn.find_git_repo_root', side_effect=Exception('fail'))
     def test_find_git_repo_root_exception(self, mock_find_git):

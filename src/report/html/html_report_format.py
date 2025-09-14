@@ -26,4 +26,4 @@ class HTMLReportFormat(ReportFormatStrategy):
         )
 
         ReportWriter.write_html(html, output_file)
-        print(f"\u2705 Report generated: {output_file}")
+        print(f"[OK] Report generated: {output_file}")
