@@ -10,6 +10,8 @@
     - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
   - [3. System Overview](#3-system-overview)
     - [3.1. Application Overview](#31-application-overview)
+    - [3.2. Architecture](#32-architecture)
+      - [3.2.1. Scanner Flow](#321-scanner-flow)
       - [3.2.2. App Run Flow](#322-app-run-flow)
       - [3.2.3. Analyzer Analyze Flow](#323-analyzer-analyze-flow)
       - [3.2.4. ReportGenerator Flow](#324-reportgenerator-flow)
@@ -151,7 +153,7 @@ To add a new KPI, implement a new KPI calculator module and register it in the c
 ### 3.1. Application Overview
 
 ```mermaid
-flowchart TD
+graph TD
   App[MetricMancerApp] --> Scanner[Scanner]
   Scanner -->|"directories"| Files[File List]
   Files --> Analyzer[Analyzer]
@@ -168,7 +170,7 @@ flowchart TD
   JSONReport --> JSONOutput[JSON File]
   ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
   ErrorHandling -.-> App
-```text
+```
 
 **Figure: Application Overview.**
 This diagram shows the high-level architecture and main data flow in MetricMancer. The application starts with the `MetricMancerApp`, which delegates scanning to the `Scanner`. The scanner produces a list of files, which are analyzed by the `Analyzer` using various KPI analyzers (e.g., code churn, complexity, hotspots). The results are aggregated into `RepoInfo` objects and passed to the `ReportGenerator`, which can output reports in CLI, HTML, or JSON format. Error and edge case handling is integrated throughout the process.
@@ -179,17 +181,17 @@ This diagram shows the high-level architecture and main data flow in MetricMance
 
 ```mermaid
 graph TD
-  A[Start: Scanner] --> B[Receive directories]
-  B --> C[Iterate directories]
-  C --> D[Find files in directory]
-  D --> E[Filter files by type]
-  E --> F[Collect file paths]
-  F --> G[Return file list]
+    A[Start: Scanner] --> B[Receive directories]
+    B --> C[Iterate directories]
+    C --> D[Find files in directory]
+    D --> E[Filter files by type]
+    E --> F[Collect file paths]
+    F --> G[Return file list]
 
-  %% Edge cases
-  style D fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-  style E fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  %% Error handling: empty directory, permission error, no files found
+    %% Edge cases
+    style D fill:#e0f7fa,stroke:#00796b,stroke-width:2px
+    style E fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    %% Error handling: empty directory, permission error, no files found
 ```
 
 **Figure: Scanner Flow.**
@@ -524,7 +526,6 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 - Correlation between defect density and other KPIs is visualized and highlighted in reports.
 - Example output as above.
 
----
 
 ##### Code Ownership
 
@@ -849,7 +850,6 @@ The HTML reporting in MetricMancer is implemented as a modular, template-driven 
 
 This modular approach ensures that the HTML reporting is both robust and easy to evolve as new requirements emerge.
 
----
 
 ### 7. Stakeholder Analysis
 
@@ -918,7 +918,6 @@ To further clarify the needs and goals of different stakeholders, the following 
 - As a SQAE, I want to correlate code metrics with defect data from issue trackers so that I can identify root causes and recommend targeted improvements.
 - As a SQAE, I want to export MetricMancer results to quality dashboards and share them with stakeholders for transparency and compliance.
 
----
 
 MetricMancer is intended for software development teams, technical leads, architects, and quality engineers who need actionable insights into code quality and technical debt. Key stakeholders include:
 
