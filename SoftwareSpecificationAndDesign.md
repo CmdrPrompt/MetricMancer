@@ -98,16 +98,207 @@ To add a new KPI, implement a new KPI calculator module and register it in the c
 
 ## 3. System Overview
 
-MetricMancer is designed as a modular and extensible analytics platform for source code repositories. The system is built to analyze codebases of varying sizes and languages, extracting actionable metrics that help teams understand, maintain, and improve their software.
+### 3.1.1. Application Overview
 
-The core workflow consists of scanning the repository, parsing source files, and calculating a set of key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspot scores. The architecture separates concerns into distinct modules for scanning, parsing, metric calculation, and reporting, making it easy to extend or adapt the tool for new languages or metrics.
+```mermaid
+flowchart TD
+  App[MetricMancerApp] --> Scanner[Scanner]
+  Scanner -->|"directories"| Files[File List]
+  Files --> Analyzer[Analyzer]
+  Analyzer -->|"per repo"| RepoInfo[RepoInfo Objects]
+  Analyzer --> CodeChurn[CodeChurnAnalyzer]
+  Analyzer --> Complexity[ComplexityAnalyzer]
+  Analyzer --> Hotspot[HotspotAnalyzer]
+  RepoInfo --> ReportGenerator[ReportGenerator]
+  ReportGenerator -->|"format: CLI"| CLIReport[CLIReportGenerator]
+  ReportGenerator -->|"format: HTML"| HTMLReport[HTMLReportGenerator]
+  CLIReport --> CLIOutput[CLI Output]
+  HTMLReport --> HTMLOutput[HTML File]
+  ReportGenerator -->|"format: JSON"| JSONReport[JSONReportGenerator]
+  JSONReport --> JSONOutput[JSON File]
+  ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
+  ErrorHandling -.-> App
+```
 
-MetricMancer supports both command-line and HTML reporting, providing both quick overviews and detailed, navigable reports. The system is optimized for performance and scalability, capable of analyzing large repositories efficiently. It is also designed to be scriptable and automatable, making it suitable for integration into CI/CD pipelines or as part of a continuous code health monitoring strategy.
-
-The design is inspired by the analytical techniques described in "Your Code as a Crime Scene," and aims to make advanced code forensics accessible and actionable for development teams of all sizes.
+**Figure: Application Overview.**
+This diagram shows the high-level architecture and main data flow in MetricMancer. The application starts with the `MetricMancerApp`, which delegates scanning to the `Scanner`. The scanner produces a list of files, which are analyzed by the `Analyzer` using various KPI analyzers (e.g., code churn, complexity, hotspots). The results are aggregated into `RepoInfo` objects and passed to the `ReportGenerator`, which can output reports in CLI, HTML, or JSON format. Error and edge case handling is integrated throughout the process.
 
 ### 3.1. Architecture
 
+#### Scanner Flow
+
+
+```mermaid
+graph TD
+  A[Start: Scanner] --> B[Receive directories]
+  B --> C[Iterate directories]
+  C --> D[Find files in directory]
+  D --> E[Filter files by type]
+  E --> F[Collect file paths]
+  F --> G[Return file list]
+
+  %% Edge cases
+  style D fill:#e0f7fa,stroke:#00796b,stroke-width:2px
+  style E fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  %% Error handling: empty directory, permission error, no files found
+```
+
+**Figure: Scanner Flow.**
+This diagram details the scanning process. The scanner receives a list of directories, iterates through them, finds files, filters them by type, collects file paths, and returns the final file list. Edge cases such as empty directories, permission errors, and no files found are handled explicitly.
+
+#### App Run Flow
+
+
+```mermaid
+graph TD
+  A[Start: MetricMancerApp run] --> B[Scanner scan directories]
+  B --> C[Files scanned list]
+  C --> D[Analyzer analyze files]
+  D --> E[Summary per repo ready RepoInfo object]
+  E --> F{Multiple repos?}
+  F -- Yes --> G[Create report links for cross-linking]
+  G --> H[Loop through each repo_info]
+  F -- No --> H
+
+  subgraph Report_generation_per_repo
+    H --> I{Report format?}
+    I -- HTML --> J[HTMLReportFormat/ReportGenerator generate]
+    I -- CLI --> K[CLIReportGenerator generate]
+  end
+
+  J --> L[HTML report created]
+  K --> M[CLI report in terminal]
+  J -- Next repo --> H
+  K -- Next repo --> H
+  H -- Loop done --> N[End]
+
+  %% Edge cases
+  style B fill:#e0f7fa,stroke:#00796b,stroke-width:2px
+  style D fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  style I fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  %% Error handling: empty directories, errors in scanner/analyzer, report generator
+```
+
+**Figure: App Run Flow.**
+This diagram illustrates the main execution flow of the application. After scanning directories, files are analyzed and summarized per repository. For each repository, the appropriate report format is selected and generated. The flow handles multiple repositories and includes error handling for empty directories and failures in scanning, analysis, or report generation.
+
+#### Analyzer Analyze Flow
+
+
+```mermaid
+graph TD
+  A[Start: Analyzer analyze files] --> B[Group files per repo root]
+  B --> C[Loop through each repo root]
+
+  subgraph Analysis_per_repo
+    C --> D[Init RepoInfo object]
+    D --> E[Collect Churn data CodeChurnAnalyzer]
+    E --> F[Collect Complexity ComplexityAnalyzer]
+    F --> G[Loop through files for detail analysis]
+    G --> H[Analyze functions and complexity per file]
+    H --> I[Calculate Hotspot churn times complexity]
+    I --> J[Grade file]
+    J --> K[Summarize results per language and directory]
+    K --> G
+    G -- Loop done --> L[Update RepoInfo with all data]
+  end
+
+  L -- Next repo --> C
+  C -- Loop done --> M[Return summary of all RepoInfo objects]
+  M --> RG[ReportGenerator]
+  RG --> N[End]
+
+  %% Edge cases
+  style E fill:#e0f7fa,stroke:#00796b,stroke-width:2px
+  style F fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  style H fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+  %% Error handling: empty files, missing attributes, exceptions in KPI analyzers
+```
+
+**Figure: Analyzer Analyze Flow.**
+This diagram describes how the analyzer processes files. Files are grouped per repository root, and for each repo, churn and complexity are collected, detailed analysis is performed per file, and hotspot scores are calculated. Results are summarized and aggregated into `RepoInfo` objects, which are then passed to the report generator. Edge cases such as empty files and exceptions in KPI analyzers are handled.
+
+#### ReportGenerator Flow
+
+
+```mermaid
+graph TD
+  A[Start: ReportGenerator] --> B[Select report format]
+  B --> C1[CLIReportGenerator]
+  B --> C2[HTMLReportGenerator]
+  B --> C3[JSONReportGenerator]
+  C1 --> D1[Generate CLI report]
+  C2 --> D2[Generate HTML report]
+  C3 --> D3[Generate JSON report]
+
+  D1 --> E1[Output to terminal]
+  D2 --> E2[Output to HTML file]
+  D3 --> E3[Output to JSON file]
+  E1 --> End[End]
+  E2 --> End
+  E3 --> End
+
+  %% Edge cases
+  style B fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  style C1 fill:#e0f7fa,stroke:#00796b,stroke-width:2px
+  style C2 fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+  style C3 fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  %% Error handling: unknown format, output errors
+```
+
+**Figure: ReportGenerator Flow.**
+This diagram shows how the report generator selects the output format (CLI, HTML, or JSON), generates the report, and outputs it to the appropriate destination. It also highlights error handling for unknown formats and output errors.
+
+#### HTML Report Flow
+
+
+```mermaid
+graph TD
+  A[Start: ReportGenerator generate] --> B[Init HTMLReportFormat]
+  B --> C[HTMLReportFormat print_report]
+  C --> D[Init ReportRenderer Jinja2]
+  D --> E[ReportRenderer render]
+  E --> F[Collect and filter files/problem files]
+  F --> G[Render HTML with template]
+  G --> H[ReportWriter write_html]
+  H --> I[End: HTML report created]
+
+  %% Edge cases
+  style D fill:#e0f7fa,stroke:#00796b,stroke-width:2px
+  style F fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  style H fill:#ffe0b2,stroke:#e65100,stroke-width:2px
+  %% Error handling: missing template, write error, empty repo_info/problem files
+```
+
+**Figure: HTML Report Flow.**
+This diagram details the process of generating an HTML report. The report generator initializes the HTML format, prints the report, uses the renderer to prepare data, and writes the final HTML file. Edge cases include missing templates, write errors, and empty analysis results.
+
+#### CLI Report Flow
+
+
+```mermaid
+graph TD
+  A[Start: MetricMancerApp run] --> B[Analyzer analyze files]
+  B --> C[CLIReportGenerator generate]
+  C --> D{output format?}
+  D -- human --> E[CLIReportFormat print_report]
+  D -- machine --> F[CLICSVReportFormat print_report]
+  D -- other --> G[Raise exception]
+  E --> H[Report written to terminal tree structure]
+  F --> I[Report written to terminal CSV]
+  G --> J[Error message]
+  H --> K[End]
+  I --> K
+  J --> K
+
+  %% Edge cases
+  style D fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+  style G fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px
+  %% Error handling: unknown format, empty analysis, terminal error
+```
+
+**Figure: CLI Report Flow.**
+This diagram shows the flow for generating CLI reports. After analysis, the CLI report generator selects the output format (human-readable or CSV), prints the report, and handles errors such as unknown formats or empty analysis results.
 MetricMancer is structured as a modular, layered system to maximize flexibility, maintainability, and extensibility. The architecture is divided into several key components:
 
 - **Scanner:** Traverses the repository, identifies source files, and excludes hidden or irrelevant directories/files.
@@ -196,6 +387,7 @@ Represents the top-level object for an analyzed repository, including its struct
   - Aggregate KPIs from underlying directories and files for repository-level summaries
 
 #### UML Diagram (PlantUML)
+
 ```plantuml
 @startuml
 class BaseKPI {
@@ -250,7 +442,8 @@ ScanDir --|> BaseDir
 
 ### 4.1.4 Issue Tracker Integration and Defect Correlation
 
-**Defect Density and Issue Tracker Integration**
+
+### Defect Density and Issue Tracker Integration
 
 MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
 
@@ -318,7 +511,7 @@ These thresholds shall be user-configurable.
 - The tool shall visualize code ownership per file/module, e.g., as a bar chart or pie chart showing the proportion of lines per author.
 - Reports shall highlight files with low ownership and recommend review or knowledge sharing.
 
-#### Acceptance Criteria
+#### Acceptance Criteria (Defect Density)
 
 - Code ownership is calculated for all files in the repository using git blame or equivalent.
 - Files with low ownership are clearly flagged in reports and visualizations.
@@ -377,7 +570,7 @@ These thresholds shall be configurable by the user.
 - The tool shall report all file pairs with strong or medium logical coupling, including the percentage and absolute number of co-changes.
 - Reports shall highlight file pairs that are logically coupled but not directly dependent in the codebase, with recommendations for architectural review.
 
-#### Acceptance Criteria
+#### Acceptance Criteria (Code Ownership)
 
 - Logical coupling is calculated for all file pairs in the repository.
 - File pairs exceeding the strong logical coupling threshold are clearly flagged in reports.
@@ -393,7 +586,7 @@ These thresholds shall be configurable by the user.
 
 **Temporal Coupling** measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
 
-#### Commit Parsing Example
+#### Commit Parsing Example (Logical Coupling)
 
 To calculate temporal coupling, the tool shall:
 
@@ -403,7 +596,7 @@ To calculate temporal coupling, the tool shall:
 
 **Example:**
 
-```
+```text
 commit abc123
 Author: ...
 Date: ...
@@ -417,7 +610,7 @@ Date: ...
 
 src/foo.py
 src/baz.py
-```
+```text
 
 In this example, `src/foo.py` and `src/bar.py` have a temporal coupling count of 1, and `src/foo.py` and `src/baz.py` also have a count of 1.
 
