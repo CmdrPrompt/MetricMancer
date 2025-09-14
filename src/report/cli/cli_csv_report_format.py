@@ -47,6 +47,6 @@ class CLICSVReportFormat(ReportFormatStrategy):
         header.append("repo_name")
         writer.writerow(header)
 
-        if level == "function":
-            for item in flat_data:
-                writer.writerow([item.get(h) for h in header[:-1]] + [repo_info.repo_name])
+        # This loop should run for both 'file' and 'function' level.
+        for item in flat_data:
+            writer.writerow([item.get(h) for h in header[:-1]] + [repo_info.repo_name])

@@ -26,12 +26,13 @@ class ReportGenerator(ReportInterface):
 		self.template_dir = template_dir
 		self.template_file = template_file
 
-	def generate(self, output_file='complexity_report.html', report_links=None):
+	def generate(self, output_file='complexity_report.html', report_links=None, **kwargs):
 		"""
 		Generate a report using the selected format strategy (HTML by default).
 		Args:
 			output_file: Output filename for the report.
 			report_links: Optional links to include in the report.
+			**kwargs: Additional arguments that are ignored by this generator.
 		"""
 		from src.report.html.html_report_format import HTMLReportFormat
 		from src.utilities.debug import debug_print

@@ -9,7 +9,11 @@ class CodeChurnAnalyzer:
         self.repo_scan_pairs = []
         for repo, scan in repo_scan_pairs:
             repo_abs = os.path.abspath(repo)
-            git_root = find_git_repo_root(repo_abs)
+            try:
+                git_root = find_git_repo_root(repo_abs)
+            except Exception as e:
+                debug_print(f"⚠️  Could not find git root for {repo_abs}. Error: {e}")
+                git_root = None
             self.repo_scan_pairs.append((git_root, os.path.abspath(scan)))
         self.churn_data = {}
 

@@ -79,6 +79,6 @@ class CLIReportFormat(ReportFormatStrategy):
             is_last_func = (i == len(functions) - 1)
             connector = "└── " if is_last_func else "├── "
             
-            c_val = func.kpis.get('complexity').value if func.kpis.get('complexity') else '?'
+            c_val = func.kpis['complexity'].value if 'complexity' in func.kpis and func.kpis['complexity'] else '?'
             stats_str = f"[C:{c_val}]"
             print(f"{func_prefix}{connector}{func.name}() {stats_str}")

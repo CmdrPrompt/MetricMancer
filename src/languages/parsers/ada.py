@@ -11,3 +11,4 @@ class AdaComplexityParser(ComplexityParser):
 		r'\bif(?!\s*;)\b', r'\belsif\b', r'\bcase\b', r'\bwhen\b',
 		r'\bloop\b', r'\bwhile\b', r'\bfor\b', r'\bexit\b', r'\bexception\b'
 	]
+	FUNCTION_PATTERN = r'\bfunction\s+([a-zA-Z_]\w*)\s*\(.*?\)\s+is\b'
