@@ -58,12 +58,14 @@
     - [11. Process \& Methodology](#11-process--methodology)
 
 ## 1. Introduction
+[Back to Top](#requirements-and-design)
 
 MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots.
 
 The tool supports multi-language analysis and can generate reports in several formats, including CLI, HTML, and JSON. JSON reports are designed for integration with OpenSearch and dashboards. MetricMancer is built for extensibility, making it easy to add new metrics or adapt the tool to different codebases. The goal is to help teams identify refactoring candidates, monitor code health trends, and prioritize technical debt reduction—using real data from version control history and static analysis.
 
 ## 2. Glossary
+[Back to Top](#requirements-and-design)
 
 **Temporal Coupling:**
 Measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies or poor modular design. *(Not implemented)*
@@ -132,6 +134,7 @@ A visual overview of KPI results, often with charts and color coding to quickly 
 The methodology and analysis models from the book "Your Code as a Crime Scene" by Adam Tornhill, which form the basis for the definitions and interpretations of KPIs in this project.
 
 ### 2.1. KPI Extension and Implementation Status
+[Back to Top](#requirements-and-design)
 
 The following table summarizes the available and planned KPIs in MetricMancer, their implementation status, and extensibility notes:
 
@@ -154,6 +157,7 @@ The following table summarizes the available and planned KPIs in MetricMancer, t
 To add a new KPI, implement a new KPI calculator module and register it in the configuration. The system is designed for easy extension with minimal coupling between components.
 
 ## 3. System Overview
+[Back to Top](#requirements-and-design)
 
 MetricMancer is structured as a modular, layered system to maximize flexibility, maintainability, and extensibility. The architecture is divided into several key components:
 
@@ -167,6 +171,7 @@ MetricMancer is structured as a modular, layered system to maximize flexibility,
 The architecture supports both batch and incremental analysis, and is suitable for integration into CI/CD pipelines. By separating scanning, parsing, metric calculation, and reporting, MetricMancer enables teams to extend or adapt the tool to their specific needs with minimal coupling between components.
 
 ### 3.1. Application Overview
+[Back to Top](#requirements-and-design)
 
 ```mermaid
 graph TD
@@ -192,8 +197,10 @@ graph TD
 This diagram shows the high-level architecture and main data flow in MetricMancer. The application starts with the `MetricMancerApp`, which delegates scanning to the `Scanner`. The scanner produces a list of files, which are analyzed by the `Analyzer` using various KPI analyzers (e.g., code churn, complexity, hotspots). The results are aggregated into `RepoInfo` objects and passed to the `ReportGenerator`, which can output reports in CLI, HTML, or JSON format. Error and edge case handling is integrated throughout the process.
 
 ### 3.2. Architecture
+[Back to Top](#requirements-and-design)
 
 #### 3.2.1. Scanner Flow
+[Back to Top](#requirements-and-design)
 
 ```mermaid
 graph TD
@@ -214,6 +221,7 @@ graph TD
 This diagram details the scanning process. The scanner receives a list of directories, iterates through them, finds files, filters them by type, collects file paths, and returns the final file list. Edge cases such as empty directories, permission errors, and no files found are handled explicitly.
 
 #### 3.2.2. App Run Flow
+[Back to Top](#requirements-and-design)
 
 ```mermaid
 graph TD
@@ -249,6 +257,7 @@ graph TD
 This diagram illustrates the main execution flow of the application. After scanning directories, files are analyzed and summarized per repository. For each repository, the appropriate report format is selected and generated. The flow handles multiple repositories and includes error handling for empty directories and failures in scanning, analysis, or report generation.
 
 #### 3.2.3. Analyzer Analyze Flow
+[Back to Top](#requirements-and-design)
 
 ```mermaid
 graph TD
@@ -284,6 +293,7 @@ graph TD
 This diagram describes how the analyzer processes files. Files are grouped per repository root, and for each repo, churn and complexity are collected, detailed analysis is performed per file, and hotspot scores are calculated. Results are summarized and aggregated into `RepoInfo` objects, which are then passed to the report generator. Edge cases such as empty files and exceptions in KPI analyzers are handled.
 
 #### 3.2.4. ReportGenerator Flow
+[Back to Top](#requirements-and-design)
 
 ```mermaid
 graph TD
@@ -314,6 +324,7 @@ graph TD
 This diagram shows how the report generator selects the output format (CLI, HTML, or JSON), generates the report, and outputs it to the appropriate destination. It also highlights error handling for unknown formats and output errors.
 
 #### 3.2.5. HTML Report Flow
+[Back to Top](#requirements-and-design)
 
 ```mermaid
 graph TD
@@ -337,6 +348,7 @@ graph TD
 This diagram details the process of generating an HTML report. The report generator initializes the HTML format, prints the report, uses the renderer to prepare data, and writes the final HTML file. Edge cases include missing templates, write errors, and empty analysis results.
 
 #### 3.2.6. CLI Report Flow
+[Back to Top](#requirements-and-design)
 
 ```mermaid
 graph TD
@@ -363,6 +375,7 @@ graph TD
 This diagram shows the flow for generating CLI reports. After analysis, the CLI report generator selects the output format (human-readable or CSV), prints the report, and handles errors such as unknown formats or empty analysis results.
 
 ### 3.3. Data Model
+[Back to Top](#requirements-and-design)
 
 The MetricMancer data model is designed to represent the hierarchical structure of a source code repository and to aggregate KPI results at each level. The main classes are:
 
@@ -438,6 +451,7 @@ Represents the top-level object for an analyzed repository, including its struct
   - Aggregate KPIs from underlying directories and files for repository-level summaries
 
 #### 3.3.1. UML Diagram (PlantUML)
+[Back to Top](#requirements-and-design)
 
 ```plantuml
 @startuml
@@ -495,6 +509,7 @@ ScanDir --|> BaseDir
 > - If you encounter issues, see the extension documentation for troubleshooting and configuration tips.
 
 ## 4. Detailed Requirements
+[Back to Top](#requirements-and-design)
 
 ### 4.1.4 Issue Tracker Integration and Defect Correlation
 
@@ -664,14 +679,18 @@ To calculate temporal coupling, the tool shall:
 ## 4. Detailed Requirements
 
 ### 4.1 Functional Requirements
+[Back to Top](#requirements-and-design)
 
 #### 4.1.1 Core Functional Requirements
+[Back to Top](#requirements-and-design)
 
 <!-- Existing functional requirements table and traceability remain here -->
 
 #### 4.1.2 Issue Tracker Integration and Defect Correlation
+[Back to Top](#requirements-and-design)
 
 ##### 4.1.2.1 Defect Density and Issue Tracker Integration
+[Back to Top](#requirements-and-design)
 
 MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
 
@@ -708,6 +727,7 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 ---
 
 ##### 4.1.2.2 Code Ownership
+[Back to Top](#requirements-and-design)
 
 Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
 
@@ -756,6 +776,7 @@ These thresholds shall be user-configurable.
 ---
 
 ##### 4.1.2.3 Logical Coupling
+[Back to Top](#requirements-and-design)
 
 Logical coupling identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
 
@@ -817,6 +838,14 @@ These thresholds shall be configurable by the user.
 ---
 
 ##### 4.1.2.4 Temporal Coupling
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
 
 Temporal coupling measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
 
@@ -843,6 +872,7 @@ Author: ...
 Date: ...
 
 ##### Persona 1: Alice – The Senior Developer
+[Back to Top](#requirements-and-design)
 src/baz.py
 ```
 
@@ -886,6 +916,7 @@ These thresholds shall be configurable by the user.
 - As a senior developer, I want to generate HTML reports to share with my team during code review meetings.
 
 ##### Persona 2: Bob – The DevOps Engineer
+[Back to Top](#requirements-and-design)
 
 **Background:** Bob manages CI/CD pipelines and is responsible for integrating quality checks into the build process.
 
@@ -896,6 +927,7 @@ These thresholds shall be configurable by the user.
 - As a DevOps engineer, I want to receive alerts if code churn or complexity exceeds certain thresholds.
 
 ##### Persona 3: Carol – The Engineering Manager
+[Back to Top](#requirements-and-design)
 
 **Background:** Carol leads a distributed development team and is responsible for long-term code health and resource allocation.
 
@@ -907,6 +939,7 @@ These thresholds shall be configurable by the user.
 
 
 ##### Persona 4: Dave – The New Team Member
+[Back to Top](#requirements-and-design)
 
 **Background:** Dave recently joined the team and is onboarding to a large, unfamiliar codebase.
 
@@ -917,6 +950,11 @@ These thresholds shall be configurable by the user.
 
 
 ##### Persona 6: Sam – The Software Quality Assurance Manager (SQAM)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
+[Back to Top](#requirements-and-design)
 
 **Background:** Sam oversees the quality assurance strategy for the organization. He is responsible for defining quality standards, ensuring process compliance, and reporting on quality metrics to leadership. Sam coordinates with engineering, QA, and management to drive continuous improvement and risk mitigation.
 
