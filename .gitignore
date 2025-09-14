@@ -12,3 +12,4 @@ __pycache__/
 terminal.log
 mermaid
 .backup
+.coverage
