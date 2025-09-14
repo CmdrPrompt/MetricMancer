@@ -4,45 +4,15 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.1.1] - 2025-08-31
-
-### Fixed
-
-- CI workflow now fetches full git history to prevent test failures on shallow clones.
-- Tests for code churn and git operations now mock `pydriller.Repository` to avoid failures when git history is missing.
-- All tests are robust to missing commits and run reliably in CI environments.
+## [2.0.1] - 2025-09-14
 
 ### Changed
-
-- Updated dependencies in `pyproject.toml` for coverage and CI stability.
-
-
-## [1.2.0] - 2025-08-31
-
-### Added
-- CLI report now lists files in the root directory before all folders, improving readability of file trees.
-- Debug output is now controlled by the debug flag for all CLI and app runs.
-- Repo root name detection in CLI report is now accurate and robust.
-
-### Changed
-- Major refactoring: moved core modules to subfolders (`app`, `languages`, etc.) for better structure and maintainability.
-- `collector.py`, `scanner.py`, and `config.py` relocated to logical subfolders; all imports updated accordingly.
-- Improved modularity and separation of concerns throughout the codebase.
-- All test files and mocks updated to reflect new module structure.
-
-### Fixed
-- Indentation and import errors in several modules after refactoring.
-- All tests and CLI runs validated after each change to ensure stability.
-
-### Removed
-- Old/duplicate files in root (`collector.py`, `scanner.py`, `app.py`, `config.py`) deleted after migration to subfolders.
-
-### Security
-- No security changes in this release.
-
-### Deprecated
-- No deprecations in this release.
-
+- Updated and deduplicated persona/user story sections in SoftwareSpecificationAndDesign.md for clarity and structure.
+- Rebuilt and corrected the Table of Contents to match the current document structure.
+- Fixed mermaid diagram rendering by removing extraneous code block markers after mermaid blocks.
+- Improved markdown lint compliance (headings, blank lines, link fragments).
+- Updated traceability matrices and requirements tables for accuracy.
+- README.md updated to reference the latest SSD structure and KPI definitions.
 
 ## [2.0.0] - 2025-09-14
 
@@ -104,6 +74,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Delivery Score = sprint accuracy × flow efficiency
 - Stability Score = low churn × high complexity × low reopen rate
 
+## [1.2.0] - 2025-08-31
+
+### Added
+- CLI report now lists files in the root directory before all folders, improving readability of file trees.
+- Debug output is now controlled by the debug flag for all CLI and app runs.
+- Repo root name detection in CLI report is now accurate and robust.
+
+### Changed
+- Major refactoring: moved core modules to subfolders (`app`, `languages`, etc.) for better structure and maintainability.
+- `collector.py`, `scanner.py`, and `config.py` relocated to logical subfolders; all imports updated accordingly.
+- Improved modularity and separation of concerns throughout the codebase.
+- All test files and mocks updated to reflect new module structure.
+
+### Fixed
+- Indentation and import errors in several modules after refactoring.
+- All tests and CLI runs validated after each change to ensure stability.
+
+### Removed
+- Old/duplicate files in root (`collector.py`, `scanner.py`, `app.py`, `config.py`) deleted after migration to subfolders.
+
+### Security
+- No security changes in this release.
+
+### Deprecated
+- No deprecations in this release.
+
+## [1.1.1] - 2025-08-31
+
+### Fixed
+
+- CI workflow now fetches full git history to prevent test failures on shallow clones.
+- Tests for code churn and git operations now mock `pydriller.Repository` to avoid failures when git history is missing.
+- All tests are robust to missing commits and run reliably in CI environments.
+
+### Changed
+
+- Updated dependencies in `pyproject.toml` for coverage and CI stability.
 
 ## [1.1.0] - 2025-08-30
 
