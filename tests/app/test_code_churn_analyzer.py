@@ -28,12 +28,20 @@ class TestCodeChurnAnalyzer(unittest.TestCase):
         MockRepository.return_value.traverse_commits.return_value = [fake_commit, fake_commit]
         analyzer = CodeChurnAnalyzer([('/repo', '/repo')])
         churn_data = analyzer.analyze()
-        abs_file1 = os.path.join('/repo', 'file1.py')
-        abs_file2 = os.path.join('/repo', 'file2.py')
-        self.assertEqual(churn_data[abs_file1], 2)
-        self.assertEqual(churn_data[abs_file2], 2)
-        self.assertIn(abs_file1, churn_data)
-        self.assertIn(abs_file2, churn_data)
+        abs_file1 = os.path.normpath(os.path.join(os.path.abspath('/repo'), 'file1.py'))
+        abs_file2 = os.path.normpath(os.path.join(os.path.abspath('/repo'), 'file2.py'))
+        # Robust path comparison
+        def find_key(target, d):
+            for k in d:
+                if os.path.normcase(os.path.normpath(k)) == os.path.normcase(target):
+                    return k
+            return None
+        k1 = find_key(abs_file1, churn_data)
+        k2 = find_key(abs_file2, churn_data)
+        self.assertIsNotNone(k1, f"{abs_file1} not found in churn_data keys: {list(churn_data.keys())}")
+        self.assertIsNotNone(k2, f"{abs_file2} not found in churn_data keys: {list(churn_data.keys())}")
+        self.assertEqual(churn_data[k1], 2)
+        self.assertEqual(churn_data[k2], 2)
         mock_debug_print.assert_any_call('[DEBUG] Churn analysis complete. Found churn data for 2 files.')
 
     @patch('src.kpis.codechurn.code_churn.find_git_repo_root', side_effect=lambda x: x)
