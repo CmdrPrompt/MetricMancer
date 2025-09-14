@@ -7,9 +7,9 @@ class TreePrinter:
         sorted_paths = self._sort_paths(paths, os)
         tree = {}
         for path, stats in sorted_paths:
-            parts = path.split(os.sep)
+            norm_path = os.path.normpath(path)
+            parts = norm_path.split(os.sep)
             node = tree
-            # Använd generator för att gå igenom delarna
             for part in parts[:-1]:
                 node = node.setdefault(part, {})
             node[parts[-1]] = stats

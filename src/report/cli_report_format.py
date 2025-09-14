@@ -41,17 +41,17 @@ class CLIReportFormat(ReportFormatStrategy):
         # Grades are not stored on the new model, they are calculated on the fly.
         # This part can be added if grading is needed at the repo level.
 
-        avg_complexity = round(sum(complexities) / len(complexities), 1) if complexities else 0
-        min_complexity = round(min(complexities), 1) if complexities else 0
-        max_complexity = round(max(complexities), 1) if complexities else 0
-        avg_churn = round(sum(churns) / len(churns), 1) if churns else 0
-        
-        # Dummy grade for now
-        grade = "Medium" 
-        grade_icon = '⚠️'
+    avg_complexity = round(sum(complexities) / len(complexities), 1) if complexities else 0
+    min_complexity = round(min(complexities), 1) if complexities else 0
+    max_complexity = round(max(complexities), 1) if complexities else 0
+    avg_churn = round(sum(churns) / len(churns), 1) if churns else 0
 
-        stats_str = f"[C:{avg_complexity}, Min:{min_complexity}, Max:{max_complexity}, Churn:{avg_churn}, Grade:{grade} {grade_icon}]"
-        return stats_str, all_files
+    # Dummy grade for now
+    grade = "Medium"
+    grade_icon = '[WARN]'
+
+    stats_str = f"[C:{avg_complexity}, Min:{min_complexity}, Max:{max_complexity}, Churn:{avg_churn}, Grade:{grade} {grade_icon}]"
+    return stats_str, all_files
 
     def _print_dir_recursively(self, scan_dir: ScanDir, level: str, prefix: str = ""):
         """

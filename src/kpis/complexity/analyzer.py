@@ -30,7 +30,7 @@ class ComplexityAnalyzer:
                 complexity = parser.compute_complexity(file_content)
                 function_count = getattr(parser, 'count_functions', lambda code: 0)(file_content)
             except (ImportError, AttributeError) as e:
-                print(f"⚠️  Could not load parser for config: {config.get('name')}. Error: {e}")
+                print(f"[WARN] Could not load parser for config: {config.get('name')}. Error: {e}")
 
         return complexity, function_count
 
@@ -57,6 +57,6 @@ class ComplexityAnalyzer:
                 parser = parser_class()
                 functions = getattr(parser, 'analyze_functions', lambda code: [])(file_content)
             except (ImportError, AttributeError) as e:
-                print(f"⚠️  Could not load parser for function analysis: {config.get('name')}. Error: {e}")
+                print(f"[WARN] Could not load parser for function analysis: {config.get('name')}. Error: {e}")
 
         return functions
