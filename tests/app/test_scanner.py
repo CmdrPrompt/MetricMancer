@@ -1,4 +1,5 @@
 import os
+import re
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -59,17 +60,19 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(len(files), 3)
 
         abs_scan_path = os.path.abspath(scan_path)
-        found_paths = sorted([f['path'] for f in files])
+        def norm(p):
+            return os.path.normcase(p)
+        found_paths = sorted([norm(f['path']) for f in files])
 
         expected_paths = sorted([
-            os.path.abspath(os.path.join(scan_path, "main.py")),
-            os.path.abspath(os.path.join(scan_path, "utils.js")),
-            os.path.abspath(os.path.join(scan_path, "src", "component.ts")),
+            norm(os.path.abspath(os.path.join(scan_path, "main.py"))),
+            norm(os.path.abspath(os.path.join(scan_path, "utils.js"))),
+            norm(os.path.abspath(os.path.join(scan_path, "src", "component.ts"))),
         ])
 
         self.assertEqual(found_paths, expected_paths)
         for f in files:
-            self.assertEqual(f['root'], abs_scan_path)
+            self.assertEqual(norm(f['root']), norm(abs_scan_path))
 
     @patch('src.utilities.debug.debug_print')
     def test_scan_multiple_directories(self, mock_debug_print):
@@ -80,13 +83,16 @@ class TestScanner(unittest.TestCase):
 
         self.assertEqual(len(files), 4)
 
-        found_paths = sorted([f['path'] for f in files])
+        import os
+        def norm(p):
+            return os.path.normcase(p)
         expected_paths = sorted([
-            os.path.abspath(os.path.join(path_a, "main.py")),
-            os.path.abspath(os.path.join(path_a, "utils.js")),
-            os.path.abspath(os.path.join(path_a, "src", "component.ts")),
-            os.path.abspath(os.path.join(path_b, "app.java")),
+            norm(os.path.abspath(os.path.join(path_a, "main.py"))),
+            norm(os.path.abspath(os.path.join(path_a, "utils.js"))),
+            norm(os.path.abspath(os.path.join(path_a, "src", "component.ts"))),
+            norm(os.path.abspath(os.path.join(path_b, "app.java"))),
         ])
+        found_paths = sorted([norm(f['path']) for f in files])
         self.assertEqual(found_paths, expected_paths)
 
     @patch('src.utilities.debug.debug_print')
@@ -113,9 +119,18 @@ class TestScanner(unittest.TestCase):
         scan_path = str(self.test_dir / "non_existent_dir")
         files = self.scanner.scan([scan_path])
         self.assertEqual(len(files), 0)
-        # Check that a warning was printed
-        mock_debug_print.assert_any_call(f"⚠️ Folder '{os.path.abspath(scan_path)}' doesn't exist – skipping.")
-
+        # Check that a warning was printed, normalizing paths for cross-platform compatibility
+        expected_msg = f"[WARN] Folder '{os.path.abspath(scan_path)}' doesn't exist – skipping."
+        def norm(s):
+            # Extract the path from the message
+            m = re.match(r"\[WARN\] Folder '(.+)' doesn't exist – skipping.", s)
+            if m:
+                norm_path = os.path.normcase(os.path.abspath(m.group(1)))
+                return f"[WARN] Folder '{norm_path}' doesn't exist – skipping."
+            return s
+        normalized_expected = norm(expected_msg)
+        normalized_actuals = [norm(str(call.args[0])) for call in mock_debug_print.call_args_list]
+        self.assertIn(normalized_expected, normalized_actuals)
     @patch('src.utilities.debug.debug_print')
     def test_scan_returns_empty_list_for_no_supported_files(self, mock_debug_print):
         """Test scanning a directory with no supported files returns an empty list."""

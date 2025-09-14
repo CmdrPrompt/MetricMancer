@@ -1,7 +1,6 @@
 __pycache__/
 *.pyc
 *.pyo
-*.html
 !docs/complexity_report.html
 .qodo/testConfig.toml
 .DS_Store
@@ -12,3 +11,4 @@ __pycache__/
 terminal.log
 mermaid
 .backup
+.coverage

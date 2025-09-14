@@ -12,7 +12,7 @@ class CodeChurnAnalyzer:
             try:
                 git_root = find_git_repo_root(repo_abs)
             except Exception as e:
-                debug_print(f"⚠️  Could not find git root for {repo_abs}. Error: {e}")
+                debug_print(f"[WARN] Could not find git root for {repo_abs}. Error: {e}")
                 git_root = None
             self.repo_scan_pairs.append((git_root, os.path.abspath(scan)))
         self.churn_data = {}
@@ -43,7 +43,7 @@ class CodeChurnAnalyzer:
                             if any(abs_path.startswith(scan_dir) for scan_dir in scan_dirs):
                                 self.churn_data[abs_path] = self.churn_data.get(abs_path, 0) + 1
             except Exception as e:
-                debug_print(f"⚠️  Could not analyze churn for {repo_path}. Is it a valid git repository? Error: {e}")
+                debug_print(f"[WARN] Could not analyze churn for {repo_path}. Is it a valid git repository? Error: {e}")
         
         debug_print(f"[DEBUG] Churn analysis complete. Found churn data for {len(self.churn_data)} files.")
         return self.churn_data
