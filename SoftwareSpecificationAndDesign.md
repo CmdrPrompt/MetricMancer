@@ -38,11 +38,16 @@
           - [Acceptance Criteria (Logical Coupling)](#acceptance-criteria-logical-coupling)
         - [Temporal Coupling](#temporal-coupling)
           - [Commit Parsing Example (Temporal Coupling)](#commit-parsing-example-temporal-coupling)
-      - [5.2 CLI Report Example](#52-cli-report-example)
     - [6. HTML Reporting Architecture](#6-html-reporting-architecture)
-    - [7. Stakeholder Analysis](#7-stakeholder-analysis)
-      - [7.1 User Stories and Personas](#71-user-stories-and-personas)
-        - [Persona 1: Alice – The Senior Developer](#persona-1-alice--the-senior-developer)
+  - [4. Detailed Requirements](#4-detailed-requirements-1)
+    - [4.1 Functional Requirements](#41-functional-requirements)
+      - [4.1.1 Core Functional Requirements](#411-core-functional-requirements)
+      - [4.1.2 Issue Tracker Integration and Defect Correlation](#412-issue-tracker-integration-and-defect-correlation)
+        - [4.1.2.1 Defect Density and Issue Tracker Integration](#4121-defect-density-and-issue-tracker-integration)
+          - [Integration Specification](#integration-specification-1)
+        - [4.1.2.2 Code Ownership](#4122-code-ownership)
+        - [4.1.2.3 Logical Coupling](#4123-logical-coupling)
+        - [4.1.2.4 Temporal Coupling](#4124-temporal-coupling)
         - [Persona 2: Bob – The DevOps Engineer](#persona-2-bob--the-devops-engineer)
         - [Persona 3: Carol – The Engineering Manager](#persona-3-carol--the-engineering-manager)
         - [Persona 4: Dave – The New Team Member](#persona-4-dave--the-new-team-member)
@@ -646,6 +651,180 @@ To calculate temporal coupling, the tool shall:
 
 - Parse the commit history (e.g., using `git log --name-only --pretty=format:`) to extract all commits and the set of files changed in each commit.
 - For each file pair (A, B), count the number of commits where both files were changed together.
+
+| ID   | Requirement                                                                                 | Status         | Notes/Acceptance Criteria                                  |
+| NFR5 | The tool shall provide clear and actionable output for users.                               | Implemented   | CLI/HTML reports highlight risks and refactoring targets.  |
+| NFR6 | The tool shall be performant and able to analyze large repositories in reasonable time.      | Implemented   | Benchmarked on large open source projects.                 |
+└──────────────┴──────────────┴────────────┴───────────────┘
+
+### 6. HTML Reporting Architecture
+
+
+## 4. Detailed Requirements
+
+### 4.1 Functional Requirements
+
+#### 4.1.1 Core Functional Requirements
+
+<!-- Existing functional requirements table and traceability remain here -->
+
+#### 4.1.2 Issue Tracker Integration and Defect Correlation
+
+##### 4.1.2.1 Defect Density and Issue Tracker Integration
+
+MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
+
+###### Integration Specification
+
+- The tool shall support configuration for connecting to one or more issue trackers via API or by importing exported issue data (CSV, JSON, etc.).
+- The tool shall extract defect/bug reports, including at minimum: issue ID, type, status, creation date, resolution date, and affected files (if available).
+- The tool shall support mapping commits to issues using commit messages (e.g., by recognizing issue keys such as JIRA-123 in commit messages) or by explicit links in the VCS.
+
+####### Correlating KPIs with Defects
+
+- For each file or module, the tool shall calculate **defect density** as the number of linked defects per KLOC (thousand lines of code) or per file.
+- The tool shall correlate defect density with other KPIs (e.g., code churn, complexity, hotspots) to identify risk zones and prioritize refactoring.
+- Reports shall highlight files with both high defect density and high values for other risk KPIs (e.g., churn, complexity, low ownership).
+
+**Example:**
+
+| File         | Defects | LOC  | Defect Density | Churn | Complexity | Hotspot Score |
+|--------------|---------|------|---------------|-------|------------|---------------|
+| src/foo.py   | 5       | 500  | 10/1KLOC      | 42    | 5          | 210           |
+
+####### Visualization and Reporting
+
+- The tool shall visualize defect density alongside other KPIs in reports and dashboards (e.g., as heatmaps or combined tables).
+- Reports shall include recommendations for files with high defect density and high risk according to other KPIs.
+
+####### Acceptance Criteria
+
+- The tool can import or connect to at least one issue tracker and extract defect data.
+- Defect density is calculated and reported for all files/modules with linked defects.
+- Correlation between defect density and other KPIs is visualized and highlighted in reports.
+- Example output as above.
+
+---
+
+##### 4.1.2.2 Code Ownership
+
+Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
+
+####### Git Blame Analysis
+
+To calculate code ownership, the tool shall:
+
+- Use `git blame` (or equivalent) to attribute each line of code in a file to its most recent author.
+- Aggregate the number of lines per author for each file or module.
+- Calculate the ownership percentage for each author as (lines by author) / (total lines in file).
+
+**Example:**
+
+| File         | Author         | Lines | Ownership (%) |
+|--------------|----------------|-------|---------------|
+| src/foo.py   | Alice          | 120   | 60%           |
+| src/foo.py   | Bob            | 80    | 40%           |
+
+####### Thresholds for Low Ownership
+
+The tool shall support configuration of thresholds to classify ownership risk:
+
+- **Low Ownership:** No single author owns more than 50% of a file's lines (default threshold, as recommended in the book).
+- **Medium Ownership:** Top author owns 50–75% of lines.
+- **High Ownership:** Top author owns more than 75% of lines.
+
+These thresholds shall be user-configurable.
+
+####### Visualization
+
+- The tool shall visualize code ownership per file/module, e.g., as a bar chart or pie chart showing the proportion of lines per author.
+- Reports shall highlight files with low ownership and recommend review or knowledge sharing.
+
+####### Acceptance Criteria (Code Ownership)
+
+- Code ownership is calculated for all files in the repository using git blame or equivalent.
+- Files with low ownership are clearly flagged in reports and visualizations.
+- Thresholds are user-configurable.
+- Example output:
+
+| File         | Top Author | Ownership (%) | Risk Level |
+|--------------|------------|---------------|------------|
+| src/foo.py   | Alice      | 60%           | Medium     |
+| src/bar.py   | Bob        | 40%           | Low        |
+
+---
+
+##### 4.1.2.3 Logical Coupling
+
+Logical coupling identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
+
+####### Commit Parsing Example
+
+To calculate logical coupling, the tool shall:
+
+- Parse the commit history to extract all commits and the set of files changed in each commit (as for temporal coupling).
+- For each file pair (A, B), count the number of commits where both files were changed together.
+- Normalize the coupling by the total number of changes for each file, and filter out file pairs that are directly dependent (e.g., via imports or includes) if static analysis is available.
+
+**Example:**
+
+```
+commit 123abc
+Author: ...
+Date: ...
+
+
+src/utils.py
+
+commit 456def
+Author: ...
+Date: ...
+
+To further clarify the needs and goals of different stakeholders, the following personas and user stories illustrate typical usage scenarios for MetricMancer:
+src/db.py
+```
+
+Here, `src/service.py` and `src/utils.py` are logically coupled if they change together frequently, even if there is no direct import/include between them.
+
+####### Thresholds for Strong Logical Coupling
+
+The tool shall support configuration of thresholds to classify logical coupling strength:
+
+- **Strong Logical Coupling:** File pairs that change together in more than 20% of their total commits (as recommended in the book) shall be flagged as strongly coupled.
+- **Medium Logical Coupling:** File pairs that change together in 10–20% of their total commits.
+- **Weak Logical Coupling:** File pairs below 10%.
+
+These thresholds shall be configurable by the user.
+
+####### Reporting
+
+- The tool shall report all file pairs with strong or medium logical coupling, including the percentage and absolute number of co-changes.
+- Reports shall highlight file pairs that are logically coupled but not directly dependent in the codebase, with recommendations for architectural review.
+
+####### Acceptance Criteria (Logical Coupling)
+
+- Logical coupling is calculated for all file pairs in the repository.
+- File pairs exceeding the strong logical coupling threshold are clearly flagged in reports.
+- Thresholds are user-configurable.
+- Example output:
+
+| File A         | File B         | Co-Changes | Total Changes (A) | Total Changes (B) | Coupling (%) | Strength | Static Dependency |
+|----------------|----------------|------------|-------------------|-------------------|--------------|----------|-------------------|
+| src/service.py | src/utils.py   | 10         | 25                | 20                | 40%          | Strong   | No                |
+| src/service.py | src/db.py      | 3          | 25                | 15                | 12%          | Medium   | Yes               |
+
+---
+
+##### 4.1.2.4 Temporal Coupling
+
+Temporal coupling measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
+
+####### Commit Parsing Example (Temporal Coupling)
+
+To calculate temporal coupling, the tool shall:
+
+- Parse the commit history (e.g., using `git log --name-only --pretty=format:`) to extract all commits and the set of files changed in each commit.
+- For each file pair (A, B), count the number of commits where both files were changed together.
 - Store and aggregate these counts for all file pairs in the repository.
 
 **Example:**
@@ -655,20 +834,20 @@ commit abc123
 Author: ...
 Date: ...
 
-src/foo.py
+
 src/bar.py
 
 commit def456
 Author: ...
 Date: ...
 
-src/foo.py
+##### Persona 1: Alice – The Senior Developer
 src/baz.py
-```text
+```
 
 In this example, `src/foo.py` and `src/bar.py` have a temporal coupling count of 1, and `src/foo.py` and `src/baz.py` also have a count of 1.
 
-###### Thresholds for Strong Coupling
+####### Thresholds for Strong Coupling
 
 The tool shall support configuration of thresholds to classify coupling strength:
 
@@ -678,12 +857,12 @@ The tool shall support configuration of thresholds to classify coupling strength
 
 These thresholds shall be configurable by the user.
 
-###### Reporting
+####### Reporting
 
 - The tool shall report all file pairs with strong or medium temporal coupling, including the percentage and absolute number of co-changes.
 - Reports shall include recommendations for refactoring or architectural review for strongly coupled files.
 
-###### Acceptance Criteria
+####### Acceptance Criteria
 
 - Temporal coupling is calculated for all file pairs in the repository.
 - File pairs exceeding the strong coupling threshold are clearly flagged in reports.
@@ -696,168 +875,6 @@ These thresholds shall be configurable by the user.
 | src/foo.py  | src/baz.py  | 3          | 30                | 10                | 10%          | Medium   |
 
 ---
-
-#### 4.1.5 Functional Requirements
-| FR25 | The tool shall provide onboarding support and documentation for new team members. | Planned | This requirement will be fulfilled by including onboarding guides, usage examples, and documentation aimed at new users. |
-| FR26 | The tool shall support role-based or customizable report views (e.g., summary for managers, detailed for developers). | Planned | This requirement will be fulfilled by allowing users to select or configure report sections and detail levels based on their role or needs. |
-| FR27 | The tool shall support organization-wide aggregation and cross-project reporting. | Planned | This requirement will be fulfilled by enabling aggregation of metrics across multiple repositories or projects for organization-level insights. |
-| FR28 | The tool shall support automated periodic reporting (e.g., scheduled email or dashboard updates). | Planned | This requirement will be fulfilled by allowing users to schedule regular report generation and delivery. |
-| FR29 | The tool shall support integration with notification systems (e.g., Slack, Teams) for alerts and summaries. | Planned | This requirement will be fulfilled by enabling alert and summary notifications to be sent to collaboration tools. |
-| FR30 | The tool shall support user-configurable report sections and custom KPIs. | Planned | This requirement will be fulfilled by allowing users to define which report sections and KPIs are included in outputs. |
-|-----|----------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------|
-| FR1 | The tool shall scan a source code repository recursively, excluding hidden directories/files. | Implemented   | Hidden folders (e.g., .git, .venv) are not scanned.         |
-| FR1a| The tool shall exclude binary files from analysis.                                            | Implemented   | Binary files (e.g., images, executables) are detected and skipped. |
-| FR2 | The tool shall support multiple programming languages.                                        | Implemented   | Parsers exist for Python, Java, C, C++, C#, Go, JS, etc.    |
-| FR3 | The tool shall calculate cyclomatic complexity for each function/method.                      | Implemented   | Per-language parser modules extract functions/methods.      |
-| FR4 | The tool shall calculate code churn for each file.                                            | Implemented   | Uses git commit history.                                   |
-| FR5 | The tool shall calculate hotspot scores (complexity × churn) for files/functions.             | Implemented   | Hotspot = high complexity × high churn.                    |
-| FR6 | The tool shall generate reports in CLI, HTML, and JSON formats.                               | Implemented   | CLI: tabular, HTML: interactive, JSON: for dashboards.      |
-| FR7 | The tool shall support configuration of thresholds for KPIs.                                  | Implemented   | User can adjust thresholds in config.                       |
-| FR8 | The tool shall be extensible to add new KPIs.                                                 | Implemented   | New KPI modules can be registered.                         |
-| FR9 | The tool shall be scriptable and suitable for CI/CD integration.                              | Implemented   | CLI interface, JSON output for automation.                  |
-| FR10| The tool shall aggregate KPIs at file, directory, and repository levels.                      | Implemented   | Data model supports aggregation at all levels.              |
-| FR11| The tool shall allow easy addition of new language parsers.                                   | Implemented   | Parser modules are pluggable.                               |
-| FR12| The tool shall not require internet access for core analysis.                                 | Implemented   | All core analysis is local.                                 |
-| FR13| The tool shall support analysis of large repositories efficiently.                            | Implemented   | Performance tested on large codebases.                      |
-| FR14| The tool shall provide clear error messages for unsupported files or parse errors.             | Implemented   | Errors are reported in CLI and logs.                        |
-| FR15| The tool shall allow exclusion of files/directories via configuration.                        | Implemented   | User can specify exclude patterns.                          |
-| FR16| The tool shall support future integration with issue trackers (e.g., Jira).                   | Planned       | Placeholder for defect density KPI.                         |
-| FR17| The tool shall support future integration with test coverage tools.                            | Planned       | Placeholder for test coverage KPI.                          |
-| FR18| The tool shall support historical trend analysis of KPIs.                                     | Planned       | Placeholder for complexity/churn trends, hotspot evolution. |
-
-##### Test Traceability
-
-Each functional requirement is mapped to the corresponding test file(s) or test case(s) in the codebase. This ensures traceability between requirements and verification.
-
-| ID  | Requirement                                                                                  | Status         | Notes/Acceptance Criteria                                  | Test(s) / Location                       |
-|-----|----------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------|------------------------------------------|
-| FR1 | The tool shall scan a source code repository recursively, excluding hidden directories/files. | Implemented   | Hidden folders (e.g., .git, .venv) are not scanned.         | tests/app/test_scanner.py                |
-| FR1a| The tool shall exclude binary files from analysis.                                            | Implemented   | Binary files (e.g., images, executables) are detected and skipped. | tests/app/test_scanner.py                |
-| FR2 | The tool shall support multiple programming languages.                                        | Implemented   | Parsers exist for Python, Java, C, C++, C#, Go, JS, etc.    | tests/app/test_analyzer.py, language tests|
-| FR3 | The tool shall calculate cyclomatic complexity for each function/method.                      | Implemented   | Per-language parser modules extract functions/methods.      | tests/app/test_analyzer.py               |
-| FR4 | The tool shall calculate code churn for each file.                                            | Implemented   | Uses git commit history.                                   | tests/app/test_analyzer.py               |
-| FR5 | The tool shall calculate hotspot scores (complexity × churn) for files/functions.             | Implemented   | Hotspot = high complexity × high churn.                    | tests/app/test_analyzer.py               |
-| FR6 | The tool shall generate reports in CLI, HTML, and JSON formats.                               | Implemented   | CLI: tabular, HTML: interactive, JSON: for dashboards.      | tests/app/test_analyzer.py, report tests  |
-| FR7 | The tool shall support configuration of thresholds for KPIs.                                  | Implemented   | User can adjust thresholds in config.                       | tests/app/test_analyzer.py, config tests  |
-| FR8 | The tool shall be extensible to add new KPIs.                                                 | Implemented   | New KPI modules can be registered.                         | tests/app/test_analyzer.py, kpis tests    |
-| FR9 | The tool shall be scriptable and suitable for CI/CD integration.                              | Implemented   | CLI interface, JSON output for automation.                  | tests/app/test_analyzer.py, CLI tests     |
-| FR10| The tool shall aggregate KPIs at file, directory, and repository levels.                      | Implemented   | Data model supports aggregation at all levels.              | tests/app/test_analyzer.py               |
-| FR11| The tool shall allow easy addition of new language parsers.                                   | Implemented   | Parser modules are pluggable.                               | tests/app/test_analyzer.py, language tests|
-| FR12| The tool shall not require internet access for core analysis.                                 | Implemented   | All core analysis is local.                                 | N/A (design constraint)                   |
-| FR13| The tool shall support analysis of large repositories efficiently.                            | Implemented   | Performance tested on large codebases.                      | tests/app/test_analyzer.py, manual tests  |
-| FR14| The tool shall provide clear error messages for unsupported files or parse errors.             | Implemented   | Errors are reported in CLI and logs.                        | tests/app/test_scanner.py, error tests    |
-| FR15| The tool shall allow exclusion of files/directories via configuration.                        | Implemented   | User can specify exclude patterns.                          | tests/app/test_scanner.py, config tests   |
-| FR16| The tool shall support future integration with issue trackers (e.g., Jira).                   | Planned       | Placeholder for defect density KPI.                         | N/A                                       |
-| FR17| The tool shall support future integration with test coverage tools.                            | Planned       | Placeholder for test coverage KPI.                          | N/A                                       |
-| FR18| The tool shall support historical trend analysis of KPIs.                                     | Planned       | Placeholder for complexity/churn trends, hotspot evolution. | N/A                                       |
-
-#### 4.1.6 Non-Functional Requirements
-
-| ID   | Requirement                                                                                 | Status         | Notes/Acceptance Criteria                                  |
-|------|---------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------|
-| NFR1 | The tool shall be open source and licensed under MIT.                                       | Implemented   | LICENSE file present.                                      |
-| NFR2 | The tool shall be documented in English.                                                    | Implemented   | Requirements, design, and usage docs in English.           |
-| NFR3 | The tool shall be easy to install and run on macOS, Linux, and Windows.                     | Implemented   | Python 3.10+, no external dependencies required.           |
-| NFR4 | The tool shall have automated tests for core functionality.                                 | Implemented   | Unit tests for all major modules.                          |
-| NFR5 | The tool shall provide clear and actionable output for users.                               | Implemented   | CLI/HTML reports highlight risks and refactoring targets.  |
-| NFR6 | The tool shall be performant and able to analyze large repositories in reasonable time.      | Implemented   | Benchmarked on large open source projects.                 |
-| NFR7 | The tool shall be extensible with minimal code changes.                                     | Implemented   | Modular architecture, plugin pattern for KPIs/parsers.     |
-| NFR8 | The tool shall not collect or transmit user data.                                           | Implemented   | No telemetry or external calls.                            |
-| NFR9 | The tool shall provide meaningful error messages and logs.                                  | Implemented   | Errors and logs are user-friendly.                         |
-| NFR10| The tool shall be maintainable and follow best practices for code quality.                  | Implemented   | PEP8, modularization, docstrings, type hints.              |
-| NFR11| The tool shall support future localization to other languages.                              | Planned       | English is default; i18n planned for future.               |
-| NFR12| The tool shall support accessibility in HTML reports.                                       | Planned       | ARIA roles, color contrast, keyboard navigation.           |
-
----
-
-### 5. Example Outputs
-
-Below are example outputs for the main report formats supported by MetricMancer. These illustrate the structure and content users can expect from the tool.
-
-#### 5.1 JSON Report Example
-
-```json
-{
-  "repo_name": "example-repo",
-  "repo_root_path": "/path/to/repo",
-  "is_git_repo": true,
-  "kpis": {
-    "total_churn": 1234,
-    "avg_complexity": 2.7
-  },
-  "scan_dirs": {
-    "src": {
-      "dir_name": "src",
-      "scan_dir_path": "src",
-      "kpis": { "churn": 567, "avg_complexity": 3.1 },
-      "files": {
-        "main.py": {
-          "file_path": "src/main.py",
-          "kpis": {
-            "complexity": 5,
-            "churn": 42,
-            "hotspot_score": 210
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-#### 5.2 CLI Report Example
-
-```text
-┌──────────────┬──────────────┬────────────┬───────────────┐
-│ File         │ Complexity   │ Churn      │ Hotspot Score │
-├──────────────┼──────────────┼────────────┼───────────────┤
-│ src/main.py  │      5       │    42      │     210       │
-│ src/utils.py │      2       │    10      │      20       │
-└──────────────┴──────────────┴────────────┴───────────────┘
-
-Repository KPIs:
-  Total churn: 1234
-  Average complexity: 2.7
-```
-
-### 6. HTML Reporting Architecture
-
-The HTML reporting in MetricMancer is implemented as a modular, template-driven system that transforms the internal data model into an interactive, user-friendly report. The architecture is designed for extensibility, maintainability, and clear separation of concerns. The main components are:
-
-- **HTML Report Generator (`report_generator.py` / `html_report_format.py`)**: This module orchestrates the generation of the HTML report. It consumes the analyzed data model (instances of `RepoInfo`, `ScanDir`, `File`, and their KPIs) and passes the relevant data to the rendering layer.
-
-- **Template System**: HTML output is produced using Jinja2-style templates (or equivalent), which define the structure, layout, and styling of the report. Templates are stored in the `report/templates/` directory, making it easy to update the look and feel or add new report sections without changing Python code.
-
-- **Report Data Renderer (`report_renderer.py`)**: This component is responsible for transforming the data model into a format suitable for the templates. It flattens hierarchical data, aggregates KPIs, and prepares context dictionaries for rendering. It also handles formatting (e.g., color-coding, risk highlighting) and injects interactive elements (e.g., collapsible sections, tooltips).
-
-- **Static Assets**: CSS and JavaScript files are included to provide styling, responsive layout, and interactivity (such as sorting tables or expanding/collapsing directory trees). These assets are referenced from the template directory and bundled with the report output.
-
-- **Report Writer (`report_writer.py`)**: Handles writing the final HTML file to disk, ensuring all referenced assets are copied or linked appropriately.
-
-**Workflow:**
-  
-1. The user runs MetricMancer with the HTML output option.
-2. The analysis pipeline produces a populated data model.
-3. The HTML report generator invokes the renderer, which prepares the data for the template.
-4. The template is rendered with the data, producing a complete HTML file.
-5. Static assets are bundled, and the report is written to the output directory.
-
-**Extensibility:**
-  
-- New report sections or visualizations can be added by creating new templates and updating the renderer.
-- The template system allows for easy branding or customization.
-- The architecture supports future enhancements such as charts, filtering, or integration with dashboards.
-
-This modular approach ensures that the HTML reporting is both robust and easy to evolve as new requirements emerge.
-
-
-### 7. Stakeholder Analysis
-
-#### 7.1 User Stories and Personas
-
-To further clarify the needs and goals of different stakeholders, the following personas and user stories illustrate typical usage scenarios for MetricMancer:
-
-##### Persona 1: Alice – The Senior Developer
 
 **Background:** Alice is responsible for maintaining a large Python codebase. She is experienced in refactoring and cares about code quality and technical debt.
 
