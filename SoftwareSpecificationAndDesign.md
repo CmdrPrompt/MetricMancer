@@ -2,7 +2,7 @@
 
 ## 1. Introduction
 
-MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots. 
+MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots.
 
 The tool supports multi-language analysis and can generate reports in several formats, including CLI, HTML, and JSON. JSON reports are designed for integration with OpenSearch and dashboards. MetricMancer is built for extensibility, making it easy to add new metrics or adapt the tool to different codebases. The goal is to help teams identify refactoring candidates, monitor code health trends, and prioritize technical debt reduction—using real data from version control history and static analysis.
 
@@ -74,7 +74,7 @@ A visual overview of KPI results, often with charts and color coding to quickly 
 **Crime Scene Principles:**
 The methodology and analysis models from the book "Your Code as a Crime Scene" by Adam Tornhill, which form the basis for the definitions and interpretations of KPIs in this project.
 
-## 2.1. KPI Extension and Implementation Status
+### 2.1. KPI Extension and Implementation Status
 
 The following table summarizes the available and planned KPIs in MetricMancer, their implementation status, and extensibility notes:
 
@@ -98,7 +98,7 @@ To add a new KPI, implement a new KPI calculator module and register it in the c
 
 ## 3. System Overview
 
-### 3.1.1. Application Overview
+### 3.1. Application Overview
 
 ```mermaid
 flowchart TD
@@ -118,15 +118,14 @@ flowchart TD
   JSONReport --> JSONOutput[JSON File]
   ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
   ErrorHandling -.-> App
-```
+```text
 
 **Figure: Application Overview.**
 This diagram shows the high-level architecture and main data flow in MetricMancer. The application starts with the `MetricMancerApp`, which delegates scanning to the `Scanner`. The scanner produces a list of files, which are analyzed by the `Analyzer` using various KPI analyzers (e.g., code churn, complexity, hotspots). The results are aggregated into `RepoInfo` objects and passed to the `ReportGenerator`, which can output reports in CLI, HTML, or JSON format. Error and edge case handling is integrated throughout the process.
 
-### 3.1. Architecture
+### 3.2. Architecture
 
-#### Scanner Flow
-
+#### 3.2.1. Scanner Flow
 
 ```mermaid
 graph TD
@@ -146,8 +145,7 @@ graph TD
 **Figure: Scanner Flow.**
 This diagram details the scanning process. The scanner receives a list of directories, iterates through them, finds files, filters them by type, collects file paths, and returns the final file list. Edge cases such as empty directories, permission errors, and no files found are handled explicitly.
 
-#### App Run Flow
-
+#### 3.2.2. App Run Flow
 
 ```mermaid
 graph TD
@@ -182,8 +180,7 @@ graph TD
 **Figure: App Run Flow.**
 This diagram illustrates the main execution flow of the application. After scanning directories, files are analyzed and summarized per repository. For each repository, the appropriate report format is selected and generated. The flow handles multiple repositories and includes error handling for empty directories and failures in scanning, analysis, or report generation.
 
-#### Analyzer Analyze Flow
-
+#### 3.2.3. Analyzer Analyze Flow
 
 ```mermaid
 graph TD
@@ -218,8 +215,7 @@ graph TD
 **Figure: Analyzer Analyze Flow.**
 This diagram describes how the analyzer processes files. Files are grouped per repository root, and for each repo, churn and complexity are collected, detailed analysis is performed per file, and hotspot scores are calculated. Results are summarized and aggregated into `RepoInfo` objects, which are then passed to the report generator. Edge cases such as empty files and exceptions in KPI analyzers are handled.
 
-#### ReportGenerator Flow
-
+#### 3.2.4. ReportGenerator Flow
 
 ```mermaid
 graph TD
@@ -249,8 +245,7 @@ graph TD
 **Figure: ReportGenerator Flow.**
 This diagram shows how the report generator selects the output format (CLI, HTML, or JSON), generates the report, and outputs it to the appropriate destination. It also highlights error handling for unknown formats and output errors.
 
-#### HTML Report Flow
-
+#### 3.2.5. HTML Report Flow
 
 ```mermaid
 graph TD
@@ -273,8 +268,7 @@ graph TD
 **Figure: HTML Report Flow.**
 This diagram details the process of generating an HTML report. The report generator initializes the HTML format, prints the report, uses the renderer to prepare data, and writes the final HTML file. Edge cases include missing templates, write errors, and empty analysis results.
 
-#### CLI Report Flow
-
+#### 3.2.6. CLI Report Flow
 
 ```mermaid
 graph TD
@@ -310,8 +304,7 @@ MetricMancer is structured as a modular, layered system to maximize flexibility,
 
 The architecture supports both batch and incremental analysis, and is suitable for integration into CI/CD pipelines. By separating scanning, parsing, metric calculation, and reporting, MetricMancer enables teams to extend or adapt the tool to their specific needs with minimal coupling between components.
 
-### 3.2. Data Model
-
+### 3.3. Data Model
 
 The MetricMancer data model is designed to represent the hierarchical structure of a source code repository and to aggregate KPI results at each level. The main classes are:
 
@@ -386,7 +379,7 @@ Represents the top-level object for an analyzed repository, including its struct
   - Serve as the top node in the data model and be serializable to JSON, HTML, and other report formats
   - Aggregate KPIs from underlying directories and files for repository-level summaries
 
-#### UML Diagram (PlantUML)
+#### 3.3.1. UML Diagram (PlantUML)
 
 ```plantuml
 @startuml
@@ -433,27 +426,31 @@ RepoInfo --|> ScanDir
 ScanDir --|> BaseDir
 @enduml
 ```
- 
+
+> **Tips for rendering PlantUML diagrams in VS Code:**
+>
+> - To view the diagram as an image in VS Code, install either the "PlantUML" extension (jebbs.plantuml) or "Markdown Preview Enhanced" (shd101wyy.markdown-preview-enhanced).
+> - For the PlantUML extension: Open the command palette and run "PlantUML: Preview Current Diagram" with the cursor inside the code block, or save the diagram as a `.puml` file and preview it.
+> - For Markdown Preview Enhanced: Open the Markdown preview and click the run/play icon above the code block.
+> - **Graphviz required:** Some diagrams (especially those using `@startuml`) require Graphviz (`dot`) to be installed. On macOS, run `brew install graphviz` in the terminal.
+> - **Java required:** PlantUML requires Java to be installed. Check with `java -version` in the terminal.
+> - If you encounter issues, see the extension documentation for troubleshooting and configuration tips.
+
 ## 4. Detailed Requirements
-
-
-
-
 
 ### 4.1.4 Issue Tracker Integration and Defect Correlation
 
-
-### Defect Density and Issue Tracker Integration
+#### Defect Density and Issue Tracker Integration
 
 MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
 
-#### Integration Specification
+##### Integration Specification
 
 - The tool shall support configuration for connecting to one or more issue trackers via API or by importing exported issue data (CSV, JSON, etc.).
 - The tool shall extract defect/bug reports, including at minimum: issue ID, type, status, creation date, resolution date, and affected files (if available).
 - The tool shall support mapping commits to issues using commit messages (e.g., by recognizing issue keys such as JIRA-123 in commit messages) or by explicit links in the VCS.
 
-#### Correlating KPIs with Defects
+###### Correlating KPIs with Defects
 
 - For each file or module, the tool shall calculate **defect density** as the number of linked defects per KLOC (thousand lines of code) or per file.
 - The tool shall correlate defect density with other KPIs (e.g., code churn, complexity, hotspots) to identify risk zones and prioritize refactoring.
@@ -465,12 +462,12 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 |--------------|---------|------|---------------|-------|------------|---------------|
 | src/foo.py   | 5       | 500  | 10/1KLOC      | 42    | 5          | 210           |
 
-#### Visualization and Reporting
+###### Visualization and Reporting
 
 - The tool shall visualize defect density alongside other KPIs in reports and dashboards (e.g., as heatmaps or combined tables).
 - Reports shall include recommendations for files with high defect density and high risk according to other KPIs.
 
-#### Acceptance Criteria
+###### Acceptance Criteria
 
 - The tool can import or connect to at least one issue tracker and extract defect data.
 - Defect density is calculated and reported for all files/modules with linked defects.
@@ -479,9 +476,11 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 
 ---
 
-**Code Ownership** measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
+##### Code Ownership
 
-#### Git Blame Analysis
+Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
+
+###### Git Blame Analysis
 
 To calculate code ownership, the tool shall:
 
@@ -496,7 +495,7 @@ To calculate code ownership, the tool shall:
 | src/foo.py   | Alice          | 120   | 60%           |
 | src/foo.py   | Bob            | 80    | 40%           |
 
-#### Thresholds for Low Ownership
+###### Thresholds for Low Ownership
 
 The tool shall support configuration of thresholds to classify ownership risk:
 
@@ -506,12 +505,12 @@ The tool shall support configuration of thresholds to classify ownership risk:
 
 These thresholds shall be user-configurable.
 
-#### Visualization
+###### Visualization
 
 - The tool shall visualize code ownership per file/module, e.g., as a bar chart or pie chart showing the proportion of lines per author.
 - Reports shall highlight files with low ownership and recommend review or knowledge sharing.
 
-#### Acceptance Criteria (Defect Density)
+###### Acceptance Criteria (Code Ownership)
 
 - Code ownership is calculated for all files in the repository using git blame or equivalent.
 - Files with low ownership are clearly flagged in reports and visualizations.
@@ -525,9 +524,11 @@ These thresholds shall be user-configurable.
 
 ---
 
-**Logical Coupling** identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
+##### Logical Coupling
 
-#### Commit Parsing Example
+Logical coupling identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
+
+###### Commit Parsing Example
 
 To calculate logical coupling, the tool shall:
 
@@ -555,7 +556,7 @@ src/db.py
 
 Here, `src/service.py` and `src/utils.py` are logically coupled if they change together frequently, even if there is no direct import/include between them.
 
-#### Thresholds for Strong Logical Coupling
+###### Thresholds for Strong Logical Coupling
 
 The tool shall support configuration of thresholds to classify logical coupling strength:
 
@@ -565,12 +566,12 @@ The tool shall support configuration of thresholds to classify logical coupling 
 
 These thresholds shall be configurable by the user.
 
-#### Reporting
+###### Reporting
 
 - The tool shall report all file pairs with strong or medium logical coupling, including the percentage and absolute number of co-changes.
 - Reports shall highlight file pairs that are logically coupled but not directly dependent in the codebase, with recommendations for architectural review.
 
-#### Acceptance Criteria (Code Ownership)
+###### Acceptance Criteria (Logical Coupling)
 
 - Logical coupling is calculated for all file pairs in the repository.
 - File pairs exceeding the strong logical coupling threshold are clearly flagged in reports.
@@ -584,9 +585,11 @@ These thresholds shall be configurable by the user.
 
 ---
 
-**Temporal Coupling** measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
+##### Temporal Coupling
 
-#### Commit Parsing Example (Logical Coupling)
+Temporal coupling measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
+
+###### Commit Parsing Example (Temporal Coupling)
 
 To calculate temporal coupling, the tool shall:
 
@@ -614,7 +617,7 @@ src/baz.py
 
 In this example, `src/foo.py` and `src/bar.py` have a temporal coupling count of 1, and `src/foo.py` and `src/baz.py` also have a count of 1.
 
-#### Thresholds for Strong Coupling
+###### Thresholds for Strong Coupling
 
 The tool shall support configuration of thresholds to classify coupling strength:
 
@@ -624,12 +627,12 @@ The tool shall support configuration of thresholds to classify coupling strength
 
 These thresholds shall be configurable by the user.
 
-#### Reporting
+###### Reporting
 
 - The tool shall report all file pairs with strong or medium temporal coupling, including the percentage and absolute number of co-changes.
 - Reports shall include recommendations for refactoring or architectural review for strongly coupled files.
 
-#### Acceptance Criteria
+###### Acceptance Criteria
 
 - Temporal coupling is calculated for all file pairs in the repository.
 - File pairs exceeding the strong coupling threshold are clearly flagged in reports.
@@ -643,9 +646,7 @@ These thresholds shall be configurable by the user.
 
 ---
 
-### 4.1 Functional Requirements
-
-| ID  | Requirement                                                                                  | Status         | Notes/Acceptance Criteria                                  |
+#### 4.1.5 Functional Requirements
 |-----|----------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------|
 | FR1 | The tool shall scan a source code repository recursively, excluding hidden directories/files. | Implemented   | Hidden folders (e.g., .git, .venv) are not scanned.         |
 | FR1a| The tool shall exclude binary files from analysis.                                            | Implemented   | Binary files (e.g., images, executables) are detected and skipped. |
@@ -667,7 +668,33 @@ These thresholds shall be configurable by the user.
 | FR17| The tool shall support future integration with test coverage tools.                            | Planned       | Placeholder for test coverage KPI.                          |
 | FR18| The tool shall support historical trend analysis of KPIs.                                     | Planned       | Placeholder for complexity/churn trends, hotspot evolution. |
 
-### 4.2 Non-Functional Requirements
+##### Test Traceability
+
+Each functional requirement is mapped to the corresponding test file(s) or test case(s) in the codebase. This ensures traceability between requirements and verification.
+
+| ID  | Requirement                                                                                  | Status         | Notes/Acceptance Criteria                                  | Test(s) / Location                       |
+|-----|----------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------|------------------------------------------|
+| FR1 | The tool shall scan a source code repository recursively, excluding hidden directories/files. | Implemented   | Hidden folders (e.g., .git, .venv) are not scanned.         | tests/app/test_scanner.py                |
+| FR1a| The tool shall exclude binary files from analysis.                                            | Implemented   | Binary files (e.g., images, executables) are detected and skipped. | tests/app/test_scanner.py                |
+| FR2 | The tool shall support multiple programming languages.                                        | Implemented   | Parsers exist for Python, Java, C, C++, C#, Go, JS, etc.    | tests/app/test_analyzer.py, language tests|
+| FR3 | The tool shall calculate cyclomatic complexity for each function/method.                      | Implemented   | Per-language parser modules extract functions/methods.      | tests/app/test_analyzer.py               |
+| FR4 | The tool shall calculate code churn for each file.                                            | Implemented   | Uses git commit history.                                   | tests/app/test_analyzer.py               |
+| FR5 | The tool shall calculate hotspot scores (complexity × churn) for files/functions.             | Implemented   | Hotspot = high complexity × high churn.                    | tests/app/test_analyzer.py               |
+| FR6 | The tool shall generate reports in CLI, HTML, and JSON formats.                               | Implemented   | CLI: tabular, HTML: interactive, JSON: for dashboards.      | tests/app/test_analyzer.py, report tests  |
+| FR7 | The tool shall support configuration of thresholds for KPIs.                                  | Implemented   | User can adjust thresholds in config.                       | tests/app/test_analyzer.py, config tests  |
+| FR8 | The tool shall be extensible to add new KPIs.                                                 | Implemented   | New KPI modules can be registered.                         | tests/app/test_analyzer.py, kpis tests    |
+| FR9 | The tool shall be scriptable and suitable for CI/CD integration.                              | Implemented   | CLI interface, JSON output for automation.                  | tests/app/test_analyzer.py, CLI tests     |
+| FR10| The tool shall aggregate KPIs at file, directory, and repository levels.                      | Implemented   | Data model supports aggregation at all levels.              | tests/app/test_analyzer.py               |
+| FR11| The tool shall allow easy addition of new language parsers.                                   | Implemented   | Parser modules are pluggable.                               | tests/app/test_analyzer.py, language tests|
+| FR12| The tool shall not require internet access for core analysis.                                 | Implemented   | All core analysis is local.                                 | N/A (design constraint)                   |
+| FR13| The tool shall support analysis of large repositories efficiently.                            | Implemented   | Performance tested on large codebases.                      | tests/app/test_analyzer.py, manual tests  |
+| FR14| The tool shall provide clear error messages for unsupported files or parse errors.             | Implemented   | Errors are reported in CLI and logs.                        | tests/app/test_scanner.py, error tests    |
+| FR15| The tool shall allow exclusion of files/directories via configuration.                        | Implemented   | User can specify exclude patterns.                          | tests/app/test_scanner.py, config tests   |
+| FR16| The tool shall support future integration with issue trackers (e.g., Jira).                   | Planned       | Placeholder for defect density KPI.                         | N/A                                       |
+| FR17| The tool shall support future integration with test coverage tools.                            | Planned       | Placeholder for test coverage KPI.                          | N/A                                       |
+| FR18| The tool shall support historical trend analysis of KPIs.                                     | Planned       | Placeholder for complexity/churn trends, hotspot evolution. | N/A                                       |
+
+#### 4.1.6 Non-Functional Requirements
 
 | ID   | Requirement                                                                                 | Status         | Notes/Acceptance Criteria                                  |
 |------|---------------------------------------------------------------------------------------------|---------------|------------------------------------------------------------|
@@ -686,11 +713,11 @@ These thresholds shall be configurable by the user.
 
 ---
 
-## 5. Example Outputs
+### 5. Example Outputs
 
 Below are example outputs for the main report formats supported by MetricMancer. These illustrate the structure and content users can expect from the tool.
 
-### 5.1 JSON Report Example
+#### 5.1 JSON Report Example
 
 ```json
 {
@@ -721,9 +748,9 @@ Below are example outputs for the main report formats supported by MetricMancer.
 }
 ```
 
-### 5.2 CLI Report Example
+#### 5.2 CLI Report Example
 
-```
+```text
 ┌──────────────┬──────────────┬────────────┬───────────────┐
 │ File         │ Complexity   │ Churn      │ Hotspot Score │
 ├──────────────┼──────────────┼────────────┼───────────────┤
@@ -736,7 +763,7 @@ Repository KPIs:
   Average complexity: 2.7
 ```
 
-## 6. HTML Reporting Architecture
+### 6. HTML Reporting Architecture
 
 The HTML reporting in MetricMancer is implemented as a modular, template-driven system that transforms the internal data model into an interactive, user-friendly report. The architecture is designed for extensibility, maintainability, and clear separation of concerns. The main components are:
 
@@ -751,6 +778,7 @@ The HTML reporting in MetricMancer is implemented as a modular, template-driven 
 - **Report Writer (`report_writer.py`)**: Handles writing the final HTML file to disk, ensuring all referenced assets are copied or linked appropriately.
 
 **Workflow:**
+  
 1. The user runs MetricMancer with the HTML output option.
 2. The analysis pipeline produces a populated data model.
 3. The HTML report generator invokes the renderer, which prepares the data for the template.
@@ -758,6 +786,7 @@ The HTML reporting in MetricMancer is implemented as a modular, template-driven 
 5. Static assets are bundled, and the report is written to the output directory.
 
 **Extensibility:**
+  
 - New report sections or visualizations can be added by creating new templates and updating the renderer.
 - The template system allows for easy branding or customization.
 - The architecture supports future enhancements such as charts, filtering, or integration with dashboards.
@@ -766,7 +795,52 @@ This modular approach ensures that the HTML reporting is both robust and easy to
 
 ---
 
-## 7. Stakeholder Analysis
+### 7. Stakeholder Analysis
+
+#### 7.1 User Stories and Personas
+
+To further clarify the needs and goals of different stakeholders, the following personas and user stories illustrate typical usage scenarios for MetricMancer:
+
+##### Persona 1: Alice – The Senior Developer
+
+**Background:** Alice is responsible for maintaining a large Python codebase. She is experienced in refactoring and cares about code quality and technical debt.
+
+**User Stories:**
+
+- As a senior developer, I want to quickly identify files with high complexity and churn so that I can prioritize refactoring efforts.
+- As a senior developer, I want to see hotspots and risk zones in the codebase so that I can plan technical debt reduction.
+- As a senior developer, I want to generate HTML reports to share with my team during code review meetings.
+
+##### Persona 2: Bob – The DevOps Engineer
+
+**Background:** Bob manages CI/CD pipelines and is responsible for integrating quality checks into the build process.
+
+**User Stories:**
+
+- As a DevOps engineer, I want to run MetricMancer as part of the CI pipeline so that code quality metrics are always up to date.
+- As a DevOps engineer, I want to export JSON reports so that I can feed metrics into dashboards and monitoring tools.
+- As a DevOps engineer, I want to receive alerts if code churn or complexity exceeds certain thresholds.
+
+##### Persona 3: Carol – The Engineering Manager
+
+**Background:** Carol leads a distributed development team and is responsible for long-term code health and resource allocation.
+
+**User Stories:**
+
+- As an engineering manager, I want to track trends in code quality over time so that I can measure the impact of process changes.
+- As an engineering manager, I want to identify files with low code ownership so that I can encourage knowledge sharing and reduce risk.
+- As an engineering manager, I want to use MetricMancer’s reports to justify technical debt reduction in planning meetings.
+
+##### Persona 4: Dave – The New Team Member
+
+**Background:** Dave recently joined the team and is onboarding to a large, unfamiliar codebase.
+
+**User Stories:**
+
+- As a new team member, I want to use MetricMancer’s reports to find the most complex or risky parts of the code so I can focus my learning.
+- As a new team member, I want to see which files are hotspots so I can ask for help or code review when working in those areas.
+
+---
 
 MetricMancer is intended for software development teams, technical leads, architects, and quality engineers who need actionable insights into code quality and technical debt. Key stakeholders include:
 
@@ -775,33 +849,37 @@ MetricMancer is intended for software development teams, technical leads, archit
 - **Quality Engineers:** Integrate metrics into CI/CD pipelines and dashboards for continuous monitoring.
 - **Managers:** Track trends and risks to inform resource allocation and process improvements.
 
-## 8. Requirement Prioritization & Risk Management
+### 8. Requirement Prioritization & Risk Management
 
 Requirements are prioritized based on their impact on code quality, maintainability, and user value. Core analysis and reporting features are highest priority. Planned features (e.g., defect density, test coverage) are lower priority and scheduled for future releases.
 
 Risks include:
+  
 - **Scalability:** Large repositories may impact performance. Mitigated by optimizing algorithms and supporting configuration.
 - **Extensibility:** Risk of tight coupling is mitigated by modular architecture and plugin patterns.
 - **Data Accuracy:** Incorrect parsing or churn calculation could mislead users. Mitigated by tests and validation.
 
-## 9. Validation & Verification
+### 9. Validation & Verification
 
 Validation and verification are achieved through:
+  
 - **Automated Unit Tests:** Cover all major modules and KPIs.
 - **Manual Review:** Reports are reviewed for clarity and accuracy.
 - **Acceptance Criteria:** Each requirement includes acceptance notes for testability.
 - **Continuous Integration:** Automated tests run on each commit to ensure ongoing quality.
 
-## 10. Change Management
+### 10. Change Management
 
 Requirements and design changes are managed via version control (Git). All changes are tracked, reviewed, and documented in the changelog. Major changes require stakeholder review and update of requirements tables.
 
-## 11. Process & Methodology
+### 11. Process & Methodology
 
 MetricMancer is developed using an iterative, test-driven approach. The process emphasizes:
+  
 - **Modular Design:** Enables incremental development and easy extension.
 - **Continuous Integration:** Ensures code quality and rapid feedback.
 - **Documentation:** Requirements and design are updated alongside code.
 - **Open Source Collaboration:** Contributions are reviewed and integrated via pull requests.
-```
+
+```text
 ```

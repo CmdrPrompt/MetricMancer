@@ -1,7 +1,7 @@
 [project]
-name = "complexityscanner"
-version = "1.2.0"
-description = "Cyclomatic complexity scanner and report generator"
+name = "metricmancer"
+version = "2.0.0"
+description = "Multi-language software analytics tool for code quality, maintainability, and technical risk. Calculates cyclomatic complexity, code churn, hotspots, and more. Generates CLI, HTML, and JSON reports."
 authors = [
   { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
 ]
