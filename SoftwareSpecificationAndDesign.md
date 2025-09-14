@@ -10,8 +10,6 @@
     - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
   - [3. System Overview](#3-system-overview)
     - [3.1. Application Overview](#31-application-overview)
-    - [3.2. Architecture](#32-architecture)
-      - [3.2.1. Scanner Flow](#321-scanner-flow)
       - [3.2.2. App Run Flow](#322-app-run-flow)
       - [3.2.3. Analyzer Analyze Flow](#323-analyzer-analyze-flow)
       - [3.2.4. ReportGenerator Flow](#324-reportgenerator-flow)
@@ -20,52 +18,50 @@
     - [3.3. Data Model](#33-data-model)
       - [3.3.1. UML Diagram (PlantUML)](#331-uml-diagram-plantuml)
   - [4. Detailed Requirements](#4-detailed-requirements)
-    - [4.1.4 Issue Tracker Integration and Defect Correlation](#414-issue-tracker-integration-and-defect-correlation)
-      - [Defect Density and Issue Tracker Integration](#defect-density-and-issue-tracker-integration)
-        - [Integration Specification](#integration-specification)
-          - [Correlating KPIs with Defects](#correlating-kpis-with-defects)
-          - [Visualization and Reporting](#visualization-and-reporting)
-          - [Acceptance Criteria](#acceptance-criteria)
-        - [Code Ownership](#code-ownership)
-          - [Git Blame Analysis](#git-blame-analysis)
-          - [Thresholds for Low Ownership](#thresholds-for-low-ownership)
-          - [Visualization](#visualization)
-          - [Acceptance Criteria (Code Ownership)](#acceptance-criteria-code-ownership)
-        - [Logical Coupling](#logical-coupling)
-          - [Commit Parsing Example](#commit-parsing-example)
-          - [Thresholds for Strong Logical Coupling](#thresholds-for-strong-logical-coupling)
-          - [Reporting](#reporting)
-          - [Acceptance Criteria (Logical Coupling)](#acceptance-criteria-logical-coupling)
-        - [Temporal Coupling](#temporal-coupling)
-          - [Commit Parsing Example (Temporal Coupling)](#commit-parsing-example-temporal-coupling)
-    - [6. HTML Reporting Architecture](#6-html-reporting-architecture)
-  - [4. Detailed Requirements](#4-detailed-requirements-1)
     - [4.1 Functional Requirements](#41-functional-requirements)
       - [4.1.1 Core Functional Requirements](#411-core-functional-requirements)
       - [4.1.2 Issue Tracker Integration and Defect Correlation](#412-issue-tracker-integration-and-defect-correlation)
         - [4.1.2.1 Defect Density and Issue Tracker Integration](#4121-defect-density-and-issue-tracker-integration)
-          - [Integration Specification](#integration-specification-1)
+          - [Integration Specification](#integration-specification)
+          - [Correlating KPIs with Defects](#correlating-kpis-with-defects)
+          - [Visualization and Reporting](#visualization-and-reporting)
+          - [Acceptance Criteria](#acceptance-criteria)
         - [4.1.2.2 Code Ownership](#4122-code-ownership)
+          - [Git Blame Analysis](#git-blame-analysis)
+          - [Thresholds for Low Ownership](#thresholds-for-low-ownership)
+          - [Visualization](#visualization)
+          - [Acceptance Criteria (Code Ownership)](#acceptance-criteria-code-ownership)
         - [4.1.2.3 Logical Coupling](#4123-logical-coupling)
+          - [Commit Parsing Example](#commit-parsing-example)
+          - [Thresholds for Strong Logical Coupling](#thresholds-for-strong-logical-coupling)
+          - [Reporting (Logical Coupling)](#reporting-logical-coupling)
+          - [Acceptance Criteria (Logical Coupling)](#acceptance-criteria-logical-coupling)
         - [4.1.2.4 Temporal Coupling](#4124-temporal-coupling)
-        - [Persona 2: Bob – The DevOps Engineer](#persona-2-bob--the-devops-engineer)
-        - [Persona 3: Carol – The Engineering Manager](#persona-3-carol--the-engineering-manager)
-        - [Persona 4: Dave – The New Team Member](#persona-4-dave--the-new-team-member)
-        - [Persona 6: Sam – The Software Quality Assurance Manager (SQAM)](#persona-6-sam--the-software-quality-assurance-manager-sqam)
+          - [Commit Parsing Example (Temporal Coupling)](#commit-parsing-example-temporal-coupling)
+          - [Thresholds for Strong Coupling](#thresholds-for-strong-coupling)
+          - [Reporting](#reporting)
+          - [Acceptance Criteria (Temporal Coupling)](#acceptance-criteria-temporal-coupling)
+    - [4.2 User Stories](#42-user-stories)
+      - [4.2.1 Persona 1: Alice – The Senior Developer](#421-persona-1-alice--the-senior-developer)
+      - [4.2.2 Persona 2: Bob – The DevOps Engineer](#422-persona-2-bob--the-devops-engineer)
+      - [4.2.3 Persona 3: Carol – The Engineering Manager](#423-persona-3-carol--the-engineering-manager)
+      - [4.2.4 Persona 4: Dave – The New Team Member](#424-persona-4-dave--the-new-team-member)
+      - [4.2.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#425-persona-5-sam--the-software-quality-assurance-manager-sqam)
+      - [4.2.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#426-persona-6-erin--the-software-quality-assurance-engineer-sqae)
     - [8. Requirement Prioritization \& Risk Management](#8-requirement-prioritization--risk-management)
     - [9. Validation \& Verification](#9-validation--verification)
     - [10. Change Management](#10-change-management)
     - [11. Process \& Methodology](#11-process--methodology)
 
 ## 1. Introduction
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots.
 
 The tool supports multi-language analysis and can generate reports in several formats, including CLI, HTML, and JSON. JSON reports are designed for integration with OpenSearch and dashboards. MetricMancer is built for extensibility, making it easy to add new metrics or adapt the tool to different codebases. The goal is to help teams identify refactoring candidates, monitor code health trends, and prioritize technical debt reduction—using real data from version control history and static analysis.
 
 ## 2. Glossary
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 **Temporal Coupling:**
 Measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies or poor modular design. *(Not implemented)*
@@ -134,7 +130,7 @@ A visual overview of KPI results, often with charts and color coding to quickly 
 The methodology and analysis models from the book "Your Code as a Crime Scene" by Adam Tornhill, which form the basis for the definitions and interpretations of KPIs in this project.
 
 ### 2.1. KPI Extension and Implementation Status
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 The following table summarizes the available and planned KPIs in MetricMancer, their implementation status, and extensibility notes:
 
@@ -157,7 +153,7 @@ The following table summarizes the available and planned KPIs in MetricMancer, t
 To add a new KPI, implement a new KPI calculator module and register it in the configuration. The system is designed for easy extension with minimal coupling between components.
 
 ## 3. System Overview
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 MetricMancer is structured as a modular, layered system to maximize flexibility, maintainability, and extensibility. The architecture is divided into several key components:
 
@@ -171,7 +167,7 @@ MetricMancer is structured as a modular, layered system to maximize flexibility,
 The architecture supports both batch and incremental analysis, and is suitable for integration into CI/CD pipelines. By separating scanning, parsing, metric calculation, and reporting, MetricMancer enables teams to extend or adapt the tool to their specific needs with minimal coupling between components.
 
 ### 3.1. Application Overview
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -191,16 +187,15 @@ graph TD
   JSONReport --> JSONOutput[JSON File]
   ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
   ErrorHandling -.-> App
-```
+```text
 
 **Figure: Application Overview.**
 This diagram shows the high-level architecture and main data flow in MetricMancer. The application starts with the `MetricMancerApp`, which delegates scanning to the `Scanner`. The scanner produces a list of files, which are analyzed by the `Analyzer` using various KPI analyzers (e.g., code churn, complexity, hotspots). The results are aggregated into `RepoInfo` objects and passed to the `ReportGenerator`, which can output reports in CLI, HTML, or JSON format. Error and edge case handling is integrated throughout the process.
 
 ### 3.2. Architecture
-[Back to Top](#requirements-and-design)
 
 #### 3.2.1. Scanner Flow
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -221,7 +216,7 @@ graph TD
 This diagram details the scanning process. The scanner receives a list of directories, iterates through them, finds files, filters them by type, collects file paths, and returns the final file list. Edge cases such as empty directories, permission errors, and no files found are handled explicitly.
 
 #### 3.2.2. App Run Flow
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -257,7 +252,7 @@ graph TD
 This diagram illustrates the main execution flow of the application. After scanning directories, files are analyzed and summarized per repository. For each repository, the appropriate report format is selected and generated. The flow handles multiple repositories and includes error handling for empty directories and failures in scanning, analysis, or report generation.
 
 #### 3.2.3. Analyzer Analyze Flow
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -293,7 +288,7 @@ graph TD
 This diagram describes how the analyzer processes files. Files are grouped per repository root, and for each repo, churn and complexity are collected, detailed analysis is performed per file, and hotspot scores are calculated. Results are summarized and aggregated into `RepoInfo` objects, which are then passed to the report generator. Edge cases such as empty files and exceptions in KPI analyzers are handled.
 
 #### 3.2.4. ReportGenerator Flow
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -324,7 +319,7 @@ graph TD
 This diagram shows how the report generator selects the output format (CLI, HTML, or JSON), generates the report, and outputs it to the appropriate destination. It also highlights error handling for unknown formats and output errors.
 
 #### 3.2.5. HTML Report Flow
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -348,7 +343,7 @@ graph TD
 This diagram details the process of generating an HTML report. The report generator initializes the HTML format, prints the report, uses the renderer to prepare data, and writes the final HTML file. Edge cases include missing templates, write errors, and empty analysis results.
 
 #### 3.2.6. CLI Report Flow
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -375,7 +370,7 @@ graph TD
 This diagram shows the flow for generating CLI reports. After analysis, the CLI report generator selects the output format (human-readable or CSV), prints the report, and handles errors such as unknown formats or empty analysis results.
 
 ### 3.3. Data Model
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 The MetricMancer data model is designed to represent the hierarchical structure of a source code repository and to aggregate KPI results at each level. The main classes are:
 
@@ -451,7 +446,7 @@ Represents the top-level object for an analyzed repository, including its struct
   - Aggregate KPIs from underlying directories and files for repository-level summaries
 
 #### 3.3.1. UML Diagram (PlantUML)
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
 
 ```plantuml
 @startuml
@@ -509,15 +504,25 @@ ScanDir --|> BaseDir
 > - If you encounter issues, see the extension documentation for troubleshooting and configuration tips.
 
 ## 4. Detailed Requirements
-[Back to Top](#requirements-and-design)
+[ToC](#table-of-contents)
+src/utils.py
+src/db.py
+src/bar.py
+src/baz.py
 
-### 4.1.4 Issue Tracker Integration and Defect Correlation
+### 4.1 Functional Requirements
 
-#### Defect Density and Issue Tracker Integration
+#### 4.1.1 Core Functional Requirements
+
+(Add or move core functional requirements here as needed.)
+
+#### 4.1.2 Issue Tracker Integration and Defect Correlation
+
+##### 4.1.2.1 Defect Density and Issue Tracker Integration
 
 MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
 
-##### Integration Specification
+###### Integration Specification
 
 - The tool shall support configuration for connecting to one or more issue trackers via API or by importing exported issue data (CSV, JSON, etc.).
 - The tool shall extract defect/bug reports, including at minimum: issue ID, type, status, creation date, resolution date, and affected files (if available).
@@ -528,12 +533,6 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 - For each file or module, the tool shall calculate **defect density** as the number of linked defects per KLOC (thousand lines of code) or per file.
 - The tool shall correlate defect density with other KPIs (e.g., code churn, complexity, hotspots) to identify risk zones and prioritize refactoring.
 - Reports shall highlight files with both high defect density and high values for other risk KPIs (e.g., churn, complexity, low ownership).
-
-**Example:**
-
-| File         | Defects | LOC  | Defect Density | Churn | Complexity | Hotspot Score |
-|--------------|---------|------|---------------|-------|------------|---------------|
-| src/foo.py   | 5       | 500  | 10/1KLOC      | 42    | 5          | 210           |
 
 ###### Visualization and Reporting
 
@@ -547,14 +546,11 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 - Correlation between defect density and other KPIs is visualized and highlighted in reports.
 - Example output as above.
 
-
-##### Code Ownership
+##### 4.1.2.2 Code Ownership
 
 Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
 
 ###### Git Blame Analysis
-
-To calculate code ownership, the tool shall:
 
 - Use `git blame` (or equivalent) to attribute each line of code in a file to its most recent author.
 - Aggregate the number of lines per author for each file or module.
@@ -568,8 +564,6 @@ To calculate code ownership, the tool shall:
 | src/foo.py   | Bob            | 80    | 40%           |
 
 ###### Thresholds for Low Ownership
-
-The tool shall support configuration of thresholds to classify ownership risk:
 
 - **Low Ownership:** No single author owns more than 50% of a file's lines (default threshold, as recommended in the book).
 - **Medium Ownership:** Top author owns 50–75% of lines.
@@ -594,15 +588,11 @@ These thresholds shall be user-configurable.
 | src/foo.py   | Alice      | 60%           | Medium     |
 | src/bar.py   | Bob        | 40%           | Low        |
 
----
-
-##### Logical Coupling
+##### 4.1.2.3 Logical Coupling
 
 Logical coupling identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
 
 ###### Commit Parsing Example
-
-To calculate logical coupling, the tool shall:
 
 - Parse the commit history to extract all commits and the set of files changed in each commit (as for temporal coupling).
 - For each file pair (A, B), count the number of commits where both files were changed together.
@@ -630,15 +620,13 @@ Here, `src/service.py` and `src/utils.py` are logically coupled if they change t
 
 ###### Thresholds for Strong Logical Coupling
 
-The tool shall support configuration of thresholds to classify logical coupling strength:
-
 - **Strong Logical Coupling:** File pairs that change together in more than 20% of their total commits (as recommended in the book) shall be flagged as strongly coupled.
 - **Medium Logical Coupling:** File pairs that change together in 10–20% of their total commits.
 - **Weak Logical Coupling:** File pairs below 10%.
 
 These thresholds shall be configurable by the user.
 
-###### Reporting
+###### Reporting (Logical Coupling)
 
 - The tool shall report all file pairs with strong or medium logical coupling, including the percentage and absolute number of co-changes.
 - Reports shall highlight file pairs that are logically coupled but not directly dependent in the codebase, with recommendations for architectural review.
@@ -655,203 +643,11 @@ These thresholds shall be configurable by the user.
 | src/service.py | src/utils.py   | 10         | 25                | 20                | 40%          | Strong   | No                |
 | src/service.py | src/db.py      | 3          | 25                | 15                | 12%          | Medium   | Yes               |
 
----
-
-##### Temporal Coupling
+##### 4.1.2.4 Temporal Coupling
 
 Temporal coupling measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
 
 ###### Commit Parsing Example (Temporal Coupling)
-
-To calculate temporal coupling, the tool shall:
-
-- Parse the commit history (e.g., using `git log --name-only --pretty=format:`) to extract all commits and the set of files changed in each commit.
-- For each file pair (A, B), count the number of commits where both files were changed together.
-
-| ID   | Requirement                                                                                 | Status         | Notes/Acceptance Criteria                                  |
-| NFR5 | The tool shall provide clear and actionable output for users.                               | Implemented   | CLI/HTML reports highlight risks and refactoring targets.  |
-| NFR6 | The tool shall be performant and able to analyze large repositories in reasonable time.      | Implemented   | Benchmarked on large open source projects.                 |
-└──────────────┴──────────────┴────────────┴───────────────┘
-
-### 6. HTML Reporting Architecture
-
-
-## 4. Detailed Requirements
-
-### 4.1 Functional Requirements
-[Back to Top](#requirements-and-design)
-
-#### 4.1.1 Core Functional Requirements
-[Back to Top](#requirements-and-design)
-
-<!-- Existing functional requirements table and traceability remain here -->
-
-#### 4.1.2 Issue Tracker Integration and Defect Correlation
-[Back to Top](#requirements-and-design)
-
-##### 4.1.2.1 Defect Density and Issue Tracker Integration
-[Back to Top](#requirements-and-design)
-
-MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
-
-###### Integration Specification
-
-- The tool shall support configuration for connecting to one or more issue trackers via API or by importing exported issue data (CSV, JSON, etc.).
-- The tool shall extract defect/bug reports, including at minimum: issue ID, type, status, creation date, resolution date, and affected files (if available).
-- The tool shall support mapping commits to issues using commit messages (e.g., by recognizing issue keys such as JIRA-123 in commit messages) or by explicit links in the VCS.
-
-####### Correlating KPIs with Defects
-
-- For each file or module, the tool shall calculate **defect density** as the number of linked defects per KLOC (thousand lines of code) or per file.
-- The tool shall correlate defect density with other KPIs (e.g., code churn, complexity, hotspots) to identify risk zones and prioritize refactoring.
-- Reports shall highlight files with both high defect density and high values for other risk KPIs (e.g., churn, complexity, low ownership).
-
-**Example:**
-
-| File         | Defects | LOC  | Defect Density | Churn | Complexity | Hotspot Score |
-|--------------|---------|------|---------------|-------|------------|---------------|
-| src/foo.py   | 5       | 500  | 10/1KLOC      | 42    | 5          | 210           |
-
-####### Visualization and Reporting
-
-- The tool shall visualize defect density alongside other KPIs in reports and dashboards (e.g., as heatmaps or combined tables).
-- Reports shall include recommendations for files with high defect density and high risk according to other KPIs.
-
-####### Acceptance Criteria
-
-- The tool can import or connect to at least one issue tracker and extract defect data.
-- Defect density is calculated and reported for all files/modules with linked defects.
-- Correlation between defect density and other KPIs is visualized and highlighted in reports.
-- Example output as above.
-
----
-
-##### 4.1.2.2 Code Ownership
-[Back to Top](#requirements-and-design)
-
-Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
-
-####### Git Blame Analysis
-
-To calculate code ownership, the tool shall:
-
-- Use `git blame` (or equivalent) to attribute each line of code in a file to its most recent author.
-- Aggregate the number of lines per author for each file or module.
-- Calculate the ownership percentage for each author as (lines by author) / (total lines in file).
-
-**Example:**
-
-| File         | Author         | Lines | Ownership (%) |
-|--------------|----------------|-------|---------------|
-| src/foo.py   | Alice          | 120   | 60%           |
-| src/foo.py   | Bob            | 80    | 40%           |
-
-####### Thresholds for Low Ownership
-
-The tool shall support configuration of thresholds to classify ownership risk:
-
-- **Low Ownership:** No single author owns more than 50% of a file's lines (default threshold, as recommended in the book).
-- **Medium Ownership:** Top author owns 50–75% of lines.
-- **High Ownership:** Top author owns more than 75% of lines.
-
-These thresholds shall be user-configurable.
-
-####### Visualization
-
-- The tool shall visualize code ownership per file/module, e.g., as a bar chart or pie chart showing the proportion of lines per author.
-- Reports shall highlight files with low ownership and recommend review or knowledge sharing.
-
-####### Acceptance Criteria (Code Ownership)
-
-- Code ownership is calculated for all files in the repository using git blame or equivalent.
-- Files with low ownership are clearly flagged in reports and visualizations.
-- Thresholds are user-configurable.
-- Example output:
-
-| File         | Top Author | Ownership (%) | Risk Level |
-|--------------|------------|---------------|------------|
-| src/foo.py   | Alice      | 60%           | Medium     |
-| src/bar.py   | Bob        | 40%           | Low        |
-
----
-
-##### 4.1.2.3 Logical Coupling
-[Back to Top](#requirements-and-design)
-
-Logical coupling identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
-
-####### Commit Parsing Example
-
-To calculate logical coupling, the tool shall:
-
-- Parse the commit history to extract all commits and the set of files changed in each commit (as for temporal coupling).
-- For each file pair (A, B), count the number of commits where both files were changed together.
-- Normalize the coupling by the total number of changes for each file, and filter out file pairs that are directly dependent (e.g., via imports or includes) if static analysis is available.
-
-**Example:**
-
-```
-commit 123abc
-Author: ...
-Date: ...
-
-
-src/utils.py
-
-commit 456def
-Author: ...
-Date: ...
-
-To further clarify the needs and goals of different stakeholders, the following personas and user stories illustrate typical usage scenarios for MetricMancer:
-src/db.py
-```
-
-Here, `src/service.py` and `src/utils.py` are logically coupled if they change together frequently, even if there is no direct import/include between them.
-
-####### Thresholds for Strong Logical Coupling
-
-The tool shall support configuration of thresholds to classify logical coupling strength:
-
-- **Strong Logical Coupling:** File pairs that change together in more than 20% of their total commits (as recommended in the book) shall be flagged as strongly coupled.
-- **Medium Logical Coupling:** File pairs that change together in 10–20% of their total commits.
-- **Weak Logical Coupling:** File pairs below 10%.
-
-These thresholds shall be configurable by the user.
-
-####### Reporting
-
-- The tool shall report all file pairs with strong or medium logical coupling, including the percentage and absolute number of co-changes.
-- Reports shall highlight file pairs that are logically coupled but not directly dependent in the codebase, with recommendations for architectural review.
-
-####### Acceptance Criteria (Logical Coupling)
-
-- Logical coupling is calculated for all file pairs in the repository.
-- File pairs exceeding the strong logical coupling threshold are clearly flagged in reports.
-- Thresholds are user-configurable.
-- Example output:
-
-| File A         | File B         | Co-Changes | Total Changes (A) | Total Changes (B) | Coupling (%) | Strength | Static Dependency |
-|----------------|----------------|------------|-------------------|-------------------|--------------|----------|-------------------|
-| src/service.py | src/utils.py   | 10         | 25                | 20                | 40%          | Strong   | No                |
-| src/service.py | src/db.py      | 3          | 25                | 15                | 12%          | Medium   | Yes               |
-
----
-
-##### 4.1.2.4 Temporal Coupling
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-
-Temporal coupling measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
-
-####### Commit Parsing Example (Temporal Coupling)
-
-To calculate temporal coupling, the tool shall:
 
 - Parse the commit history (e.g., using `git log --name-only --pretty=format:`) to extract all commits and the set of files changed in each commit.
 - For each file pair (A, B), count the number of commits where both files were changed together.
@@ -864,23 +660,20 @@ commit abc123
 Author: ...
 Date: ...
 
-
+src/foo.py
 src/bar.py
 
 commit def456
 Author: ...
 Date: ...
 
-##### Persona 1: Alice – The Senior Developer
-[Back to Top](#requirements-and-design)
+src/foo.py
 src/baz.py
 ```
 
 In this example, `src/foo.py` and `src/bar.py` have a temporal coupling count of 1, and `src/foo.py` and `src/baz.py` also have a count of 1.
 
-####### Thresholds for Strong Coupling
-
-The tool shall support configuration of thresholds to classify coupling strength:
+###### Thresholds for Strong Coupling
 
 - **Strong Coupling:** File pairs that change together in more than 20% of their total commits (as recommended in the book) shall be flagged as strongly coupled.
 - **Medium Coupling:** File pairs that change together in 10–20% of their total commits.
@@ -888,12 +681,12 @@ The tool shall support configuration of thresholds to classify coupling strength
 
 These thresholds shall be configurable by the user.
 
-####### Reporting
+###### Reporting
 
 - The tool shall report all file pairs with strong or medium temporal coupling, including the percentage and absolute number of co-changes.
 - Reports shall include recommendations for refactoring or architectural review for strongly coupled files.
 
-####### Acceptance Criteria
+###### Acceptance Criteria (Temporal Coupling)
 
 - Temporal coupling is calculated for all file pairs in the repository.
 - File pairs exceeding the strong coupling threshold are clearly flagged in reports.
@@ -905,7 +698,16 @@ These thresholds shall be configurable by the user.
 | src/foo.py  | src/bar.py  | 12         | 30                | 25                | 40%          | Strong   |
 | src/foo.py  | src/baz.py  | 3          | 30                | 10                | 10%          | Medium   |
 
----
+### 4.2 User Stories
+
+MetricMancer is intended for software development teams, technical leads, architects, and quality engineers who need actionable insights into code quality and technical debt. Key stakeholders include:
+
+- **Developers:** Use the tool to identify refactoring candidates and monitor code health.
+- **Technical Leads/Architects:** Use reports to guide technical debt reduction and architectural improvements.
+- **Quality Engineers:** Integrate metrics into CI/CD pipelines and dashboards for continuous monitoring.
+- **Managers:** Track trends and risks to inform resource allocation and process improvements.
+
+#### 4.2.1 Persona 1: Alice – The Senior Developer
 
 **Background:** Alice is responsible for maintaining a large Python codebase. She is experienced in refactoring and cares about code quality and technical debt.
 
@@ -915,8 +717,7 @@ These thresholds shall be configurable by the user.
 - As a senior developer, I want to see hotspots and risk zones in the codebase so that I can plan technical debt reduction.
 - As a senior developer, I want to generate HTML reports to share with my team during code review meetings.
 
-##### Persona 2: Bob – The DevOps Engineer
-[Back to Top](#requirements-and-design)
+#### 4.2.2 Persona 2: Bob – The DevOps Engineer
 
 **Background:** Bob manages CI/CD pipelines and is responsible for integrating quality checks into the build process.
 
@@ -926,8 +727,7 @@ These thresholds shall be configurable by the user.
 - As a DevOps engineer, I want to export JSON reports so that I can feed metrics into dashboards and monitoring tools.
 - As a DevOps engineer, I want to receive alerts if code churn or complexity exceeds certain thresholds.
 
-##### Persona 3: Carol – The Engineering Manager
-[Back to Top](#requirements-and-design)
+#### 4.2.3 Persona 3: Carol – The Engineering Manager
 
 **Background:** Carol leads a distributed development team and is responsible for long-term code health and resource allocation.
 
@@ -937,9 +737,7 @@ These thresholds shall be configurable by the user.
 - As an engineering manager, I want to identify files with low code ownership so that I can encourage knowledge sharing and reduce risk.
 - As an engineering manager, I want to use MetricMancer’s reports to justify technical debt reduction in planning meetings.
 
-
-##### Persona 4: Dave – The New Team Member
-[Back to Top](#requirements-and-design)
+#### 4.2.4 Persona 4: Dave – The New Team Member
 
 **Background:** Dave recently joined the team and is onboarding to a large, unfamiliar codebase.
 
@@ -948,13 +746,7 @@ These thresholds shall be configurable by the user.
 - As a new team member, I want to use MetricMancer’s reports to find the most complex or risky parts of the code so I can focus my learning.
 - As a new team member, I want to see which files are hotspots so I can ask for help or code review when working in those areas.
 
-
-##### Persona 6: Sam – The Software Quality Assurance Manager (SQAM)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
-[Back to Top](#requirements-and-design)
+#### 4.2.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)
 
 **Background:** Sam oversees the quality assurance strategy for the organization. He is responsible for defining quality standards, ensuring process compliance, and reporting on quality metrics to leadership. Sam coordinates with engineering, QA, and management to drive continuous improvement and risk mitigation.
 
@@ -965,6 +757,8 @@ These thresholds shall be configurable by the user.
 - As a SQAM, I want to receive summary dashboards and risk reports from MetricMancer so that I can prioritize audits and allocate resources effectively.
 - As a SQAM, I want to correlate MetricMancer metrics with business outcomes (e.g., defect rates, release stability) so that I can demonstrate the value of quality improvements.
 
+#### 4.2.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)
+
 **Background:** Erin is responsible for ensuring the overall quality of the software product. She focuses on process compliance, risk identification, and continuous improvement. Erin collaborates with developers, managers, and DevOps to integrate quality metrics and drive quality initiatives.
 
 **User Stories:**
@@ -974,15 +768,8 @@ These thresholds shall be configurable by the user.
 - As a SQAE, I want to correlate code metrics with defect data from issue trackers so that I can identify root causes and recommend targeted improvements.
 - As a SQAE, I want to export MetricMancer results to quality dashboards and share them with stakeholders for transparency and compliance.
 
-
-MetricMancer is intended for software development teams, technical leads, architects, and quality engineers who need actionable insights into code quality and technical debt. Key stakeholders include:
-
-- **Developers:** Use the tool to identify refactoring candidates and monitor code health.
-- **Technical Leads/Architects:** Use reports to guide technical debt reduction and architectural improvements.
-- **Quality Engineers:** Integrate metrics into CI/CD pipelines and dashboards for continuous monitoring.
-- **Managers:** Track trends and risks to inform resource allocation and process improvements.
-
 ### 8. Requirement Prioritization & Risk Management
+[ToC](#table-of-contents)
 
 Requirements are prioritized based on their impact on code quality, maintainability, and user value. Core analysis and reporting features are highest priority. Planned features (e.g., defect density, test coverage) are lower priority and scheduled for future releases.
 
@@ -993,6 +780,7 @@ Risks include:
 - **Data Accuracy:** Incorrect parsing or churn calculation could mislead users. Mitigated by tests and validation.
 
 ### 9. Validation & Verification
+[ToC](#table-of-contents)
 
 Validation and verification are achieved through:
   
@@ -1002,10 +790,12 @@ Validation and verification are achieved through:
 - **Continuous Integration:** Automated tests run on each commit to ensure ongoing quality.
 
 ### 10. Change Management
+[ToC](#table-of-contents)
 
 Requirements and design changes are managed via version control (Git). All changes are tracked, reviewed, and documented in the changelog. Major changes require stakeholder review and update of requirements tables.
 
 ### 11. Process & Methodology
+[ToC](#table-of-contents)
 
 MetricMancer is developed using an iterative, test-driven approach. The process emphasizes:
   
