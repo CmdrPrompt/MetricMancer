@@ -43,6 +43,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Deprecated
 - No deprecations in this release.
 
+
+## [2.0.0] - 2025-09-14
+
+### Added
+- Major documentation overhaul: new Software Specification and Design (SSD) document with full requirements, architecture, data model, KPIs, traceability, and user stories/personas.
+- HTML, CLI, and JSON report generators now fully modular and extensible.
+- Aggregated KPIs at file, directory, and repository levels.
+- Hotspot analysis: highlights files/functions with both high complexity and high churn.
+- Robust error and edge case handling throughout the analysis and reporting pipeline.
+- Test traceability: requirements mapped to test cases in documentation.
+- User stories and personas included for stakeholder clarity.
+- Mermaid and PlantUML diagrams for architecture and data model.
+- Improved English language consistency and markdown lint compliance across all documentation.
+- Link to SSD document added in README.md; README fully updated to match current state and SSD.
+
+### Changed
+- Refactored codebase for extensibility: new KPI modules, parser modules, and report format modules are pluggable.
+- Improved CLI and HTML report output: clearer summaries, better error messages, and more actionable insights.
+- Updated requirements and non-functional requirements to reflect current and planned features.
+- Updated all documentation to follow Keep a Changelog and Semantic Versioning best practices.
+
+### Fixed
+- Fixed markdown lint errors in documentation and README.
+- Fixed section numbering and formatting in SSD document.
+- Fixed test robustness for edge cases and error handling.
+
+### Removed
+- Removed outdated/duplicate documentation and legacy report templates.
+
+### Security
+- No security changes in this release.
+
+### Deprecated
+- No deprecations in this release.
+
 ## [Unreleased]
 
 ### Planned / In Development
