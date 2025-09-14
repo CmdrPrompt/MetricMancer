@@ -3,6 +3,7 @@
 
 
 
+
 ## Table of Contents
 
 - [Requirements and Design](#requirements-and-design)
@@ -20,36 +21,36 @@
     - [3.3. Data Model](#33-data-model)
       - [3.3.1. UML Diagram (PlantUML)](#331-uml-diagram-plantuml)
   - [4. Detailed Requirements](#4-detailed-requirements)
-    - [4.1 Functional Requirements](#41-functional-requirements)
-      - [4.1.1 Core Functional Requirements](#411-core-functional-requirements)
-      - [4.1.2 Issue Tracker Integration and Defect Correlation](#412-issue-tracker-integration-and-defect-correlation)
-        - [4.1.2.1 Defect Density and Issue Tracker Integration](#4121-defect-density-and-issue-tracker-integration)
+    - [4.1 User Stories](#41-user-stories)
+      - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
+      - [4.1.2 Persona 2: Bob – The DevOps Engineer](#412-persona-2-bob--the-devops-engineer)
+      - [4.1.3 Persona 3: Carol – The Engineering Manager](#413-persona-3-carol--the-engineering-manager)
+      - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
+      - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
+      - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
+    - [4.2 Functional Requirements](#42-functional-requirements)
+      - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
+      - [4.2.2 Issue Tracker Integration and Defect Correlation](#422-issue-tracker-integration-and-defect-correlation)
+        - [4.2.2.1 Defect Density and Issue Tracker Integration](#4221-defect-density-and-issue-tracker-integration)
           - [Integration Specification](#integration-specification)
           - [Correlating KPIs with Defects](#correlating-kpis-with-defects)
           - [Visualization and Reporting](#visualization-and-reporting)
           - [Acceptance Criteria](#acceptance-criteria)
-        - [4.1.2.2 Code Ownership](#4122-code-ownership)
+        - [4.2.2.2 Code Ownership](#4222-code-ownership)
           - [Git Blame Analysis](#git-blame-analysis)
           - [Thresholds for Low Ownership](#thresholds-for-low-ownership)
           - [Visualization](#visualization)
           - [Acceptance Criteria (Code Ownership)](#acceptance-criteria-code-ownership)
-        - [4.1.2.3 Logical Coupling](#4123-logical-coupling)
+        - [4.2.2.3 Logical Coupling](#4223-logical-coupling)
           - [Commit Parsing Example](#commit-parsing-example)
           - [Thresholds for Strong Logical Coupling](#thresholds-for-strong-logical-coupling)
           - [Reporting (Logical Coupling)](#reporting-logical-coupling)
           - [Acceptance Criteria (Logical Coupling)](#acceptance-criteria-logical-coupling)
-        - [4.1.2.4 Temporal Coupling](#4124-temporal-coupling)
+        - [4.2.2.4 Temporal Coupling](#4224-temporal-coupling)
           - [Commit Parsing Example (Temporal Coupling)](#commit-parsing-example-temporal-coupling)
           - [Thresholds for Strong Coupling](#thresholds-for-strong-coupling)
           - [Reporting](#reporting)
           - [Acceptance Criteria (Temporal Coupling)](#acceptance-criteria-temporal-coupling)
-    - [4.2 User Stories](#42-user-stories)
-      - [4.2.1 Persona 1: Alice – The Senior Developer](#421-persona-1-alice--the-senior-developer)
-      - [4.2.2 Persona 2: Bob – The DevOps Engineer](#422-persona-2-bob--the-devops-engineer)
-      - [4.2.3 Persona 3: Carol – The Engineering Manager](#423-persona-3-carol--the-engineering-manager)
-      - [4.2.4 Persona 4: Dave – The New Team Member](#424-persona-4-dave--the-new-team-member)
-      - [4.2.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#425-persona-5-sam--the-software-quality-assurance-manager-sqam)
-      - [4.2.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#426-persona-6-erin--the-software-quality-assurance-engineer-sqae)
     - [4.3 Requirements Tables](#43-requirements-tables)
       - [4.3.1 Traceability Matrix: User Stories to Requirements](#431-traceability-matrix-user-stories-to-requirements)
       - [4.3.2 Traceability Matrix: Requirements to Test Cases](#432-traceability-matrix-requirements-to-test-cases)
@@ -510,15 +511,92 @@ ScanDir --|> BaseDir
 
 ## 4. Detailed Requirements
 
-### 4.1 Functional Requirements
+### 4.1 User Stories
+[ToC](#table-of-contents)
 
-#### 4.1.1 Core Functional Requirements
+MetricMancer is intended for software development teams, technical leads, architects, and quality engineers who need actionable insights into code quality and technical debt. Key stakeholders include:
+
+- **Developers:** Use the tool to identify refactoring candidates and monitor code health.
+- **Technical Leads/Architects:** Use reports to guide technical debt reduction and architectural improvements.
+- **Quality Engineers:** Integrate metrics into CI/CD pipelines and dashboards for continuous monitoring.
+- **Managers:** Track trends and risks to inform resource allocation and process improvements.
+
+#### 4.1.1 Persona 1: Alice – The Senior Developer
+[ToC](#table-of-contents)
+
+**Background:** Alice is responsible for maintaining a large Python codebase. She is experienced in refactoring and cares about code quality and technical debt.
+
+**User Stories:**
+
+- As a senior developer, I want to quickly identify files with high complexity and churn so that I can prioritize refactoring efforts.
+- As a senior developer, I want to see hotspots and risk zones in the codebase so that I can plan technical debt reduction.
+- As a senior developer, I want to generate HTML reports to share with my team during code review meetings.
+
+#### 4.1.2 Persona 2: Bob – The DevOps Engineer
+[ToC](#table-of-contents)
+
+**Background:** Bob manages CI/CD pipelines and is responsible for integrating quality checks into the build process.
+
+**User Stories:**
+
+- As a DevOps engineer, I want to run MetricMancer as part of the CI pipeline so that code quality metrics are always up to date.
+- As a DevOps engineer, I want to export JSON reports so that I can feed metrics into dashboards and monitoring tools.
+- As a DevOps engineer, I want to receive alerts if code churn or complexity exceeds certain thresholds.
+
+#### 4.1.3 Persona 3: Carol – The Engineering Manager
+[ToC](#table-of-contents)
+
+**Background:** Carol leads a distributed development team and is responsible for long-term code health and resource allocation.
+
+**User Stories:**
+
+- As an engineering manager, I want to track trends in code quality over time so that I can measure the impact of process changes.
+- As an engineering manager, I want to identify files with low code ownership so that I can encourage knowledge sharing and reduce risk.
+- As an engineering manager, I want to use MetricMancer’s reports to justify technical debt reduction in planning meetings.
+
+#### 4.1.4 Persona 4: Dave – The New Team Member
+[ToC](#table-of-contents)
+
+**Background:** Dave recently joined the team and is onboarding to a large, unfamiliar codebase.
+
+**User Stories:**
+
+- As a new team member, I want to use MetricMancer’s reports to find the most complex or risky parts of the code so I can focus my learning.
+- As a new team member, I want to see which files are hotspots so I can ask for help or code review when working in those areas.
+
+#### 4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)
+[ToC](#table-of-contents)
+
+**Background:** Sam oversees the quality assurance strategy for the organization. He is responsible for defining quality standards, ensuring process compliance, and reporting on quality metrics to leadership. Sam coordinates with engineering, QA, and management to drive continuous improvement and risk mitigation.
+
+**User Stories:**
+
+- As a SQAM, I want to use MetricMancer to track organization-wide code quality trends so that I can report on progress and justify quality initiatives to leadership.
+- As a SQAM, I want to set and monitor quality gates (e.g., maximum allowed complexity or churn) so that teams are held accountable to quality standards.
+- As a SQAM, I want to receive summary dashboards and risk reports from MetricMancer so that I can prioritize audits and allocate resources effectively.
+- As a SQAM, I want to correlate MetricMancer metrics with business outcomes (e.g., defect rates, release stability) so that I can demonstrate the value of quality improvements.
+
+#### 4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)
+[ToC](#table-of-contents)
+
+**Background:** Erin is responsible for ensuring the overall quality of the software product. She focuses on process compliance, risk identification, and continuous improvement. Erin collaborates with developers, managers, and DevOps to integrate quality metrics and drive quality initiatives.
+
+**User Stories:**
+
+- As a SQAE, I want to integrate MetricMancer into the quality assurance process so that I can monitor code quality trends and enforce quality gates.
+- As a SQAE, I want to receive automated reports highlighting files or modules with high risk (e.g., high churn, complexity, or defect density) so that I can proactively address quality issues.
+- As a SQAE, I want to correlate code metrics with defect data from issue trackers so that I can identify root causes and recommend targeted improvements.
+- As a SQAE, I want to export MetricMancer results to quality dashboards and share them with stakeholders for transparency and compliance.
+
+### 4.2 Functional Requirements
+
+#### 4.2.1 Core Functional Requirements
 
 (Add or move core functional requirements here as needed.)
 
-#### 4.1.2 Issue Tracker Integration and Defect Correlation
+#### 4.2.2 Issue Tracker Integration and Defect Correlation
 
-##### 4.1.2.1 Defect Density and Issue Tracker Integration
+##### 4.2.2.1 Defect Density and Issue Tracker Integration
 [ToC](#table-of-contents)
 
 MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
@@ -547,7 +625,7 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 - Correlation between defect density and other KPIs is visualized and highlighted in reports.
 - Example output as above.
 
-##### 4.1.2.2 Code Ownership
+##### 4.2.2.2 Code Ownership
 [ToC](#table-of-contents)
 
 Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
@@ -590,7 +668,7 @@ These thresholds shall be user-configurable.
 | src/foo.py   | Alice      | 60%           | Medium     |
 | src/bar.py   | Bob        | 40%           | Low        |
 
-##### 4.1.2.3 Logical Coupling
+##### 4.2.2.3 Logical Coupling
 [ToC](#table-of-contents)
 
 Logical coupling identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
@@ -646,7 +724,7 @@ These thresholds shall be configurable by the user.
 | src/service.py | src/utils.py   | 10         | 25                | 20                | 40%          | Strong   | No                |
 | src/service.py | src/db.py      | 3          | 25                | 15                | 12%          | Medium   | Yes               |
 
-##### 4.1.2.4 Temporal Coupling
+##### 4.2.2.4 Temporal Coupling
 [ToC](#table-of-contents)
 
 Temporal coupling measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
@@ -701,83 +779,6 @@ These thresholds shall be configurable by the user.
 |-------------|-------------|------------|-------------------|-------------------|--------------|----------|
 | src/foo.py  | src/bar.py  | 12         | 30                | 25                | 40%          | Strong   |
 | src/foo.py  | src/baz.py  | 3          | 30                | 10                | 10%          | Medium   |
-
-### 4.2 User Stories
-[ToC](#table-of-contents)
-
-MetricMancer is intended for software development teams, technical leads, architects, and quality engineers who need actionable insights into code quality and technical debt. Key stakeholders include:
-
-- **Developers:** Use the tool to identify refactoring candidates and monitor code health.
-- **Technical Leads/Architects:** Use reports to guide technical debt reduction and architectural improvements.
-- **Quality Engineers:** Integrate metrics into CI/CD pipelines and dashboards for continuous monitoring.
-- **Managers:** Track trends and risks to inform resource allocation and process improvements.
-
-#### 4.2.1 Persona 1: Alice – The Senior Developer
-[ToC](#table-of-contents)
-
-**Background:** Alice is responsible for maintaining a large Python codebase. She is experienced in refactoring and cares about code quality and technical debt.
-
-**User Stories:**
-
-- As a senior developer, I want to quickly identify files with high complexity and churn so that I can prioritize refactoring efforts.
-- As a senior developer, I want to see hotspots and risk zones in the codebase so that I can plan technical debt reduction.
-- As a senior developer, I want to generate HTML reports to share with my team during code review meetings.
-
-#### 4.2.2 Persona 2: Bob – The DevOps Engineer
-[ToC](#table-of-contents)
-
-**Background:** Bob manages CI/CD pipelines and is responsible for integrating quality checks into the build process.
-
-**User Stories:**
-
-- As a DevOps engineer, I want to run MetricMancer as part of the CI pipeline so that code quality metrics are always up to date.
-- As a DevOps engineer, I want to export JSON reports so that I can feed metrics into dashboards and monitoring tools.
-- As a DevOps engineer, I want to receive alerts if code churn or complexity exceeds certain thresholds.
-
-#### 4.2.3 Persona 3: Carol – The Engineering Manager
-[ToC](#table-of-contents)
-
-**Background:** Carol leads a distributed development team and is responsible for long-term code health and resource allocation.
-
-**User Stories:**
-
-- As an engineering manager, I want to track trends in code quality over time so that I can measure the impact of process changes.
-- As an engineering manager, I want to identify files with low code ownership so that I can encourage knowledge sharing and reduce risk.
-- As an engineering manager, I want to use MetricMancer’s reports to justify technical debt reduction in planning meetings.
-
-#### 4.2.4 Persona 4: Dave – The New Team Member
-[ToC](#table-of-contents)
-
-**Background:** Dave recently joined the team and is onboarding to a large, unfamiliar codebase.
-
-**User Stories:**
-
-- As a new team member, I want to use MetricMancer’s reports to find the most complex or risky parts of the code so I can focus my learning.
-- As a new team member, I want to see which files are hotspots so I can ask for help or code review when working in those areas.
-
-#### 4.2.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)
-[ToC](#table-of-contents)
-
-**Background:** Sam oversees the quality assurance strategy for the organization. He is responsible for defining quality standards, ensuring process compliance, and reporting on quality metrics to leadership. Sam coordinates with engineering, QA, and management to drive continuous improvement and risk mitigation.
-
-**User Stories:**
-
-- As a SQAM, I want to use MetricMancer to track organization-wide code quality trends so that I can report on progress and justify quality initiatives to leadership.
-- As a SQAM, I want to set and monitor quality gates (e.g., maximum allowed complexity or churn) so that teams are held accountable to quality standards.
-- As a SQAM, I want to receive summary dashboards and risk reports from MetricMancer so that I can prioritize audits and allocate resources effectively.
-- As a SQAM, I want to correlate MetricMancer metrics with business outcomes (e.g., defect rates, release stability) so that I can demonstrate the value of quality improvements.
-
-#### 4.2.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)
-[ToC](#table-of-contents)
-
-**Background:** Erin is responsible for ensuring the overall quality of the software product. She focuses on process compliance, risk identification, and continuous improvement. Erin collaborates with developers, managers, and DevOps to integrate quality metrics and drive quality initiatives.
-
-**User Stories:**
-
-- As a SQAE, I want to integrate MetricMancer into the quality assurance process so that I can monitor code quality trends and enforce quality gates.
-- As a SQAE, I want to receive automated reports highlighting files or modules with high risk (e.g., high churn, complexity, or defect density) so that I can proactively address quality issues.
-- As a SQAE, I want to correlate code metrics with defect data from issue trackers so that I can identify root causes and recommend targeted improvements.
-- As a SQAE, I want to export MetricMancer results to quality dashboards and share them with stakeholders for transparency and compliance.
 
 ### 4.3 Requirements Tables
 
