@@ -18,4 +18,4 @@ class PythonComplexityParser(ComplexityParser):
         r'\bif\b', r'\belif\b', r'\bfor\b', r'\bwhile\b',
         r'\btry\b', r'\bexcept\b', r'\breturn\b', r'\band\b', r'\bor\b'
     ]
-    FUNCTION_PATTERN = r'def\s+\w+\s*\(.*?\)\s*:'
+    FUNCTION_PATTERN = r'def\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*:'

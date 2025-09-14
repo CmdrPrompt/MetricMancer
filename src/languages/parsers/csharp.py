@@ -19,4 +19,4 @@ class CSharpComplexityParser(ComplexityParser):
 		r'\bcase\b', r'\bcatch\b', r'\bthrow\b', r'\breturn\b',
 		r'&&', r'\|\|'
 	]
-	FUNCTION_PATTERN = r'(public|private|protected)?\s+\w+\s+\w+\s*\(.*?\)\s*\{'
+	FUNCTION_PATTERN = r'(?:public|private|protected)?\s+\w+\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'

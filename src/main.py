@@ -26,15 +26,17 @@ def main():
     if args.output_format == 'json':
         from src.report.json.json_report_generator import JSONReportGenerator
         generator_cls = JSONReportGenerator
-    elif args.output_format == 'human' or args.output_format == 'machine':
+    elif args.output_format == 'machine':
         generator_cls = CLIReportGenerator
-    else: # Default to HTML if a report filename is given
+    elif args.output_format == 'html':
         debug_print("[DEBUG] main: HTML report mode")
         generator_cls = None # Will default to HTMLReportGenerator
+    else: # Default is 'human'
+        generator_cls = CLIReportGenerator
 
     # Determine output file
     output_file = None
-    if generator_cls is None or args.output_format == 'json': # HTML or JSON
+    if args.output_format in ['html', 'json']:
         output_file = get_output_filename(args)
 
     app = MetricMancerApp(

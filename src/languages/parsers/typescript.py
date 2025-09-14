@@ -19,4 +19,4 @@ class TypeScriptComplexityParser(ComplexityParser):
 		r'\bswitch\b', r'\bcase\b', r'\bcatch\b', r'\bthrow\b',
 		r'\breturn\b', r'&&', r'\|\|'
 	]
-	FUNCTION_PATTERN = r'function\s+\w+\s*\(.*?\)\s*\{'
+	FUNCTION_PATTERN = r'function\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'

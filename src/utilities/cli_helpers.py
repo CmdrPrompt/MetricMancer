@@ -15,7 +15,7 @@ def print_usage():
     print("  --threshold-high             Sets the threshold for high complexity. Default: 20. Files/folders with complexity > this value are rated 'High'.")
     print("  --problem-file-threshold     (Optional) Sets the threshold for individual file complexity. Files above this value are listed under each problematic folder in the summary.")
     print("\nOUTPUT FORMATTING:")
-    print("  --output-format <format>     Set the output format. Options: 'human' (default CLI tree), 'json', 'machine' (CSV).")
+    print("  --output-format <format>     Set the output format. Options: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV).")
     print("  --level <level>              Set the detail level for reports. Options: 'file' (default), 'function'.")
     print("  --hierarchical               (JSON only) Output the full hierarchical data model instead of a flat list.")
     print("  --auto-report-filename       (Optional) Automatically generate a unique report filename based on date and directories.")
@@ -50,7 +50,7 @@ def parse_args():
     parser.add_argument("--with-date", action="store_true",
                         help="If used with --report-filename, appends date and time to the filename before extension.")
     parser.add_argument("--output-format", type=str, default="human",
-                        help="Output format: 'human' (default), 'json', 'machine' (CSV).")
+                        help="Output format: 'human' (default), 'html', 'json', 'machine' (CSV).")
     parser.add_argument("--level", type=str, default="file",
                         help="Detail level for reports: 'file' (default) or 'function'.")
     parser.add_argument("--hierarchical", action="store_true",
