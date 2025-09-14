@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}MetricMancer Report Overview{% endblock %}
+
+{% block content %}
+  <h2>Report Overview</h2>
+  <p>This is a summary of all analyzed repositories. Click on a repository name to view the detailed report.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Repository</th>
+        <th>Avg. Complexity</th>
+        <th>Avg. Churn</th>
+        <th>Total Hotspot Score</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for summary in repo_summaries %}
+        <tr>
+          <td>
+            <a href="{{ summary.report_file }}">{{ summary.repo_name }}</a>
+          </td>
+          <td>
+            {{ summary.kpis.avg_complexity if summary.kpis.avg_complexity is not none else 'N/A' }}
+          </td>
+          <td>
+            {{ summary.kpis.avg_churn if summary.kpis.avg_churn is not none else 'N/A' }}
+          </td>
+          <td>
+            {{ summary.kpis.total_hotspot if summary.kpis.total_hotspot is not none else 'N/A' }}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="4">No repositories were analyzed.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}
