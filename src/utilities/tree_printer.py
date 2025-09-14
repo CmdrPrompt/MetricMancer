@@ -4,10 +4,11 @@ class TreePrinter:
 
     def build_tree(self, paths):
         import os
-        sorted_paths = self._sort_paths(paths, os)
+        # Normalize all paths once before sorting and building the tree
+        normalized_paths = [(os.path.normpath(path), stats) for path, stats in paths]
+        sorted_paths = self._sort_paths(normalized_paths, os)
         tree = {}
-        for path, stats in sorted_paths:
-            norm_path = os.path.normpath(path)
+        for norm_path, stats in sorted_paths:
             parts = norm_path.split(os.sep)
             node = tree
             for part in parts[:-1]:

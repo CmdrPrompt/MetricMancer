@@ -1,4 +1,5 @@
 import os
+import re
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -53,7 +54,6 @@ class TestScanner(unittest.TestCase):
     @patch('src.utilities.debug.debug_print')
     def test_scan_finds_supported_files(self, mock_debug_print):
         """Test that scan finds all supported files in a directory."""
-        import os
         scan_path = str(self.test_dir / "project_a")
         files = self.scanner.scan([scan_path])
 
@@ -86,13 +86,13 @@ class TestScanner(unittest.TestCase):
         import os
         def norm(p):
             return os.path.normcase(p)
-        found_paths = sorted([norm(f['path']) for f in files])
         expected_paths = sorted([
             norm(os.path.abspath(os.path.join(path_a, "main.py"))),
             norm(os.path.abspath(os.path.join(path_a, "utils.js"))),
             norm(os.path.abspath(os.path.join(path_a, "src", "component.ts"))),
             norm(os.path.abspath(os.path.join(path_b, "app.java"))),
         ])
+        found_paths = sorted([norm(f['path']) for f in files])
         self.assertEqual(found_paths, expected_paths)
 
     @patch('src.utilities.debug.debug_print')
@@ -121,9 +121,7 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(len(files), 0)
         # Check that a warning was printed, normalizing paths for cross-platform compatibility
         expected_msg = f"[WARN] Folder '{os.path.abspath(scan_path)}' doesn't exist – skipping."
-        # Normalize for case and slashes
         def norm(s):
-            import re, os
             # Extract the path from the message
             m = re.match(r"\[WARN\] Folder '(.+)' doesn't exist – skipping.", s)
             if m:
@@ -133,7 +131,6 @@ class TestScanner(unittest.TestCase):
         normalized_expected = norm(expected_msg)
         normalized_actuals = [norm(str(call.args[0])) for call in mock_debug_print.call_args_list]
         self.assertIn(normalized_expected, normalized_actuals)
-
     @patch('src.utilities.debug.debug_print')
     def test_scan_returns_empty_list_for_no_supported_files(self, mock_debug_print):
         """Test scanning a directory with no supported files returns an empty list."""
