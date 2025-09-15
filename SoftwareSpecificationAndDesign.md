@@ -56,8 +56,9 @@
           - [Reporting](#reporting)
           - [Acceptance Criteria (Temporal Coupling)](#acceptance-criteria-temporal-coupling)
     - [4.3 Requirements Tables](#43-requirements-tables)
-      - [4.3.1 Traceability Matrix: User Stories to Requirements](#431-traceability-matrix-user-stories-to-requirements)
-      - [4.3.2 Traceability Matrix: Requirements to Test Cases](#432-traceability-matrix-requirements-to-test-cases)
+      - [4.3.1 All Requirements](#431-all-requirements)
+      - [4.3.2 Traceability Matrix: Requirements to User Stories](#432-traceability-matrix-requirements-to-user-stories)
+      - [4.3.3 Traceability Matrix: Requirements to Test Cases](#433-traceability-matrix-requirements-to-test-cases)
     - [5. Requirement Prioritization \& Risk Management](#5-requirement-prioritization--risk-management)
     - [6. Validation \& Verification](#6-validation--verification)
     - [7. Change Management](#7-change-management)
@@ -786,9 +787,39 @@ These thresholds shall be configurable by the user.
 
 ### 4.3 Requirements Tables
 
-#### 4.3.1 Traceability Matrix: User Stories to Requirements
+#### 4.3.1 All Requirements
+[ToC](#table-of-contents)
+
+| ID    | Type         | Description                                                                 | Acceptance Criteria                                      |
+|-------|--------------|-----------------------------------------------------------------------------|----------------------------------------------------------|
+| FR1   | Functional   | The tool shall calculate cyclomatic complexity for all functions/methods.   | Complexity is reported for all functions in the report.  |
+| FR2   | Functional   | The tool shall calculate code churn for all files.                          | Churn is reported for all files in the report.           |
+| FR3   | Functional   | The tool shall identify hotspots (high churn × high complexity).            | Hotspot files are highlighted in the report.             |
+| FR4   | Functional   | The tool shall support multi-language analysis.                             | User can analyze at least two languages in one run.      |
+| FR5   | Functional   | The tool shall generate CLI, HTML, and JSON reports.                        | All formats are available and contain the same KPIs.     |
+| FR6   | Functional   | The tool shall support integration with issue trackers.                     | Defect density is shown if issue data is provided.       |
+| FR7   | Functional   | The tool shall calculate code ownership per file.                           | Ownership is reported and low-ownership files flagged.   |
+| FR8   | Functional   | The tool shall calculate logical and temporal coupling.                     | Coupling metrics are included in the report.             |
+| FR9   | Functional   | The tool shall visualize KPIs in HTML reports.                              | HTML report contains charts/tables for all KPIs.         |
+| FR10  | Functional   | The tool shall allow scheduled/automated runs in CI/CD pipelines.           | MetricMancer can be triggered and run headless in CI.    |
+| FR11  | Functional   | The tool shall export JSON reports suitable for dashboards/monitoring.      | JSON output is compatible with dashboard tools.          |
+| FR12  | Functional   | The tool shall provide configurable alerting if churn/complexity exceeds threshold. | Alerts are generated when thresholds are breached. |
+| FR13  | Functional   | The tool shall track and visualize code quality trends over time.           | Trend graphs/tables are present in reports.              |
+| FR14  | Functional   | The tool shall identify and flag files with low code ownership.              | Low-ownership files are highlighted in reports.          |
+| FR15  | Functional   | The tool shall support knowledge sharing recommendations for low-ownership files. | Reports include suggestions for knowledge sharing.   |
+| FR16  | Functional   | The tool shall provide onboarding support by highlighting complex/hotspot files. | New users can easily find and review risky code.     |
+| FR17  | Functional   | The tool shall allow quality gates to be set and enforced (e.g., max churn/complexity). | Builds fail or warn if gates are not met.         |
+| FR18  | Functional   | The tool shall provide summary dashboards and risk reports for management.   | Dashboards/reports are available for managers/SQAM.      |
+| FR19  | Functional   | The tool shall allow correlation of code metrics with business outcomes (e.g., defect rates, release stability). | Reports show metric/business outcome links. |
+| FR20  | Functional   | The tool shall support export/integration with external quality dashboards.  | Results can be exported to third-party dashboards.       |
+| NFR1  | Non-Functional| The tool shall process a medium repo (<10k files) in under 5 minutes.      | Analysis completes within 5 minutes for test repo.       |
+| NFR2  | Non-Functional| The tool shall be extensible for new KPIs and languages.                   | New KPIs/languages can be added with minimal changes.    |
+| NFR3  | Non-Functional| The tool shall run on Windows, macOS, and Linux.                           | All platforms supported and tested.                      |
+| NFR4  | Non-Functional| The tool shall provide clear error messages for invalid input.             | User receives actionable error messages.                 |
+
+#### 4.3.2 Traceability Matrix: Requirements to User Stories
 [ToC](#table-of-contents)
-py:test_run_with_report_generate_exception |
+
 
 | User Story / Persona                                             | FR1 | FR2 | FR3 | FR4 | FR5 | FR6 | FR7 | FR8 | FR9 | FR10 | FR11 | FR12 | FR13 | FR14 | FR15 | FR16 | FR17 | FR18 | FR19 | FR20 | NFR1 | NFR2 | NFR3 | NFR4 |
 |------------------------------------------------------------------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|------|------|------|------|------|------|------|------|------|------|------|------|------|
@@ -812,35 +843,7 @@ py:test_run_with_report_generate_exception |
 | Erin: Correlate code metrics with defect data                   |     |     |     |     |     |  X  |     |     |     |      |      |      |      |      |      |      |      |      |      |      |      |      |      |      |
 | Erin: Export results to dashboards                              |     |     |     |     |     |     |     |     |     |      |  X   |      |      |      |      |      |      |      |      |  X   |      |      |      |      |
 
-| ID    | Type         | Description                                                                 | Acceptance Criteria                                      |
-|-------|--------------|-----------------------------------------------------------------------------|----------------------------------------------------------|
-| FR1   | Functional   | The tool shall calculate cyclomatic complexity for all functions/methods.   | Complexity is reported for all functions in the report.  |
-| FR2   | Functional   | The tool shall calculate code churn for all files.                          | Churn is reported for all files in the report.           |
-| FR3   | Functional   | The tool shall identify hotspots (high churn × high complexity).            | Hotspot files are highlighted in the report.             |
-| FR4   | Functional   | The tool shall support multi-language analysis.                             | User can analyze at least two languages in one run.      |
-| FR5   | Functional   | The tool shall generate CLI, HTML, and JSON reports.                        | All formats are available and contain the same KPIs.     |
-| FR6   | Functional   | The tool shall support integration with issue trackers.                     | Defect density is shown if issue data is provided.       |
-| FR7   | Functional   | The tool shall calculate code ownership per file.                           | Ownership is reported and low-ownership files flagged.   |
-| FR8   | Functional   | The tool shall calculate logical and temporal coupling.                     | Coupling metrics are included in the report.             |
-| FR9   | Functional   | The tool shall visualize KPIs in HTML reports.                              | HTML report contains charts/tables for all KPIs.         |
-| NFR1  | Non-Functional| The tool shall process a medium repo (<10k files) in under 5 minutes.      | Analysis completes within 5 minutes for test repo.       |
-| NFR2  | Non-Functional| The tool shall be extensible for new KPIs and languages.                   | New KPIs/languages can be added with minimal changes.    |
-| NFR3  | Non-Functional| The tool shall run on Windows, macOS, and Linux.                           | All platforms supported and tested.                      |
-| NFR4  | Non-Functional| The tool shall provide clear error messages for invalid input.             | User receives actionable error messages.                 |
-
-| FR10  | Functional   | The tool shall allow scheduled/automated runs in CI/CD pipelines.           | MetricMancer can be triggered and run headless in CI.    |
-| FR11  | Functional   | The tool shall export JSON reports suitable for dashboards/monitoring.      | JSON output is compatible with dashboard tools.          |
-| FR12  | Functional   | The tool shall provide configurable alerting if churn/complexity exceeds threshold. | Alerts are generated when thresholds are breached. |
-| FR13  | Functional   | The tool shall track and visualize code quality trends over time.           | Trend graphs/tables are present in reports.              |
-| FR14  | Functional   | The tool shall identify and flag files with low code ownership.              | Low-ownership files are highlighted in reports.          |
-| FR15  | Functional   | The tool shall support knowledge sharing recommendations for low-ownership files. | Reports include suggestions for knowledge sharing.   |
-| FR16  | Functional   | The tool shall provide onboarding support by highlighting complex/hotspot files. | New users can easily find and review risky code.     |
-| FR17  | Functional   | The tool shall allow quality gates to be set and enforced (e.g., max churn/complexity). | Builds fail or warn if gates are not met.         |
-| FR18  | Functional   | The tool shall provide summary dashboards and risk reports for management.   | Dashboards/reports are available for managers/SQAM.      |
-| FR19  | Functional   | The tool shall allow correlation of code metrics with business outcomes (e.g., defect rates, release stability). | Reports show metric/business outcome links. |
-| FR20  | Functional   | The tool shall support export/integration with external quality dashboards.  | Results can be exported to third-party dashboards.       |
-
-#### 4.3.2 Traceability Matrix: Requirements to Test Cases
+#### 4.3.3 Traceability Matrix: Requirements to Test Cases
 [ToC](#table-of-contents)
 
 | Requirement | Test Case(s) / File(s) |
@@ -868,7 +871,7 @@ py:test_run_with_report_generate_exception |
 | NFR1        | tests/app/test_metric_mancer_app.py:test_run_single_repo |
 | NFR2        | (Manual/Planned) |
 | NFR3        | (Manual/Planned) |
-| NFR4        | tests/app/test_metric_mancer_app_edge
+| NFR4        | tests/app/test_metric_mancer_app_edge.py:test_run_with_report_generate_exception |
 
 ### 5. Requirement Prioritization & Risk Management
 [ToC](#table-of-contents)
