@@ -908,6 +908,3 @@ MetricMancer is developed using an iterative, test-driven approach. The process 
 - **Continuous Integration:** Ensures code quality and rapid feedback.
 - **Documentation:** Requirements and design are updated alongside code.
 - **Open Source Collaboration:** Contributions are reviewed and integrated via pull requests.
-
-```text
-```
