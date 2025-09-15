@@ -637,42 +637,35 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 - Example output as above.
 
 ##### 4.2.2.2 Code Ownership
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
 
-###### Git Blame Analysis
+Git Blame Analysis
+Use git blame (or equivalent) to attribute each line of code in a file to its most recent author.
+Aggregate the number of lines per author for each file or module.
+Calculate the ownership percentage for each author as (lines by author) / (total lines in file).
+Example:
 
-- Use `git blame` (or equivalent) to attribute each line of code in a file to its most recent author.
-- Aggregate the number of lines per author for each file or module.
-- Calculate the ownership percentage for each author as (lines by author) / (total lines in file).
+| File         | Author | Lines | Ownership (%) |
+|--------------|--------|-------|---------------|
+| src/foo.py   | Alice  | 120   | 60%           |
+| src/foo.py   | Bob    | 80    | 40%           |
 
-**Example:**
-
-| File         | Author         | Lines | Ownership (%) |
-|--------------|----------------|-------|---------------|
-| src/foo.py   | Alice          | 120   | 60%           |
-| src/foo.py   | Bob            | 80    | 40%           |
-
-###### Thresholds for Low Ownership
-
-- **Low Ownership:** No single author owns more than 50% of a file's lines (default threshold, as recommended in the book).
-- **Medium Ownership:** Top author owns 50–75% of lines.
-- **High Ownership:** Top author owns more than 75% of lines.
-
+Thresholds for Low Ownership
+Low Ownership: No single author owns more than 50% of a file's lines (default threshold, as recommended in the book).
+Medium Ownership: Top author owns 50–75% of lines.
+High Ownership: Top author owns more than 75% of lines.
 These thresholds shall be user-configurable.
 
-###### Visualization
-
-- The tool shall visualize code ownership per file/module, e.g., as a bar chart or pie chart showing the proportion of lines per author.
-- Reports shall highlight files with low ownership and recommend review or knowledge sharing.
-
-###### Acceptance Criteria (Code Ownership)
-
-- Code ownership is calculated for all files in the repository using git blame or equivalent.
-- Files with low ownership are clearly flagged in reports and visualizations.
-- Thresholds are user-configurable.
-- Example output:
+Visualization
+The tool shall visualize code ownership per file/module, e.g., as a bar chart or pie chart showing the proportion of lines per author.
+Reports shall highlight files with low ownership and recommend review or knowledge sharing.
+Acceptance Criteria (Code Ownership)
+Code ownership is calculated for all files in the repository using git blame or equivalent.
+Files with low ownership are clearly flagged in reports and visualizations.
+Thresholds are user-configurable.
+Example output:
 
 | File         | Top Author | Ownership (%) | Risk Level |
 |--------------|------------|---------------|------------|
