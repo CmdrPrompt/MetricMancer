@@ -4,6 +4,47 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.2] - 2025-09-14
+
+### Added
+
+- New HTML report templates: `base.html`, `overview.html`, and `repo.html` for improved report rendering and maintainability.
+- Robust, modern CSS and interactive file tree for HTML reports.
+- UTF-8 output enforcement for CLI to support Unicode in all environments.
+
+### Changed
+
+- All warning and status messages now use `[WARN]` and `[OK]` prefixes for consistency in CLI and logs.
+- Improved path normalization and cross-platform compatibility in code churn and scanner modules.
+- Refactored test cases for code churn and scanner to use robust, normalized path comparisons.
+- HTML report output now uses `[OK]` instead of emoji for status messages.
+
+### Fixed
+
+- Fixed bug where non-existent directories in scan would not print normalized warning messages.
+- Fixed test failures on Windows/macOS due to inconsistent path handling in tests and code.
+- Fixed edge cases in code churn analyzer for missing or invalid git roots.
+
+### Removed
+
+- Removed exclusion of `*.html` from `.gitignore` (now tracked for templates).
+- Removed redundant/legacy code in test mocks and path handling.
+
+### Security
+
+- No security changes in this release.
+
+### Deprecated
+
+- No deprecations in this release.
+
+...existing code...
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
 ## [2.0.1] - 2025-09-14
 
 ### Changed
