@@ -26,18 +26,24 @@ class JSONReportFormat(ReportFormatStrategy):
         """
         Recursively traverses the data model to produce a flat list of
         file or function data, suitable for machine processing.
+        Endast git-spårade filer inkluderas.
         """
+        def is_tracked_file(file_obj: File):
+            co = file_obj.kpis.get('Code Ownership')
+            if not co or not hasattr(co, 'value') or not isinstance(co.value, dict):
+                return True
+            return not (co.value.get('ownership') == 'N/A')
+
         items = []
-        
-        # Add metadata from the top-level repo_info object
         repo_name = getattr(scan_dir, 'repo_name', None)
         timestamp = getattr(scan_dir, 'timestamp', None) if hasattr(scan_dir, 'timestamp') else None
         component = getattr(scan_dir, 'component', None) if hasattr(scan_dir, 'component') else None
         team = getattr(scan_dir, 'team', None) if hasattr(scan_dir, 'team') else None
 
         for file_obj in scan_dir.files.values():
+            if not is_tracked_file(file_obj):
+                continue
             file_churn = file_obj.kpis.get('churn', {}).get('value')
-
             if level == "function":
                 for func_obj in file_obj.functions:
                     func_complexity = func_obj.kpis.get('complexity', {}).get('value')

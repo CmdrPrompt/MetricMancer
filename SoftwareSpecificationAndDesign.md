@@ -64,14 +64,14 @@
     - [8. Process \& Methodology](#8-process--methodology)
 
 ## 1. Introduction
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots.
 
 The tool supports multi-language analysis and can generate reports in several formats, including CLI, HTML, and JSON. JSON reports are designed for integration with OpenSearch and dashboards. MetricMancer is built for extensibility, making it easy to add new metrics or adapt the tool to different codebases. The goal is to help teams identify refactoring candidates, monitor code health trends, and prioritize technical debt reduction—using real data from version control history and static analysis.
 
 ## 2. Glossary
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 **Temporal Coupling:**
 Measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies or poor modular design. *(Not implemented)*
@@ -140,7 +140,7 @@ A visual overview of KPI results, often with charts and color coding to quickly 
 The methodology and analysis models from the book "Your Code as a Crime Scene" by Adam Tornhill, which form the basis for the definitions and interpretations of KPIs in this project.
 
 ### 2.1. KPI Extension and Implementation Status
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 The following table summarizes the available and planned KPIs in MetricMancer, their implementation status, and extensibility notes:
 
@@ -163,7 +163,7 @@ The following table summarizes the available and planned KPIs in MetricMancer, t
 To add a new KPI, implement a new KPI calculator module and register it in the configuration. The system is designed for easy extension with minimal coupling between components.
 
 ## 3. System Overview
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 MetricMancer is structured as a modular, layered system to maximize flexibility, maintainability, and extensibility. The architecture is divided into several key components:
 
@@ -177,7 +177,7 @@ MetricMancer is structured as a modular, layered system to maximize flexibility,
 The architecture supports both batch and incremental analysis, and is suitable for integration into CI/CD pipelines. By separating scanning, parsing, metric calculation, and reporting, MetricMancer enables teams to extend or adapt the tool to their specific needs with minimal coupling between components.
 
 ### 3.1. Application Overview
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -205,7 +205,7 @@ This diagram shows the high-level architecture and main data flow in MetricMance
 ### 3.2. Architecture
 
 #### 3.2.1. Scanner Flow
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -226,7 +226,7 @@ graph TD
 This diagram details the scanning process. The scanner receives a list of directories, iterates through them, finds files, filters them by type, collects file paths, and returns the final file list. Edge cases such as empty directories, permission errors, and no files found are handled explicitly.
 
 #### 3.2.2. App Run Flow
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -262,7 +262,7 @@ graph TD
 This diagram illustrates the main execution flow of the application. After scanning directories, files are analyzed and summarized per repository. For each repository, the appropriate report format is selected and generated. The flow handles multiple repositories and includes error handling for empty directories and failures in scanning, analysis, or report generation.
 
 #### 3.2.3. Analyzer Analyze Flow
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -298,7 +298,7 @@ graph TD
 This diagram describes how the analyzer processes files. Files are grouped per repository root, and for each repo, churn and complexity are collected, detailed analysis is performed per file, and hotspot scores are calculated. Results are summarized and aggregated into `RepoInfo` objects, which are then passed to the report generator. Edge cases such as empty files and exceptions in KPI analyzers are handled.
 
 #### 3.2.4. ReportGenerator Flow
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -329,7 +329,7 @@ graph TD
 This diagram shows how the report generator selects the output format (CLI, HTML, or JSON), generates the report, and outputs it to the appropriate destination. It also highlights error handling for unknown formats and output errors.
 
 #### 3.2.5. HTML Report Flow
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -353,7 +353,7 @@ graph TD
 This diagram details the process of generating an HTML report. The report generator initializes the HTML format, prints the report, uses the renderer to prepare data, and writes the final HTML file. Edge cases include missing templates, write errors, and empty analysis results.
 
 #### 3.2.6. CLI Report Flow
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 ```mermaid
 graph TD
@@ -380,7 +380,7 @@ graph TD
 This diagram shows the flow for generating CLI reports. After analysis, the CLI report generator selects the output format (human-readable or CSV), prints the report, and handles errors such as unknown formats or empty analysis results.
 
 ### 3.3. Data Model
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 The MetricMancer data model is designed to represent the hierarchical structure of a source code repository and to aggregate KPI results at each level. The main classes are:
 
@@ -456,67 +456,14 @@ Represents the top-level object for an analyzed repository, including its struct
   - Aggregate KPIs from underlying directories and files for repository-level summaries
 
 #### 3.3.1. UML Diagram (PlantUML)
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
-```plantuml
-@startuml
-class BaseKPI {
-  +name: str
-  +description: str
-  +value: Any
-}
-
-class Function {
-  +name: str
-  +kpis: Dict[str, BaseKPI]
-}
-
-class File {
-  +name: str
-  +file_path: str
-  +kpis: Dict[str, BaseKPI]
-  +functions: List[Function]
-}
-
-class BaseDir {
-  +dir_name: str
-  +scan_dir_path: str
-}
-
-class ScanDir {
-  +files: Dict[str, File]
-  +scan_dirs: Dict[str, ScanDir]
-  +kpis: Dict[str, BaseKPI]
-}
-
-class RepoInfo {
-  +repo_root_path: str
-  +repo_name: str
-}
-
-File "1" o-- "*" Function
-File "1" o-- "*" BaseKPI
-ScanDir "1" o-- "*" File
-ScanDir "1" o-- "*" ScanDir
-ScanDir "1" o-- "*" BaseKPI
-RepoInfo --|> ScanDir
-ScanDir --|> BaseDir
-@enduml
-```
-
-> **Tips for rendering PlantUML diagrams in VS Code:**
->
-> - To view the diagram as an image in VS Code, install either the "PlantUML" extension (jebbs.plantuml) or "Markdown Preview Enhanced" (shd101wyy.markdown-preview-enhanced).
-> - For the PlantUML extension: Open the command palette and run "PlantUML: Preview Current Diagram" with the cursor inside the code block, or save the diagram as a `.puml` file and preview it.
-> - For Markdown Preview Enhanced: Open the Markdown preview and click the run/play icon above the code block.
-> - **Graphviz required:** Some diagrams (especially those using `@startuml`) require Graphviz (`dot`) to be installed. On macOS, run `brew install graphviz` in the terminal.
-> - **Java required:** PlantUML requires Java to be installed. Check with `java -version` in the terminal.
-> - If you encounter issues, see the extension documentation for troubleshooting and configuration tips.
+![Data model](out/plantuml/datamodel_2025-09-16/datamodel_2025-09-16.png)
 
 ## 4. Detailed Requirements
 
 ### 4.1 User Stories
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 MetricMancer is intended for software development teams, technical leads, architects, and quality engineers who need actionable insights into code quality and technical debt. Key stakeholders include:
 
@@ -608,7 +555,7 @@ MetricMancer is intended for software development teams, technical leads, archit
 #### 4.2.2 Issue Tracker Integration and Defect Correlation
 
 ##### 4.2.2.1 Defect Density and Issue Tracker Integration
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 MetricMancer shall support integration with external issue trackers (e.g., Jira, GitHub Issues, GitLab, etc.) to correlate code metrics (KPIs) with defect data, as described in "Your Code as a Crime Scene, second edition".
 
@@ -637,7 +584,7 @@ MetricMancer shall support integration with external issue trackers (e.g., Jira,
 - Example output as above.
 
 ##### 4.2.2.2 Code Ownership
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 Code ownership measures the proportion of code in a file or module contributed by each developer. Low ownership (many authors) can indicate a risk for knowledge spread, maintenance issues, or increased defect rates. This metric is based on "Your Code as a Crime Scene, second edition".
 
@@ -680,7 +627,7 @@ These thresholds shall be user-configurable.
 | src/bar.py   | Bob        | 40%           | Low        |
 
 ##### 4.2.2.3 Logical Coupling
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 Logical coupling identifies files or modules that often change together, even if they are not directly dependent in the code. This metric helps reveal hidden dependencies and maintenance risks that are not visible in the static structure. The approach is based on "Your Code as a Crime Scene, second edition".
 
@@ -736,7 +683,7 @@ These thresholds shall be configurable by the user.
 | src/service.py | src/db.py      | 3          | 25                | 15                | 12%          | Medium   | Yes               |
 
 ##### 4.2.2.4 Temporal Coupling
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 Temporal coupling measures how often two or more files change together in the same commit. High temporal coupling can indicate hidden dependencies, architectural erosion, or poor modular design. This metric is inspired by "Your Code as a Crime Scene, second edition".
 
@@ -794,7 +741,7 @@ These thresholds shall be configurable by the user.
 ### 4.3 Requirements Tables
 
 #### 4.3.1 Traceability Matrix: User Stories to Requirements
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 py:test_run_with_report_generate_exception |
 
 | User Story / Persona                                             | FR1 | FR2 | FR3 | FR4 | FR5 | FR6 | FR7 | FR8 | FR9 | FR10 | FR11 | FR12 | FR13 | FR14 | FR15 | FR16 | FR17 | FR18 | FR19 | FR20 | NFR1 | NFR2 | NFR3 | NFR4 |
@@ -848,7 +795,7 @@ py:test_run_with_report_generate_exception |
 | FR20  | Functional   | The tool shall support export/integration with external quality dashboards.  | Results can be exported to third-party dashboards.       |
 
 #### 4.3.2 Traceability Matrix: Requirements to Test Cases
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 | Requirement | Test Case(s) / File(s) |
 |-------------|------------------------|
@@ -878,7 +825,7 @@ py:test_run_with_report_generate_exception |
 | NFR4        | tests/app/test_metric_mancer_app_edge
 
 ### 5. Requirement Prioritization & Risk Management
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 Requirements are prioritized based on their impact on code quality, maintainability, and user value. Core analysis and reporting features are highest priority. Planned features (e.g., defect density, test coverage) are lower priority and scheduled for future releases.
 
@@ -889,7 +836,7 @@ Risks include:
 - **Data Accuracy:** Incorrect parsing or churn calculation could mislead users. Mitigated by tests and validation.
 
 ### 6. Validation & Verification
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 Validation and verification are achieved through:
   
@@ -899,12 +846,12 @@ Validation and verification are achieved through:
 - **Continuous Integration:** Automated tests run on each commit to ensure ongoing quality.
 
 ### 7. Change Management
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 Requirements and design changes are managed via version control (Git). All changes are tracked, reviewed, and documented in the changelog. Major changes require stakeholder review and update of requirements tables.
 
 ### 8. Process & Methodology
-[ToC](#table-of-contents)
+[ToC](#table-of-contents)
 
 MetricMancer is developed using an iterative, test-driven approach. The process emphasizes:
   

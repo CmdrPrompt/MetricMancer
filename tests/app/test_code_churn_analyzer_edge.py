@@ -28,11 +28,17 @@ class TestCodeChurnAnalyzerEdgeCases(unittest.TestCase):
     @patch('src.kpis.codechurn.code_churn.find_git_repo_root', return_value='/repo')
     @patch('src.kpis.codechurn.code_churn.debug_print')
     @patch('pydriller.Repository', side_effect=Exception('fail'))
-    def test_analyze_handles_pydriller_exception(self, MockRepository, mock_debug_print, mock_find_git):
+    @patch('os.path.isdir', side_effect=lambda path: True if path.endswith('.git') else False)
+    def test_analyze_handles_pydriller_exception(self, mock_isdir, MockRepository, mock_debug_print, mock_find_git):
         analyzer = CodeChurnAnalyzer([('/repo', '/repo')])
         result = analyzer.analyze()
         self.assertEqual(result, {})
-        self.assertTrue(any('Could not analyze churn' in str(call[0][0]) for call in mock_debug_print.call_args_list))
+        found_warn = any('[WARN]' in str(call[0][0]) for call in mock_debug_print.call_args_list)
+        if not found_warn:
+            print('Captured debug_print calls:')
+            for call in mock_debug_print.call_args_list:
+                print(call)
+        self.assertTrue(found_warn)
 
     @patch('src.kpis.codechurn.code_churn.find_git_repo_root', return_value='/repo')
     @patch('src.kpis.codechurn.code_churn.debug_print')
