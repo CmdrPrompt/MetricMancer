@@ -12,7 +12,23 @@ class ChurnKPI(BaseKPI):
 
     def calculate(self, file_path: str, churn_data: dict, **kwargs):
         """
-        Looks up a pre-calculated churn value from a dictionary.
+        Looks up a pre-calculated churn value from a dictionary, robust to absolute/relative path mismatches and filename-only matches.
         """
-        self.value = churn_data.get(file_path, 0)
+        import os
+        abs_path = os.path.normcase(os.path.normpath(os.path.abspath(file_path)))
+        # Try absolute path match
+        for key in churn_data:
+            norm_key = os.path.normcase(os.path.normpath(key))
+            if abs_path == norm_key:
+                self.value = churn_data[key]
+                break
+        else:
+            # Try filename match if absolute path fails
+            file_name = os.path.basename(file_path)
+            for key in churn_data:
+                if os.path.basename(key) == file_name:
+                    self.value = churn_data[key]
+                    break
+            else:
+                self.value = 0
         return self

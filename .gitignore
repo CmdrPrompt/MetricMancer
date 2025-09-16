@@ -11,3 +11,5 @@ __pycache__/
 terminal.log
 .backup
 .coverage
+complexity_report*.html
+kpi_report*.html

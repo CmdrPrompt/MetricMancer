@@ -43,9 +43,14 @@ class Analyzer:
         # 2. Collect churn data for all files in the repo
         churn_analyzer = CodeChurnAnalyzer([(repo_root, d) for d in scan_dirs])
         churn_data = churn_analyzer.analyze()
+        debug_print(f"[DEBUG] churn_data after analyze: {churn_data}")
+        debug_print(f"[DEBUG] churn_data keys after analyze: {list(churn_data.keys())}")
         complexity_analyzer = ComplexityAnalyzer()
-        
+
         # 3. Build the hierarchical data model and calculate KPIs
+        if not files_in_repo:
+            debug_print(f"[DEBUG] No files to analyze for repo: {repo_root}, returning None.")
+            return None
         for file_info in files_in_repo:
             file_path = Path(file_info['path'])
             ext = file_info.get('ext')
@@ -79,13 +84,29 @@ class Analyzer:
                     Function(name=func_data.get('name', 'N/A'), kpis={func_complexity_kpi.name: func_complexity_kpi})
                 )
 
+
             # Aggregate KPIs for the entire file
             file_complexity_kpi = ComplexityKPI().calculate(complexity=total_complexity, function_count=len(function_objects))
 
             # Create and calculate ChurnKPI efficiently
+            debug_print(f"[DEBUG] churn_data keys: {list(churn_data.keys())}")
+            debug_print(f"[DEBUG] Looking up churn for file_path: {file_path}")
             churn_kpi = ChurnKPI().calculate(file_path=str(file_path), churn_data=churn_data)
+            debug_print(f"[DEBUG] Setting churn for:              {file_path}: {churn_kpi.value}")
 
             hotspot_kpi = HotspotKPI().calculate(complexity=file_complexity_kpi.value, churn=churn_kpi.value)
+
+            # --- Code Ownership KPI ---
+            try:
+                from src.kpis.codeownership import CodeOwnershipKPI
+                code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
+            except Exception as e:
+                from src.kpis.base_kpi import BaseKPI
+                code_ownership_kpi = BaseKPI(
+                    name="Code Ownership",
+                    value={"error": f"Could not calculate: {e}"},
+                    description="Proportion of code lines owned by each author (via git blame)"
+                )
 
             # Create the File object
             file_obj = File(
@@ -94,7 +115,8 @@ class Analyzer:
                 kpis={
                     file_complexity_kpi.name: file_complexity_kpi,
                     churn_kpi.name: churn_kpi,
-                    hotspot_kpi.name: hotspot_kpi
+                    hotspot_kpi.name: hotspot_kpi,
+                    code_ownership_kpi.name: code_ownership_kpi
                 },
                 functions=function_objects
             )
@@ -122,7 +144,12 @@ class Analyzer:
                     current_dir_container = current_dir_container.scan_dirs[part]
                 current_dir_container.files[file_obj.name] = file_obj
 
+
+
+
+
         # Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
+        debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
         return repo_info
 
     def analyze(self, files):
@@ -137,8 +164,10 @@ class Analyzer:
 
         summary = {}
         for repo_root in sorted(files_by_root.keys()):
-            summary[repo_root] = self._analyze_repo(
+            repo_info = self._analyze_repo(
                 repo_root, files_by_root[repo_root], list(scan_dirs_by_root[repo_root])
             )
+            if repo_info is not None:
+                summary[repo_root] = repo_info
 
         return summary

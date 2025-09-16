@@ -7,9 +7,17 @@ import csv
 class CLICSVReportFormat(ReportFormatStrategy):
 
     def _collect_flat_list(self, scan_dir: ScanDir, level: str) -> List[dict]:
-        """Recursively traverses the data model to produce a flat list for CSV."""
+        """Recursively traverses the data model to produce a flat list for CSV. Endast git-spårade filer inkluderas."""
+        def is_tracked_file(file_obj: File):
+            co = file_obj.kpis.get('Code Ownership')
+            if not co or not hasattr(co, 'value') or not isinstance(co.value, dict):
+                return True
+            return not (co.value.get('ownership') == 'N/A')
+
         items = []
         for file_obj in scan_dir.files.values():
+            if not is_tracked_file(file_obj):
+                continue
             file_churn = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') else None
 
             if level == "function":
