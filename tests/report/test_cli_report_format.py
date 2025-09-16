@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from src.report.cli_report_format import CLIReportFormat
+from src.report.cli.cli_report_format import CLIReportFormat
 from src.kpis.model import RepoInfo, ScanDir, File, Function
 
 class TestCLIReportFormat(unittest.TestCase):
