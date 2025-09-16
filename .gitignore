@@ -12,3 +12,5 @@ terminal.log
 mermaid
 .backup
 .coverage
+complexity_report.html
+kpi_report*.html
