@@ -18,8 +18,14 @@ class CLIReportFormat(ReportFormatStrategy):
         self._print_dir_recursively(repo_info, level, prefix="│   ")
 
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
-        """Recursively collects all File objects from a ScanDir tree."""
-        files = list(scan_dir.files.values())
+        """Recursively collects all git-tracked File objects from a ScanDir tree."""
+        def is_tracked_file(file_obj: File):
+            co = file_obj.kpis.get('Code Ownership')
+            if not co or not hasattr(co, 'value') or not isinstance(co.value, dict):
+                return True
+            return not (co.value.get('ownership') == 'N/A')
+
+        files = [f for f in scan_dir.files.values() if is_tracked_file(f)]
         for sub_dir in scan_dir.scan_dirs.values():
             files.extend(self._collect_all_files(sub_dir))
         return files
