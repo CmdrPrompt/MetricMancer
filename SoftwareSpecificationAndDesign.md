@@ -494,7 +494,11 @@ MetricMancer is intended for software development teams, technical leads, archit
 
 **User Stories:**
 
-<!-- Add Carol's user stories here (to be filled in next step) -->
+- As an engineering manager, I want to track code quality trends over time so that I can identify areas of improvement and measure the impact of technical debt reduction initiatives.
+- As an engineering manager, I want to receive summary dashboards and risk reports so that I can prioritize refactoring and allocate resources effectively.
+- As an engineering manager, I want to identify files or modules with low code ownership so that I can encourage knowledge sharing and reduce maintenance risk.
+- As an engineering manager, I want to correlate code quality metrics with business outcomes (e.g., defect rates, release stability) so that I can justify investments in code quality to stakeholders.
+- As an engineering manager, I want to use MetricMancer reports to support planning and decision-making in sprint and release meetings.
 
 #### 4.1.4 Persona 4: Dave – The New Team Member
 
