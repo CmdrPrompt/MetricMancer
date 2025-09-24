@@ -10,44 +10,44 @@ The tool supports multi-language analysis and can generate reports in several fo
 
 ## Table of Contents
 
-- [1. Introduction](#1-introduction)
-- [2. Glossary](#2-glossary)
-  - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
-- [3. System Overview](#3-system-overview)
-  - [3.1. Application Overview](#31-application-overview)
-  - [3.1.1 System Overview](#311-system-overview)
-  - [3.1.2 Application Flow](#312-application-flow)
-  - [3.1.3 Analysis Flow](#313-analysis-flow)
-- [4. Detailed Requirements](#4-detailed-requirements)
-  - [4.1 User Stories](#41-user-stories)
-    - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
-    - [4.1.2 Persona 2: Bob – The DevOps Engineer](#412-persona-2-bob--the-devops-engineer)
-    - [4.1.3 Persona 3: Carol – The Engineering Manager](#413-persona-3-carol--the-engineering-manager)
-    - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
-    - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
-    - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
-    - [4.1.7 Persona 7: Mia – The Executive Manager](#417-persona-7-mia--the-executive-manager)
-  - [4.2 Functional Requirements](#42-functional-requirements)
-    - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
-    - [4.3.2 Mapping: Requirements to User Stories](#432-mapping-requirements-to-user-stories)
-    - [4.3.3 Mapping: Requirements to test cases](#433-mapping-requirements-to-test-cases)
-- [5. Requirement Prioritization & Risk Management](#5-requirement-prioritization--risk-management)
-- [6. Validation & Verification](#6-validation--verification)
-- [7. Change Management](#7-change-management)
-- [8. Process & Methodology](#8-process--methodology)
-- [9. System Flow and Architecture Diagrams](#9-system-flow-and-architecture-diagrams)
-  - [9.1 System Overview](#91-system-overview)
-  - [9.2 Application Flow](#92-application-flow)
-  - [9.3 Analysis Flow](#93-analysis-flow)
-  - [9.4 Scanner and Data Collection](#94-scanner-and-data-collection)
-  - [9.5 Report Generation](#95-report-generation)
-    - [9.5.1 Report Generation Overview](#951-report-generation-overview)
-    - [9.5.2 HTML Report](#952-html-report)
-    - [9.5.3 CLI Report](#953-cli-report)
-    - [9.5.4 JSON Report](#954-json-report)
-  - [9.6 KPI Modules](#96-kpi-modules)
-  - [9.7 Configuration and CLI Flow](#97-configuration-and-cli-flow)
-  - [9.8 Error Handling](#98-error-handling)
+- [Requirements and Design](#requirements-and-design)
+  - [1. Introduction](#1-introduction)
+  - [Table of Contents](#table-of-contents)
+  - [2. Glossary](#2-glossary)
+    - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
+  - [3. System Overview](#3-system-overview)
+- [3.1 System Flow and Architecture Diagrams](#31-system-flow-and-architecture-diagrams)
+    - [3.1.1 System Overview](#311-system-overview)
+    - [3.1.2 Application Flow](#312-application-flow)
+    - [3.1.3 Analysis Flow](#313-analysis-flow)
+    - [3.1.4 Scanner and Data Collection](#314-scanner-and-data-collection)
+    - [3.1.5 Report Generation](#315-report-generation)
+      - [3.1.5.1 Report Generation Overview](#3151-report-generation-overview)
+      - [3.1.5.2 HTML Report](#3152-html-report)
+      - [3.1.5.3 CLI Report](#3153-cli-report)
+      - [3.1.5.4 JSON Report](#3154-json-report)
+    - [3.1.6 KPI Modules](#316-kpi-modules)
+    - [3.1.7 Configuration and CLI Flow](#317-configuration-and-cli-flow)
+    - [3.1.8 Error Handling](#318-error-handling)
+    - [3.2 Data Model](#32-data-model)
+      - [3.2.1 UML Diagram](#321-uml-diagram)
+  - [4. Detailed Requirements](#4-detailed-requirements)
+    - [4.1 User Stories](#41-user-stories)
+      - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
+      - [4.1.2 Persona 2: Bob – The DevOps Engineer](#412-persona-2-bob--the-devops-engineer)
+      - [4.1.3 Persona 3: Carol – The Engineering Manager](#413-persona-3-carol--the-engineering-manager)
+      - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
+      - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
+      - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
+      - [4.1.7 Persona 7: Mia – The Executive Manager](#417-persona-7-mia--the-executive-manager)
+    - [4.2 Functional Requirements](#42-functional-requirements)
+      - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
+      - [4.3.2 Mapping: Requirements to User Stories](#432-mapping-requirements-to-user-stories)
+      - [4.3.3 Mapping: Requirements to test cases](#433-mapping-requirements-to-test-cases)
+    - [5. Requirement Prioritization \& Risk Management](#5-requirement-prioritization--risk-management)
+    - [6. Validation \& Verification](#6-validation--verification)
+    - [7. Change Management](#7-change-management)
+    - [8. Process \& Methodology](#8-process--methodology)
 
 ## 2. Glossary
 
@@ -968,23 +968,13 @@ MetricMancer is intended for software development teams, technical leads, archit
 
 [ToC](#table-of-contents)
 
-##### FR1: Calculate complexity
-
-The tool shall calculate McCabe cyclomatic complexity for all functions/methods.
-
-**Acceptance Criteria:**
-
-- Complexity is reported for all functions in the report.
-
-##### FR2: Calculate churn
-
 | Req-ID | Type           | Group                    | Name                              | Description                                                                 | Rationale (Why?) | Implementation Status |
 |--------|----------------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
 | FR1    | Functional     | Core Analysis            | Calculate complexity              | The tool shall calculate cyclomatic complexity for all functions/methods.   | Identify complex code and refactoring needs | Implemented |
 | FR2    | Functional     | Core Analysis            | Calculate churn                   | The tool shall calculate code churn for all files.                          | Find unstable/risky code | Implemented |
 | FR3    | Functional     | Core Analysis            | Identify hotspots                 | The tool shall identify hotspots (high churn × high complexity).            | Focus improvement on risk zones | Implemented |
-| FR4    | Functional     | Core Analysis            | Calculate code ownership          | The tool shall calculate code ownership per file.                           | Identify knowledge silos and risk | Planned |
-| FR5    | Functional     | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | Planned |
+| FR4    | Functional     | Core Analysis            | Calculate code ownership          | The tool shall calculate code ownership per file.                           | Identify knowledge silos and risk | Implemented |
+| FR5    | Functional     | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | **Planned/Partial** |
 | FR6    | Functional     | Core Analysis            | Calculate logical coupling        | The tool shall calculate logical coupling between files.                    | Find hidden dependencies | Planned |
 | FR7    | Functional     | Core Analysis            | Calculate temporal coupling       | The tool shall calculate temporal coupling between files.                   | Find hidden dependencies | Planned |
 | FR8    | Functional     | Core Analysis            | Quality trends                    | The tool shall track and visualize code quality over time.                  | Follow up on improvement work | Planned |
@@ -1000,9 +990,9 @@ The tool shall calculate McCabe cyclomatic complexity for all functions/methods.
 | FR18   | Functional     | Usability & Extensibility| Onboarding support                | The tool shall help new developers find complex/risky code.                 | Faster onboarding | Planned |
 | FR19   | Functional     | Usability & Extensibility| Recommend knowledge sharing       | The tool shall suggest knowledge sharing for low-ownership files.           | Spread knowledge in the team | Planned |
 | NFR1   | Non-Functional | Usability & Extensibility| Performance                       | Analysis of a medium-sized codebase (<10k files) shall take <5 min.         | Enable use in CI and daily operation | Implemented |
-| NFR2   | Non-Functional | Usability & Extensibility| Extensibility                     | It shall be easy to add new KPIs and languages.                             | Future-proof and adapt the tool | Planned |
+| NFR2   | Non-Functional | Usability & Extensibility| Extensibility                     | It shall be easy to add new KPIs and languages.                             | Future-proof and adapt the tool | Implemented |
 | NFR3   | Non-Functional | Usability & Extensibility| Platforms                         | The tool shall work on Windows, macOS, and Linux.                           | Support all common development environments | Implemented |
-| NFR4   | Non-Functional | Usability & Extensibility| Error handling                    | The tool shall provide clear error messages for invalid input.               | Facilitate troubleshooting and usability | Planned |
+| NFR4   | Non-Functional | Usability & Extensibility| Error handling                    | The tool shall provide clear error messages for invalid input.               | Facilitate troubleshooting and usability | Implemented |
 
 #### 4.3.2 Mapping: Requirements to User Stories
 
