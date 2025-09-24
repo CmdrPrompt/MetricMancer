@@ -1,48 +1,76 @@
-## App Run Flow
-
-[← Back to Overview](1_overview.md)
-
-- [Analyzer Analyze Flow](3_analyzer_analyze_flow.md)
-- [HTML Report Flow](4_html_report_flow.md)
-- [CLI Report Flow](5_cli_report_flow.md)
-- [ReportGenerator Flow](6_report_generator_flow.md)
-**Related diagrams:**
-- [Scanner Flow](7_scanner_flow.md)
-- [Analyzer Analyze Flow](3_analyzer_analyze_flow.md)
-- [HTML Report Flow](4_html_report_flow.md)
-- [CLI Report Flow](5_cli_report_flow.md)
-- [ReportGenerator Flow](6_report_generator_flow.md)
-- [Analyzer Analyze Flow](3_analyzer_analyze_flow.md)
-- [HTML Report Flow](4_html_report_flow.md)
-- [CLI Report Flow](5_cli_report_flow.md)
-- [ReportGenerator Flow](6_report_generator_flow.md)
+## App Run Flow (Simplified)
+This diagram outlines the main application run flow in MetricMancer, from startup through scanning, analysis, and report generation in various formats. It also highlights key edge cases and error handling at each stage, using the standard color coding and legend.
 
 ```mermaid
-graph TD
-    A[Start: MetricMancerApp run] --> B[Scanner scan directories]
-    B --> C[Files scanned list]
-    C --> D[Analyzer analyze files]
-    D --> E[Summary per repo ready RepoInfo object]
-    E --> F{Multiple repos?}
-    F -- Yes --> G[Create report links for cross-linking]
-    G --> H[Loop through each repo_info]
-    F -- No --> H
+flowchart TD
+    StartApp[Start MetricMancerApp run]
+    StartApp --> Scan[Scanner scan directories]
+    Scan --> Files[Files scanned list]
+    Files --> Analyze[Analyzer analyze files]
+    Analyze --> RepoInfos[RepoInfo list]
+    RepoInfos --> FormatSel{Select report format}
+    FormatSel -- HTML --> HTMLGen[HTMLReportGenerator generate]
+    FormatSel -- CLI --> CLIGen[CLIReportGenerator generate]
+    FormatSel -- JSON --> JSONGen[JSONReportGenerator generate]
+    HTMLGen --> HTMLOut[HTML report created]
+    CLIGen --> CLIOut[CLI report in terminal]
+    JSONGen --> JSONOut[JSON report written]
+    HTMLOut --> EndNode[End]
+    CLIOut --> EndNode
+    JSONOut --> EndNode
 
-    subgraph Report_generation_per_repo
-        H --> I{Report format?}
-        I -- HTML --> J[HTMLReportFormat/ReportGenerator generate]
-        I -- CLI --> K[CLIReportGenerator generate]
-    end
+    %% Assign classes for color coding (one per line, no trailing commas)
+    class StartApp start
+    class EndNode start
+    class Scan calc
+    class Files calc
+    class Analyze calc
+    class RepoInfos calc
+    class FormatSel loop
+    class HTMLGen agg
+    class CLIGen agg
+    class JSONGen agg
+    class HTMLOut agg
+    class CLIOut agg
+    class JSONOut agg
+    class WarnScan warn
+    class WarnAnalyze warn
+    class WarnFormat warn
+    class WarnHTML warn
+    class WarnCLI warn
+    class WarnJSON warn
+    class WarnEnd warn
 
-    J --> L[HTML report created]
-    K --> M[CLI report in terminal]
-    J -- Next repo --> H
-    K -- Next repo --> H
-    H -- Loop done --> N[End]
+    %% Edge cases and error handling
+    Scan -.-> WarnScan[Warn: empty/hidden/permission error]
+    Analyze -.-> WarnAnalyze[Warn: analysis error]
+    FormatSel -.-> WarnFormat[Warn: unknown format]
+    HTMLGen -.-> WarnHTML[Warn: HTML write error]
+    CLIGen -.-> WarnCLI[Warn: CLI output error]
+    JSONGen -.-> WarnJSON[Warn: JSON write error]
+    EndNode -.-> WarnEnd[Warn: incomplete output]
 
-    %% Edge cases
-    style B fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-    style D fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-    style I fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-    %% Error handling: empty directories, errors in scanner/analyzer, report generator
+    %% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
+
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start
+    class LegendCalc calc
+    class LegendLoop loop
+    class LegendAgg agg
+    class LegendWarn warn
 ```

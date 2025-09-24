@@ -1,0 +1,61 @@
+' data_model_2025-09-24
+@startuml data_model_2025-09-24
+' MetricMancer datamodell (2025-09-24)
+
+class RepoInfo {
+  +dir_name: str
+  +scan_dir_path: str
+  +repo_root_path: str
+  +repo_name: str
+  +files: Dict[str, File]
+  +scan_dirs: Dict[str, ScanDir]
+  +kpis: Dict[str, BaseKPI]
+}
+
+class ScanDir {
+  +dir_name: str
+  +scan_dir_path: str
+  +repo_root_path: str
+  +repo_name: str
+  +files: Dict[str, File]
+  +scan_dirs: Dict[str, ScanDir]
+  +kpis: Dict[str, BaseKPI]
+}
+
+class BaseDir {
+  +dir_name: str
+  +scan_dir_path: str  ' Relative path from repo_root
+  +repo_root_path: str
+  +repo_name: str
+}
+
+class File {
+  +name: str
+  +file_path: str  ' Relative path from ScanDir
+  +kpis: Dict[str, BaseKPI]
+  +functions: List[Function]
+}
+
+class Function {
+  +name: str
+  +kpis: Dict[str, BaseKPI]
+}
+
+abstract class BaseKPI {
+  +name: str
+  +value: Any
+  +unit: str
+  +description: str
+  +calculation_values: Dict[str, Any]
+}
+
+RepoInfo --|> ScanDir
+ScanDir --|> BaseDir
+ScanDir "*" o-- "*" File : files
+ScanDir "*" o-- "*" ScanDir : scan_dirs
+File "*" o-- "*" Function : functions
+File --> BaseKPI : kpis
+ScanDir --> BaseKPI : kpis
+RepoInfo --> BaseKPI : kpis
+Function --> BaseKPI : kpis
+@enduml
