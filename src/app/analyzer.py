@@ -7,6 +7,7 @@ from src.kpis.codechurn import ChurnKPI
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
+from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI  # Lägg till denna rad
 from pathlib import Path
 
 class Analyzer:
@@ -101,12 +102,25 @@ class Analyzer:
                 from src.kpis.codeownership import CodeOwnershipKPI
                 code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
-                from src.kpis.base_kpi import BaseKPI
-                code_ownership_kpi = BaseKPI(
-                    name="Code Ownership",
-                    value={"error": f"Could not calculate: {e}"},
-                    description="Proportion of code lines owned by each author (via git blame)"
-                )
+                class FallbackCodeOwnershipKPI:
+                    def __init__(self):
+                        self.name = "Code Ownership"
+                        self.value = {"error": f"Could not calculate: {e}"}
+                        self.description = "Proportion of code lines owned by each author (via git blame)"
+                
+                code_ownership_kpi = FallbackCodeOwnershipKPI()
+
+            # --- Shared Ownership KPI ---
+            try:
+                shared_ownership_kpi = SharedOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
+            except Exception as e:
+                class FallbackSharedOwnershipKPI:
+                    def __init__(self):
+                        self.name = "Shared Ownership" 
+                        self.value = {"error": f"Could not calculate: {e}"}
+                        self.description = "Number of significant authors per file (ownership > threshold)"
+                
+                shared_ownership_kpi = FallbackSharedOwnershipKPI()
 
             # Create the File object
             file_obj = File(
@@ -116,7 +130,8 @@ class Analyzer:
                     file_complexity_kpi.name: file_complexity_kpi,
                     churn_kpi.name: churn_kpi,
                     hotspot_kpi.name: hotspot_kpi,
-                    code_ownership_kpi.name: code_ownership_kpi
+                    code_ownership_kpi.name: code_ownership_kpi,
+                    shared_ownership_kpi.name: shared_ownership_kpi  # Lägg till denna rad
                 },
                 functions=function_objects
             )
