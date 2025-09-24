@@ -10,6 +10,9 @@ class TestChurnDetection(unittest.TestCase):
         # Create a temp git repo
         self.repo_dir = tempfile.mkdtemp()
         subprocess.run(['git', 'init'], cwd=self.repo_dir, check=True)
+        # Set git user config for CI environments
+        subprocess.run(['git', 'config', 'user.email', 'test@example.com'], cwd=self.repo_dir, check=True)
+        subprocess.run(['git', 'config', 'user.name', 'Test User'], cwd=self.repo_dir, check=True)
         # Create a file and commit
         self.file_path = os.path.join(self.repo_dir, 'testfile.txt')
         with open(self.file_path, 'w') as f:

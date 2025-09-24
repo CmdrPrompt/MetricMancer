@@ -1,36 +1,63 @@
 
-# ReportGenerator Flow
-
-[← Back to Overview](1_overview.md)
-
-**Related diagrams:**
-- [Overview](1_overview.md)
-- [App Run Flow](2_app_run_flow.md)
-- [Analyzer Analyze Flow](3_analyzer_analyze_flow.md)
-- [HTML Report Flow](4_html_report_flow.md)
-- [CLI Report Flow](5_cli_report_flow.md)
+## ReportGenerator Flow
+This diagram summarizes the flow of the ReportGenerator component, including format selection, report generation for CLI, HTML, and JSON, and error handling for unknown formats. The color coding and legend are consistent with the rest of the documentation.
 
 ```mermaid
 graph TD
-    A[Start: ReportGenerator] --> B[Select report format]
-    B --> C1[CLIReportGenerator]
-    B --> C2[HTMLReportGenerator]
-    B --> C3[JSONReportGenerator]
-    C1 --> D1[Generate CLI report]
-    C2 --> D2[Generate HTML report]
-    C3 --> D3[Generate JSON report]
-
-    D1 --> E1[Output to terminal]
-    D2 --> E2[Output to HTML file]
-    D3 --> E3[Output to JSON file]
-    E1 --> End[End]
-    E2 --> End
-    E3 --> End
+    A[Start: ReportGenerator] --> B{Select report format}
+    B -- CLI --> C1[CLIReportGenerator.generate]
+    B -- HTML --> C2[HTMLReportGenerator.generate]
+    B -- JSON --> C3[JSONReportGenerator.generate]
+    B -- Unknown --> F[Raise exception]
+    C1 --> D1[Output to terminal]
+    C2 --> D2[Output to HTML file]
+    C3 --> D3[Output to JSON file]
+    D1 --> End[End]
+    D2 --> End
+    D3 --> End
+    F --> End
 
     %% Edge cases
-    style B fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-    style C1 fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-    style C2 fill:#ffe0b2,stroke:#e65100,stroke-width:2px
-    style C3 fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class A start;
+    class B loop;
+    class C1 agg;
+    class C2 agg;
+    class C3 agg;
+    class F warn;
+    class D1 calc;
+    class D2 calc;
+    class D3 calc;
+    class End start;
+    class F warn;
     %% Error handling: unknown format, output errors
+    
+%% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
+
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start;
+    class LegendCalc calc;
+    class LegendLoop loop;
+    class LegendAgg agg;
+    class LegendWarn warn;
 ```
