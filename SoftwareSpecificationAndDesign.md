@@ -1,43 +1,4 @@
-
 # Requirements and Design
-
-## Table of Contents
-
-- [Requirements and Design](#requirements-and-design)
-  - [Table of Contents](#table-of-contents)
-  - [1. Introduction](#1-introduction)
-  - [2. Glossary](#2-glossary)
-    - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
-  - [3. System Overview](#3-system-overview)
-    - [3.1. Application Overview](#31-application-overview)
-    - [3.2. Architecture](#32-architecture)
-      - [3.2.1. Scanner Flow](#321-scanner-flow)
-      - [3.2.2. App Run Flow](#322-app-run-flow)
-      - [3.2.3. Analyzer Analyze Flow](#323-analyzer-analyze-flow)
-      - [3.2.4. ReportGenerator Flow](#324-reportgenerator-flow)
-      - [3.2.5. HTML Report Flow](#325-html-report-flow)
-      - [3.2.6. CLI Report Flow](#326-cli-report-flow)
-    - [3.3. Data Model](#33-data-model)
-      - [3.3.1. UML Diagram](#331-uml-diagram)
-  - [4. Detailed Requirements](#4-detailed-requirements)
-    - [4.1 User Stories](#41-user-stories)
-      - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
-      - [4.1.2 Persona 2: Bob – The DevOps Engineer](#412-persona-2-bob--the-devops-engineer)
-      - [4.1.3 Persona 3: Carol – The Engineering Manager](#413-persona-3-carol--the-engineering-manager)
-      - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
-      - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
-      - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
-      - [4.1.7 Persona 7: Mia – The Executive Manager](#417-persona-7-mia--the-executive-manager)
-    - [4.2 Functional Requirements](#42-functional-requirements)
-      - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
-        - [FR1: Calculate complexity](#fr1-calculate-complexity)
-        - [FR2: Calculate churn](#fr2-calculate-churn)
-      - [4.3.2 Mapping: Requirements to User Stories](#432-mapping-requirements-to-user-stories)
-      - [4.3.3 Mapping: Requirements to test cases](#433-mapping-requirements-to-test-cases)
-    - [5. Requirement Prioritization \& Risk Management](#5-requirement-prioritization--risk-management)
-    - [6. Validation \& Verification](#6-validation--verification)
-    - [7. Change Management](#7-change-management)
-    - [8. Process \& Methodology](#8-process--methodology)
 
 ## 1. Introduction
 
@@ -46,6 +7,47 @@
 MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots.
 
 The tool supports multi-language analysis and can generate reports in several formats, including CLI, HTML, and JSON. JSON reports are designed for integration with OpenSearch and dashboards. MetricMancer is built for extensibility, making it easy to add new metrics or adapt the tool to different codebases. The goal is to help teams identify refactoring candidates, monitor code health trends, and prioritize technical debt reduction—using real data from version control history and static analysis.
+
+## Table of Contents
+
+- [1. Introduction](#1-introduction)
+- [2. Glossary](#2-glossary)
+  - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
+- [3. System Overview](#3-system-overview)
+  - [3.1. Application Overview](#31-application-overview)
+  - [3.1.1 System Overview](#311-system-overview)
+  - [3.1.2 Application Flow](#312-application-flow)
+  - [3.1.3 Analysis Flow](#313-analysis-flow)
+- [4. Detailed Requirements](#4-detailed-requirements)
+  - [4.1 User Stories](#41-user-stories)
+    - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
+    - [4.1.2 Persona 2: Bob – The DevOps Engineer](#412-persona-2-bob--the-devops-engineer)
+    - [4.1.3 Persona 3: Carol – The Engineering Manager](#413-persona-3-carol--the-engineering-manager)
+    - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
+    - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
+    - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
+    - [4.1.7 Persona 7: Mia – The Executive Manager](#417-persona-7-mia--the-executive-manager)
+  - [4.2 Functional Requirements](#42-functional-requirements)
+    - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
+    - [4.3.2 Mapping: Requirements to User Stories](#432-mapping-requirements-to-user-stories)
+    - [4.3.3 Mapping: Requirements to test cases](#433-mapping-requirements-to-test-cases)
+- [5. Requirement Prioritization & Risk Management](#5-requirement-prioritization--risk-management)
+- [6. Validation & Verification](#6-validation--verification)
+- [7. Change Management](#7-change-management)
+- [8. Process & Methodology](#8-process--methodology)
+- [9. System Flow and Architecture Diagrams](#9-system-flow-and-architecture-diagrams)
+  - [9.1 System Overview](#91-system-overview)
+  - [9.2 Application Flow](#92-application-flow)
+  - [9.3 Analysis Flow](#93-analysis-flow)
+  - [9.4 Scanner and Data Collection](#94-scanner-and-data-collection)
+  - [9.5 Report Generation](#95-report-generation)
+    - [9.5.1 Report Generation Overview](#951-report-generation-overview)
+    - [9.5.2 HTML Report](#952-html-report)
+    - [9.5.3 CLI Report](#953-cli-report)
+    - [9.5.4 JSON Report](#954-json-report)
+  - [9.6 KPI Modules](#96-kpi-modules)
+  - [9.7 Configuration and CLI Flow](#97-configuration-and-cli-flow)
+  - [9.8 Error Handling](#98-error-handling)
 
 ## 2. Glossary
 
@@ -156,217 +158,630 @@ MetricMancer is structured as a modular, layered system to maximize flexibility,
 
 The architecture supports both batch and incremental analysis, and is suitable for integration into CI/CD pipelines. By separating scanning, parsing, metric calculation, and reporting, MetricMancer enables teams to extend or adapt the tool to their specific needs with minimal coupling between components.
 
-### 3.1. Application Overview
-
+# 3.1 System Flow and Architecture Diagrams
 [ToC](#table-of-contents)
+
+This chapter presents the main flows and architectural components of MetricMancer, visualized with mermaid diagrams. Each section includes a detailed description and the corresponding diagram.
+
+### 3.1.1 System Overview
+[ToC](#table-of-contents)
+
+This overview diagram shows the main components and data flows in MetricMancer, from scanning directories to analyzing files and generating reports in different formats. Edge cases and error handling are visualized, and the color coding matches the legend for consistency across all diagrams.
 
 ```mermaid
-graph TD
-  App[MetricMancerApp] --> Scanner[Scanner]
-  Scanner -->|"directories"| Files[File List]
-  Files --> Analyzer[Analyzer]
-  Analyzer -->|"per repo"| RepoInfo[RepoInfo Objects]
-  Analyzer --> CodeChurn[CodeChurnAnalyzer]
-  Analyzer --> Complexity[ComplexityAnalyzer]
-  Analyzer --> Hotspot[HotspotAnalyzer]
-  RepoInfo --> ReportGenerator[ReportGenerator]
-  ReportGenerator -->|"format: CLI"| CLIReport[CLIReportGenerator]
-  ReportGenerator -->|"format: HTML"| HTMLReport[HTMLReportGenerator]
-  CLIReport --> CLIOutput[CLI Output]
-  HTMLReport --> HTMLOutput[HTML File]
-  ReportGenerator -->|"format: JSON"| JSONReport[JSONReportGenerator]
-  JSONReport --> JSONOutput[JSON File]
-  ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
-  ErrorHandling -.-> App
+flowchart TD
+    App[MetricMancerApp]
+    App --> Scanner[Scanner]
+    Scanner -->|"directories"| Files[File List]
+    Files --> Analyzer[Analyzer]
+    Analyzer -->|"per repo"| RepoInfos[RepoInfo List]
+    Analyzer --> CodeChurn[CodeChurnAnalyzer]
+    Analyzer --> Complexity[ComplexityAnalyzer]
+    Analyzer --> Hotspot[HotspotAnalyzer]
+    Analyzer -->|"edge cases"| AnalyzerWarn[Warn: unknown ext, read error, empty]
+    RepoInfos -->|"loop repos"| ReportGenLoop[Loop: per repo]
+    ReportGenLoop --> ReportGenerator[ReportGenerator]
+    ReportGenerator -->|"format: CLI"| CLIReport[CLIReportGenerator]
+    ReportGenerator -->|"format: HTML"| HTMLReport[HTMLReportGenerator]
+    ReportGenerator -->|"format: JSON"| JSONReport[JSONReportGenerator]
+    CLIReport --> CLIOutput[CLI Output]
+    HTMLReport --> HTMLOutput[HTML File]
+    JSONReport --> JSONOutput[JSON File]
+    ReportGenerator -->|"cross-linking"| CrossLinks[Report Links]
+    ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
+    ErrorHandling -.-> App
+    Scanner -->|"warn: hidden/empty/perm"| ScannerWarn[Warn: hidden/empty/permission]
+
+    %% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
+
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start;
+    class LegendCalc calc;
+    class LegendLoop loop;
+    class LegendAgg agg;
+    class LegendWarn warn;
+
+    %% Main node color coding
+    class App,CLIOutput,HTMLOutput,JSONOutput start;
+    class Scanner,Files,Analyzer,RepoInfos,CodeChurn,Complexity,Hotspot calc;
+    class ReportGenLoop,ReportGenerator loop;
+    class CLIReport,HTMLReport,JSONReport,CrossLinks agg;
+    class AnalyzerWarn,ScannerWarn,ErrorHandling warn;
 ```
 
-**Figure: Application Overview.**
-This diagram shows the high-level architecture and main data flow in MetricMancer. The application starts with the `MetricMancerApp`, which delegates scanning to the `Scanner`. The scanner produces a list of files, which are analyzed by the `Analyzer` using various KPI analyzers (e.g., code churn, complexity, hotspots). The results are aggregated into `RepoInfo` objects and passed to the `ReportGenerator`, which can output reports in CLI, HTML, or JSON format. Error and edge case handling is integrated throughout the process.
-
-### 3.2. Architecture
-
-#### 3.2.1. Scanner Flow
-
+### 3.1.2 Application Flow
 [ToC](#table-of-contents)
+
+This diagram outlines the main application run flow in MetricMancer, from startup through scanning, analysis, and report generation in various formats. It also highlights key edge cases and error handling at each stage, using the standard color coding and legend.
+
+```mermaid
+flowchart TD
+    StartApp[Start MetricMancerApp run]
+    StartApp --> Scan[Scanner scan directories]
+    Scan --> Files[Files scanned list]
+    Files --> Analyze[Analyzer analyze files]
+    Analyze --> RepoInfos[RepoInfo list]
+    RepoInfos --> FormatSel{Select report format}
+    FormatSel -- HTML --> HTMLGen[HTMLReportGenerator generate]
+    FormatSel -- CLI --> CLIGen[CLIReportGenerator generate]
+    FormatSel -- JSON --> JSONGen[JSONReportGenerator generate]
+    HTMLGen --> HTMLOut[HTML report created]
+    CLIGen --> CLIOut[CLI report in terminal]
+    JSONGen --> JSONOut[JSON report written]
+    HTMLOut --> EndNode[End]
+    CLIOut --> EndNode
+    JSONOut --> EndNode
+
+    %% Assign classes for color coding (one per line, no trailing commas)
+    class StartApp start
+    class EndNode start
+    class Scan calc
+    class Files calc
+    class Analyze calc
+    class RepoInfos calc
+    class FormatSel loop
+    class HTMLGen agg
+    class CLIGen agg
+    class JSONGen agg
+    class HTMLOut agg
+    class CLIOut agg
+    class JSONOut agg
+    class WarnScan warn
+    class WarnAnalyze warn
+    class WarnFormat warn
+    class WarnHTML warn
+    class WarnCLI warn
+    class WarnJSON warn
+    class WarnEnd warn
+
+    %% Edge cases and error handling
+    Scan -.-> WarnScan[Warn: empty/hidden/permission error]
+    Analyze -.-> WarnAnalyze[Warn: analysis error]
+    FormatSel -.-> WarnFormat[Warn: unknown format]
+    HTMLGen -.-> WarnHTML[Warn: HTML write error]
+    CLIGen -.-> WarnCLI[Warn: CLI output error]
+    JSONGen -.-> WarnJSON[Warn: JSON write error]
+    EndNode -.-> WarnEnd[Warn: incomplete output]
+
+    %% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
+
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start
+    class LegendCalc calc
+    class LegendLoop loop
+    class LegendAgg agg
+    class LegendWarn warn
+```
+
+### 3.1.3 Analysis Flow
+[ToC](#table-of-contents)
+
+This diagram details the flow of the Analyzer component in MetricMancer. It shows how files are grouped, analyzed for churn and complexity, and how results are aggregated per repository. Edge cases such as unknown extensions, read errors, and empty files are visualized, with color coding matching the legend.
+
+```mermaid
+flowchart TD
+StartAnalyze[Start Analyzer analyze files]
+StartAnalyze --> GroupFiles[Group files by repo root]
+GroupFiles --> RepoLoop[Loop for each repo root]
+RepoLoop --> InitRepo[Init RepoInfo]
+InitRepo --> Churn[Collect churn data]
+Churn --> Complexity[Collect complexity]
+Complexity --> FileLoop[Loop for each file]
+FileLoop --> AnalyzeFunc[Analyze functions calc complexity]
+AnalyzeFunc --> Hotspot[Calc hotspot churn times complexity]
+Hotspot --> Grade[Grade file]
+Grade --> Hierarchy[Build hierarchical model]
+Hierarchy --> FileLoop
+FileLoop -- Loop done --> UpdateRepo[Update RepoInfo with all data]
+UpdateRepo -- Next repo --> RepoLoop
+RepoLoop -- Loop done --> ReturnDict[Return repo_root to RepoInfo]
+ReturnDict --> ReportGen[ReportGenerator]
+ReportGen --> EndNode[End]
+
+%% Edge cases
+StartAnalyze -.-> WarnExt[Warn unknown extension]
+AnalyzeFunc -.-> WarnRead[Warn read error]
+FileLoop -.-> WarnEmpty[Warn empty file]
+
+%% Färgkodning
+style StartAnalyze fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121
+style EndNode fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121
+style Churn fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e
+style Complexity fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e
+style Hotspot fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e
+style RepoLoop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121
+style FileLoop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121
+style GroupFiles fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121
+style Hierarchy fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style UpdateRepo fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style ReturnDict fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style WarnExt fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+style WarnRead fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+style WarnEmpty fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+%% Error handling: empty files, missing attributes, exceptions in KPI analyzers
+
+%% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
+
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start;
+    class LegendCalc calc;
+    class LegendLoop loop;
+    class LegendAgg agg;
+    class LegendWarn warn;
+```
+
+### 3.1.4 Scanner and Data Collection
+[ToC](#table-of-contents)
+
+This diagram describes the flow of the Scanner component in MetricMancer. It covers directory traversal, file filtering, and error handling for hidden files, permissions, and invalid directories. The color coding and legend are consistent with the rest of the documentation.
 
 ```mermaid
 graph TD
     A[Start: Scanner] --> B[Receive directories]
-    B --> C[Iterate directories]
-    C --> D[Find files in directory]
-    D --> E[Filter files by type]
-    E --> F[Collect file paths]
-    F --> G[Return file list]
+    B --> C[ThreadPoolExecutor: parallel scan]
+    C --> D[Iterate directories]
+    D --> E[Skip hidden root dirs]
+    E --> F[Find files in directory]
+    F --> G[Skip hidden files/dirs]
+    G --> H[Filter files by known extension]
+    H --> I[Collect file paths]
+    I --> J[Return file list]
+    D --> K[Warn: not a directory/permission error]
+    K --> J
 
     %% Edge cases
-    style D fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-    style E fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    style F fill:#e0f7fa,stroke:#00796b,stroke-width:2px
+    style H fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
+    style K fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px
     %% Error handling: empty directory, permission error, no files found
+    
+%% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
+
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start;
+    class LegendCalc calc;
+    class LegendLoop loop;
+    class LegendAgg agg;
+    class LegendWarn warn;
 ```
 
-**Figure: Scanner Flow.**
-This diagram details the scanning process. The scanner receives a list of directories, iterates through them, finds files, filters them by type, collects file paths, and returns the final file list. Edge cases such as empty directories, permission errors, and no files found are handled explicitly.
+### 3.1.5 Report Generation
 
-#### 3.2.2. App Run Flow
-
+#### 3.1.5.1 Report Generation Overview
 [ToC](#table-of-contents)
+
+This diagram summarizes the flow of the ReportGenerator component, including format selection, report generation for CLI, HTML, and JSON, and error handling for unknown formats. The color coding and legend are consistent with the rest of the documentation.
 
 ```mermaid
 graph TD
-  A[Start: MetricMancerApp run] --> B[Scanner scan directories]
-  B --> C[Files scanned list]
-  C --> D[Analyzer analyze files]
-  D --> E[Summary per repo ready RepoInfo object]
-  E --> F{Multiple repos?}
-  F -- Yes --> G[Create report links for cross-linking]
-  G --> H[Loop through each repo_info]
-  F -- No --> H
+    A[Start: ReportGenerator] --> B{Select report format}
+    B -- CLI --> C1[CLIReportGenerator.generate]
+    B -- HTML --> C2[HTMLReportGenerator.generate]
+    B -- JSON --> C3[JSONReportGenerator.generate]
+    B -- Unknown --> F[Raise exception]
+    C1 --> D1[Output to terminal]
+    C2 --> D2[Output to HTML file]
+    C3 --> D3[Output to JSON file]
+    D1 --> End[End]
+    D2 --> End
+    D3 --> End
+    F --> End
 
-  subgraph Report_generation_per_repo
-    H --> I{Report format?}
-    I -- HTML --> J[HTMLReportFormat/ReportGenerator generate]
-    I -- CLI --> K[CLIReportGenerator generate]
-  end
+    %% Edge cases
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
 
-  J --> L[HTML report created]
-  K --> M[CLI report in terminal]
-  J -- Next repo --> H
-  K -- Next repo --> H
-  H -- Loop done --> N[End]
+    class A start;
+    class B loop;
+    class C1 agg;
+    class C2 agg;
+    class C3 agg;
+    class F warn;
+    class D1 calc;
+    class D2 calc;
+    class D3 calc;
+    class End start;
+    class F warn;
+    %% Error handling: unknown format, output errors
+    
+%% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
 
-  %% Edge cases
-  style B fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-  style D fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  style I fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  %% Error handling: empty directories, errors in scanner/analyzer, report generator
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start;
+    class LegendCalc calc;
+    class LegendLoop loop;
+    class LegendAgg agg;
+    class LegendWarn warn;
 ```
 
-**Figure: App Run Flow.**
-This diagram illustrates the main execution flow of the application. After scanning directories, files are analyzed and summarized per repository. For each repository, the appropriate report format is selected and generated. The flow handles multiple repositories and includes error handling for empty directories and failures in scanning, analysis, or report generation.
-
-#### 3.2.3. Analyzer Analyze Flow
-
+#### 3.1.5.2 HTML Report
 [ToC](#table-of-contents)
 
+This diagram shows the flow for generating an HTML report in MetricMancer. It covers initialization, rendering, filtering, and writing the HTML file, as well as cross-linking and potential edge cases. The color coding and legend are consistent with the rest of the documentation.
+
 ```mermaid
-graph TD
-  A[Start: Analyzer analyze files] --> B[Group files per repo root]
-  B --> C[Loop through each repo root]
+flowchart TD
+StartHTML[Start ReportGenerator generate]
+StartHTML --> InitFormat[Init HTMLReportFormat]
+InitFormat --> PrintReport[HTMLReportFormat print report]
+PrintReport --> InitRenderer[Init ReportRenderer]
+InitRenderer --> Render[ReportRenderer render]
+Render --> Filter[Collect and filter files]
+Filter --> RenderHTML[Render HTML with template]
+RenderHTML --> WriteHTML[ReportWriter write html]
+WriteHTML --> EndNode[End HTML report created]
+PrintReport --> ReportLinks[Report links crosslinking]
+%% Edge cases and error handling can be added as needed
+style StartHTML fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121
+style EndNode fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121
+style InitFormat fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121
+style PrintReport fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121
+style InitRenderer fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e
+style Render fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e
+style Filter fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style RenderHTML fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style WriteHTML fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style ReportLinks fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
 
-  subgraph Analysis_per_repo
-    C --> D[Init RepoInfo object]
-    D --> E[Collect Churn data CodeChurnAnalyzer]
-    E --> F[Collect Complexity ComplexityAnalyzer]
-    F --> G[Loop through files for detail analysis]
-    G --> H[Analyze functions and complexity per file]
-    H --> I[Calculate Hotspot churn times complexity]
-    I --> J[Grade file]
-    J --> K[Summarize results per language and directory]
-    K --> G
-    G -- Loop done --> L[Update RepoInfo with all data]
-  end
+%% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
 
-  L -- Next repo --> C
-  C -- Loop done --> M[Return summary of all RepoInfo objects]
-  M --> RG[ReportGenerator]
-  RG --> N[End]
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
 
-  %% Edge cases
-  style E fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-  style F fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  style H fill:#ffe0b2,stroke:#e65100,stroke-width:2px
-  %% Error handling: empty files, missing attributes, exceptions in KPI analyzers
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start;
+    class LegendCalc calc;
+    class LegendLoop loop;
+    class LegendAgg agg;
+    class LegendWarn warn;
 ```
 
-**Figure: Analyzer Analyze Flow.**
-This diagram describes how the analyzer processes files. Files are grouped per repository root, and for each repo, churn and complexity are collected, detailed analysis is performed per file, and hotspot scores are calculated. Results are summarized and aggregated into `RepoInfo` objects, which are then passed to the report generator. Edge cases such as empty files and exceptions in KPI analyzers are handled.
-
-#### 3.2.4. ReportGenerator Flow
-
+#### 3.1.5.3 CLI Report
 [ToC](#table-of-contents)
 
+This diagram illustrates the CLI report generation flow in MetricMancer, including analysis, format selection, and output to terminal or CSV. It also shows error handling for unsupported formats and output errors, using the standard color coding and legend.
+
 ```mermaid
-graph TD
-  A[Start: ReportGenerator] --> B[Select report format]
-  B --> C1[CLIReportGenerator]
-  B --> C2[HTMLReportGenerator]
-  B --> C3[JSONReportGenerator]
-  C1 --> D1[Generate CLI report]
-  C2 --> D2[Generate HTML report]
-  C3 --> D3[Generate JSON report]
+flowchart TD
+StartCLI[Start MetricMancerApp run]
+StartCLI --> Analyze[Analyzer analyze files]
+Analyze --> CLIGen[CLIReportGenerator generate]
+CLIGen --> FormatSel{Output format}
+FormatSel -- human --> PrintReport[CLIReportFormat print report]
+FormatSel -- machine --> PrintCSV[CLICSVReportFormat print report]
+FormatSel -- other --> RaiseExc[Raise exception]
+PrintReport --> ToTerminal[Report to terminal tree]
+PrintCSV --> ToCSV[Report to terminal CSV]
+RaiseExc --> ErrorMsg[Error message]
+ToTerminal --> EndNode[End]
+ToCSV --> EndNode
+ErrorMsg --> EndNode
+%% Edge cases and error handling can be added as needed
+style StartCLI fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121
+style EndNode fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121
+style Analyze fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e
+style CLIGen fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121
+style FormatSel fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121
+style PrintReport fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style PrintCSV fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style ToTerminal fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style ToCSV fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
+style RaiseExc fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
+style ErrorMsg fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c
 
-  D1 --> E1[Output to terminal]
-  D2 --> E2[Output to HTML file]
-  D3 --> E3[Output to JSON file]
-  E1 --> End[End]
-  E2 --> End
-  E3 --> End
+%% Legend
+    LegendStart[Start/End]:::start
+    LegendCalc[Data collection/Computation]:::calc
+    LegendLoop[Loop/Grouping]:::loop
+    LegendAgg[Aggregation/Model]:::agg
+    LegendWarn[Warning/Error]:::warn
 
-  %% Edge cases
-  style B fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  style C1 fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-  style C2 fill:#ffe0b2,stroke:#e65100,stroke-width:2px
-  style C3 fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  %% Error handling: unknown format, output errors
+    LegendStart -.-> LegendCalc
+    LegendCalc -.-> LegendLoop
+    LegendLoop -.-> LegendAgg
+    LegendAgg -.-> LegendWarn
+
+    classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+    classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+    classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+    classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+    classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+    class LegendStart start;
+    class LegendCalc calc;
+    class LegendLoop loop;
+    class LegendAgg agg;
+    class LegendWarn warn;
 ```
 
-**Figure: ReportGenerator Flow.**
-This diagram shows how the report generator selects the output format (CLI, HTML, or JSON), generates the report, and outputs it to the appropriate destination. It also highlights error handling for unknown formats and output errors.
-
-#### 3.2.5. HTML Report Flow
-
+#### 3.1.5.4 JSON Report
 [ToC](#table-of-contents)
 
-```mermaid
-graph TD
-  A[Start: ReportGenerator generate] --> B[Init HTMLReportFormat]
-  B --> C[HTMLReportFormat print_report]
-  C --> D[Init ReportRenderer Jinja2]
-  D --> E[ReportRenderer render]
-  E --> F[Collect and filter files/problem files]
-  F --> G[Render HTML with template]
-  G --> H[ReportWriter write_html]
-  H --> I[End: HTML report created]
+This diagram shows the flow for generating a JSON report in MetricMancer, from data preparation and serialization to file writing. Edge cases such as serialization and file write errors are visualized, with color coding and legend matching the rest of the documentation.
 
-  %% Edge cases
-  style D fill:#e0f7fa,stroke:#00796b,stroke-width:2px
-  style F fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  style H fill:#ffe0b2,stroke:#e65100,stroke-width:2px
-  %% Error handling: missing template, write error, empty repo_info/problem files
+```mermaid
+flowchart TD
+StartJSON[Start JSONReportGenerator]:::start
+StartJSON --> Prepare[Prepare data]:::calc
+Prepare --> Serialize[Serialize to JSON]:::agg
+Serialize --> WriteFile[Write JSON file]:::agg
+WriteFile --> EndNode[End]:::start
+
+%% Edge cases
+WriteFile -.-> WarnWrite[Warn: file write error]:::warn
+Serialize -.-> WarnSer[Warn: serialization error]:::warn
+Prepare -.-> WarnPrep[Warn: missing/invalid data]:::warn
+
+%% Legend
+LegendStart[Start/End]:::start
+LegendCalc[Data collection/Computation]:::calc
+LegendLoop[Loop/Grouping]:::loop
+LegendAgg[Aggregation/Model]:::agg
+LegendWarn[Warning/Error]:::warn
+
+LegendStart -.-> LegendCalc
+LegendCalc -.-> LegendLoop
+LegendLoop -.-> LegendAgg
+LegendAgg -.-> LegendWarn
+
+classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+class LegendStart start;
+class LegendCalc calc;
+class LegendLoop loop;
+class LegendAgg agg;
+class LegendWarn warn;
 ```
 
-**Figure: HTML Report Flow.**
-This diagram details the process of generating an HTML report. The report generator initializes the HTML format, prints the report, uses the renderer to prepare data, and writes the final HTML file. Edge cases include missing templates, write errors, and empty analysis results.
-
-#### 3.2.6. CLI Report Flow
-
+### 3.1.6 KPI Modules
 [ToC](#table-of-contents)
 
-```mermaid
-graph TD
-  A[Start: MetricMancerApp run] --> B[Analyzer analyze files]
-  B --> C[CLIReportGenerator generate]
-  C --> D{output format?}
-  D -- human --> E[CLIReportFormat print_report]
-  D -- machine --> F[CLICSVReportFormat print_report]
-  D -- other --> G[Raise exception]
-  E --> H[Report written to terminal tree structure]
-  F --> I[Report written to terminal CSV]
-  G --> J[Error message]
-  H --> K[End]
-  I --> K
-  J --> K
+This diagram illustrates the typical flow of a KPI module in MetricMancer, such as CodeChurnAnalyzer, ComplexityAnalyzer, or HotspotAnalyzer. The process starts with receiving file or repository data, proceeds to KPI calculation, and returns the result. Edge cases like missing input or calculation errors are visualized. The color coding and legend match the conventions used throughout the documentation.
 
-  %% Edge cases
-  style D fill:#fff9c4,stroke:#fbc02d,stroke-width:2px
-  style G fill:#ffcdd2,stroke:#b71c1c,stroke-width:2px
-  %% Error handling: unknown format, empty analysis, terminal error
+```mermaid
+flowchart TD
+StartKPI[Start KPI calculation]:::start
+StartKPI --> Input[Receive file/repo data]:::calc
+Input --> Calculate[Calculate KPI value]:::agg
+Calculate --> Output[Return KPI result]:::agg
+Output --> EndNode[End]:::start
+
+%% Edge cases
+Input -.-> WarnInput[Warn: missing/invalid input]:::warn
+Calculate -.-> WarnCalc[Warn: calculation error]:::warn
+
+%% Legend
+LegendStart[Start/End]:::start
+LegendCalc[Data collection/Computation]:::calc
+LegendLoop[Loop/Grouping]:::loop
+LegendAgg[Aggregation/Model]:::agg
+LegendWarn[Warning/Error]:::warn
+
+LegendStart -.-> LegendCalc
+LegendCalc -.-> LegendLoop
+LegendLoop -.-> LegendAgg
+LegendAgg -.-> LegendWarn
+
+classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+class LegendStart start;
+class LegendCalc calc;
+class LegendLoop loop;
+class LegendAgg agg;
+class LegendWarn warn;
+
 ```
 
-**Figure: CLI Report Flow.**
-This diagram shows the flow for generating CLI reports. After analysis, the CLI report generator selects the output format (human-readable or CSV), prints the report, and handles errors such as unknown formats or empty analysis results.
+### 3.1.7 Configuration and CLI Flow
+[ToC](#table-of-contents)
 
-### 3.3. Data Model
+This diagram describes how MetricMancer loads configuration and parses CLI arguments. The process starts at application launch, parses CLI arguments, loads the config file, merges both sources, and validates the resulting configuration. Edge cases such as missing config files, invalid CLI arguments, or validation errors are highlighted. The color coding and legend are consistent with the rest of the documentation.
+
+```mermaid
+flowchart TD
+StartConfig[Start: App Launch]:::start
+StartConfig --> CLIArgs[Parse CLI Arguments]:::calc
+CLIArgs --> ConfigFile[Load Config File]:::calc
+ConfigFile --> Merge[Merge CLI & Config]:::agg
+Merge --> Validate[Validate Config]:::calc
+Validate --> ConfigOK[Config Ready]:::agg
+ConfigOK --> EndConfig[Continue App Flow]:::start
+
+%% Edge cases
+ConfigFile -.-> WarnConfig[Warn: config file missing/invalid]:::warn
+CLIArgs -.-> WarnCLI[Warn: invalid CLI args]:::warn
+Validate -.-> WarnVal[Warn: validation error]:::warn
+
+%% Legend
+LegendStart[Start/End]:::start
+LegendCalc[Data collection/Computation]:::calc
+LegendLoop[Loop/Grouping]:::loop
+LegendAgg[Aggregation/Model]:::agg
+LegendWarn[Warning/Error]:::warn
+
+LegendStart -.-> LegendCalc
+LegendCalc -.-> LegendLoop
+LegendLoop -.-> LegendAgg
+LegendAgg -.-> LegendWarn
+
+classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+class LegendStart start;
+class LegendCalc calc;
+class LegendLoop loop;
+class LegendAgg agg;
+class LegendWarn warn;
+
+```
+
+### 3.1.8 Error Handling
+[ToC](#table-of-contents)
+
+This diagram shows the system-level error handling flow in MetricMancer. The main operation is attempted, and on success, the flow continues as normal. If an exception occurs, it is caught, logged, and a user-facing error or warning is shown. Unhandled exceptions are also visualized as edge cases. The color coding and legend are consistent with the rest of the documentation.
+
+```mermaid
+flowchart TD
+StartSys[Start: App/System Event]:::start
+StartSys --> TryBlock[Try: Main Operation]:::calc
+TryBlock --> Success[Success: Continue Flow]:::agg
+TryBlock -->|Exception| CatchBlock[Catch: Handle Exception]:::warn
+CatchBlock --> LogError[Log Error]:::warn
+CatchBlock --> UserMsg[Show User Error/Warning]:::warn
+UserMsg --> EndSys[End/Error Exit]:::start
+Success --> EndSys
+
+%% Edge cases
+TryBlock -.-> WarnEdge[Warn: Unhandled Exception]:::warn
+
+%% Legend
+LegendStart[Start/End]:::start
+LegendCalc[Data collection/Computation]:::calc
+LegendLoop[Loop/Grouping]:::loop
+LegendAgg[Aggregation/Model]:::agg
+LegendWarn[Warning/Error]:::warn
+
+LegendStart -.-> LegendCalc
+LegendCalc -.-> LegendLoop
+LegendLoop -.-> LegendAgg
+LegendAgg -.-> LegendWarn
+
+classDef start fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121;
+classDef calc fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#1a237e;
+classDef loop fill:#fffde7,stroke:#fbc02d,stroke-width:2px,color:#212121;
+classDef agg fill:#ede7f6,stroke:#7b1fa2,stroke-width:2px,color:#4a148c;
+classDef warn fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#b71c1c;
+
+class LegendStart start;
+class LegendCalc calc;
+class LegendLoop loop;
+class LegendAgg agg;
+class LegendWarn warn;
+
+```
+
+### 3.2 Data Model
 
 [ToC](#table-of-contents)
 
@@ -443,11 +858,11 @@ Represents the top-level object for an analyzed repository, including its struct
   - Serve as the top node in the data model and be serializable to JSON, HTML, and other report formats
   - Aggregate KPIs from underlying directories and files for repository-level summaries
 
-#### 3.3.1. UML Diagram
+#### 3.2.1 UML Diagram
 
 [ToC](#table-of-contents)
 
-![Data model](out/plantuml/datamodel_2025-09-16/datamodel_2025-09-16.png)
+![Data model](plantuml/data_model_2025-09-24.svg)
 
 ## 4. Detailed Requirements
 
@@ -659,5 +1074,5 @@ MetricMancer is developed using an iterative, test-driven approach. The process 
 - **Documentation:** Requirements and design are updated alongside code.
 - **Open Source Collaboration:** Contributions are reviewed and integrated via pull requests.
 
-```text
-```
+
+
