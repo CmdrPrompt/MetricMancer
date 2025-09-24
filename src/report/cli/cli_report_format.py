@@ -94,20 +94,50 @@ class CLIReportFormat(ReportFormatStrategy):
         return False
 
     def _format_file_stats(self, file_obj: File) -> str:
-        """Formats the KPI statistics string for a single file, including code ownership if available."""
+        """Formats the KPI statistics string for a single file, including code ownership and shared ownership if available."""
         c_val = file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') else '?'
         ch_val = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') else '?'
         h_val = file_obj.kpis.get('hotspot').value if file_obj.kpis.get('hotspot') else '?'
+        
+        # Code Ownership
         code_ownership = file_obj.kpis.get('Code Ownership')
         ownership_str = ''
         if code_ownership and hasattr(code_ownership, 'value') and isinstance(code_ownership.value, dict):
             if 'error' in code_ownership.value:
                 ownership_str = f" Ownership: ERROR"
             elif code_ownership.value:
-                owners = [f"{author} {percent}%" for author, percent in code_ownership.value.items()]
+                # Limit to max 3 owners for readability
+                sorted_owners = sorted(code_ownership.value.items(), key=lambda x: x[1], reverse=True)
+                owners = [f"{author} {percent}%" for author, percent in sorted_owners[:3]]
+                if len(sorted_owners) > 3:
+                    owners.append(f"+ {len(sorted_owners) - 3} more")
                 ownership_str = " Owners: " + ", ".join(owners)
-        # Always append ownership_str directly after Hotspot, trimmed
-        return f"[C:{c_val}, Churn:{ch_val}, Hotspot:{h_val}]" + (ownership_str.strip() if ownership_str else "")
+        
+        # Shared Ownership
+        shared_ownership = file_obj.kpis.get('Shared Ownership')
+        shared_str = ''
+        if shared_ownership and hasattr(shared_ownership, 'value') and isinstance(shared_ownership.value, dict):
+            if 'error' in shared_ownership.value:
+                shared_str = f" Shared: ERROR"
+            elif 'num_significant_authors' in shared_ownership.value:
+                num_authors = shared_ownership.value['num_significant_authors']
+                authors = shared_ownership.value.get('authors', [])
+                threshold = shared_ownership.value.get('threshold', 20.0)
+                
+                if num_authors == 0:
+                    shared_str = f" Shared: None (threshold: {threshold}%)"
+                elif num_authors == 1:
+                    shared_str = f" Shared: Single owner ({authors[0]})"
+                else:
+                    author_list = ", ".join(authors[:3])  # Show max 3 authors
+                    if len(authors) > 3:
+                        author_list += "..."
+                    shared_str = f" Shared: {num_authors} authors ({author_list})"
+            elif shared_ownership.value.get('shared_ownership') == 'N/A':
+                shared_str = " Shared: N/A"
+        
+        # Always append ownership_str and shared_str directly after Hotspot, trimmed
+        return f"[C:{c_val}, Churn:{ch_val}, Hotspot:{h_val}]" + (ownership_str if ownership_str else "") + (" " if ownership_str and shared_str else "") + (shared_str if shared_str else "")
 
     def _print_functions(self, functions: List[Function], prefix: str, is_file_last: bool):
         """Prints the functions for a given file."""
