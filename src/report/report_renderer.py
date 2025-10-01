@@ -69,6 +69,6 @@ class ReportRenderer:
             threshold_high=self.threshold_high,
             problem_file_threshold=problem_file_threshold,
             report_links=report_links,
-            # Skicka med grade-funktionen till templaten så den kan användas där
+            # Pass the grade function to the template so it can be used there
             grade=self.env.globals.get('grade')
         )
