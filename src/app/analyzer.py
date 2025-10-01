@@ -7,7 +7,7 @@ from src.kpis.codechurn import ChurnKPI
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
-from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI  # Lägg till denna rad
+from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI
 from pathlib import Path
 
 class Analyzer:
@@ -102,24 +102,32 @@ class Analyzer:
                 from src.kpis.codeownership import CodeOwnershipKPI
                 code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
-                class FallbackCodeOwnershipKPI:
+                from src.kpis.base_kpi import BaseKPI
+                class FallbackCodeOwnershipKPI(BaseKPI):
                     def __init__(self):
-                        self.name = "Code Ownership"
-                        self.value = {"error": f"Could not calculate: {e}"}
-                        self.description = "Proportion of code lines owned by each author (via git blame)"
-                
+                        super().__init__(
+                            name="Code Ownership",
+                            value={"error": f"Could not calculate: {e}"},
+                            description="Proportion of code lines owned by each author (via git blame)"
+                        )
+                    def calculate(self, *args, **kwargs):
+                        return self.value
                 code_ownership_kpi = FallbackCodeOwnershipKPI()
 
             # --- Shared Ownership KPI ---
             try:
                 shared_ownership_kpi = SharedOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
-                class FallbackSharedOwnershipKPI:
+                from src.kpis.base_kpi import BaseKPI
+                class FallbackSharedOwnershipKPI(BaseKPI):
                     def __init__(self):
-                        self.name = "Shared Ownership" 
-                        self.value = {"error": f"Could not calculate: {e}"}
-                        self.description = "Number of significant authors per file (ownership > threshold)"
-                
+                        super().__init__(
+                            name="Shared Ownership",
+                            value={"error": f"Could not calculate: {e}"},
+                            description="Number of significant authors per file (ownership > threshold)"
+                        )
+                    def calculate(self, *args, **kwargs):
+                        return self.value
                 shared_ownership_kpi = FallbackSharedOwnershipKPI()
 
             # Create the File object
@@ -131,7 +139,7 @@ class Analyzer:
                     churn_kpi.name: churn_kpi,
                     hotspot_kpi.name: hotspot_kpi,
                     code_ownership_kpi.name: code_ownership_kpi,
-                    shared_ownership_kpi.name: shared_ownership_kpi  # Lägg till denna rad
+                    shared_ownership_kpi.name: shared_ownership_kpi
                 },
                 functions=function_objects
             )
