@@ -14,4 +14,4 @@ terminal.log
 complexity_report*.html
 kpi_report*.html
 labs
-.venv/ 
+.venv/* 
