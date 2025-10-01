@@ -13,3 +13,5 @@ terminal.log
 .coverage
 complexity_report*.html
 kpi_report*.html
+labs
+labs/*
