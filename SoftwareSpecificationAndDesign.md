@@ -1,3 +1,24 @@
+### 2.1. KPI Extension and Implementation Status
+
+[ToC](#table-of-contents)
+
+The following table summarizes the available and planned KPIs in MetricMancer and extensibility notes:
+
+| KPI Name                | Description                                                                 | Extensibility Notes                                  |
+|-------------------------|-----------------------------------------------------------------------------|------------------------------------------------------|
+| Cyclomatic Complexity   | Logical complexity of a function/method (McCabe)                             | New languages can be added via parser modules         |
+| Code Churn              | Number of commits affecting a file/function                                  | Extendable to function-level churn with AST support   |
+| Hotspot Score           | Composite: complexity × churn                                                | Thresholds/configuration can be adjusted              |
+| Temporal Coupling       | How often files change together                                              | Requires commit history analysis                      |
+| Change Coupling         | How often functions change together                                          | Requires fine-grained commit analysis                 |
+| Author Churn/Knowledge Map | Number of unique authors per file/module                                  | Needs author extraction from VCS                      |
+| Code Ownership          | Proportion of code by each developer                                         | Needs author and LOC analysis                         |
+| Defect Density          | Number of bugs/defects per file/module                                       | Needs integration with issue tracker                  |
+| Hotspot Evolution       | How hotspots change over time                                                | Requires historical KPI tracking                      |
+| Complexity Trend        | Complexity increase/decrease over time                                       | Requires historical analysis                          |
+| Code Age                | Age of code in file/module                                                   | Needs commit date analysis                            |
+| Test Coverage           | Proportion of code covered by tests                                          | Needs integration with test tools                     |
+| Logical Coupling        | Files/modules that change together without direct dependency                 | Requires commit and dependency analysis               |
 # Requirements and Design
 
 ## 1. Introduction
@@ -116,27 +137,6 @@ A visual overview of KPI results, often with charts and color coding to quickly 
 **Crime Scene Principles:**
 The methodology and analysis models from the book "Your Code as a Crime Scene" by Adam Tornhill, which form the basis for the definitions and interpretations of KPIs in this project.
 
-### 2.1. KPI Extension and Implementation Status
-
-[ToC](#table-of-contents)
-
-The following table summarizes the available and planned KPIs in MetricMancer, their implementation status, and extensibility notes:
-
-| KPI Name                | Description                                                                 | Status           | Extensibility Notes                                  |
-|-------------------------|-----------------------------------------------------------------------------|------------------|------------------------------------------------------|
-| Cyclomatic Complexity   | Logical complexity of a function/method (McCabe)                             | Implemented      | New languages can be added via parser modules         |
-| Code Churn              | Number of commits affecting a file/function                                  | Implemented      | Extendable to function-level churn with AST support   |
-| Hotspot Score           | Composite: complexity × churn                                                | Implemented      | Thresholds/configuration can be adjusted              |
-| Temporal Coupling       | How often files change together                                              | Not implemented  | Requires commit history analysis                      |
-| Change Coupling         | How often functions change together                                          | Not implemented  | Requires fine-grained commit analysis                 |
-| Author Churn/Knowledge Map | Number of unique authors per file/module                                  | Not implemented  | Needs author extraction from VCS                      |
-| Code Ownership          | Proportion of code by each developer                                         | Not implemented  | Needs author and LOC analysis                         |
-| Defect Density          | Number of bugs/defects per file/module                                       | Not implemented  | Needs integration with issue tracker                  |
-| Hotspot Evolution       | How hotspots change over time                                                | Not implemented  | Requires historical KPI tracking                      |
-| Complexity Trend        | Complexity increase/decrease over time                                       | Not implemented  | Requires historical analysis                          |
-| Code Age                | Age of code in file/module                                                   | Not implemented  | Needs commit date analysis                            |
-| Test Coverage           | Proportion of code covered by tests                                          | Not implemented  | Needs integration with test tools                     |
-| Logical Coupling        | Files/modules that change together without direct dependency                 | Not implemented  | Requires commit and dependency analysis               |
 
 To add a new KPI, implement a new KPI calculator module and register it in the configuration. The system is designed for easy extension with minimal coupling between components.
 
@@ -965,38 +965,38 @@ MetricMancer is intended for software development teams, technical leads, archit
 
 [ToC](#table-of-contents)
 
-| Req-ID | Type           | Group                    | Name                              | Description                                                                 | Rationale (Why?) | Implementation Status |
-|--------|----------------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
-| FR1    | Functional     | Core Analysis            | Calculate complexity              | The tool shall calculate cyclomatic complexity for all functions/methods.   | Identify complex code and refactoring needs | Implemented |
-| FR2    | Functional     | Core Analysis            | Calculate churn                   | The tool shall calculate code churn for all files.                          | Find unstable/risky code | Implemented |
-| FR3    | Functional     | Core Analysis            | Identify hotspots                 | The tool shall identify hotspots (high churn × high complexity).            | Focus improvement on risk zones | Implemented |
-| FR4    | Functional     | Core Analysis            | Calculate code ownership          | The tool shall calculate code ownership per file.                           | Identify knowledge silos and risk | Implemented |
-| FR5    | Functional     | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | **Planned/Partial** |
-| FR6    | Functional     | Core Analysis            | Calculate logical coupling        | The tool shall calculate logical coupling between files.                    | Find hidden dependencies | Planned |
-| FR7    | Functional     | Core Analysis            | Calculate temporal coupling       | The tool shall calculate temporal coupling between files.                   | Find hidden dependencies | Planned |
-| FR8    | Functional     | Core Analysis            | Quality trends                    | The tool shall track and visualize code quality over time.                  | Follow up on improvement work | Planned |
-| FR9    | Functional     | Reporting & Visualization| Generate reports                  | The tool shall generate CLI, HTML, and JSON reports.                        | Different audiences and integrations | Implemented |
-| FR10   | Functional     | Reporting & Visualization| Visualize KPIs                    | The tool shall visualize KPIs in HTML reports.                              | Facilitate interpretation and communication | Implemented |
-| FR11   | Functional     | Reporting & Visualization| Dashboards for management         | The tool shall provide summary dashboards/reports for management.           | Facilitate management decisions | Planned |
-| FR12   | Functional     | Reporting & Visualization| Export/integration with dashboards| The tool shall support export/integration with external dashboards.         | Enable further analysis | Planned |
-| FR13   | Functional     | Integration & Automation | CI/CD support                     | The tool shall be able to run automatically in CI/CD pipelines.             | Enable continuous quality assurance | Implemented |
-| FR14   | Functional     | Integration & Automation | Issue tracker integration         | The tool shall support integration with issue trackers.                     | Link code quality to defects | Planned |
-| FR15   | Functional     | Integration & Automation | Alert on thresholds               | The tool shall alert if churn/complexity exceeds thresholds.                | Early warning of risks | Planned |
-| FR16   | Functional     | Integration & Automation | Quality gates                     | The tool shall support quality gates (e.g., max churn/complexity).          | Ensure code standards | Planned |
-| FR17   | Functional     | Usability & Extensibility| Multi-language support            | The tool shall support analysis of multiple languages in one run.           | Enable analysis of polyglot codebases | Implemented |
-| FR18   | Functional     | Usability & Extensibility| Onboarding support                | The tool shall help new developers find complex/risky code.                 | Faster onboarding | Planned |
-| FR19   | Functional     | Usability & Extensibility| Recommend knowledge sharing       | The tool shall suggest knowledge sharing for low-ownership files.           | Spread knowledge in the team | Planned |
+| Req-ID | Group                    | Name                              | Description                                                                 | Rationale        | Implementation Status |
+|--------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
+| FR1    | Core Analysis            | Calculate complexity              | The tool shall calculate cyclomatic complexity for all functions/methods.   | Identify complex code and refactoring needs | Implemented |
+| FR2    | Core Analysis            | Calculate churn                   | The tool shall calculate code churn for all files.                          | Find unstable/risky code | Implemented |
+| FR3    | Core Analysis            | Identify hotspots                 | The tool shall identify hotspots (high churn × high complexity).            | Focus improvement on risk zones | Implemented |
+| FR4    | Core Analysis            | Calculate code ownership          | The tool shall calculate code ownership per file.                           | Identify knowledge silos and risk | Implemented |
+| FR5    | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | Planned/Partial |
+| FR6    | Core Analysis            | Calculate logical coupling        | The tool shall calculate logical coupling between files.                    | Find hidden dependencies | Planned |
+| FR7    | Core Analysis            | Calculate temporal coupling       | The tool shall calculate temporal coupling between files.                   | Find hidden dependencies | Planned |
+| FR8    | Core Analysis            | Quality trends                    | The tool shall track and visualize code quality over time.                  | Follow up on improvement work | Planned |
+| FR9    | Reporting & Visualization| Generate reports                  | The tool shall generate CLI, HTML, and JSON reports.                        | Different audiences and integrations | Implemented |
+| FR10   | Reporting & Visualization| Visualize KPIs                    | The tool shall visualize KPIs in HTML reports.                              | Facilitate interpretation and communication | Implemented |
+| FR11   | Reporting & Visualization| Dashboards for management         | The tool shall provide summary dashboards/reports for management.           | Facilitate management decisions | Planned |
+| FR12   | Reporting & Visualization| Export/integration with dashboards| The tool shall support export/integration with external dashboards.         | Enable further analysis | Planned |
+| FR13   | Integration & Automation | CI/CD support                     | The tool shall be able to run automatically in CI/CD pipelines.             | Enable continuous quality assurance | Implemented |
+| FR14   | Integration & Automation | Issue tracker integration         | The tool shall support integration with issue trackers.                     | Link code quality to defects | Planned |
+| FR15   | Integration & Automation | Alert on thresholds               | The tool shall alert if churn/complexity exceeds thresholds.                | Early warning of risks | Planned |
+| FR16   | Integration & Automation | Quality gates                     | The tool shall support quality gates (e.g., max churn/complexity).          | Ensure code standards | Planned |
+| FR17   | Usability & Extensibility| Multi-language support            | The tool shall support analysis of multiple languages in one run.           | Enable analysis of polyglot codebases | Implemented |
+| FR18   | Usability & Extensibility| Onboarding support                | The tool shall help new developers find complex/risky code.                 | Faster onboarding | Planned |
+| FR19   | Usability & Extensibility| Recommend knowledge sharing       | The tool shall suggest knowledge sharing for low-ownership files.           | Spread knowledge in the team | Planned |
 
 #### 4.2.2 Core Non-Functional Requirements
 
 [ToC](#table-of-contents)
 
-| Req-ID | Type           | Group                    | Name                              | Description                                                                 | Rationale (Why?) | Implementation Status |
-|--------|----------------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
-| NFR1   | Non-Functional | Usability & Extensibility| Performance                       | Analysis of a medium-sized codebase (<10k files) shall take <5 min.         | Enable use in CI and daily operation | Implemented |
-| NFR2   | Non-Functional | Usability & Extensibility| Extensibility                     | It shall be easy to add new KPIs and languages.                             | Future-proof and adapt the tool | Implemented |
-| NFR3   | Non-Functional | Usability & Extensibility| Platforms                         | The tool shall work on Windows, macOS, and Linux.                           | Support all common development environments | Implemented |
-| NFR4   | Non-Functional | Usability & Extensibility| Error handling                    | The tool shall provide clear error messages for invalid input.               | Facilitate troubleshooting and usability | Implemented |
+| Req-ID | Group                    | Name                              | Description                                                                 | Rationale        | Implementation Status |
+|--------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
+| NFR1   | Usability & Extensibility| Performance                       | Analysis of a medium-sized codebase (<10k files) shall take <5 min.         | Enable use in CI and daily operation | Implemented |
+| NFR2   | Usability & Extensibility| Extensibility                     | It shall be easy to add new KPIs and languages.                             | Future-proof and adapt the tool | Implemented |
+| NFR3   | Usability & Extensibility| Platforms                         | The tool shall work on Windows, macOS, and Linux.                           | Support all common development environments | Implemented |
+| NFR4   | Usability & Extensibility| Error handling                    | The tool shall provide clear error messages for invalid input.               | Facilitate troubleshooting and usability | Implemented |
 
 ### 4.3 Mapping: Requirements to User Stories
 

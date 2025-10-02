@@ -34,23 +34,38 @@ python -m src.main <directories> [options]
 - `--problem-file-threshold <value>`: Set threshold for individual file complexity
 - `--auto-report-filename`: Generate a unique report filename based on date and scanned directories
 - `--report-filename <filename>`: Set the report filename directly
-- `--with-date`: Append date/time to the filename
-- `--cli-report`: Output the report to the command line in a tree structure
+- `--with-date`: Append date/time to the filename (used with --report-filename)
+- `--report-folder <folder>`: Folder to write the report to (default: current directory)
+- `--output-format <format>`: Output format: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV)
+- `--level <level>`: Detail level for reports: 'file' (default) or 'function'
+- `--hierarchical`: (JSON only) Output the full hierarchical data model
 
 ### Examples
 
 ```sh
-# Analyze src and test folders with default thresholds
-python -m src.main src test
+# Analyze <path-to-gitrepo> and test folders with default thresholds
+python -m src.main <path-to-gitrepo> test
 
 # Custom thresholds
-python -m src.main src test --threshold-low 8 --threshold-high 15
+python -m src.main <path-to-gitrepo> test --threshold-low 8 --threshold-high 15
 
 # Generate HTML report with custom filename
-python -m src.main src --report-filename myreport.html
+python -m src.main <path-to-gitrepo> --report-filename myreport.html --output-format html
 
-# Output CLI report
-python -m src.main src --cli-report
+# Output CLI report (default)
+python -m src.main <path-to-gitrepo> --output-format human
+
+# Output JSON report
+python -m src.main <path-to-gitrepo> --output-format json
+
+# Output CSV (machine) report
+python -m src.main <path-to-gitrepo> --output-format machine
+
+# Write report to a specific folder
+python -m src.main <path-to-gitrepo> --report-folder reports
+
+# Use hierarchical JSON output
+python -m src.main <path-to-gitrepo> --output-format json --hierarchical
 ```
 
 ## Output
@@ -64,10 +79,33 @@ python -m src.main src --cli-report
 ```text
 .
 repo_name
-│   Scan-dir: src (Language: python)
+│   Scan-dir: <path-to-gitrepo> (Language: python)
 │   | [C:12.3, Min:5.0, Max:22.0, Churn:18.1, Grade:Medium ⚠️]
-│   ├── main.py [C:15, Churn:20, Hotspot:300, Grade:Medium]
-│   └── utils.py [C:7, Churn:5, Hotspot:35, Grade:Low]
+│   ├── main.py [C:15, Churn:20, Hotspot:300, Grade:Medium, Ownership: {"Alice": 80.0, "Bob": 20.0}, SharedOwnership: {"num_significant_authors": 1, "significant_authors": ["Alice"]}]
+│   └── utils.py [C:7, Churn:5, Hotspot:35, Grade:Low, Ownership: {"Alice": 60.0, "Bob": 40.0}, SharedOwnership: {"num_significant_authors": 2, "significant_authors": ["Alice", "Bob"]}]
+```
+
+**Example JSON Output (ownership & shared ownership excerpt):**
+
+```json
+{
+	"files": [
+		{
+			"name": "main.py",
+			"kpis": {
+				"Code Ownership": {"Alice": 80.0, "Bob": 20.0},
+				"Shared Ownership": {"num_significant_authors": 1, "significant_authors": ["Alice"]}
+			}
+		},
+		{
+			"name": "utils.py",
+			"kpis": {
+				"Code Ownership": {"Alice": 60.0, "Bob": 40.0},
+				"Shared Ownership": {"num_significant_authors": 2, "significant_authors": ["Alice", "Bob"]}
+			}
+		}
+	]
+}
 ```
 
 ## Extending MetricMancer
@@ -75,34 +113,37 @@ repo_name
 - **Add new languages:** Implement a parser module and register it in `src/languages/parsers/` and `src/config.py`.
 - **Add new KPIs:** Create a new KPI calculator in `src/kpis/` and register it in the configuration.
 - **Customize reports:** Update templates in `src/report/templates/` for HTML, or extend CLI/JSON generators.
+- **Extensible architecture:** The system is designed for easy addition of new metrics, languages, and report formats with minimal coupling between components. See the [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for details.
 
 ## Requirements
 
 - Python 3.10+
 - jinja2
-- pytest
-- coverage
 - pydriller
+- pytest (for testing)
+- coverage (for test coverage)
 
-## Key KPIs (Current & Planned)
+## Key KPIs (Implemented & Planned)
 
-- **Implemented:**
-  - Cyclomatic Complexity (per function/method)
-  - Code Churn (per file)
-  - Hotspot Score (complexity × churn)
-- **Planned:**
-  - Temporal Coupling
-  - Change Coupling
-  - Author Churn / Knowledge Map
-  - Code Ownership
-  - Defect Density
-  - Hotspot Evolution
-  - Complexity Trend
-  - Code Age
-  - Test Coverage
-  - Logical Coupling
+**Implemented:**
+- Cyclomatic Complexity (per function/method)
+- Code Churn (per file)
+- Hotspot Score (complexity × churn)
+- Code Ownership (per file)
+- Shared Ownership (per file/function, aggregation to directory/repo)
 
-See [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for full KPI definitions and implementation status.
+**Planned:**
+- Temporal Coupling
+- Change Coupling
+- Author Churn / Knowledge Map
+- Defect Density
+- Hotspot Evolution
+- Complexity Trend
+- Code Age
+- Test Coverage
+- Logical Coupling
+
+See [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for full KPI definitions and up-to-date implementation status.
 
 ## Future Plans
 
@@ -110,7 +151,6 @@ See [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for
 - **Test coverage integration:** Relate code coverage to hotspots and churn.
 - **Historical trend analysis:** Track complexity/churn/hotspot evolution over time.
 - **Accessibility:** Improve HTML report accessibility (ARIA, color contrast, keyboard navigation).
-- **Localization:** Support for additional languages in reports.
 
 ## License
 
