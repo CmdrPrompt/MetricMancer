@@ -53,7 +53,7 @@ python -m src.main <path-to-gitrepo> test --threshold-low 8 --threshold-high 15
 python -m src.main <path-to-gitrepo> --report-filename myreport.html --output-format html
 
 # Output CLI report (default)
-python -m src.main pathto/repo --output-format human
+python -m src.main path/to/repo --output-format human
 
 # Output JSON report
 python -m src.main path/to/repo --output-format json
