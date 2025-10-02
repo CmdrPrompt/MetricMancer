@@ -16,3 +16,4 @@ kpi_report*.html
 labs
 .venv/* 
 venv
+labs/*

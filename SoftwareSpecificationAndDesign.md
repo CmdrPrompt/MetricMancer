@@ -10,44 +10,41 @@ The tool supports multi-language analysis and can generate reports in several fo
 
 ## Table of Contents
 
-- [1. Introduction](#1-introduction)
-- [2. Glossary](#2-glossary)
-  - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
-- [3. System Overview](#3-system-overview)
-  - [3.1. Application Overview](#31-application-overview)
-  - [3.1.1 System Overview](#311-system-overview)
-  - [3.1.2 Application Flow](#312-application-flow)
-  - [3.1.3 Analysis Flow](#313-analysis-flow)
-- [4. Detailed Requirements](#4-detailed-requirements)
-  - [4.1 User Stories](#41-user-stories)
-    - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
-    - [4.1.2 Persona 2: Bob – The DevOps Engineer](#412-persona-2-bob--the-devops-engineer)
-    - [4.1.3 Persona 3: Carol – The Engineering Manager](#413-persona-3-carol--the-engineering-manager)
-    - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
-    - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
-    - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
-    - [4.1.7 Persona 7: Mia – The Executive Manager](#417-persona-7-mia--the-executive-manager)
-  - [4.2 Functional Requirements](#42-functional-requirements)
-    - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
-    - [4.3.2 Mapping: Requirements to User Stories](#432-mapping-requirements-to-user-stories)
-    - [4.3.3 Mapping: Requirements to test cases](#433-mapping-requirements-to-test-cases)
-- [5. Requirement Prioritization & Risk Management](#5-requirement-prioritization--risk-management)
-- [6. Validation & Verification](#6-validation--verification)
-- [7. Change Management](#7-change-management)
-- [8. Process & Methodology](#8-process--methodology)
-- [9. System Flow and Architecture Diagrams](#9-system-flow-and-architecture-diagrams)
-  - [9.1 System Overview](#91-system-overview)
-  - [9.2 Application Flow](#92-application-flow)
-  - [9.3 Analysis Flow](#93-analysis-flow)
-  - [9.4 Scanner and Data Collection](#94-scanner-and-data-collection)
-  - [9.5 Report Generation](#95-report-generation)
-    - [9.5.1 Report Generation Overview](#951-report-generation-overview)
-    - [9.5.2 HTML Report](#952-html-report)
-    - [9.5.3 CLI Report](#953-cli-report)
-    - [9.5.4 JSON Report](#954-json-report)
-  - [9.6 KPI Modules](#96-kpi-modules)
-  - [9.7 Configuration and CLI Flow](#97-configuration-and-cli-flow)
-  - [9.8 Error Handling](#98-error-handling)
+- [Requirements and Design](#requirements-and-design)
+  - [1. Introduction](#1-introduction)
+  - [Table of Contents](#table-of-contents)
+  - [2. Glossary](#2-glossary)
+    - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
+  - [3. System Overview](#3-system-overview)
+- [3.1 System Flow and Architecture Diagrams](#31-system-flow-and-architecture-diagrams)
+    - [3.1.1 System Overview](#311-system-overview)
+    - [3.1.2 Application Flow](#312-application-flow)
+    - [3.1.3 Analysis Flow](#313-analysis-flow)
+    - [3.1.4 Scanner and Data Collection](#314-scanner-and-data-collection)
+    - [3.1.5 Report Generation](#315-report-generation)
+      - [3.1.5.1 Report Generation Overview](#3151-report-generation-overview)
+      - [3.1.5.2 HTML Report](#3152-html-report)
+      - [3.1.5.3 CLI Report](#3153-cli-report)
+      - [3.1.5.4 JSON Report](#3154-json-report)
+    - [3.1.6 KPI Modules](#316-kpi-modules)
+    - [3.1.7 Configuration and CLI Flow](#317-configuration-and-cli-flow)
+    - [3.1.8 Error Handling](#318-error-handling)
+    - [3.2 Data Model](#32-data-model)
+      - [3.2.1 UML Diagram](#321-uml-diagram)
+  - [4. Detailed Requirements](#4-detailed-requirements)
+    - [4.1 User Stories](#41-user-stories)
+      - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
+      - [4.1.2 Persona 2: Bob – The DevOps Engineer](#412-persona-2-bob--the-devops-engineer)
+      - [4.1.3 Persona 3: Carol – The Engineering Manager](#413-persona-3-carol--the-engineering-manager)
+      - [4.1.4 Persona 4: Dave – The New Team Member](#414-persona-4-dave--the-new-team-member)
+      - [4.1.5 Persona 5: Sam – The Software Quality Assurance Manager (SQAM)](#415-persona-5-sam--the-software-quality-assurance-manager-sqam)
+      - [4.1.6 Persona 6: Erin – The Software Quality Assurance Engineer (SQAE)](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae)
+      - [4.1.7 Persona 7: Mia – The Executive Manager](#417-persona-7-mia--the-executive-manager)
+    - [4.2 Functional Requirements](#42-functional-requirements)
+      - [4.2.1 Core Functional Requirements](#421-core-functional-requirements)
+      - [4.2.2 Core Non-Functional Requirements](#422-core-non-functional-requirements)
+    - [4.3 Mapping: Requirements to User Stories](#43-mapping-requirements-to-user-stories)
+    - [4.4 Mapping: Requirements to test cases](#44-mapping-requirements-to-test-cases)
 
 ## 2. Glossary
 
@@ -968,23 +965,13 @@ MetricMancer is intended for software development teams, technical leads, archit
 
 [ToC](#table-of-contents)
 
-##### FR1: Calculate complexity
-
-The tool shall calculate McCabe cyclomatic complexity for all functions/methods.
-
-**Acceptance Criteria:**
-
-- Complexity is reported for all functions in the report.
-
-##### FR2: Calculate churn
-
 | Req-ID | Type           | Group                    | Name                              | Description                                                                 | Rationale (Why?) | Implementation Status |
 |--------|----------------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
 | FR1    | Functional     | Core Analysis            | Calculate complexity              | The tool shall calculate cyclomatic complexity for all functions/methods.   | Identify complex code and refactoring needs | Implemented |
 | FR2    | Functional     | Core Analysis            | Calculate churn                   | The tool shall calculate code churn for all files.                          | Find unstable/risky code | Implemented |
 | FR3    | Functional     | Core Analysis            | Identify hotspots                 | The tool shall identify hotspots (high churn × high complexity).            | Focus improvement on risk zones | Implemented |
-| FR4    | Functional     | Core Analysis            | Calculate code ownership          | The tool shall calculate code ownership per file.                           | Identify knowledge silos and risk | Planned |
-| FR5    | Functional     | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | Planned |
+| FR4    | Functional     | Core Analysis            | Calculate code ownership          | The tool shall calculate code ownership per file.                           | Identify knowledge silos and risk | Implemented |
+| FR5    | Functional     | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | **Planned/Partial** |
 | FR6    | Functional     | Core Analysis            | Calculate logical coupling        | The tool shall calculate logical coupling between files.                    | Find hidden dependencies | Planned |
 | FR7    | Functional     | Core Analysis            | Calculate temporal coupling       | The tool shall calculate temporal coupling between files.                   | Find hidden dependencies | Planned |
 | FR8    | Functional     | Core Analysis            | Quality trends                    | The tool shall track and visualize code quality over time.                  | Follow up on improvement work | Planned |
@@ -999,12 +986,19 @@ The tool shall calculate McCabe cyclomatic complexity for all functions/methods.
 | FR17   | Functional     | Usability & Extensibility| Multi-language support            | The tool shall support analysis of multiple languages in one run.           | Enable analysis of polyglot codebases | Implemented |
 | FR18   | Functional     | Usability & Extensibility| Onboarding support                | The tool shall help new developers find complex/risky code.                 | Faster onboarding | Planned |
 | FR19   | Functional     | Usability & Extensibility| Recommend knowledge sharing       | The tool shall suggest knowledge sharing for low-ownership files.           | Spread knowledge in the team | Planned |
-| NFR1   | Non-Functional | Usability & Extensibility| Performance                       | Analysis of a medium-sized codebase (<10k files) shall take <5 min.         | Enable use in CI and daily operation | Implemented |
-| NFR2   | Non-Functional | Usability & Extensibility| Extensibility                     | It shall be easy to add new KPIs and languages.                             | Future-proof and adapt the tool | Planned |
-| NFR3   | Non-Functional | Usability & Extensibility| Platforms                         | The tool shall work on Windows, macOS, and Linux.                           | Support all common development environments | Implemented |
-| NFR4   | Non-Functional | Usability & Extensibility| Error handling                    | The tool shall provide clear error messages for invalid input.               | Facilitate troubleshooting and usability | Planned |
 
-#### 4.3.2 Mapping: Requirements to User Stories
+#### 4.2.2 Core Non-Functional Requirements
+
+[ToC](#table-of-contents)
+
+| Req-ID | Type           | Group                    | Name                              | Description                                                                 | Rationale (Why?) | Implementation Status |
+|--------|----------------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
+| NFR1   | Non-Functional | Usability & Extensibility| Performance                       | Analysis of a medium-sized codebase (<10k files) shall take <5 min.         | Enable use in CI and daily operation | Implemented |
+| NFR2   | Non-Functional | Usability & Extensibility| Extensibility                     | It shall be easy to add new KPIs and languages.                             | Future-proof and adapt the tool | Implemented |
+| NFR3   | Non-Functional | Usability & Extensibility| Platforms                         | The tool shall work on Windows, macOS, and Linux.                           | Support all common development environments | Implemented |
+| NFR4   | Non-Functional | Usability & Extensibility| Error handling                    | The tool shall provide clear error messages for invalid input.               | Facilitate troubleshooting and usability | Implemented |
+
+### 4.3 Mapping: Requirements to User Stories
 
 | Requirement(s)                  | User Story / Persona Description                                 |
 |----------------------------------|-----------------------------------------------------------------|
@@ -1017,62 +1011,29 @@ The tool shall calculate McCabe cyclomatic complexity for all functions/methods.
 | FR9, FR10                       | [Erin](#416-persona-6-erin--the-software-quality-assurance-engineer-sqae): Couplings, QA process                                    |
 | NFR4                            | All: Error handling                                             |
 
-#### 4.3.3 Mapping: Requirements to test cases
+### 4.4 Mapping: Requirements to test cases
 
 | Requirement | Test Case(s)                                                                                                                        | Status       |
 |-------------|-------------------------------------------------------------------------------------------------------------------------------------|--------------|
 | FR1         | tests/app/test_complexity_analyzer.py:test_calculate_for_file_success, test_analyze_functions_success, test_calculate_for_file_import_error, test_calculate_for_file_no_parser, test_analyze_functions_attribute_error, test_analyze_functions_no_parser, tests/app/test_complexity_analyzer_edge.py:test_calculate_for_file_empty_config, test_calculate_for_file_import_error, test_calculate_for_file_missing_methods, test_analyze_functions_empty_config, test_analyze_functions_attribute_error, test_analyze_functions_missing_method | Implemented  |
-| FR2         | tests/app/test_code_churn_analyzer.py:test_analyze_churn_data, test_init_repo_scan_pairs, test_analyze_handles_exception, tests/app/test_code_churn_analyzer_edge.py:test_empty_repo_scan_pairs, test_find_git_repo_root_none, test_find_git_repo_root_exception, test_analyze_handles_pydriller_exception, test_analyze_no_churn_data | Implemented  |
-| FR3         | tests/app/test_hotspot_kpi_edge.py:test_calculate_with_only_complexity, test_calculate_with_only_churn, test_calculate_with_zero, test_calculate_with_none, test_calculate_with_negative | Implemented  |
+| FR2         | tests/app/test_churn_detection.py:test_churn_detected, tests/app/test_churn_kpi_path_mismatch.py:test_churn_lookup_with_absolute_path, test_churn_lookup_with_relative_path_should_match_absolute, tests/app/test_code_churn_analyzer.py:test_analyze_churn_data, test_analyze_handles_exception, test_init_repo_scan_pairs, tests/app/test_code_churn_analyzer_edge.py:test_analyze_handles_pydriller_exception, test_analyze_no_churn_data, test_empty_repo_scan_pairs, test_find_git_repo_root_exception, test_find_git_repo_root_none | Implemented  |
+| FR3         | tests/kpis/test_hotspot_kpi.py:test_hotspot_kpi, tests/kpis/test_hotspot_kpi_edge.py:test_calculate_with_negative, test_calculate_with_none, test_calculate_with_only_churn, test_calculate_with_only_complexity, test_calculate_with_zero | Implemented  |
 | FR4         | tests/kpis/test_code_ownership.py:test_calculate_ownership_basic, test_calculate_ownership_error, tests/kpis/test_code_ownership_kpi.py:test_file_does_not_exist, test_file_not_tracked_by_git, test_file_tracked_and_blame_works, test_blame_fails | Implemented  |
-| FR5         |  | Planned |
+| FR5         | tests/kpis/test_Shared_Ownership_KPI.py:test_shared_ownership_basic, test_shared_ownership_all_above_threshold, test_shared_ownership_all_below_threshold, test_shared_ownership_na, test_shared_ownership_with_precomputed_data, tests/kpis/test_shared_ownership_aggregator.py:test_aggregator_basic_statistics, test_aggregator_distribution, test_aggregator_empty_files, test_aggregator_handles_errors, test_aggregator_initialization, test_aggregator_invalid_kpi_value, test_aggregator_missing_shared_ownership_kpi, test_aggregator_most_shared_file, test_aggregator_percentages, test_aggregator_realistic_scenario, test_convenience_functions, test_shared_ownership_stats_dataclass, test_shared_ownership_stats_properties | Implemented  |
 | FR6         | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format, test_generate_machine_calls_cli_csv_report_format, test_generate_unsupported_format_raises, test_init_sets_attributes, tests/report/test_report_writer.py:test_write_html_creates_file_and_writes_content | Implemented  |
-| FR7         | tests/report/test_cli_report_format.py:test_get_repo_stats_with_files, test_get_repo_stats_no_files, test_format_file_stats, test_print_report_runs, tests/report/test_cli_cli_report_format.py:test_get_repo_stats_with_files, test_get_repo_stats_no_files, test_format_file_stats, test_print_report_runs | Implemented  |
-| FR8         | tests/report/test_report_renderer.py:test_init_sets_env_and_thresholds, test_collect_all_files_nested, test_render_filters_problem_files_and_renders | Implemented  |
-| FR9         | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format | Implemented  |
-| FR10        | tests/app/test_metric_mancer_app.py:test_run_single_repo, test_init_sets_attributes, test_run_multiple_repos | Implemented  |
+| FR7         | tests/app/test_analyzer.py:test_analyze_structure_and_kpis, test_analyze_empty_list, test_builds_nested_scandir_hierarchy, test_hotspot_kpi_includes_calculation_values, test_skips_unsupported_extension_files, test_unreadable_file_is_skipped_and_warned, test_zero_functions_results_in_zero_complexity_and_hotspot | Implemented  |
+| FR8         | tests/app/test_metric_mancer_app.py:test_init_sets_attributes, test_run_multiple_repos, test_run_single_repo, tests/app/test_metric_mancer_app_edge.py:test_run_with_empty_directories, test_run_with_none_report_generator_cls, test_run_with_report_generate_exception | Implemented  |
+| FR9         | tests/app/test_analyzer.py:test_analyze_structure_and_kpis, test_analyze_empty_list, test_builds_nested_scandir_hierarchy | Implemented  |
+| FR10        | tests/app/test_scanner.py:test_scan_finds_supported_files, test_scan_multiple_directories, test_scan_ignores_hidden_files_and_dirs, test_scan_ignores_hidden_root_directory, test_scan_handles_non_existent_directory, test_scan_returns_empty_list_for_no_supported_files | Implemented  |
 | FR11        | tests/app/test_tree_printer.py:test_build_tree_single_file, test_build_tree_nested, test_sort_paths, test_split_files_folders, test_sort_items, test_print_tree_output | Implemented  |
-| FR12        | tests/app/test_debug.py:test_debug_print_when_debug_false, test_debug_print_when_debug_true | Implemented  |
-| FR13        | tests/app/test_scanner.py:test_scan_finds_supported_files, test_scan_multiple_directories, test_scan_ignores_hidden_files_and_dirs, test_scan_ignores_hidden_root_directory, test_scan_handles_non_existent_directory, test_scan_returns_empty_list_for_no_supported_files | Implemented  |
-| FR14        | tests/app/test_analyzer.py:test_analyze_structure_and_kpis, test_skips_unsupported_extension_files, test_unreadable_file_is_skipped_and_warned, test_builds_nested_scandir_hierarchy, test_hotspot_kpi_includes_calculation_values, test_zero_functions_results_in_zero_complexity_and_hotspot, test_analyze_empty_list | Implemented  |
-| NFR1        | tests/app/test_metric_mancer_app.py:test_run_single_repo, test_init_sets_attributes, test_run_multiple_repos | Implemented  |
-| NFR2        | tests/app/test_metric_mancer_app_edge.py:test_run_with_empty_directories, test_run_with_none_report_generator_cls, test_run_with_report_generate_exception | Implemented  |
-| NFR3        | tests/app/test_metric_mancer_app_edge.py:test_run_with_empty_directories, test_run_with_none_report_generator_cls, test_run_with_report_generate_exception | Implemented  |
-
-### 5. Requirement Prioritization & Risk Management
-
-[ToC](#table-of-contents)
-
-Requirements are prioritized based on their impact on code quality, maintainability, and user value. Core analysis and reporting features are highest priority. Planned features (e.g., defect density, test coverage) are lower priority and scheduled for future releases.
-Risks include:
-  
-- **Scalability:** Large repositories may impact performance. Mitigated by optimizing algorithms and supporting configuration.
-- **Extensibility:** Risk of tight coupling is mitigated by modular architecture and plugin patterns.
-
-### 6. Validation & Verification
-
-Validation and verification are achieved through:
-  
-- **Automated Unit Tests:** Cover all major modules and KPIs.
-- **Acceptance Criteria:** Each requirement includes acceptance notes for testability.
-- **Continuous Integration:** Automated tests run on each commit to ensure ongoing quality.
-
-### 7. Change Management
-
-[ToC](#table-of-contents)
-
-Requirements and design changes are managed via version control (Git). All changes are tracked, reviewed, and documented in the changelog. Major changes require stakeholder review and update of requirements tables.
-  
-### 8. Process & Methodology
-
-[ToC](#table-of-contents)
-
-MetricMancer is developed using an iterative, test-driven approach. The process emphasizes:
-  
-- **Modular Design:** Enables incremental development and easy extension.
-- **Continuous Integration:** Ensures code quality and rapid feedback.
-- **Documentation:** Requirements and design are updated alongside code.
-- **Open Source Collaboration:** Contributions are reviewed and integrated via pull requests.
+| FR12        | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format, test_generate_machine_calls_cli_csv_report_format, test_generate_unsupported_format_raises, test_init_sets_attributes | Implemented  |
+| FR13        | tests/app/test_metric_mancer_app.py:test_run_multiple_repos, test_run_single_repo, tests/app/test_metric_mancer_app_edge.py:test_run_with_empty_directories, test_run_with_none_report_generator_cls, test_run_with_report_generate_exception | Implemented  |
+| FR14        |  | Planned |
+| FR15        |  | Planned |
+| FR16        |  | Planned |
+| FR17        | tests/app/test_analyzer.py:test_analyze_structure_and_kpis, test_analyze_empty_list, test_builds_nested_scandir_hierarchy | Implemented  |
+| FR18        |  | Planned |
+| FR19        | tests/app/test_analyzer_shared_ownership.py:test_analyzer_includes_shared_ownership_kpi, test_shared_ownership_exception_handling | Planned      |
 
 
 
