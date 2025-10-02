@@ -2,7 +2,7 @@
 
 [ToC](#table-of-contents)
 
-The following table summarizes the available and planned KPIs in MetricMancer and extensibility notes:
+The following table summarizes key KPIs in MetricMancer and provides extensibility notes for each:
 
 | KPI Name                | Description                                                                 | Extensibility Notes                                  |
 |-------------------------|-----------------------------------------------------------------------------|------------------------------------------------------|
@@ -965,7 +965,7 @@ MetricMancer is intended for software development teams, technical leads, archit
 
 [ToC](#table-of-contents)
 
-| Req-ID | Group                    | Name                              | Description                                                                 | Rationale        | Implementation Status |
+| Req-ID | Group                    | Name                              | Description                                                                 | Rationale (Why?) | Implementation Status |
 |--------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
 | FR1    | Core Analysis            | Calculate complexity              | The tool shall calculate cyclomatic complexity for all functions/methods.   | Identify complex code and refactoring needs | Implemented |
 | FR2    | Core Analysis            | Calculate churn                   | The tool shall calculate code churn for all files.                          | Find unstable/risky code | Implemented |
