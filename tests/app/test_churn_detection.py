@@ -44,7 +44,7 @@ class TestChurnDetection(unittest.TestCase):
                     if self.file_path == k or os.path.samefile(self.file_path, k):
                         found_key = k
                         break
-                except Exception:
+                except OSError:
                     pass
                 if os.path.basename(self.file_path) == os.path.basename(k):
                     found_key = k
