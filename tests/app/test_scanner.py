@@ -112,7 +112,7 @@ class TestScanner(unittest.TestCase):
         files = self.scanner.scan([scan_path])
         self.assertEqual(len(files), 0)
 
-    @patch('src.utilities.debug.debug_print')
+    @patch('src.app.scanner.debug_print')
     def test_scan_handles_non_existent_directory(self, mock_debug_print):
         """Test that a non-existent directory is handled gracefully."""
         scan_path = str(self.test_dir / "non_existent_dir")
@@ -128,6 +128,9 @@ class TestScanner(unittest.TestCase):
                 return f"[WARN] Folder '{norm_path}' doesn't exist – skipping."
             return s
         normalized_expected = norm(expected_msg)
+        print("DEBUG_PRINT CALLS:")
+        for call in mock_debug_print.call_args_list:
+            print(call)
         normalized_actuals = [norm(str(call.args[0])) for call in mock_debug_print.call_args_list]
         self.assertIn(normalized_expected, normalized_actuals)
     @patch('src.utilities.debug.debug_print')
