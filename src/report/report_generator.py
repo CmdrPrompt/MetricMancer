@@ -1,6 +1,4 @@
-
 from .report_interface import ReportInterface
-
 
 
 class ReportGenerator(ReportInterface):
@@ -36,6 +34,7 @@ class ReportGenerator(ReportInterface):
         """
         from src.report.html.html_report_format import HTMLReportFormat
         from src.utilities.debug import debug_print
+
         format_strategy = HTMLReportFormat(self.template_dir, self.template_file)
         format_strategy.print_report(
             self.repo_info,

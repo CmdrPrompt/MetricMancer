@@ -5,7 +5,6 @@ from src.kpis.complexity.metrics import grade
 from .report_data_collector import ReportDataCollector
 
 
-
 class ReportDataAnalyzer:
     """
     Analyzes and filters data for the complexity report.

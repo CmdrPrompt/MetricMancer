@@ -1,6 +1,7 @@
 """SharedOwnership aggregation for packages and repositories."""
 
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Mapping, Union
+from dataclasses import field
 from dataclasses import dataclass
 from ..base_kpi import BaseKPI
 
@@ -14,7 +15,7 @@ class SharedOwnershipStats:
     files_with_error: int = 0             # Files with calculation errors
     
     # Detailed breakdown
-    shared_ownership_distribution: Dict[int, int] = None  # {num_authors: count}
+    shared_ownership_distribution: Dict[int, int] = field(default_factory=dict)  # {num_authors: count}
     most_shared_file: Optional[str] = None
     most_shared_authors: int = 0
     
@@ -85,7 +86,7 @@ class SharedOwnershipAggregatorKPI(BaseKPI):
                     stats.files_with_error += 1
                     continue
                 
-                if isinstance(shared_ownership_value, dict) and 'significant_authors' in shared_ownership_value:
+                if isinstance(shared_ownership_value, Mapping) and 'significant_authors' in shared_ownership_value:
                     num_authors = shared_ownership_value['significant_authors']
                     
                     # Count distribution
