@@ -40,7 +40,7 @@ class Scanner:
         def scan_one_dir(scan_dir_str):
             scan_dir = Path(scan_dir_str).resolve()
             if not scan_dir.is_dir():
-                debug_print(f"[WARN] Folder '{scan_dir}' doesn't exist – skipping.")
+                debug_print(f"[WARN] Folder '{str(scan_dir)}' doesn't exist – skipping.")
                 return []
             if scan_dir.name.startswith('.'):
                 debug_print(f"[DEBUG] Skipping hidden root directory: {scan_dir}")

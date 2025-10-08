@@ -13,7 +13,7 @@ class TestReportGenerator(unittest.TestCase):
             repo_name="repo"
         )
 
-    @patch("src.report.html.html_report_format.HTMLReportFormat")
+    @patch("src.report.report_generator.HTMLReportFormat")
     def test_generate_calls_html_report_format(self, MockHTMLReportFormat):
         mock_format = MockHTMLReportFormat.return_value
         mock_format.print_report = MagicMock()

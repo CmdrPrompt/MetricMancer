@@ -134,7 +134,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertEqual(app_java_file.kpis["churn"].value, 20)
             self.assertEqual(app_java_file.kpis["hotspot"].value, 300) # 15 * 20
 
-    @patch('src.utilities.debug.debug_print')
+    @patch('src.app.analyzer.debug_print')
     @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
     def test_skips_unsupported_extension_files(self, mock_codechurn_analyze, mock_debug_print):
         """Unsupported extensions should be skipped and not appear in RepoInfo."""
@@ -159,14 +159,20 @@ class TestAnalyzer(unittest.TestCase):
         with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data):
             summary = self.analyzer.analyze(files)
 
-        # Repo1 exists
-        repo1_info = summary[str(self.repo1_path)]
-        # README.md is unsupported and must not be present under repo root files
-        self.assertNotIn("README.md", repo1_info.files)
-        # Ensure debug message was printed for skip
-        mock_debug_print.assert_any_call(f"_analyze_repo: Skipping file with unknown extension: {readme_path}")
+            # Repo1 exists
+            repo1_info = summary[str(self.repo1_path)]
+            # README.md is unsupported and must not be present under repo root files
+            self.assertNotIn("README.md", repo1_info.files)
+            # Logga alla debug_print-anrop för felsökning
+            print("DEBUG_PRINT CALLS:")
+            for call in mock_debug_print.call_args_list:
+                print(call)
+            # Robust substring-match mot debug_print-anropet
+            expected_substr = f"_analyze_repo: Skipping file with unknown extension: {str(Path(readme_path).resolve())}"
+            self.assertTrue(any(expected_substr in call.args[0] for call in mock_debug_print.call_args_list),
+                            f"Expected debug_print call containing: {expected_substr}\nActual calls: {[call.args[0] for call in mock_debug_print.call_args_list]}")
 
-    @patch('src.utilities.debug.debug_print')
+    @patch('src.app.analyzer.debug_print')
     @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
     def test_unreadable_file_is_skipped_and_warned(self, mock_codechurn_analyze, mock_debug_print):
         """Analyzer should skip files it cannot read and continue processing others."""

@@ -57,7 +57,8 @@ class Analyzer:
             file_path = Path(file_info['path'])
             ext = file_info.get('ext')
             if ext not in self.config:
-                debug_print(f"_analyze_repo: Skipping file with unknown extension: {file_path}")
+                # Always print absolute path with correct separator for platform
+                debug_print(f"_analyze_repo: Skipping file with unknown extension: {str(file_path.resolve())}")
                 continue
 
             # Read file content for complexity analysis
