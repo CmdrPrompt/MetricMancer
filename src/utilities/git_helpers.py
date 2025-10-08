@@ -1,3 +1,8 @@
+
+"""
+Helper functions for git operations
+"""
+
 import os
 from src.utilities.debug import debug_print
 
