@@ -25,6 +25,9 @@ src/kpis/gitmetrics/__init__.py
 src/kpis/hotspot/__init__.py
 src/kpis/hotspot/hotspot_kpi.py
 src/kpis/jira/__init__.py
+src/kpis/sharedcodeownership/__init__.py
+src/kpis/sharedcodeownership/shared_code_ownership.py
+src/kpis/sharedcodeownership/shared_ownership_aggregator.py
 src/languages/__init__.py
 src/languages/config.py
 src/languages/parsers/ada.py
@@ -68,4 +71,5 @@ src/utilities/cli_helpers.py
 src/utilities/debug.py
 src/utilities/git_helpers.py
 src/utilities/tree_printer.py
+tests/test_main_shared_ownership.py
 tests/test_report_generator.py
