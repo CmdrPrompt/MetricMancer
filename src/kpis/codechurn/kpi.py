@@ -1,4 +1,6 @@
+
 from ..base_kpi import BaseKPI
+
 
 class ChurnKPI(BaseKPI):
     def __init__(self, value=None, calculation_values=None):

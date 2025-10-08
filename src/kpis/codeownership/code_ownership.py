@@ -1,7 +1,9 @@
+
 from src.kpis.base_kpi import BaseKPI
 import subprocess
 from collections import Counter
 from typing import Dict
+
 
 class CodeOwnershipKPI(BaseKPI):
     def calculate(self, *args, **kwargs):
