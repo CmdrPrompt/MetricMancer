@@ -1,8 +1,10 @@
-from src.report.report_interface import ReportInterface
-from collections import Counter
-from src.report.cli.cli_report_format import CLIReportFormat
-from src.report.cli.cli_csv_report_format import CLICSVReportFormat
 import os
+from collections import Counter
+
+from src.report.cli.cli_csv_report_format import CLICSVReportFormat
+from src.report.cli.cli_report_format import CLIReportFormat
+from src.report.report_interface import ReportInterface
+from src.utilities.debug import debug_print
 
 
 class CLIReportGenerator(ReportInterface):
@@ -13,8 +15,6 @@ class CLIReportGenerator(ReportInterface):
         self.problem_file_threshold = problem_file_threshold
 
     def generate(self, output_file=None, level="file", output_format="human", **kwargs):
-        from src.utilities.debug import debug_print
-        
         strategies = {
             "human": CLIReportFormat,
             "machine": CLICSVReportFormat

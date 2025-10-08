@@ -1,7 +1,10 @@
-from src.languages.config import Config
-from src.app.scanner import Scanner
+import os
+
 from src.app.analyzer import Analyzer
+from src.app.scanner import Scanner
+from src.languages.config import Config
 from src.report.report_generator import ReportGenerator
+from src.utilities.debug import debug_print
 
 class MetricMancerApp:
     def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human"):
@@ -19,11 +22,9 @@ class MetricMancerApp:
         self.output_format = output_format
 
         # Allow swapping report generator
-        from src.report.report_generator import ReportGenerator
         self.report_generator_cls = report_generator_cls or ReportGenerator
 
     def run(self):
-        from src.utilities.debug import debug_print
         debug_print(f"[DEBUG] scan dirs: {self.directories}")
         files = self.scanner.scan(self.directories)
         debug_print(f"[DEBUG] scanned files: {len(files)}")
@@ -33,7 +34,6 @@ class MetricMancerApp:
         for repo_root, repo_info in summary.items():
             debug_print(f"[DEBUG] repo_info: root={repo_info.repo_root_path}, name={repo_info.repo_name}")
             repo_infos.append(repo_info)
-        import os
         # Prepare report_links for cross-linking if multiple repos
         report_links = []
         if len(repo_infos) > 1:

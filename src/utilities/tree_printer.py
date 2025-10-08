@@ -1,9 +1,11 @@
+import os
+
+
 class TreePrinter:
     def __init__(self, debug_print=None):
         self.debug_print = debug_print or (lambda *a, **k: None)
 
     def build_tree(self, paths):
-        import os
         # Normalize all paths once before sorting and building the tree
         normalized_paths = [(os.path.normpath(path), stats) for path, stats in paths]
         sorted_paths = self._sort_paths(normalized_paths, os)

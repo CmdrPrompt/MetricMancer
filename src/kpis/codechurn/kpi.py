@@ -1,3 +1,5 @@
+import os
+
 from ..base_kpi import BaseKPI
 
 class ChurnKPI(BaseKPI):
@@ -14,7 +16,6 @@ class ChurnKPI(BaseKPI):
         """
         Looks up a pre-calculated churn value from a dictionary, robust to absolute/relative path mismatches and filename-only matches.
         """
-        import os
         abs_path = os.path.normcase(os.path.normpath(os.path.abspath(file_path)))
         # Try absolute path match
         for key in churn_data:

@@ -1,6 +1,12 @@
 import os
+
 from src.utilities.debug import debug_print
 from src.utilities.git_helpers import find_git_repo_root
+
+try:
+    from pydriller import Repository
+except ImportError:
+    Repository = None
 
 class CodeChurnAnalyzer:
     def __init__(self, repo_scan_pairs):
@@ -23,9 +29,7 @@ class CodeChurnAnalyzer:
         It counts the number of commits that modified each file.
         Adds deep debug logging for repo_path, scan_dirs, .git presence, PyDriller commits/files, and exceptions.
         """
-        try:
-            from pydriller import Repository
-        except ImportError:
+        if Repository is None:
             debug_print("[DEBUG] PyDriller not installed, skipping churn analysis.")
             return self.churn_data
 
