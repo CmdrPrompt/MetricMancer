@@ -1,14 +1,15 @@
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
 from src.languages.config import LANGUAGES
+from src.utilities.debug import debug_print
 
 class Scanner:
     def __init__(self, config):
         self.config = config
 
     def scan(self, directories):
-        from src.utilities.debug import debug_print
-        from concurrent.futures import ThreadPoolExecutor, as_completed
         files = []
         debug_print(f"[DEBUG] Scanner.scan: directories={directories}")
 

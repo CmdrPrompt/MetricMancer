@@ -1,14 +1,15 @@
 import os
+import shutil
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 from src.app.analyzer import Analyzer
-from src.languages.config import Config
-from src.kpis.model import RepoInfo, ScanDir, File
 from src.kpis.codechurn import ChurnKPI
 from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
+from src.kpis.model import RepoInfo, ScanDir, File
+from src.languages.config import Config
 
 class TestAnalyzer(unittest.TestCase):
 
@@ -45,7 +46,6 @@ class TestAnalyzer(unittest.TestCase):
 
     def tearDown(self):
         """Clean up the temporary directory."""
-        import shutil
         shutil.rmtree(self.test_dir)
 
     @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')

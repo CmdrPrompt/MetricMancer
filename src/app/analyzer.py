@@ -1,14 +1,17 @@
 import os
 from collections import defaultdict
+from pathlib import Path
 from typing import List, Union
 
-from src.kpis.model import RepoInfo, ScanDir, File, Function
+from src.kpis.base_kpi import BaseKPI
+from src.kpis.codeownership import CodeOwnershipKPI
 from src.kpis.codechurn import ChurnKPI
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
+from src.kpis.model import RepoInfo, ScanDir, File, Function
 from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI
-from pathlib import Path
+from src.utilities.debug import debug_print
 
 class Analyzer:
     def __init__(self, languages_config, threshold_low=10.0, threshold_high=20.0):
@@ -28,8 +31,6 @@ class Analyzer:
 
     def _analyze_repo(self, repo_root, files_in_repo, scan_dirs):
         """Analyzes a single repository's files for complexity, churn, and other metrics."""
-        from src.utilities.debug import debug_print
-
         debug_print(f"[DEBUG] Analyzing repo: {repo_root} with {len(files_in_repo)} files.")
 
         repo_root_path = Path(repo_root)
@@ -99,10 +100,8 @@ class Analyzer:
 
             # --- Code Ownership KPI ---
             try:
-                from src.kpis.codeownership import CodeOwnershipKPI
                 code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
-                from src.kpis.base_kpi import BaseKPI
                 class FallbackCodeOwnershipKPI(BaseKPI):
                     def __init__(self):
                         super().__init__(
@@ -118,7 +117,6 @@ class Analyzer:
             try:
                 shared_ownership_kpi = SharedOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
-                from src.kpis.base_kpi import BaseKPI
                 class FallbackSharedOwnershipKPI(BaseKPI):
                     def __init__(self):
                         super().__init__(
@@ -177,8 +175,6 @@ class Analyzer:
 
     def analyze(self, files):
         """Analyzes a list of files, groups them by repository, and returns a summary."""
-        from src.utilities.debug import debug_print
-
         if not files:
             return {}
 

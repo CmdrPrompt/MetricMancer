@@ -1,5 +1,6 @@
 import os
 import re
+import shutil
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -48,7 +49,6 @@ class TestScanner(unittest.TestCase):
 
     def tearDown(self):
         """Clean up the temporary directory."""
-        import shutil
         shutil.rmtree(self.test_dir)
 
     @patch('src.utilities.debug.debug_print')
@@ -83,7 +83,6 @@ class TestScanner(unittest.TestCase):
 
         self.assertEqual(len(files), 4)
 
-        import os
         def norm(p):
             return os.path.normcase(p)
         expected_paths = sorted([

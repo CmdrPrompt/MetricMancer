@@ -1,8 +1,11 @@
 import os
-import tempfile
 import shutil
 import subprocess
+import tempfile
+import time
 import unittest
+from unittest.mock import patch
+
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 
 class TestChurnDetection(unittest.TestCase):
@@ -20,7 +23,6 @@ class TestChurnDetection(unittest.TestCase):
         subprocess.run(['git', 'add', 'testfile.txt'], cwd=self.repo_dir, check=True)
         subprocess.run(['git', 'commit', '-m', 'Initial commit'], cwd=self.repo_dir, check=True)
         # Modify and commit again (multiple times for PyDriller robustness)
-        import time
         for i in range(2, 6):
             with open(self.file_path, 'a') as f:
                 f.write(f'line {i}\n')
@@ -33,7 +35,6 @@ class TestChurnDetection(unittest.TestCase):
 
     def test_churn_detected(self):
         # Mock churn analysis so test does not depend on PyDriller or a real git repo
-        from unittest.mock import patch
         mock_churn_data = {self.file_path: 5}
         with patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze', return_value=mock_churn_data):
             analyzer = CodeChurnAnalyzer([(self.repo_dir, self.repo_dir)])
