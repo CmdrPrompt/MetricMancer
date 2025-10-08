@@ -1,16 +1,17 @@
-    # ...existing code...
 import argparse
-import sys
-from src.app.metric_mancer_app import MetricMancerApp
-from src.utilities.cli_helpers import parse_args, print_usage
-from src.report.report_helpers import get_output_filename # This function is not in the provided context, but the import is being kept as per the original file.
-from src.report.cli.cli_report_generator import CLIReportGenerator # This path is already correct in the provided context.
 import os
+import sys
+
+import src.utilities.debug
+from src.app.metric_mancer_app import MetricMancerApp
+from src.report.cli.cli_report_generator import CLIReportGenerator
+from src.report.json.json_report_generator import JSONReportGenerator
+from src.report.report_helpers import get_output_filename
+from src.utilities.cli_helpers import parse_args, print_usage
 from src.utilities.debug import debug_print
 
 def main():
     # Ensure UTF-8 encoding for stdout/stderr for Unicode output (Python 3.7+)
-    import sys
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
         sys.stderr.reconfigure(encoding='utf-8')
@@ -23,13 +24,11 @@ def main():
     parser.add_argument('--debug', action='store_true', help='Visa debugutskrifter')
     args = parser.parse_args()
 
-    import src.utilities.debug
     src.utilities.debug.DEBUG = getattr(args, 'debug', False)
     debug_print(f"[DEBUG] main: args={args}")
 
     # Determine report generator based on output format
     if args.output_format == 'json':
-        from src.report.json.json_report_generator import JSONReportGenerator
         generator_cls = JSONReportGenerator
     elif args.output_format == 'machine':
         generator_cls = CLIReportGenerator

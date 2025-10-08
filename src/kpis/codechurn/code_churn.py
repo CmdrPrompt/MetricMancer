@@ -1,6 +1,12 @@
 import os
+
 from src.utilities.debug import debug_print
 from src.utilities.git_helpers import find_git_repo_root
+
+try:
+    from pydriller import Repository
+except ImportError:
+    Repository = None
 
 class CodeChurnAnalyzer:
     def __init__(self, repo_scan_pairs):
@@ -23,9 +29,7 @@ class CodeChurnAnalyzer:
         It counts the number of commits that modified each file.
         Adds deep debug logging for repo_path, scan_dirs, .git presence, PyDriller commits/files, and exceptions.
         """
-        try:
-            from pydriller import Repository
-        except ImportError:
+        if Repository is None:
             debug_print("[DEBUG] PyDriller not installed, skipping churn analysis.")
             return self.churn_data
 
@@ -75,9 +79,17 @@ class CodeChurnAnalyzer:
                             new_path = getattr(modification, 'filename', None)
                         if new_path:
                             abs_path = os.path.join(repo_path, new_path)
-                            if any(abs_path.startswith(scan_dir) for scan_dir in scan_dirs):
-                                self.churn_data[abs_path] = self.churn_data.get(abs_path, 0) + 1
-                                files_seen.add(abs_path)
+                            for scan_dir in scan_dirs:
+                                # Logga paths för felsökning
+                                debug_print(f"[DEBUG] churn path check: abs_path={abs_path}, scan_dir={scan_dir}")
+                                try:
+                                    if os.path.commonpath([abs_path, scan_dir]) == scan_dir:
+                                        debug_print(f"[DEBUG] churn path MATCH: abs_path={abs_path}, scan_dir={scan_dir}")
+                                        self.churn_data[abs_path] = self.churn_data.get(abs_path, 0) + 1
+                                        files_seen.add(abs_path)
+                                except ValueError:
+                                    debug_print(f"[DEBUG] churn path ValueError: abs_path={abs_path}, scan_dir={scan_dir}")
+                                    continue
                 debug_print(f"[DEBUG] PyDriller found {commit_count} commits, {file_mod_count} file modifications in {repo_path}")
                 debug_print(f"[DEBUG] PyDriller files seen in {repo_path}: {list(files_seen)}")
             except Exception as e:

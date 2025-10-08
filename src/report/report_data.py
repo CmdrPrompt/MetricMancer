@@ -1,3 +1,10 @@
+from typing import Any, Dict, List, Union
+
+from .file_info import FileInfo
+from .report_data_collector import ReportDataCollector
+from .root_info import RootInfo
+
+
 class ReportData:
 	"""
 	Holds data for report generation.
@@ -12,11 +19,6 @@ class ReportData:
 		"""
 		self.summary = summary
 		self.details = details
-
-from .file_info import FileInfo
-from .root_info import RootInfo
-from .report_data_collector import ReportDataCollector
-from typing import Any, Dict, List, Union
 
 
 class ReportDataBuilder:
