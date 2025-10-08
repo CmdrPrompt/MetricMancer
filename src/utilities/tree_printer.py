@@ -1,6 +1,8 @@
+
 """
 TreePrinter utility for printing directory trees.
 """
+
 
 class TreePrinter:
     def __init__(self, debug_print=None):
@@ -24,7 +26,10 @@ class TreePrinter:
         """Sort: files directly in root first, then folders, both alphabetically."""
         direct_files = (item for item in paths if os.sep not in item[0])
         sub_files = (item for item in paths if os.sep in item[0])
-        return sorted(direct_files, key=lambda x: x[0].lower()) + sorted(sub_files, key=lambda x: x[0].lower())
+        return (
+            sorted(direct_files, key=lambda x: x[0].lower()) +
+            sorted(sub_files, key=lambda x: x[0].lower())
+        )
 
     def print_tree(self, node, prefix="", is_last=True):
         files, folders = self._split_files_folders(node)
@@ -32,17 +37,21 @@ class TreePrinter:
         folders_sorted = self._sort_items(folders)
         items = files_sorted + folders_sorted
         for idx, (name, value) in enumerate(items):
-            connector = "└── " if idx == len(items)-1 else "├── "
+            connector = "└── " if idx == len(items) - 1 else "├── "
             if isinstance(value, dict):
                 print(f"{prefix}{connector}{name}")
-                extension = "    " if idx == len(items)-1 else "│   "
-                self.print_tree(value, prefix + extension, is_last=(idx == len(items)-1))
+                extension = "    " if idx == len(items) - 1 else "│   "
+                self.print_tree(value, prefix + extension, is_last=(idx == len(items) - 1))
             else:
                 print(f"{prefix}{connector}{name} {value}")
 
     def _split_files_folders(self, node):
-        files = ((name, value) for name, value in node.items() if not isinstance(value, dict))
-        folders = ((name, value) for name, value in node.items() if isinstance(value, dict))
+        files = (
+            (name, value) for name, value in node.items() if not isinstance(value, dict)
+        )
+        folders = (
+            (name, value) for name, value in node.items() if isinstance(value, dict)
+        )
         return list(files), list(folders)
 
     def _sort_items(self, items):
