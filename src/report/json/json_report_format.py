@@ -17,9 +17,12 @@ class JSONReportFormat(ReportFormatStrategy):
             return {k: self._to_dict(v) for k, v in obj.items()}
         if isinstance(obj, list):
             return [self._to_dict(v) for v in obj]
+        from src.kpis.base_kpi import BaseKPI
         if is_dataclass(obj):
             # Use asdict for a deep conversion of the dataclass
             return self._to_dict(asdict(obj))
+        if isinstance(obj, BaseKPI):
+            return self._to_dict(obj.value)
         return obj
 
     def _collect_flat_list(self, scan_dir: ScanDir, level: str) -> List[dict]:

@@ -62,7 +62,11 @@ def get_output_filename(args):
     Determines the output filename for the report based on CLI arguments.
     Handles --report-filename, --with-date, --auto-report-filename.
     """
-    output_file = 'complexity_report.html'
+    # Sätt filändelse beroende på rapportformat
+    ext = '.html'
+    if getattr(args, 'output_format', None) == 'json':
+        ext = '.json'
+    output_file = f'complexity_report{ext}'
     if getattr(args, 'report_filename', None):
         output_file = args.report_filename
         if getattr(args, 'with_date', False):
