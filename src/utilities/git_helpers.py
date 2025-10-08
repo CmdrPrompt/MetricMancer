@@ -1,4 +1,5 @@
 
+
 """
 Helper functions for git operations
 """
@@ -24,7 +25,8 @@ def find_git_repo_root(start_path: str) -> str:
             debug_print(f"[DEBUG] find_git_repo_root: Found .git at {current}")
             return current
         parent = os.path.dirname(current)
-        if parent == current:  # Har nått filsystemets rot
+        if parent == current:
+            # Har nått filsystemets rot
             debug_print(f"[DEBUG] find_git_repo_root: No .git found. Returning original path {start_path}")
-            return os.path.abspath(start_path) # Fallback
+            return os.path.abspath(start_path)  # Fallback
         current = parent
