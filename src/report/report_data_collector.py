@@ -1,3 +1,4 @@
+
 from typing import Any, Dict, List, Union
 from .file_info import FileInfo
 from src.kpis.model import ScanDir

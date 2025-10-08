@@ -14,6 +14,7 @@ def grade(value: float, threshold_low: float, threshold_high: float) -> dict:
         return {"label": "B", "color": "#FFC107"}  # Amber
     else:
         return {"label": "C", "color": "#F44336"}  # Red
+
 def get_file_extension(filename: str) -> str:
     """
     Get the file extension for a given filename.
@@ -23,6 +24,7 @@ def get_file_extension(filename: str) -> str:
         str: The file extension (without dot), or empty string if none.
     """
     return filename.split('.')[-1] if '.' in filename else ''
+
 def get_language_from_extension(extension: str) -> str:
     """
     Get the programming language for a given file extension.
@@ -50,9 +52,11 @@ def get_language_from_extension(extension: str) -> str:
         'ada': 'Ada',
     }
     return mapping.get(extension, 'Unknown')
+
 """
 Helper functions for report filename and folder handling for ComplexityScanner.
 """
+
 
 import os
 import datetime
@@ -67,6 +71,7 @@ def get_output_filename(args):
     if getattr(args, 'output_format', None) == 'json':
         ext = '.json'
     output_file = f'complexity_report{ext}'
+
     if getattr(args, 'report_filename', None):
         output_file = args.report_filename
         if getattr(args, 'with_date', False):
@@ -75,8 +80,12 @@ def get_output_filename(args):
             output_file = f"{base}_{date_str}{ext}"
     elif getattr(args, 'auto_report_filename', False):
         date_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        dir_str = "_".join([os.path.basename(os.path.normpath(d)) for d in getattr(args, 'directories', ['src'])])
+        dir_str = "_".join([
+            os.path.basename(os.path.normpath(d))
+            for d in getattr(args, 'directories', ['src'])
+        ])
         output_file = f"complexity_report_{dir_str}_{date_str}.html"
+
     return output_file
 
 def ensure_report_folder(report_folder):

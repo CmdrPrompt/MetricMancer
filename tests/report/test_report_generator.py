@@ -1,3 +1,4 @@
+
 import unittest
 from unittest.mock import MagicMock, patch
 from src.report.report_generator import ReportGenerator

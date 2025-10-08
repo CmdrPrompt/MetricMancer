@@ -1,6 +1,6 @@
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership.code_ownership import CodeOwnershipKPI
-from typing import Dict, Optional
+from typing import Mapping, Optional, Union, List, Dict
 
 class SharedOwnershipKPI(BaseKPI):
     """
@@ -25,7 +25,7 @@ class SharedOwnershipKPI(BaseKPI):
             ownership = CodeOwnershipKPI(file_path, repo_root).value
             self.value = self.calculate_shared_ownership(ownership)
 
-    def calculate_shared_ownership(self, ownership: Dict[str, float]) -> Dict[str, float]:
+    def calculate_shared_ownership(self, ownership: Mapping[str, Union[float, str]]) -> Mapping[str, Union[float, str, int, List[str]]]:
         # Debug: print(ownership)
         if (
             not isinstance(ownership, dict)

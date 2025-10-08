@@ -2,7 +2,7 @@
 from src.kpis.base_kpi import BaseKPI
 import subprocess
 from collections import Counter
-from typing import Dict
+from typing import Mapping, Union
 
 
 class CodeOwnershipKPI(BaseKPI):
@@ -24,7 +24,7 @@ class CodeOwnershipKPI(BaseKPI):
         self.value = self.calculate_ownership()
     # Debug print removed
 
-    def calculate_ownership(self) -> Dict[str, float]:
+    def calculate_ownership(self) -> Mapping[str, Union[float, str]]:
         import os
         # Skip node_modules and similar directories
         if 'node_modules' in self.file_path or not os.path.exists(self.file_path):
