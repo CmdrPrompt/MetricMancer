@@ -1,5 +1,7 @@
+
 from typing import Any, Optional, Dict
 from abc import ABC, abstractmethod
+
 
 class BaseKPI(ABC):
     """

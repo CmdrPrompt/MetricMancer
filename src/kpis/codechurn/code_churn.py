@@ -1,6 +1,8 @@
+
 import os
 from src.utilities.debug import debug_print
 from src.utilities.git_helpers import find_git_repo_root
+
 
 class CodeChurnAnalyzer:
     def __init__(self, repo_scan_pairs):
