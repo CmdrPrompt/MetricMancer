@@ -1,7 +1,9 @@
-from src.kpis.base_kpi import BaseKPI
+import os
 import subprocess
 from collections import Counter
 from typing import Dict
+
+from src.kpis.base_kpi import BaseKPI
 
 class CodeOwnershipKPI(BaseKPI):
     def calculate(self, *args, **kwargs):
@@ -23,7 +25,6 @@ class CodeOwnershipKPI(BaseKPI):
     # Debug print removed
 
     def calculate_ownership(self) -> Dict[str, float]:
-        import os
         # Skip node_modules and similar directories
         if 'node_modules' in self.file_path or not os.path.exists(self.file_path):
             return {"ownership": "N/A"}

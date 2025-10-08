@@ -1,6 +1,9 @@
-
 import json
+
+from src.kpis.model import RepoInfo
+from src.report.json.json_report_format import JSONReportFormat
 from src.report.report_interface import ReportInterface
+from src.utilities.debug import debug_print
 
 class JSONReportGenerator(ReportInterface):
     def __init__(self, repo_info, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None):
@@ -10,10 +13,6 @@ class JSONReportGenerator(ReportInterface):
         self.problem_file_threshold = problem_file_threshold
 
     def generate(self, output_file=None, level="file", hierarchical=False, **kwargs):
-        from src.utilities.debug import debug_print
-        from src.report.json.json_report_format import JSONReportFormat
-        from src.kpis.model import RepoInfo
-
         format_strategy = JSONReportFormat()
         all_repos = []
         for repo_info in self.repo_infos:

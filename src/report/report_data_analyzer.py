@@ -1,8 +1,10 @@
 from typing import Any, Dict, List, Union
-from .file_info import FileInfo
-from .root_info import RootInfo
+
 from src.kpis.complexity.metrics import grade
+from .file_helpers import filter_hotspot_risk_files, filter_problem_files
+from .file_info import FileInfo
 from .report_data_collector import ReportDataCollector
+from .root_info import RootInfo
 
 
 
@@ -33,7 +35,6 @@ class ReportDataAnalyzer:
         Returns:
             List of dicts with root path, average complexity, grade, problem files, and hotspot risk files.
         """
-        from .file_helpers import filter_problem_files, filter_hotspot_risk_files
         summary: List[Dict[str, Any]] = []
 
         # Use the collector to get a structured list of RootInfo objects
