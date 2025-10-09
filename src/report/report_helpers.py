@@ -64,12 +64,13 @@ def get_language_from_extension(extension: str) -> str:
     }
     return mapping.get(extension, 'Unknown')
 
+
 def get_output_filename(args):
     """
     Determines the output filename for the report based on CLI arguments.
     Handles --report-filename, --with-date, --auto-report-filename.
     """
-    # Sätt filändelse beroende på rapportformat
+    # Set file type depending on report format
     ext = '.html'
     if getattr(args, 'output_format', None) == 'json':
         ext = '.json'

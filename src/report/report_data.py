@@ -20,6 +20,7 @@ class ReportData:
         self.summary = summary
         self.details = details
 
+
 class ReportData:
     """
     Holds data for report generation.
