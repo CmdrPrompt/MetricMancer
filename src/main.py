@@ -1,11 +1,11 @@
-def main():
+
 import argparse
 import sys
+import os
 from src.app.metric_mancer_app import MetricMancerApp
 from src.utilities.cli_helpers import parse_args, print_usage
 from src.report.report_helpers import get_output_filename
 from src.report.cli.cli_report_generator import CLIReportGenerator
-import os
 from src.utilities.debug import debug_print
 
 

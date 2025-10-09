@@ -16,7 +16,6 @@ def print_usage():
         "  --threshold-low              Sets the threshold for low complexity. Default: 10. "
         "Files/folders with complexity <= this value are rated 'Low'."
         "Files/folders with complexity > this value are rated 'High'."
-    import argparse
 
 
     )
