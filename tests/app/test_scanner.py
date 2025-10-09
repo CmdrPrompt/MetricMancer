@@ -8,6 +8,7 @@ from unittest.mock import patch
 from src.app.scanner import Scanner
 from src.languages.config import Config
 
+
 class TestScanner(unittest.TestCase):
 
     def setUp(self):
@@ -22,7 +23,7 @@ class TestScanner(unittest.TestCase):
         (self.test_dir / "project_a").mkdir()
         (self.test_dir / "project_a" / "main.py").touch()
         (self.test_dir / "project_a" / "utils.js").touch()
-        (self.test_dir / "project_a" / "README.md").touch() # Unsupported
+        (self.test_dir / "project_a" / "README.md").touch()  # Unsupported
 
         (self.test_dir / "project_a" / "src").mkdir()
         (self.test_dir / "project_a" / "src" / "component.ts").touch()
@@ -60,6 +61,7 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(len(files), 3)
 
         abs_scan_path = os.path.abspath(scan_path)
+        
         def norm(p):
             return os.path.normcase(p)
         found_paths = sorted([norm(f['path']) for f in files])
@@ -120,6 +122,7 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(len(files), 0)
         # Check that a warning was printed, normalizing paths for cross-platform compatibility
         expected_msg = f"[WARN] Folder '{os.path.abspath(scan_path)}' doesn't exist – skipping."
+        
         def norm(s):
             # Extract the path from the message
             m = re.match(r"\[WARN\] Folder '(.+)' doesn't exist – skipping.", s)
@@ -133,6 +136,7 @@ class TestScanner(unittest.TestCase):
             print(call)
         normalized_actuals = [norm(str(call.args[0])) for call in mock_debug_print.call_args_list]
         self.assertIn(normalized_expected, normalized_actuals)
+    
     @patch('src.utilities.debug.debug_print')
     def test_scan_returns_empty_list_for_no_supported_files(self, mock_debug_print):
         """Test scanning a directory with no supported files returns an empty list."""
@@ -140,6 +144,7 @@ class TestScanner(unittest.TestCase):
         (self.test_dir / "empty_proj" / "file.txt").touch()
         files = self.scanner.scan([str(self.test_dir / "empty_proj")])
         self.assertEqual(len(files), 0)
+
 
 if __name__ == '__main__':
     unittest.main()

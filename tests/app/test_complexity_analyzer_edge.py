@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from src.kpis.complexity.analyzer import ComplexityAnalyzer
 
+
 class TestComplexityAnalyzerEdgeCases(unittest.TestCase):
     def setUp(self):
         self.analyzer = ComplexityAnalyzer()
@@ -54,6 +55,7 @@ class TestComplexityAnalyzerEdgeCases(unittest.TestCase):
         del mock_parser.analyze_functions
         result = self.analyzer.analyze_functions(self.dummy_code, self.config)
         self.assertEqual(result, [])
+
 
 if __name__ == "__main__":
     unittest.main()
