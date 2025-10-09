@@ -24,4 +24,4 @@ class BaseKPI(ABC):
         """
         To be implemented in subclass: Calculates and sets self.value and possibly self.calculation_values.
         """
-        pass
+    pass
