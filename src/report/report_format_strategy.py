@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class ReportFormatStrategy(ABC):
     """
     Abstract base class for different report formatting strategies (e.g., HTML, CLI, JSON).

@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 from src.app.metric_mancer_app import MetricMancerApp
 
+
 class TestMetricMancerAppEdgeCases(unittest.TestCase):
     @patch('src.app.metric_mancer_app.Config')
     @patch('src.app.metric_mancer_app.Scanner')
@@ -59,6 +60,7 @@ class TestMetricMancerAppEdgeCases(unittest.TestCase):
             app.run()
         except Exception as e:
             self.assertEqual(str(e), 'fail')
+
 
 if __name__ == '__main__':
     unittest.main()

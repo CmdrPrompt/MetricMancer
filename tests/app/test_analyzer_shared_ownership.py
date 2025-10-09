@@ -4,6 +4,7 @@ import tempfile
 import os
 from src.app.analyzer import Analyzer
 
+
 class TestAnalyzerSharedOwnership(unittest.TestCase):
     def setUp(self):
         self.analyzer = Analyzer({'.py': {'name': 'python'}})
@@ -77,6 +78,7 @@ class TestAnalyzerSharedOwnership(unittest.TestCase):
         self.assertIn("Shared Ownership", file_obj.kpis)
         kpi = file_obj.kpis["Shared Ownership"]
         self.assertIn("error", kpi.value)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -2,12 +2,14 @@ import unittest
 import os
 from src.kpis.codechurn.kpi import ChurnKPI
 
+
 def make_churn_data_for_test():
     # Simulate churn_data as produced by CodeChurnAnalyzer (absolute paths)
     return {
         os.path.abspath("/repo/file1.py"): 5,
         os.path.abspath("/repo/file2.py"): 3,
     }
+
 
 class TestChurnKPIPathMismatch(unittest.TestCase):
 
@@ -27,6 +29,7 @@ class TestChurnKPIPathMismatch(unittest.TestCase):
         abs_path = os.path.abspath("/repo/file1.py")
         churn_kpi = ChurnKPI().calculate(file_path=abs_path, churn_data=churn_data)
         self.assertEqual(churn_kpi.value, 5, "ChurnKPI should return correct churn when file_path is absolute and matches churn_data")
+
 
 if __name__ == "__main__":
     unittest.main()

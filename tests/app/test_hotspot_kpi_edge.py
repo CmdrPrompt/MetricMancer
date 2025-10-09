@@ -1,6 +1,7 @@
 import unittest
 from src.kpis.hotspot.hotspot_kpi import HotspotKPI
 
+
 class TestHotspotKPIEdgeCases(unittest.TestCase):
     def test_calculate_with_none(self):
         kpi = HotspotKPI()
@@ -31,6 +32,7 @@ class TestHotspotKPIEdgeCases(unittest.TestCase):
         result = kpi.calculate(complexity=-2, churn=3)
         self.assertEqual(result.value, -6)
         self.assertEqual(result.calculation_values, {"complexity": -2, "churn": 3})
+
 
 if __name__ == "__main__":
     unittest.main()

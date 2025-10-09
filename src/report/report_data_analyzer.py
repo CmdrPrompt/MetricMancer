@@ -7,7 +7,6 @@ from .report_data_collector import ReportDataCollector
 from .root_info import RootInfo
 
 
-
 class ReportDataAnalyzer:
     """
     Analyzes and filters data for the complexity report.

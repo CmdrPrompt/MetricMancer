@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 import os
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 
+
 class TestCodeChurnAnalyzer(unittest.TestCase):
     @patch('src.kpis.codechurn.code_churn.find_git_repo_root', side_effect=lambda x: x + '/.git')
     def test_init_repo_scan_pairs(self, mock_find_git_repo_root):
@@ -20,9 +21,11 @@ class TestCodeChurnAnalyzer(unittest.TestCase):
     def test_analyze_churn_data(self, MockRepository, mock_debug_print, mock_find_git_repo_root, mock_isdir):
         from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
         # Setup fake commit/modification structure
+        
         class FakeModification:
             def __init__(self, new_path):
                 self.new_path = new_path
+        
         class FakeCommit:
             def __init__(self, mods):
                 self.modifications = mods
@@ -58,6 +61,7 @@ class TestCodeChurnAnalyzer(unittest.TestCase):
         churn_data = analyzer.analyze()
         self.assertEqual(churn_data, {})
         self.assertTrue(any('Could not analyze churn' in str(call[0][0]) for call in mock_debug_print.call_args_list))
+
 
 if __name__ == '__main__':
     unittest.main()

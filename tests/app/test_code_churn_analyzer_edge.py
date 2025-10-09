@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 import os
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 
+
 class TestCodeChurnAnalyzerEdgeCases(unittest.TestCase):
     def test_empty_repo_scan_pairs(self):
         analyzer = CodeChurnAnalyzer([])
@@ -49,6 +50,7 @@ class TestCodeChurnAnalyzerEdgeCases(unittest.TestCase):
         analyzer = CodeChurnAnalyzer([('/repo', '/repo')])
         result = analyzer.analyze()
         self.assertEqual(result, {})
+
 
 if __name__ == '__main__':
     unittest.main()

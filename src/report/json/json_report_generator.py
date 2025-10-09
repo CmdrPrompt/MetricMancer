@@ -23,9 +23,11 @@ class JSONReportGenerator(ReportInterface):
         output_data = all_repos[0] if len(all_repos) == 1 else all_repos
         json_str = json.dumps(output_data, indent=2, ensure_ascii=False)
 
+        if not output_file:
+            output_file = 'complexity_report.json'
         if output_file:
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(json_str)
-            print(f"\u2705 JSON report written to: {output_file}")
+            print(f"[OK] JSON report written to: {output_file}")
         else:
             print(json_str)

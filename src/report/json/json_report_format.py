@@ -17,9 +17,12 @@ class JSONReportFormat(ReportFormatStrategy):
             return {k: self._to_dict(v) for k, v in obj.items()}
         if isinstance(obj, list):
             return [self._to_dict(v) for v in obj]
+        from src.kpis.base_kpi import BaseKPI
         if is_dataclass(obj):
             # Use asdict for a deep conversion of the dataclass
             return self._to_dict(asdict(obj))
+        if isinstance(obj, BaseKPI):
+            return self._to_dict(obj.value)
         return obj
 
     def _collect_flat_list(self, scan_dir: ScanDir, level: str) -> List[dict]:
@@ -43,24 +46,40 @@ class JSONReportFormat(ReportFormatStrategy):
         for file_obj in scan_dir.files.values():
             if not is_tracked_file(file_obj):
                 continue
-            file_churn = file_obj.kpis.get('churn', {}).get('value')
+            # Helper to extract .value from KPI object or None
+            def kpi_value(kpis, key):
+                kpi = kpis.get(key)
+                return kpi.value if kpi and hasattr(kpi, 'value') else None
+
+            file_churn = kpi_value(file_obj.kpis, 'churn')
+            code_ownership_value = kpi_value(file_obj.kpis, 'Code Ownership')
+            shared_ownership_value = kpi_value(file_obj.kpis, 'Shared Ownership')
+            file_complexity = kpi_value(file_obj.kpis, 'complexity')
+            file_hotspot = kpi_value(file_obj.kpis, 'hotspot')
+
             if level == "function":
                 for func_obj in file_obj.functions:
-                    func_complexity = func_obj.kpis.get('complexity', {}).get('value')
+                    func_complexity = kpi_value(func_obj.kpis, 'complexity')
+                    func_code_ownership_value = kpi_value(func_obj.kpis, 'Code Ownership')
+                    func_shared_ownership_value = kpi_value(func_obj.kpis, 'Shared Ownership')
                     items.append({
                         "filename": file_obj.file_path,
                         "function_name": func_obj.name,
                         "cyclomatic_complexity": func_complexity,
                         "churn": file_churn,
                         "hotspot_score": func_complexity * file_churn if func_complexity and file_churn else 0,
+                        "code_ownership": func_code_ownership_value,
+                        "shared_ownership": func_shared_ownership_value,
                         "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
                     })
             else: # level == "file"
                 items.append({
                     "filename": file_obj.file_path,
-                    "cyclomatic_complexity": file_obj.kpis.get('complexity', {}).get('value'),
+                    "cyclomatic_complexity": file_complexity,
                     "churn": file_churn,
-                    "hotspot_score": file_obj.kpis.get('hotspot', {}).get('value'),
+                    "hotspot_score": file_hotspot,
+                    "code_ownership": code_ownership_value,
+                    "shared_ownership": shared_ownership_value,
                     "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
                 })
 

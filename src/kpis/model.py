@@ -32,6 +32,7 @@ class BaseDir:
     repo_root_path: str
     repo_name: str
 
+
 @dataclass
 class ScanDir(BaseDir):
     """

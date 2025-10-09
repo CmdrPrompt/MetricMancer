@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 
+
 class ReportInterface(ABC):
     """
     Abstract base class for all report generators.

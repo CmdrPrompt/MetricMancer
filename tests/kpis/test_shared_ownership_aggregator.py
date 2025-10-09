@@ -7,6 +7,7 @@ from src.kpis.sharedcodeownership.shared_ownership_aggregator import (
     aggregate_shared_ownership_for_repository
 )
 
+
 class TestSharedOwnershipAggregator(unittest.TestCase):
     
     def create_mock_file(self, filename: str, significant_authors: int, error: bool = False):
@@ -283,6 +284,7 @@ class TestSharedOwnershipAggregator(unittest.TestCase):
         # Verify distribution
         expected_distribution = {0: 1, 1: 3, 2: 2, 3: 1, 4: 1}
         self.assertEqual(stats.shared_ownership_distribution, expected_distribution)
+
 
 if __name__ == '__main__':
     unittest.main()

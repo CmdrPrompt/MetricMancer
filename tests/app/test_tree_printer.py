@@ -5,6 +5,7 @@ from io import StringIO
 
 from src.utilities.tree_printer import TreePrinter
 
+
 class TestTreePrinter(unittest.TestCase):
     def setUp(self):
         self.printer = TreePrinter()
@@ -52,6 +53,7 @@ class TestTreePrinter(unittest.TestCase):
         self.assertIn("file.txt", output)
         self.assertIn("folder", output)
         self.assertIn("a.txt", output)
+
 
 if __name__ == "__main__":
     unittest.main()
