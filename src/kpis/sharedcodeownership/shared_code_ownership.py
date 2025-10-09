@@ -2,6 +2,7 @@ from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership.code_ownership import CodeOwnershipKPI
 from typing import Mapping, Optional, Union, List, Dict
 
+
 class SharedOwnershipKPI(BaseKPI):
     """
     Calculates shared ownership for a file or function.

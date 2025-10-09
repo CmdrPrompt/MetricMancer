@@ -1,6 +1,7 @@
 from typing import List, Dict, Any
 import importlib
 
+
 class ComplexityAnalyzer:
     """
     A class dedicated to calculating complexity for file content.

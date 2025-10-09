@@ -4,6 +4,8 @@ Helper functions for CLI argument parsing and usage printing for ComplexityScann
 
 import argparse
 
+
+
 def print_usage():
     """
     Prints usage instructions and parameter descriptions for the CLI.
@@ -49,6 +51,8 @@ def parse_args():
     """
     Returns an ArgumentParser for the CLI arguments.
     """
+
+
     parser = argparse.ArgumentParser(description="Analyze cyclomatic complexity")
     parser.add_argument(
         "directories",

@@ -1,5 +1,6 @@
 from ..base_kpi import BaseKPI
 
+
 class ComplexityKPI(BaseKPI):
     def __init__(self, value=None, calculation_values=None):
         super().__init__(

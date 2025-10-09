@@ -2,6 +2,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List
 from src.kpis.base_kpi import BaseKPI
+
+
 @dataclass
 class Function:
     """Represents a single function or method in a file."""
@@ -10,6 +12,7 @@ class Function:
 
 
 @dataclass
+
 class File:
     """
     Represents a single file that has been analyzed.
@@ -21,6 +24,7 @@ class File:
 
 
 @dataclass
+
 class BaseDir:
     """
     Base class for directory-like objects.
@@ -31,6 +35,7 @@ class BaseDir:
     repo_name: str
 
 @dataclass
+
 class ScanDir(BaseDir):
     """
     Represents a scanned directory, which can contain files and subdirectories.
@@ -41,6 +46,7 @@ class ScanDir(BaseDir):
 
 
 @dataclass
+
 class RepoInfo(ScanDir):
     """Top-level object representing an entire repository with its structure and KPIs."""
     pass
