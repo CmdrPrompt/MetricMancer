@@ -1,3 +1,9 @@
+from .file_info import FileInfo
+from .root_info import RootInfo
+from .report_data_collector import ReportDataCollector
+from typing import Any, Dict, List, Union
+
+
 class ReportData:
     """
     Holds data for report generation.
@@ -11,14 +17,12 @@ class ReportData:
             details: Detailed data for the report.
         """
         self.summary = summary
-        self.details = details
-from .file_info import FileInfo
-from .root_info import RootInfo
-from .report_data_collector import ReportDataCollector
-from typing import Any, Dict, List, Union
+
+    self.details = details
 
 
 class ReportDataBuilder:
+
     def __init__(self, repo_info, threshold_low: float = 10.0, threshold_high: float = 20.0, problem_file_threshold: Union[float, None] = None):
         self.repo_info = repo_info
         self.results = repo_info.results

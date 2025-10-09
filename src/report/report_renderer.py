@@ -3,6 +3,7 @@ from jinja2 import Environment, FileSystemLoader
 from src.kpis.model import RepoInfo, ScanDir, File
 from typing import List
 
+
 class ReportRenderer:
     """
     Renders the HTML report using Jinja2 templates and the analyzed repository data.

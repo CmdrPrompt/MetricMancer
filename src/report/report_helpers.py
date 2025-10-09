@@ -1,3 +1,11 @@
+"""
+Helper functions for report filename and folder handling for ComplexityScanner.
+"""
+
+import os
+import datetime
+
+
 def grade(value: float, threshold_low: float, threshold_high: float) -> dict:
     """
     Return a grade label and color for a given value based on thresholds.
@@ -15,6 +23,7 @@ def grade(value: float, threshold_low: float, threshold_high: float) -> dict:
     else:
         return {"label": "C", "color": "#F44336"}  # Red
 
+
 def get_file_extension(filename: str) -> str:
     """
     Get the file extension for a given filename.
@@ -24,6 +33,7 @@ def get_file_extension(filename: str) -> str:
         str: The file extension (without dot), or empty string if none.
     """
     return filename.split('.')[-1] if '.' in filename else ''
+
 
 def get_language_from_extension(extension: str) -> str:
     """
@@ -53,13 +63,6 @@ def get_language_from_extension(extension: str) -> str:
     }
     return mapping.get(extension, 'Unknown')
 
-"""
-Helper functions for report filename and folder handling for ComplexityScanner.
-"""
-
-
-import os
-import datetime
 
 def get_output_filename(args):
     """
@@ -87,6 +90,7 @@ def get_output_filename(args):
         output_file = f"complexity_report_{dir_str}_{date_str}.html"
 
     return output_file
+
 
 def ensure_report_folder(report_folder):
     """
