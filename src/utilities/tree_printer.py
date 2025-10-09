@@ -1,8 +1,4 @@
-
-
-"""
-TreePrinter utility for printing directory trees.
-"""
+import os
 
 
 class TreePrinter:
@@ -11,7 +7,6 @@ class TreePrinter:
         self.debug_print = debug_print or (lambda *a, **k: None)
 
     def build_tree(self, paths):
-        import os
         # Normalize all paths once before sorting and building the tree
         normalized_paths = [(os.path.normpath(path), stats) for path, stats in paths]
         sorted_paths = self._sort_paths(normalized_paths, os)

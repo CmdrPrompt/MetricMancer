@@ -1,8 +1,8 @@
+import os
+from typing import List
 
 from jinja2 import Environment, FileSystemLoader
 from src.kpis.model import RepoInfo, ScanDir, File
-from typing import List
-
 
 class ReportRenderer:
     """
@@ -18,7 +18,6 @@ class ReportRenderer:
             threshold_low: Lower threshold for complexity grading.
             threshold_high: Upper threshold for complexity grading.
         """
-        import os
         self.env = Environment(loader=FileSystemLoader(template_dir))
         self.env.filters['basename'] = lambda path: os.path.basename(path) if path else ""
         self.template_file = template_file

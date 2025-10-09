@@ -1,5 +1,6 @@
 """
-Helper functions for report filename and folder handling for ComplexityScanner.
+Helper functions for report generation, including grading, file extensions,
+and filename handling for ComplexityScanner.
 """
 
 import os
@@ -62,7 +63,6 @@ def get_language_from_extension(extension: str) -> str:
         'ada': 'Ada',
     }
     return mapping.get(extension, 'Unknown')
-
 
 def get_output_filename(args):
     """
