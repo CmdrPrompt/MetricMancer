@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 
+
 class TestChurnDetection(unittest.TestCase):
     def setUp(self):
         # Create a temp git repo
@@ -51,6 +52,7 @@ class TestChurnDetection(unittest.TestCase):
                     found_key = k
             self.assertIsNotNone(found_key, f"No churn found for file {self.file_path} in churn_data keys: {list(churn_data.keys())}")
             self.assertGreaterEqual(churn_data.get(found_key, 0), 1, "Churn value should be >= 1 for a file with changes")
+
 
 if __name__ == '__main__':
     unittest.main()

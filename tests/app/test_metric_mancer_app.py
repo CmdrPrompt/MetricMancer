@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 from src.app.metric_mancer_app import MetricMancerApp
 
+
 class TestMetricMancerApp(unittest.TestCase):
     @patch('src.app.metric_mancer_app.Config')
     @patch('src.app.metric_mancer_app.Scanner')
@@ -73,6 +74,7 @@ class TestMetricMancerApp(unittest.TestCase):
         call_args = [call[1]['output_file'] for call in mock_report_instance.generate.call_args_list]
         self.assertIn('report_1.html', call_args)
         self.assertIn('report_2.html', call_args)
+
 
 if __name__ == '__main__':
     unittest.main()
