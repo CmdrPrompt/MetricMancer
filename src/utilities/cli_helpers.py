@@ -5,7 +5,6 @@ Helper functions for CLI argument parsing and usage printing for ComplexityScann
 import argparse
 
 
-
 def print_usage():
     """
     Prints usage instructions and parameter descriptions for the CLI.
@@ -21,6 +20,7 @@ def print_usage():
 
 
     )
+    
     print(
         "  --problem-file-threshold     (Optional) Sets the threshold for individual file complexity. "
         "Files above this value are listed under each problematic folder in the summary."
@@ -51,7 +51,6 @@ def parse_args():
     """
     Returns an ArgumentParser for the CLI arguments.
     """
-
 
     parser = argparse.ArgumentParser(description="Analyze cyclomatic complexity")
     parser.add_argument(

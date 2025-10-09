@@ -40,6 +40,7 @@ LANGUAGES = {
     }
 }
 
+
 class Config:
     """
     Configuration class for language support in MetricMancer.

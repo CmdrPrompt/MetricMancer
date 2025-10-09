@@ -4,6 +4,7 @@
 TreePrinter utility for printing directory trees.
 """
 
+
 class TreePrinter:
 
     def __init__(self, debug_print=None):
@@ -28,8 +29,7 @@ class TreePrinter:
         direct_files = (item for item in paths if os.sep not in item[0])
         sub_files = (item for item in paths if os.sep in item[0])
         return (
-            sorted(direct_files, key=lambda x: x[0].lower())
-            + sorted(sub_files, key=lambda x: x[0].lower())
+            sorted(direct_files, key=lambda x: x[0].lower()) + sorted(sub_files, key=lambda x: x[0].lower())
         )
 
     def print_tree(self, node, prefix="", is_last=True):
