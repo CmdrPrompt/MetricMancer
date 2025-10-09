@@ -1,6 +1,9 @@
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
 from src.languages.config import LANGUAGES
+from src.utilities.debug import debug_print
 
 
 class Scanner:
@@ -8,8 +11,6 @@ class Scanner:
         self.config = config
 
     def scan(self, directories):
-        from src.utilities.debug import debug_print
-        from concurrent.futures import ThreadPoolExecutor, as_completed
         files = []
         debug_print(f"[DEBUG] Scanner.scan: directories={directories}")
 
@@ -40,7 +41,7 @@ class Scanner:
         def scan_one_dir(scan_dir_str):
             scan_dir = Path(scan_dir_str).resolve()
             if not scan_dir.is_dir():
-                debug_print(f"[WARN] Folder '{scan_dir}' doesn't exist – skipping.")
+                debug_print(f"[WARN] Folder '{str(scan_dir)}' doesn't exist – skipping.")
                 return []
             if scan_dir.name.startswith('.'):
                 debug_print(f"[DEBUG] Skipping hidden root directory: {scan_dir}")

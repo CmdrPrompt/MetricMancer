@@ -1,7 +1,9 @@
-import unittest
-from src.utilities.tree_printer import TreePrinter
-from io import StringIO
+import os
 import sys
+import unittest
+from io import StringIO
+
+from src.utilities.tree_printer import TreePrinter
 
 class TestTreePrinter(unittest.TestCase):
     def setUp(self):
@@ -22,7 +24,6 @@ class TestTreePrinter(unittest.TestCase):
         self.assertIn("file2.txt", tree["dir"]["sub"])
 
     def test_sort_paths(self):
-        import os
         paths = [("b.txt", {}), ("a.txt", {}), ("dir/c.txt", {}), ("dir/a.txt", {})]
         sorted_paths = self.printer._sort_paths(paths, os)
         self.assertEqual([p[0] for p in sorted_paths], ["a.txt", "b.txt", "dir/a.txt", "dir/c.txt"])

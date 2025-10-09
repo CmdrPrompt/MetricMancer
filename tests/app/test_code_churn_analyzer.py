@@ -16,8 +16,9 @@ class TestCodeChurnAnalyzer(unittest.TestCase):
     @patch('os.path.isdir', side_effect=lambda path: True if path in ['/tmp/repo', '/tmp/repo/.git'] else False)
     @patch('src.kpis.codechurn.code_churn.find_git_repo_root', side_effect=lambda x: x)
     @patch('src.kpis.codechurn.code_churn.debug_print')
-    @patch('pydriller.Repository')
+    @patch('src.kpis.codechurn.code_churn.Repository')
     def test_analyze_churn_data(self, MockRepository, mock_debug_print, mock_find_git_repo_root, mock_isdir):
+        from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
         # Setup fake commit/modification structure
         class FakeModification:
             def __init__(self, new_path):
@@ -27,12 +28,18 @@ class TestCodeChurnAnalyzer(unittest.TestCase):
                 self.modifications = mods
                 self.modified_files = mods
         fake_commit = FakeCommit([FakeModification('file1.py'), FakeModification('file2.py')])
-        MockRepository.return_value.traverse_commits.return_value = [fake_commit, fake_commit]
+        # Mock traverse_commits to return our fake commits
+        mock_repo_instance = MagicMock()
+        mock_repo_instance.traverse_commits.return_value = [fake_commit, fake_commit]
+        MockRepository.side_effect = lambda *args, **kwargs: mock_repo_instance
         # Use a real, non-None repo path and scan_dir
         repo_path = '/tmp/repo'
         scan_dir = '/tmp/repo'
         analyzer = CodeChurnAnalyzer([(repo_path, scan_dir)])
         churn_data = analyzer.analyze()
+        print("DEBUG_PRINT CALLS:")
+        for call in mock_debug_print.call_args_list:
+            print(call)
         # The code under test produces keys as os.path.join(repo_path, new_path)
         key1 = os.path.normpath(os.path.join(repo_path, 'file1.py'))
         key2 = os.path.normpath(os.path.join(repo_path, 'file2.py'))

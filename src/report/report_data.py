@@ -1,8 +1,24 @@
-from .file_info import FileInfo
-from .root_info import RootInfo
-from .report_data_collector import ReportDataCollector
-from typing import Any, Dict, List, Union
 
+from typing import Any, Dict, List, Union
+from .file_info import FileInfo
+from .report_data_collector import ReportDataCollector
+from .root_info import RootInfo
+
+
+class ReportData:
+    """
+    Holds data for report generation.
+    Stores summary and detailed report data.
+    """
+    def __init__(self, summary, details):
+        """
+        Initialize the ReportData object.
+        Args:
+            summary: Summary data for the report.
+            details: Detailed data for the report.
+        """
+        self.summary = summary
+        self.details = details
 
 class ReportData:
     """

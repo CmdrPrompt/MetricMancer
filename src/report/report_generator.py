@@ -1,3 +1,5 @@
+from src.report.html.html_report_format import HTMLReportFormat
+from src.utilities.debug import debug_print
 from .report_interface import ReportInterface
 
 
@@ -32,9 +34,6 @@ class ReportGenerator(ReportInterface):
             report_links: Optional links to include in the report.
             **kwargs: Additional arguments that are ignored by this generator.
         """
-        from src.report.html.html_report_format import HTMLReportFormat
-        from src.utilities.debug import debug_print
-
         format_strategy = HTMLReportFormat(self.template_dir, self.template_file)
         format_strategy.print_report(
             self.repo_info,
