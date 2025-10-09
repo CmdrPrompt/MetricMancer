@@ -1,6 +1,7 @@
 from typing import Any, Optional, Dict
 from abc import ABC, abstractmethod
 
+
 class BaseKPI(ABC):
     """
     Base class for all KPIs. Contains metadata, result, and calculation logic.
@@ -23,4 +24,4 @@ class BaseKPI(ABC):
         """
         To be implemented in subclass: Calculates and sets self.value and possibly self.calculation_values.
         """
-        pass
+    pass

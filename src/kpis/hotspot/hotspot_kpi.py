@@ -1,5 +1,6 @@
 from ..base_kpi import BaseKPI
 
+
 class HotspotKPI(BaseKPI):
     def __init__(self, value=None, calculation_values=None):
         super().__init__(

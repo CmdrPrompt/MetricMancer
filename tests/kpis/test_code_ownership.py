@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 from src.kpis.codeownership.code_ownership import CodeOwnershipKPI
 
+
 class TestCodeOwnershipKPI(unittest.TestCase):
     @patch('os.path.exists', return_value=True)
     @patch('subprocess.run')
@@ -22,6 +23,7 @@ class TestCodeOwnershipKPI(unittest.TestCase):
     def test_calculate_ownership_error(self, mock_check_output):
         kpi = CodeOwnershipKPI('dummy.py', '/repo')
         self.assertEqual(kpi.value, {'ownership': 'N/A'})
+
 
 if __name__ == '__main__':
     unittest.main()

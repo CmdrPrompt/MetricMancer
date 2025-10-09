@@ -5,6 +5,7 @@ from pathlib import Path
 from src.languages.config import LANGUAGES
 from src.utilities.debug import debug_print
 
+
 class Scanner:
     def __init__(self, config):
         self.config = config

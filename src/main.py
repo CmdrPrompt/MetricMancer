@@ -10,11 +10,13 @@ from src.report.report_helpers import get_output_filename
 from src.utilities.cli_helpers import parse_args, print_usage
 from src.utilities.debug import debug_print
 
+
 def main():
     # Ensure UTF-8 encoding for stdout/stderr for Unicode output (Python 3.7+)
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
         sys.stderr.reconfigure(encoding='utf-8')
+
     debug_print(f"[DEBUG] main: sys.argv={sys.argv}")
     if len(sys.argv) == 1:
         print_usage()
@@ -34,8 +36,8 @@ def main():
         generator_cls = CLIReportGenerator
     elif args.output_format == 'html':
         debug_print("[DEBUG] main: HTML report mode")
-        generator_cls = None # Will default to HTMLReportGenerator
-    else: # Default is 'human'
+        generator_cls = None  # Will default to HTMLReportGenerator
+    else:
         generator_cls = CLIReportGenerator
 
     # Determine output file
@@ -55,6 +57,7 @@ def main():
         output_format=args.output_format
     )
     app.run()
+
 
 if __name__ == "__main__":
     main()

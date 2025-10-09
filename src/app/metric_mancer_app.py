@@ -6,6 +6,7 @@ from src.languages.config import Config
 from src.report.report_generator import ReportGenerator
 from src.utilities.debug import debug_print
 
+
 class MetricMancerApp:
     def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human"):
         self.config = Config()
@@ -40,10 +41,10 @@ class MetricMancerApp:
             for idx, repo_info in enumerate(repo_infos):
                 output_file = self.output_file or "complexity_report.html"
                 base, ext = os.path.splitext(output_file)
-                filename = f"{base}_{idx+1}{ext}"
+                filename = f"{base}_{idx + 1}{ext}"
                 report_links.append({
                     'href': filename,
-                    'name': getattr(repo_info, 'repo_name', f'Repo {idx+1}'),
+                    'name': getattr(repo_info, 'repo_name', f'Repo {idx + 1}'),
                     'selected': False
                 })
         # Generate one HTML report per repo_info
@@ -52,11 +53,11 @@ class MetricMancerApp:
             # If multiple repos, append index to filename
             if len(repo_infos) > 1:
                 base, ext = os.path.splitext(output_file)
-                output_file = f"{base}_{idx+1}{ext}"
+                output_file = f"{base}_{idx + 1}{ext}"
                 # Mark the current as selected
                 for link in report_links:
                     link['selected'] = (link['href'] == output_file)
-                links_for_this = [l for l in report_links if l['href'] != output_file]
+                links_for_this = [link for link in report_links if link['href'] != output_file]
             else:
                 links_for_this = report_links
 

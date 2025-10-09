@@ -1,8 +1,10 @@
 """SharedOwnership aggregation for packages and repositories."""
 
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Mapping, Union
+from dataclasses import field
 from dataclasses import dataclass
 from ..base_kpi import BaseKPI
+
 
 @dataclass
 class SharedOwnershipStats:
@@ -12,40 +14,33 @@ class SharedOwnershipStats:
     files_with_single_owner: int = 0      # Files with 1 significant author
     files_with_no_significant_owner: int = 0  # Files below threshold
     files_with_error: int = 0             # Files with calculation errors
-    
     # Detailed breakdown
-    shared_ownership_distribution: Dict[int, int] = None  # {num_authors: count}
+    shared_ownership_distribution: Dict[int, int] = field(default_factory=dict)  # {num_authors: count}
     most_shared_file: Optional[str] = None
     most_shared_authors: int = 0
-    
     def __post_init__(self):
         if self.shared_ownership_distribution is None:
             self.shared_ownership_distribution = {}
-    
     @property
     def shared_ownership_percentage(self) -> float:
         """Percentage of files with shared ownership (2+ authors)."""
         if self.total_files == 0:
             return 0.0
         return (self.files_with_shared_ownership / self.total_files) * 100
-    
     @property
     def single_ownership_percentage(self) -> float:
         """Percentage of files with single ownership."""
         if self.total_files == 0:
             return 0.0
         return (self.files_with_single_owner / self.total_files) * 100
-    
     @property
     def average_authors_per_file(self) -> float:
         """Average number of significant authors per file."""
         if self.total_files == 0:
             return 0.0
-        
         total_authors = 0
         for num_authors, file_count in self.shared_ownership_distribution.items():
             total_authors += num_authors * file_count
-        
         return total_authors / self.total_files
 
 
@@ -85,7 +80,7 @@ class SharedOwnershipAggregatorKPI(BaseKPI):
                     stats.files_with_error += 1
                     continue
                 
-                if isinstance(shared_ownership_value, dict) and 'significant_authors' in shared_ownership_value:
+                if isinstance(shared_ownership_value, Mapping) and 'significant_authors' in shared_ownership_value:
                     num_authors = shared_ownership_value['significant_authors']
                     
                     # Count distribution

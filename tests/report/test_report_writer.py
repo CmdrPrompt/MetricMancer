@@ -2,6 +2,7 @@ import unittest
 import os
 from src.report.report_writer import ReportWriter
 
+
 class TestReportWriter(unittest.TestCase):
     def test_write_html_creates_file_and_writes_content(self):
         html = "<html><body>Test</body></html>"
@@ -15,6 +16,7 @@ class TestReportWriter(unittest.TestCase):
         finally:
             if os.path.exists(output_file):
                 os.remove(output_file)
+
 
 if __name__ == "__main__":
     unittest.main()

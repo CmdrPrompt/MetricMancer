@@ -3,6 +3,7 @@ from unittest.mock import MagicMock
 from src.report.cli.cli_report_format import CLIReportFormat
 from src.kpis.model import RepoInfo, ScanDir, File
 
+
 class TestCLISharedOwnershipFormat(unittest.TestCase):
     def setUp(self):
         self.format_strategy = CLIReportFormat()
@@ -87,6 +88,7 @@ class TestCLISharedOwnershipFormat(unittest.TestCase):
         result = self.format_strategy._format_file_stats(file_obj)
         
         self.assertIn("Shared: N/A", result)
+
 
 if __name__ == '__main__':
     unittest.main()

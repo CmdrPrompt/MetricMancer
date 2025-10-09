@@ -3,8 +3,8 @@ Helper functions for report generation, including grading, file extensions,
 and filename handling for ComplexityScanner.
 """
 
-import datetime
 import os
+import datetime
 
 
 def grade(value: float, threshold_low: float, threshold_high: float) -> dict:
@@ -64,12 +64,18 @@ def get_language_from_extension(extension: str) -> str:
     }
     return mapping.get(extension, 'Unknown')
 
+
 def get_output_filename(args):
     """
     Determines the output filename for the report based on CLI arguments.
     Handles --report-filename, --with-date, --auto-report-filename.
     """
-    output_file = 'complexity_report.html'
+    # Set file type depending on report format
+    ext = '.html'
+    if getattr(args, 'output_format', None) == 'json':
+        ext = '.json'
+    output_file = f'complexity_report{ext}'
+
     if getattr(args, 'report_filename', None):
         output_file = args.report_filename
         if getattr(args, 'with_date', False):
@@ -78,9 +84,14 @@ def get_output_filename(args):
             output_file = f"{base}_{date_str}{ext}"
     elif getattr(args, 'auto_report_filename', False):
         date_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-        dir_str = "_".join([os.path.basename(os.path.normpath(d)) for d in getattr(args, 'directories', ['src'])])
+        dir_str = "_".join([
+            os.path.basename(os.path.normpath(d))
+            for d in getattr(args, 'directories', ['src'])
+        ])
         output_file = f"complexity_report_{dir_str}_{date_str}.html"
+
     return output_file
+
 
 def ensure_report_folder(report_folder):
     """

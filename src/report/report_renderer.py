@@ -2,8 +2,8 @@ import os
 from typing import List
 
 from jinja2 import Environment, FileSystemLoader
-
 from src.kpis.model import RepoInfo, ScanDir, File
+
 
 class ReportRenderer:
     """

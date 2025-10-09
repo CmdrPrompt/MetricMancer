@@ -2,6 +2,7 @@ import unittest
 from src.utilities import debug
 from unittest.mock import patch
 
+
 class TestDebug(unittest.TestCase):
     def test_debug_print_when_debug_false(self):
         debug.DEBUG = False
@@ -16,6 +17,7 @@ class TestDebug(unittest.TestCase):
             debug.debug_print('hej')
             mock_print.assert_called_once_with('hej')
         debug.DEBUG = False  # Reset for other tests
+
 
 if __name__ == "__main__":
     unittest.main()
