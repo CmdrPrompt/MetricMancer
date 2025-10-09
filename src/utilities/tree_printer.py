@@ -3,7 +3,6 @@
 TreePrinter utility for printing directory trees.
 """
 
-
 class TreePrinter:
     def __init__(self, debug_print=None):
         self.debug_print = debug_print or (lambda *a, **k: None)

@@ -4,8 +4,6 @@ from .file_info import FileInfo
 from src.kpis.model import ScanDir
 from .root_info import RootInfo
 from .file_helpers import sort_files, average_complexity, average_grade
-
-
 class ReportDataCollector:
     """
     Collects and structures data for the complexity report.

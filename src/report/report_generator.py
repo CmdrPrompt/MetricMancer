@@ -1,6 +1,4 @@
 from .report_interface import ReportInterface
-
-
 class ReportGenerator(ReportInterface):
     """
     Main entry point for generating reports from the analyzed repository data.
