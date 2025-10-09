@@ -18,9 +18,8 @@ class TestJSONSerialization(unittest.TestCase):
         # Försök serialisera till JSON, ska ge TypeError
         try:
             json.dumps(data)
-            self.fail("JSON serialization succeeded, but it should fail with KPI object present.")
         except TypeError:
-            pass  # Expected exception
+            self.fail("JSON serialization succeeded, but it should fail with KPI object present.")
 
 
 if __name__ == "__main__":
