@@ -1,6 +1,7 @@
 import re
 from src.languages.parsers.base import ComplexityParser
 
+
 class JavaScriptComplexityParser(ComplexityParser):
     """
     Complexity parser for JavaScript source code.

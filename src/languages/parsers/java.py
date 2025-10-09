@@ -1,6 +1,7 @@
 import re
 from src.languages.parsers.base import ComplexityParser
 
+
 class JavaComplexityParser(ComplexityParser):
     """
     Complexity parser for Java source code.
