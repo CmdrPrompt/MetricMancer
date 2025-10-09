@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Union
 from src.report.file_info import FileInfo
 from src.report.grading import grade
 
+
 def sort_files(files: List[Union[Dict[str, Any], FileInfo]]) -> List[FileInfo]:
     allowed_keys = {'path', 'complexity', 'functions', 'grade', 'churn', 'repo_root'}
     file_objs: List[FileInfo] = []

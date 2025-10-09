@@ -5,6 +5,7 @@ from dataclasses import field
 from dataclasses import dataclass
 from ..base_kpi import BaseKPI
 
+
 @dataclass
 class SharedOwnershipStats:
     """Statistics for SharedOwnership at package/repo level."""
