@@ -1,6 +1,7 @@
 import re
 from src.languages.parsers.base import ComplexityParser
 
+
 class CComplexityParser(ComplexityParser):
     """
     Complexity parser for C source code.

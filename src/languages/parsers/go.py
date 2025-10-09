@@ -1,6 +1,7 @@
 import re
 from src.languages.parsers.base import ComplexityParser
 
+
 class GoComplexityParser(ComplexityParser):
     """
     Complexity parser for Go source code.
@@ -18,4 +19,4 @@ class GoComplexityParser(ComplexityParser):
         r'\bif\b', r'\belse\s+if\b', r'\bfor\b', r'\bswitch\b', r'\bcase\b',
         r'\bselect\b', r'\bgo\b', r'\bdefer\b', r'\breturn\b', r'&&', r'\|\|'
     ]
-	FUNCTION_PATTERN = r'func\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'
+    FUNCTION_PATTERN = r'func\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'

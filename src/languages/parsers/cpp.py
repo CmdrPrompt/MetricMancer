@@ -1,6 +1,7 @@
 import re
 from src.languages.parsers.base import ComplexityParser
 
+
 class CppComplexityParser(ComplexityParser):
     """
     Complexity parser for C++ source code.
@@ -19,4 +20,4 @@ class CppComplexityParser(ComplexityParser):
         r'\bswitch\b', r'\bcase\b', r'\bdefault\b', r'\bbreak\b', r'\bcontinue\b',
         r'\bgoto\b', r'\breturn\b', r'&&', r'\|\|'
     ]
-	FUNCTION_PATTERN = r'(?:\b\w+\s+)+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'
+    FUNCTION_PATTERN = r'(?:\b\w+\s+)+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'

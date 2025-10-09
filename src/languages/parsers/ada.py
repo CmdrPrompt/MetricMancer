@@ -1,6 +1,7 @@
 import re
 from src.languages.parsers.base import ComplexityParser
 
+
 class AdaComplexityParser(ComplexityParser):
     def compute_complexity(self, code: str) -> int:
         complexity = 1

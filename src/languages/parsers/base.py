@@ -1,6 +1,7 @@
 import re
 from abc import ABC, abstractmethod
 
+
 class ComplexityParser(ABC):
     """
     Abstract base class for complexity parsers for different programming languages.
@@ -33,7 +34,7 @@ class ComplexityParser(ABC):
                 continue
             func_name = match.group(1)
             start_pos = match.start()
-            end_pos = matches[i+1].start() if i + 1 < len(matches) else len(code)
+            end_pos = matches[i + 1].start() if i + 1 < len(matches) else len(code)
             func_code = code[start_pos:end_pos]
             complexity = self.compute_complexity(func_code)
             functions.append({'name': func_name, 'complexity': complexity})
