@@ -5,6 +5,7 @@ from src.report.json.json_report_format import JSONReportFormat
 from src.report.cli.cli_csv_report_format import CLICSVReportFormat
 from src.kpis.model import RepoInfo, ScanDir, File
 
+
 class TestFileFiltering(unittest.TestCase):
     def setUp(self):
         # Tracked file (should be included)
@@ -60,6 +61,7 @@ class TestFileFiltering(unittest.TestCase):
         filenames = [item['filename'] for item in items]
         self.assertIn('tracked.py', filenames)
         self.assertNotIn('untracked.py', filenames)
+
 
 if __name__ == '__main__':
     unittest.main()

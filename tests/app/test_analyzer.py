@@ -11,6 +11,7 @@ from src.kpis.hotspot import HotspotKPI
 from src.kpis.model import RepoInfo, ScanDir, File
 from src.languages.config import Config
 
+
 class TestAnalyzer(unittest.TestCase):
 
     def setUp(self):
@@ -79,7 +80,7 @@ class TestAnalyzer(unittest.TestCase):
             summary = self.analyzer.analyze(self.scanner_files)
 
             # --- Assertions ---
-            self.assertEqual(len(summary), 2) # Two repos found
+            self.assertEqual(len(summary), 2)  # Two repos found
             self.assertIn(str(self.repo1_path), summary)
             self.assertIn(str(self.repo2_path), summary)
 
@@ -105,7 +106,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertEqual(main_py_file.kpis["complexity"].value, 15)
             self.assertEqual(main_py_file.kpis["complexity"].calculation_values["function_count"], 2)
             self.assertEqual(main_py_file.kpis["churn"].value, 10)
-            self.assertEqual(main_py_file.kpis["hotspot"].value, 150) # 15 * 10
+            self.assertEqual(main_py_file.kpis["hotspot"].value, 150)  # 15 * 10
 
             # Check function data within the file
             self.assertEqual(len(main_py_file.functions), 2)
@@ -118,7 +119,7 @@ class TestAnalyzer(unittest.TestCase):
             utils_py_file = src_dir.files["utils.py"]
             self.assertEqual(utils_py_file.kpis["complexity"].value, 15)
             self.assertEqual(utils_py_file.kpis["churn"].value, 5)
-            self.assertEqual(utils_py_file.kpis["hotspot"].value, 75) # 15 * 5
+            self.assertEqual(utils_py_file.kpis["hotspot"].value, 75)  # 15 * 5
 
             # --- Verify Repo 2 ---
             repo2_info = summary[str(self.repo2_path)]
@@ -132,7 +133,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertIsInstance(app_java_file, File)
             self.assertEqual(app_java_file.kpis["complexity"].value, 15)
             self.assertEqual(app_java_file.kpis["churn"].value, 20)
-            self.assertEqual(app_java_file.kpis["hotspot"].value, 300) # 15 * 20
+            self.assertEqual(app_java_file.kpis["hotspot"].value, 300)  # 15 * 20
 
     @patch('src.app.analyzer.debug_print')
     @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
@@ -291,6 +292,7 @@ class TestAnalyzer(unittest.TestCase):
         """Test that analyzing an empty list of files returns an empty dictionary."""
         summary = self.analyzer.analyze([])
         self.assertEqual(summary, {})
+
 
 if __name__ == '__main__':
     unittest.main()

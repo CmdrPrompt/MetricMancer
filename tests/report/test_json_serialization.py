@@ -5,6 +5,7 @@ from src.kpis.complexity.kpi import ComplexityKPI
 from src.report.json.json_report_format import JSONReportFormat
 import json
 
+
 class TestJSONSerialization(unittest.TestCase):
     def test_json_serialization_fails_on_kpi_object(self):
         # Skapa ett RepoInfo med en File som har en KPI-klass som värde
@@ -19,6 +20,7 @@ class TestJSONSerialization(unittest.TestCase):
             json.dumps(data)
         except TypeError:
             self.fail("JSON serialization failed with KPI object present, but it should succeed.")
+
 
 if __name__ == "__main__":
     unittest.main()

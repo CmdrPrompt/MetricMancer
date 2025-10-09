@@ -4,6 +4,7 @@ import os
 from src.kpis.model import RepoInfo
 from src.report.report_generator import ReportGenerator
 
+
 class TestHTMLReportFilename(unittest.TestCase):
     def setUp(self):
         self.repo_info = RepoInfo(dir_name="repo", scan_dir_path="src", repo_root_path="/repo", repo_name="repo", files={}, scan_dirs={})
@@ -23,6 +24,7 @@ class TestHTMLReportFilename(unittest.TestCase):
         generator = ReportGenerator(self.repo_info)
         generator.generate()
         self.assertTrue(os.path.exists("complexity_report.html"), "HTML report should be saved as .html file by default.")
+
 
 if __name__ == "__main__":
     unittest.main()

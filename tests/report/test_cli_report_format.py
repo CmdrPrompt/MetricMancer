@@ -3,6 +3,7 @@ from unittest.mock import patch, MagicMock
 from src.report.cli.cli_report_format import CLIReportFormat
 from src.kpis.model import RepoInfo, ScanDir, File, Function
 
+
 class TestCLIReportFormat(unittest.TestCase):
     def setUp(self):
         # Minimal RepoInfo with one file and one function
@@ -69,6 +70,7 @@ class TestCLIReportFormat(unittest.TestCase):
         with patch('builtins.print') as mock_print:
             fmt.print_report(self.repo_info, debug_print=lambda x: None)
             self.assertTrue(mock_print.called)
+
 
 if __name__ == '__main__':
     unittest.main()

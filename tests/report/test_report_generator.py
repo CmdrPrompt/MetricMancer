@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from src.report.report_generator import ReportGenerator
 from src.kpis.model import RepoInfo
 
+
 class TestReportGenerator(unittest.TestCase):
     def setUp(self):
         # Minimal RepoInfo mock
@@ -35,6 +36,7 @@ class TestReportGenerator(unittest.TestCase):
         self.assertEqual(generator.problem_file_threshold, 3)
         self.assertEqual(generator.template_dir, "foo")
         self.assertEqual(generator.template_file, "bar.html")
+
 
 if __name__ == "__main__":
     unittest.main()

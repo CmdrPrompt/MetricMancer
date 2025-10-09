@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 from src.kpis.codeownership.code_ownership import CodeOwnershipKPI
 
+
 class TestCodeOwnershipKPI(unittest.TestCase):
     @patch('os.path.exists', return_value=False)
     def test_file_does_not_exist(self, mock_exists):
@@ -33,6 +34,7 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         mock_run.return_value.returncode = 0  # Tracked
         kpi = CodeOwnershipKPI(file_path='tracked.py', repo_root='.')
         self.assertEqual(kpi.value, {'ownership': 'N/A'})
+
 
 if __name__ == '__main__':
     unittest.main()
