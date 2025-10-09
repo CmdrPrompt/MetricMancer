@@ -32,4 +32,3 @@ def find_git_repo_root(start_path: str) -> str:
             debug_print(f"[DEBUG] find_git_repo_root: No .git found. Returning original path {start_path}")
             return os.path.abspath(start_path)  # Fallback
         current = parent
-
