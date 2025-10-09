@@ -14,11 +14,9 @@ def print_usage():
     print("\nPARAMETERS:")
     print("  <directories>                One or more root folders to scan for code complexity.")
     print(
-        "  --threshold-low              Sets the threshold for low complexity. Default: 10. "
-        "Files/folders with complexity <= this value are rated 'Low'."
-        "Files/folders with complexity > this value are rated 'High'."
-
-
+        "  --threshold-low              Sets the threshold for low complexity. Default: 10.\n"
+        "                               Files/folders with complexity <= this value are rated 'Low'.\n"
+        "                               Files/folders with complexity > this value are rated 'High'."
     )
     
     print(
