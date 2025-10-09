@@ -4,6 +4,7 @@ import os
 from src.kpis.model import RepoInfo
 from src.report.json.json_report_generator import JSONReportGenerator
 
+
 class TestJSONReportFilename(unittest.TestCase):
     def setUp(self):
         self.repo_info = RepoInfo(dir_name="repo", scan_dir_path="src", repo_root_path="/repo", repo_name="repo", files={}, scan_dirs={})
@@ -21,6 +22,7 @@ class TestJSONReportFilename(unittest.TestCase):
         generator.generate()
         # Default ska vara .json-fil
         self.assertTrue(os.path.exists("complexity_report.json"), "JSON report should be saved as .json file by default.")
+
 
 if __name__ == "__main__":
     unittest.main()

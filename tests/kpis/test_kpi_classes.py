@@ -3,6 +3,7 @@ from src.kpis.complexity.kpi import ComplexityKPI
 from src.kpis.codechurn.kpi import ChurnKPI
 from src.kpis.hotspot.hotspot_kpi import HotspotKPI
 
+
 class TestKPIClasses(unittest.TestCase):
     def test_complexity_kpi(self):
         kpi = ComplexityKPI()
@@ -40,6 +41,7 @@ class TestKPIClasses(unittest.TestCase):
         kpi2 = HotspotKPI()
         kpi2.calculate()
         self.assertIsNone(kpi2.value)
+
 
 if __name__ == '__main__':
     unittest.main()

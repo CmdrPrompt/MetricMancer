@@ -6,12 +6,15 @@ from src.report.json.json_report_format import JSONReportFormat
 from src.kpis.model import RepoInfo, ScanDir, File
 from src.kpis.base_kpi import BaseKPI
 
+
 class DummyKPI(BaseKPI):
     def __init__(self, name, value):
         super().__init__(name=name, value=value)
         self._value = value
+    
     def calculate(self, *args, **kwargs):
         return self._value
+
 
 class TestJSONReportFormat(unittest.TestCase):
     def test_json_report_includes_ownership_and_shared_ownership(self):

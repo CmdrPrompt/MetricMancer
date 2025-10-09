@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from src.report.report_renderer import ReportRenderer
 from src.kpis.model import RepoInfo, ScanDir, File
 
+
 class TestReportRenderer(unittest.TestCase):
     def setUp(self):
         self.template_dir = "src/report/templates"
@@ -49,6 +50,7 @@ class TestReportRenderer(unittest.TestCase):
         self.assertIn("problem_files", kwargs)
         self.assertEqual(kwargs["problem_files"], [file2])
         self.assertEqual(html, "<html>report</html>")
+
 
 if __name__ == "__main__":
     unittest.main()

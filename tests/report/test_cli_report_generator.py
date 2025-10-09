@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 from src.report.cli.cli_report_generator import CLIReportGenerator
 from src.kpis.model import RepoInfo
 
+
 class TestCLIReportGenerator(unittest.TestCase):
     def setUp(self):
         self.repo_info = RepoInfo(
@@ -45,6 +46,7 @@ class TestCLIReportGenerator(unittest.TestCase):
         self.assertEqual(generator.threshold_low, 5)
         self.assertEqual(generator.threshold_high, 15)
         self.assertEqual(generator.problem_file_threshold, 3)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI
 
+
 class TestSharedOwnershipKPI(unittest.TestCase):
     @patch('src.kpis.sharedcodeownership.shared_code_ownership.CodeOwnershipKPI')
     def test_shared_ownership_basic(self, mock_code_ownership_kpi):
@@ -51,6 +52,7 @@ class TestSharedOwnershipKPI(unittest.TestCase):
         # Ownership is not available (e.g., file not tracked)
         kpi = SharedOwnershipKPI('dummy.py', '/repo', ownership_data={'ownership': 'N/A'})
         self.assertEqual(kpi.value, {'shared_ownership': 'N/A'})
+
 
 if __name__ == '__main__':
     unittest.main()
