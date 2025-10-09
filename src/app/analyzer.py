@@ -104,6 +104,7 @@ class Analyzer:
                 code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
                 from src.kpis.base_kpi import BaseKPI
+
                 class FallbackCodeOwnershipKPI(BaseKPI):
                     def __init__(self):
                         super().__init__(
@@ -121,6 +122,7 @@ class Analyzer:
                 shared_ownership_kpi = SharedOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
                 from src.kpis.base_kpi import BaseKPI
+
                 class FallbackSharedOwnershipKPI(BaseKPI):
                     def __init__(self):
                         super().__init__(
