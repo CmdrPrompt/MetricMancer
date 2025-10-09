@@ -9,6 +9,8 @@ from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
 from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI
 from pathlib import Path
+
+
 class Analyzer:
     def __init__(self, languages_config, threshold_low=10.0, threshold_high=20.0):
         self.config = languages_config
@@ -71,19 +73,18 @@ class Analyzer:
 
             # Analyze functions in the file
             functions_data = complexity_analyzer.analyze_functions(content, lang_config)
-            
+
             function_objects = []
             total_complexity = 0
             for func_data in functions_data:
                 func_complexity_kpi = ComplexityKPI().calculate(complexity=func_data.get('complexity', 0), function_count=1)
                 total_complexity += func_complexity_kpi.value
-                
+
                 # (Future) Churn per function can be added here
                 
                 function_objects.append(
                     Function(name=func_data.get('name', 'N/A'), kpis={func_complexity_kpi.name: func_complexity_kpi})
                 )
-
 
             # Aggregate KPIs for the entire file
             file_complexity_kpi = ComplexityKPI().calculate(complexity=total_complexity, function_count=len(function_objects))
@@ -102,6 +103,7 @@ class Analyzer:
                 code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
                 from src.kpis.base_kpi import BaseKPI
+                
                 class FallbackCodeOwnershipKPI(BaseKPI):
                     def __init__(self):
                         super().__init__(
@@ -109,6 +111,7 @@ class Analyzer:
                             value={"error": f"Could not calculate: {e}"},
                             description="Proportion of code lines owned by each author (via git blame)"
                         )
+ 
                     def calculate(self, *args, **kwargs):
                         return self.value
                 code_ownership_kpi = FallbackCodeOwnershipKPI()
@@ -118,6 +121,7 @@ class Analyzer:
                 shared_ownership_kpi = SharedOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
                 from src.kpis.base_kpi import BaseKPI
+                
                 class FallbackSharedOwnershipKPI(BaseKPI):
                     def __init__(self):
                         super().__init__(
@@ -125,6 +129,7 @@ class Analyzer:
                             value={"error": f"Could not calculate: {e}"},
                             description="Number of significant authors per file (ownership > threshold)"
                         )
+                    
                     def calculate(self, *args, **kwargs):
                         return self.value
                 shared_ownership_kpi = FallbackSharedOwnershipKPI()
@@ -166,11 +171,7 @@ class Analyzer:
                     current_dir_container = current_dir_container.scan_dirs[part]
                 current_dir_container.files[file_obj.name] = file_obj
 
-
-
-
-
-        # Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
+        # TODO: Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
         debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
         return repo_info
 
