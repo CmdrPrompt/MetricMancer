@@ -14,6 +14,7 @@ from src.utilities.debug import debug_print
 def main():
     # Ensure UTF-8 encoding for stdout/stderr for Unicode output (Python 3.7+)
     if hasattr(sys.stdout, 'reconfigure'):
+        sys.stdout.reconfigure(encoding='utf-8')
         sys.stderr.reconfigure(encoding='utf-8')
 
     debug_print(f"[DEBUG] main: sys.argv={sys.argv}")
