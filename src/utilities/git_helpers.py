@@ -7,7 +7,9 @@ Helper functions for git operations
 import os
 from src.utilities.debug import debug_print
 
+
 def find_git_repo_root(start_path: str) -> str:
+
     """
     Hittar roten på ett git-repository genom att gå uppåt i filsystemet
     från en given startpunkt och leta efter en .git-mapp.
@@ -30,3 +32,4 @@ def find_git_repo_root(start_path: str) -> str:
             debug_print(f"[DEBUG] find_git_repo_root: No .git found. Returning original path {start_path}")
             return os.path.abspath(start_path)  # Fallback
         current = parent
+

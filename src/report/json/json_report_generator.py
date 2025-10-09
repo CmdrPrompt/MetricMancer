@@ -29,6 +29,6 @@ class JSONReportGenerator(ReportInterface):
         if output_file:
             with open(output_file, 'w', encoding='utf-8') as f:
                 f.write(json_str)
-            print(f"\u2705 JSON report written to: {output_file}")
+            print(f"[OK] JSON report written to: {output_file}")
         else:
             print(json_str)

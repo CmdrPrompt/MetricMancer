@@ -12,8 +12,6 @@ class ReportData:
         """
         self.summary = summary
         self.details = details
-
-
 from .file_info import FileInfo
 from .root_info import RootInfo
 from .report_data_collector import ReportDataCollector

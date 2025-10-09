@@ -9,7 +9,6 @@ from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
 from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI
 from pathlib import Path
-
 class Analyzer:
     def __init__(self, languages_config, threshold_low=10.0, threshold_high=20.0):
         self.config = languages_config

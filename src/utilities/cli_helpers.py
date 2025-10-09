@@ -15,10 +15,10 @@ def print_usage():
     print(
         "  --threshold-low              Sets the threshold for low complexity. Default: 10. "
         "Files/folders with complexity <= this value are rated 'Low'."
-    )
-    print(
-        "  --threshold-high             Sets the threshold for high complexity. Default: 20. "
         "Files/folders with complexity > this value are rated 'High'."
+    import argparse
+
+
     )
     print(
         "  --problem-file-threshold     (Optional) Sets the threshold for individual file complexity. "

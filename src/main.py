@@ -1,4 +1,4 @@
-
+def main():
 import argparse
 import sys
 from src.app.metric_mancer_app import MetricMancerApp
@@ -7,6 +7,7 @@ from src.report.report_helpers import get_output_filename
 from src.report.cli.cli_report_generator import CLIReportGenerator
 import os
 from src.utilities.debug import debug_print
+
 
 def main():
     # Ensure UTF-8 encoding for stdout/stderr for Unicode output (Python 3.7+)

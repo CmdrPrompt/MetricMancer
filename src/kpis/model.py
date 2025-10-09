@@ -1,11 +1,7 @@
-
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Dict, List
 from src.kpis.base_kpi import BaseKPI
-
-
-
 @dataclass
 class Function:
     """Represents a single function or method in a file."""
