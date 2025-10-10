@@ -15,7 +15,13 @@ def test_aggregated_authors_excludes_not_committed_yet():
     # Setup: two files, one with 'Not Committed Yet', one with a real author
     file1 = make_file_with_authors(['Not Committed Yet', 'Thomas Lindqvist'])
     file2 = make_file_with_authors(['Commander Prompt'])
-    scan_dir = ScanDir(dir_name='app', scan_dir_path='app/', repo_root_path='/', repo_name='repo', files={'f1': file1, 'f2': file2})
+    scan_dir = ScanDir(
+        dir_name='app',
+        scan_dir_path='app/',
+        repo_root_path='/',
+        repo_name='repo',
+        files={'f1': file1, 'f2': file2}
+    )
 
     # Aggregate authors as in analyzer.py
     authors_set = set()
