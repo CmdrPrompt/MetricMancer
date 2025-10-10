@@ -14,6 +14,9 @@ class CodeOwnershipKPI(BaseKPI):
     Calculates code ownership for a file using git blame.
     Value is a dict: {author: ownership_percent}
     """
+    # Klasscache: {repo_root: {file_path: ownership_dict}}
+    _ownership_cache = {}
+
     def __init__(self, file_path: str, repo_root: str):
         super().__init__(
             name="Code Ownership",
@@ -22,8 +25,14 @@ class CodeOwnershipKPI(BaseKPI):
         )
         self.file_path = file_path
         self.repo_root = repo_root
-        self.value = self.calculate_ownership()
-    # Debug print removed
+        # Använd cache om tillgänglig
+        repo_cache = CodeOwnershipKPI._ownership_cache.setdefault(repo_root, {})
+        if file_path in repo_cache:
+            self.value = repo_cache[file_path]
+        else:
+            ownership = self.calculate_ownership()
+            repo_cache[file_path] = ownership
+            self.value = ownership
 
     def calculate_ownership(self) -> dict:
         # Skip node_modules and similar directories
