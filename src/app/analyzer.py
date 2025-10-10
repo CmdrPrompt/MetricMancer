@@ -2,6 +2,7 @@ import os
 from collections import defaultdict
 from pathlib import Path
 from typing import List, Union
+from tqdm import tqdm
 
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership import CodeOwnershipKPI
@@ -43,9 +44,23 @@ class Analyzer:
             scan_dir_path="."
         )
 
-        # 2. Collect churn data for all files in the repo
+        import time
+        # Initiera ackumulatorer för tidsmätning
+        if not hasattr(self, 'timing'):  # Sätts vid första repo-analys
+            self.timing = {
+                'churn': 0.0,
+                'complexity': 0.0,
+                'filechurn': 0.0,
+                'hotspot': 0.0,
+                'ownership': 0.0,
+                'sharedownership': 0.0
+            }
+
+        t_churn_start = time.perf_counter()
         churn_analyzer = CodeChurnAnalyzer([(repo_root, d) for d in scan_dirs])
         churn_data = churn_analyzer.analyze()
+        t_churn_end = time.perf_counter()
+        self.timing['churn'] += t_churn_end - t_churn_start
         debug_print(f"[DEBUG] churn_data after analyze: {churn_data}")
         debug_print(f"[DEBUG] churn_data keys after analyze: {list(churn_data.keys())}")
         complexity_analyzer = ComplexityAnalyzer()
@@ -54,7 +69,7 @@ class Analyzer:
         if not files_in_repo:
             debug_print(f"[DEBUG] No files to analyze for repo: {repo_root}, returning None.")
             return None
-        for file_info in files_in_repo:
+        for file_info in tqdm(files_in_repo, desc=f"Analyzing files in {repo_root_path.name}", unit="file"):
             file_path = Path(file_info['path'])
             ext = file_info.get('ext')
             if ext not in self.config:
@@ -74,16 +89,16 @@ class Analyzer:
             lang_config = self.config[ext]
 
             # Analyze functions in the file
+            t_complexity_start = time.perf_counter()
             functions_data = complexity_analyzer.analyze_functions(content, lang_config)
+            t_complexity_end = time.perf_counter()
+            self.timing['complexity'] += t_complexity_end - t_complexity_start
 
             function_objects = []
             total_complexity = 0
             for func_data in functions_data:
                 func_complexity_kpi = ComplexityKPI().calculate(complexity=func_data.get('complexity', 0), function_count=1)
                 total_complexity += func_complexity_kpi.value
-
-                # (Future) Churn per function can be added here
-                
                 function_objects.append(
                     Function(name=func_data.get('name', 'N/A'), kpis={func_complexity_kpi.name: func_complexity_kpi})
                 )
@@ -92,14 +107,21 @@ class Analyzer:
             file_complexity_kpi = ComplexityKPI().calculate(complexity=total_complexity, function_count=len(function_objects))
 
             # Create and calculate ChurnKPI efficiently
+            t_filechurn_start = time.perf_counter()
             debug_print(f"[DEBUG] churn_data keys: {list(churn_data.keys())}")
             debug_print(f"[DEBUG] Looking up churn for file_path: {file_path}")
             churn_kpi = ChurnKPI().calculate(file_path=str(file_path), churn_data=churn_data)
+            t_filechurn_end = time.perf_counter()
             debug_print(f"[DEBUG] Setting churn for:              {file_path}: {churn_kpi.value}")
+            self.timing['filechurn'] += t_filechurn_end - t_filechurn_start
 
+            t_hotspot_start = time.perf_counter()
             hotspot_kpi = HotspotKPI().calculate(complexity=file_complexity_kpi.value, churn=churn_kpi.value)
+            t_hotspot_end = time.perf_counter()
+            self.timing['hotspot'] += t_hotspot_end - t_hotspot_start
 
             # --- Code Ownership KPI ---
+            t_ownership_start = time.perf_counter()
             try:
                 code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
@@ -112,12 +134,15 @@ class Analyzer:
                             value={"error": f"Could not calculate: {e}"},
                             description="Proportion of code lines owned by each author (via git blame)"
                         )
- 
+
                     def calculate(self, *args, **kwargs):
                         return self.value
                 code_ownership_kpi = FallbackCodeOwnershipKPI()
+            t_ownership_end = time.perf_counter()
+            self.timing['ownership'] += t_ownership_end - t_ownership_start
 
             # --- Shared Ownership KPI ---
+            t_sharedownership_start = time.perf_counter()
             try:
                 shared_ownership_kpi = SharedOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
             except Exception as e:
@@ -130,10 +155,11 @@ class Analyzer:
                             value={"error": f"Could not calculate: {e}"},
                             description="Number of significant authors per file (ownership > threshold)"
                         )
-                    
                     def calculate(self, *args, **kwargs):
                         return self.value
                 shared_ownership_kpi = FallbackSharedOwnershipKPI()
+            t_sharedownership_end = time.perf_counter()
+            self.timing['sharedownership'] += t_sharedownership_end - t_sharedownership_start
 
             # Create the File object
             file_obj = File(
@@ -153,7 +179,7 @@ class Analyzer:
             relative_dir_path = file_path.relative_to(repo_root_path).parent
             current_dir_container = repo_info
             path_parts = [part for part in relative_dir_path.parts if part and part != '.']
-    
+
             if not path_parts:
                 # The file is in the root directory of the repo
                 repo_info.files[file_obj.name] = file_obj
@@ -171,10 +197,11 @@ class Analyzer:
                         )
                     current_dir_container = current_dir_container.scan_dirs[part]
                 current_dir_container.files[file_obj.name] = file_obj
-
-        # TODO: Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
-        debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
         return repo_info
+
+            # Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
+            # debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
+
 
     def analyze(self, files):
         """Analyzes a list of files, groups them by repository, and returns a summary."""

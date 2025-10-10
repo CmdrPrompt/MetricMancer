@@ -26,15 +26,26 @@ class MetricMancerApp:
         self.report_generator_cls = report_generator_cls or ReportGenerator
 
     def run(self):
+        import time
+
         debug_print(f"[DEBUG] scan dirs: {self.directories}")
+        t_scan_start = time.perf_counter()
         files = self.scanner.scan(self.directories)
+        t_scan_end = time.perf_counter()
         debug_print(f"[DEBUG] scanned files: {len(files)}")
+        debug_print(f"[TIME] Scanning took {t_scan_end - t_scan_start:.2f} seconds.")
+
+        t_analyze_start = time.perf_counter()
         summary = self.analyzer.analyze(files)
+        t_analyze_end = time.perf_counter()
         debug_print(f"[DEBUG] summary keys: {list(summary.keys())}")
+        debug_print(f"[TIME] Analysis took {t_analyze_end - t_analyze_start:.2f} seconds.")
+
         repo_infos = []
         for repo_root, repo_info in summary.items():
             debug_print(f"[DEBUG] repo_info: root={repo_info.repo_root_path}, name={repo_info.repo_name}")
             repo_infos.append(repo_info)
+
         # Prepare report_links for cross-linking if multiple repos
         report_links = []
         if len(repo_infos) > 1:
@@ -47,6 +58,8 @@ class MetricMancerApp:
                     'name': getattr(repo_info, 'repo_name', f'Repo {idx + 1}'),
                     'selected': False
                 })
+
+        t_reportgen_start = time.perf_counter()
         # Generate one HTML report per repo_info
         for idx, repo_info in enumerate(repo_infos):
             output_file = self.output_file or "complexity_report.html"
@@ -72,3 +85,25 @@ class MetricMancerApp:
                 output_format=self.output_format,
                 report_links=links_for_this
             )
+        t_reportgen_end = time.perf_counter()
+
+        debug_print(f"[TIME] Report generation took {t_reportgen_end - t_reportgen_start:.2f} seconds.")
+
+        total_time = (
+            (t_scan_end - t_scan_start)
+            + (t_analyze_end - t_analyze_start)
+            + (t_reportgen_end - t_reportgen_start)
+        )
+        print("\n=== TIME SUMMARY ===")
+        print(f"Scanning:           {t_scan_end - t_scan_start:.2f} seconds")
+        print(f"Analysis:           {t_analyze_end - t_analyze_start:.2f} seconds")
+        print(f"Report generation:  {t_reportgen_end - t_reportgen_start:.2f} seconds")
+        timing = getattr(self.analyzer, 'timing', None)
+        if timing:
+            print("-- Analysis breakdown --")
+            print(f"  Churn analysis:         {timing['churn']:.2f} seconds")
+            print(f"  Complexity analysis:    {timing['complexity']:.2f} seconds")
+            print(f"  ChurnKPI (per file):    {timing['filechurn']:.2f} seconds")
+            print(f"  HotspotKPI:             {timing['hotspot']:.2f} seconds")
+            print(f"  CodeOwnershipKPI:       {timing['ownership']:.2f} seconds")
+            print(f"  SharedOwnershipKPI:     {timing['sharedownership']:.2f} seconds")
