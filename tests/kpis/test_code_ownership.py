@@ -4,6 +4,10 @@ from src.kpis.codeownership.code_ownership import CodeOwnershipKPI
 
 
 class TestCodeOwnershipKPI(unittest.TestCase):
+    def setUp(self):
+        # Rensa cache före varje test för att undvika delad state
+        from src.kpis.codeownership.code_ownership import CodeOwnershipKPI
+        CodeOwnershipKPI._ownership_cache.clear()
     @patch('os.path.exists', return_value=True)
     @patch('subprocess.run')
     @patch('subprocess.check_output')
