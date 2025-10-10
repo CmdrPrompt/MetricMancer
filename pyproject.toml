@@ -10,7 +10,8 @@ dependencies = [
   "jinja2",
   "pytest",
   "coverage",
-  "pydriller"
+  "pydriller",
+  "tqdm"
 ]
 
 [build-system]
