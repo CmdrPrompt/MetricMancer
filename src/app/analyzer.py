@@ -197,10 +197,10 @@ class Analyzer:
                         )
                     current_dir_container = current_dir_container.scan_dirs[part]
                 current_dir_container.files[file_obj.name] = file_obj
-        return repo_info
-
             # Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
             # debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
+        return repo_info
+
 
 
     def analyze(self, files):
