@@ -28,7 +28,7 @@ class JSONReportFormat(ReportFormatStrategy):
     def _collect_flat_list(self, scan_dir: ScanDir, level: str) -> List[dict]:
         """
         Recursively traverses the data model to produce a flat list of
-        file or function data, suitable for machine processing.
+        file, function, and package (folder) data, suitable for machine processing.
         Endast git-spårade filer inkluderas.
         """
         def is_tracked_file(file_obj: File):
@@ -43,14 +43,40 @@ class JSONReportFormat(ReportFormatStrategy):
         component = getattr(scan_dir, 'component', None) if hasattr(scan_dir, 'component') else None
         team = getattr(scan_dir, 'team', None) if hasattr(scan_dir, 'team') else None
 
+        # Add package/folder-level aggregated KPIs
+        def kpi_value(kpis, key):
+            kpi = kpis.get(key)
+            return kpi.value if kpi and hasattr(kpi, 'value') else None
+
+        package_complexity = kpi_value(scan_dir.kpis, 'complexity')
+        package_churn = kpi_value(scan_dir.kpis, 'churn')
+        package_hotspot = kpi_value(scan_dir.kpis, 'hotspot')
+        package_shared_ownership = kpi_value(scan_dir.kpis, 'Shared Ownership')
+        # Aggregate all unique owners from files and subdirs
+        owners_set = set()
+        for file in scan_dir.files.values():
+            co_val = kpi_value(file.kpis, 'Code Ownership')
+            if co_val and isinstance(co_val, dict):
+                owners_set.update(co_val.keys())
+        for subdir in scan_dir.scan_dirs.values():
+            subdir_co_val = kpi_value(subdir.kpis, 'Code Ownership')
+            if subdir_co_val and isinstance(subdir_co_val, dict):
+                owners_set.update(subdir_co_val.keys())
+        package_code_ownership = list(owners_set)
+        items.append({
+            "filename": scan_dir.scan_dir_path,
+            "package": scan_dir.scan_dir_path,
+            "cyclomatic_complexity": package_complexity,
+            "churn": package_churn,
+            "hotspot_score": package_hotspot,
+            "code_ownership": package_code_ownership,
+            "shared_ownership": package_shared_ownership,
+            "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
+        })
+
         for file_obj in scan_dir.files.values():
             if not is_tracked_file(file_obj):
                 continue
-            # Helper to extract .value from KPI object or None
-            def kpi_value(kpis, key):
-                kpi = kpis.get(key)
-                return kpi.value if kpi and hasattr(kpi, 'value') else None
-
             file_churn = kpi_value(file_obj.kpis, 'churn')
             code_ownership_value = kpi_value(file_obj.kpis, 'Code Ownership')
             shared_ownership_value = kpi_value(file_obj.kpis, 'Shared Ownership')
