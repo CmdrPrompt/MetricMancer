@@ -247,6 +247,92 @@ class GitDataCache:
         for file_path in uncached_files:
             self.get_churn_data(repo_root, file_path)
     
+    def prebuild_cache_for_files(self, repo_root: str, file_paths: list[str]):
+        """
+        Pre-build cache for all files efficiently using bulk git operations (Issue #40).
+        This method builds the cache before KPI calculations start, reducing individual git calls.
+        """
+        repo_root = os.path.abspath(repo_root)
+        debug_print(f"[CACHE] Pre-building cache for {len(file_paths)} files")
+        
+        # Step 1: Pre-populate tracked files cache efficiently
+        try:
+            debug_print(f"[CACHE] Pre-building tracked files cache for repo: {repo_root}")
+            result = subprocess.run(
+                ['git', '-C', repo_root, 'ls-files'],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            tracked_files = set(result.stdout.strip().split('\n')) if result.stdout.strip() else set()
+            self.tracked_files_cache[repo_root] = tracked_files
+            debug_print(f"[CACHE] Pre-built tracked files cache with {len(tracked_files)} files")
+        except Exception as e:
+            debug_print(f"[CACHE] Error pre-building tracked files: {e}")
+            return
+        
+        # Step 2: Filter to only tracked files from our file list
+        valid_files = [fp for fp in file_paths if fp in tracked_files]
+        debug_print(f"[CACHE] {len(valid_files)} of {len(file_paths)} files are tracked by git")
+        
+        # Step 3: Pre-build ownership data efficiently
+        repo_ownership_cache = self.ownership_cache.setdefault(repo_root, {})
+        repo_blame_cache = self.blame_cache.setdefault(repo_root, {})
+        
+        uncached_ownership_files = [fp for fp in valid_files if fp not in repo_ownership_cache]
+        debug_print(f"[CACHE] Pre-building ownership for {len(uncached_ownership_files)} uncached files")
+        
+        for file_path in uncached_ownership_files:
+            try:
+                # Get blame data
+                blame_output = subprocess.check_output(
+                    ['git', '-C', repo_root, 'blame', '--line-porcelain', file_path],
+                    text=True
+                )
+                repo_blame_cache[file_path] = blame_output
+                
+                # Calculate ownership from blame
+                authors = [line[7:] for line in blame_output.splitlines() if line.startswith('author ')]
+                total_lines = len(authors)
+                
+                if total_lines == 0:
+                    ownership_result = {}
+                else:
+                    from collections import Counter
+                    counts = Counter(authors)
+                    ownership_result = {author: round(count / total_lines * 100, 1) for author, count in counts.items()}
+                
+                repo_ownership_cache[file_path] = ownership_result
+                debug_print(f"[CACHE] Pre-built ownership for {file_path}: {len(ownership_result)} authors")
+                
+            except Exception as e:
+                debug_print(f"[CACHE] Error pre-building ownership for {file_path}: {e}")
+                repo_ownership_cache[file_path] = {}
+                repo_blame_cache[file_path] = None
+        
+        # Step 4: Pre-build churn data efficiently
+        repo_churn_cache = self.churn_cache.setdefault(repo_root, {})
+        uncached_churn_files = [fp for fp in valid_files if fp not in repo_churn_cache]
+        debug_print(f"[CACHE] Pre-building churn for {len(uncached_churn_files)} uncached files")
+        
+        for file_path in uncached_churn_files:
+            try:
+                result = subprocess.run(
+                    ['git', '-C', repo_root, 'log', '--oneline', '--', file_path],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                churn_count = len([line for line in result.stdout.strip().split('\n') if line.strip()])
+                repo_churn_cache[file_path] = churn_count
+                debug_print(f"[CACHE] Pre-built churn for {file_path}: {churn_count} commits")
+                
+            except Exception as e:
+                debug_print(f"[CACHE] Error pre-building churn for {file_path}: {e}")
+                repo_churn_cache[file_path] = 0
+        
+        debug_print(f"[CACHE] Pre-building completed for {len(valid_files)} files")
+    
     def get_cache_stats(self) -> Dict[str, Any]:
         """Returnera statistik om cache-användning."""
         stats = {

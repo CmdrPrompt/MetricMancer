@@ -1,28 +1,29 @@
-from src.kpis.base_kpi import BaseKPI
-class AggregatedSharedOwnershipKPI(BaseKPI):
-    def calculate(self, *args, **kwargs):
-        return self.value
-
-
-import os
 from collections import defaultdict
 from pathlib import Path
-from typing import List, Union
 from tqdm import tqdm
 
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership import CodeOwnershipKPI
 from src.kpis.codechurn import ChurnKPI
-from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
 from src.kpis.model import RepoInfo, ScanDir, File, Function
-from src.kpis.sharedcodeownership.shared_code_ownership import SharedOwnershipKPI
+from src.kpis.sharedcodeownership.shared_code_ownership import (
+    SharedOwnershipKPI
+)
 from src.utilities.debug import debug_print
 
 
+class AggregatedSharedOwnershipKPI(BaseKPI):
+    """Aggregated version of SharedOwnershipKPI for directory aggregation."""
+
+    def calculate(self, *args, **kwargs):
+        return self.value
+
+
 class Analyzer:
-    def __init__(self, languages_config, threshold_low=10.0, threshold_high=20.0):
+    def __init__(self, languages_config, threshold_low=10.0,
+                 threshold_high=20.0):
         self.config = languages_config
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
@@ -51,10 +52,10 @@ class Analyzer:
         )
 
         import time
-        # Initiera ackumulatorer för tidsmätning
-        if not hasattr(self, 'timing'):  # Sätts vid första repo-analys
+        # Initialize accumulators for timing
+        if not hasattr(self, 'timing'):  # Set on first repo analysis
             self.timing = {
-                'churn': 0.0,
+                'cache_prebuild': 0.0,
                 'complexity': 0.0,
                 'filechurn': 0.0,
                 'hotspot': 0.0,
@@ -62,30 +63,28 @@ class Analyzer:
                 'sharedownership': 0.0
             }
 
-        # 2. Analyze churn using git cache (Issue #41)
-        t_churn_start = time.perf_counter()
-        # Legacy churn analyzer for compatibility (can be removed later)
-        churn_analyzer = CodeChurnAnalyzer([(repo_root, d) for d in scan_dirs])
-        churn_data = churn_analyzer.analyze()
-        t_churn_end = time.perf_counter()
-        self.timing['churn'] += t_churn_end - t_churn_start
-        debug_print(f"[DEBUG] churn_data after analyze: {churn_data}")
-        debug_print(f"[DEBUG] churn_data keys after analyze: {list(churn_data.keys())}")
-        complexity_analyzer = ComplexityAnalyzer()
-
-        # 2.5. Batch prefetch git data to optimize performance (Issue #39)
+        # 2. Pre-build cache before KPI calculation (Issue #40)
         t_prefetch_start = time.perf_counter()
         from src.utilities.git_cache import get_git_cache
         git_cache = get_git_cache()
-        
-        # Collect all file paths for batch prefetching
-        file_paths = [str(Path(file_info['path']).relative_to(repo_root_path)) for file_info in files_in_repo]
-        debug_print(f"[BATCH] Prefetching ownership data for {len(file_paths)} files")
-        git_cache.prefetch_ownership_data(str(repo_root_path.resolve()), file_paths)
-        debug_print(f"[BATCH] Prefetching churn data for {len(file_paths)} files")
-        git_cache.prefetch_churn_data(str(repo_root_path.resolve()), file_paths)
+
+        # Collect all file paths for cache pre-building
+        file_paths = [
+            str(Path(file_info['path']).relative_to(repo_root_path))
+            for file_info in files_in_repo
+        ]
+        debug_print(f"[PREBUILD] Pre-building cache for {len(file_paths)} "
+                    f"files")
+        git_cache.prebuild_cache_for_files(
+            str(repo_root_path.resolve()), file_paths
+        )
         t_prefetch_end = time.perf_counter()
-        debug_print(f"[BATCH] Prefetch completed in {t_prefetch_end - t_prefetch_start:.3f} seconds")
+        self.timing['cache_prebuild'] += t_prefetch_end - t_prefetch_start
+        debug_print(f"[PREBUILD] Cache pre-building completed in "
+                    f"{t_prefetch_end - t_prefetch_start:.3f} seconds")
+
+        # Legacy churn_data for backward compatibility (cache handles churn)
+        complexity_analyzer = ComplexityAnalyzer()
 
         # 3. Build the hierarchical data model and calculate KPIs
         if not files_in_repo:
@@ -96,7 +95,8 @@ class Analyzer:
             ext = file_info.get('ext')
             if ext not in self.config:
                 # Always print absolute path with correct separator for platform
-                debug_print(f"_analyze_repo: Skipping file with unknown extension: {str(file_path.resolve())}")
+                debug_print(f"_analyze_repo: Skipping file with unknown "
+                            f"extension: {str(file_path.resolve())}")
                 continue
 
             # Read file content for complexity analysis
@@ -112,77 +112,89 @@ class Analyzer:
 
             # Analyze functions in the file
             t_complexity_start = time.perf_counter()
-            functions_data = complexity_analyzer.analyze_functions(content, lang_config)
+            functions_data = complexity_analyzer.analyze_functions(
+                content, lang_config
+            )
             t_complexity_end = time.perf_counter()
-            self.timing['complexity'] += t_complexity_end - t_complexity_start
+            self.timing['complexity'] += (
+                t_complexity_end - t_complexity_start
+            )
 
             function_objects = []
             total_complexity = 0
             for func_data in functions_data:
-                func_complexity_kpi = ComplexityKPI().calculate(complexity=func_data.get('complexity', 0), function_count=1)
+                func_complexity_kpi = ComplexityKPI().calculate(
+                    complexity=func_data.get('complexity', 0),
+                    function_count=1
+                )
                 total_complexity += func_complexity_kpi.value
                 function_objects.append(
-                    Function(name=func_data.get('name', 'N/A'), kpis={func_complexity_kpi.name: func_complexity_kpi})
+                    Function(
+                        name=func_data.get('name', 'N/A'),
+                        kpis={func_complexity_kpi.name: func_complexity_kpi}
+                    )
                 )
 
             # Aggregate KPIs for the entire file
-            file_complexity_kpi = ComplexityKPI().calculate(complexity=total_complexity, function_count=len(function_objects))
+            file_complexity_kpi = ComplexityKPI().calculate(
+                complexity=total_complexity,
+                function_count=len(function_objects)
+            )
 
             # Create and calculate ChurnKPI using git cache (Issue #41)
             t_filechurn_start = time.perf_counter()
             relative_path = str(file_path.relative_to(repo_root_path))
-            debug_print(f"[DEBUG] Looking up churn for file_path: {relative_path}")
+            debug_print(f"[DEBUG] Looking up churn for file_path: "
+                        f"{relative_path}")
             # Use git cache by passing repo_root instead of churn_data
-            churn_kpi = ChurnKPI().calculate(file_path=str(file_path), repo_root=str(repo_root_path.resolve()))
+            churn_kpi = ChurnKPI().calculate(
+                file_path=str(file_path),
+                repo_root=str(repo_root_path.resolve())
+            )
             t_filechurn_end = time.perf_counter()
-            debug_print(f"[DEBUG] Setting churn for:              {relative_path}: {churn_kpi.value}")
+            debug_print(f"[DEBUG] Setting churn for:              "
+                        f"{relative_path}: {churn_kpi.value}")
             self.timing['filechurn'] += t_filechurn_end - t_filechurn_start
 
             t_hotspot_start = time.perf_counter()
-            hotspot_kpi = HotspotKPI().calculate(complexity=file_complexity_kpi.value, churn=churn_kpi.value)
+            hotspot_kpi = HotspotKPI().calculate(
+                complexity=file_complexity_kpi.value,
+                churn=churn_kpi.value
+            )
             t_hotspot_end = time.perf_counter()
             self.timing['hotspot'] += t_hotspot_end - t_hotspot_start
 
             # --- Code Ownership KPI ---
             t_ownership_start = time.perf_counter()
             try:
-                code_ownership_kpi = CodeOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
+                code_ownership_kpi = CodeOwnershipKPI(
+                    file_path=str(file_path.resolve()),
+                    repo_root=str(repo_root_path.resolve())
+                )
             except Exception as e:
-                from src.kpis.base_kpi import BaseKPI
-
-                class FallbackCodeOwnershipKPI(BaseKPI):
-                    def __init__(self):
-                        super().__init__(
-                            name="Code Ownership",
-                            value={"error": f"Could not calculate: {e}"},
-                            description="Proportion of code lines owned by each author (via git blame)"
-                        )
-
-                    def calculate(self, *args, **kwargs):
-                        return self.value
-                code_ownership_kpi = FallbackCodeOwnershipKPI()
+                from src.kpis.codeownership.fallback_kpi import (
+                    FallbackCodeOwnershipKPI
+                )
+                code_ownership_kpi = FallbackCodeOwnershipKPI(str(e))
             t_ownership_end = time.perf_counter()
             self.timing['ownership'] += t_ownership_end - t_ownership_start
 
             # --- Shared Ownership KPI ---
             t_sharedownership_start = time.perf_counter()
             try:
-                shared_ownership_kpi = SharedOwnershipKPI(file_path=str(file_path.resolve()), repo_root=str(repo_root_path.resolve()))
+                shared_ownership_kpi = SharedOwnershipKPI(
+                    file_path=str(file_path.resolve()),
+                    repo_root=str(repo_root_path.resolve())
+                )
             except Exception as e:
-                from src.kpis.base_kpi import BaseKPI
-
-                class FallbackSharedOwnershipKPI(BaseKPI):
-                    def __init__(self):
-                        super().__init__(
-                            name="Shared Ownership",
-                            value={"error": f"Could not calculate: {e}"},
-                            description="Number of significant authors per file (ownership > threshold)"
-                        )
-                    def calculate(self, *args, **kwargs):
-                        return self.value
-                shared_ownership_kpi = FallbackSharedOwnershipKPI()
+                from src.kpis.sharedcodeownership.fallback_kpi import (
+                    FallbackSharedOwnershipKPI
+                )
+                shared_ownership_kpi = FallbackSharedOwnershipKPI(str(e))
             t_sharedownership_end = time.perf_counter()
-            self.timing['sharedownership'] += t_sharedownership_end - t_sharedownership_start
+            self.timing['sharedownership'] += (
+                t_sharedownership_end - t_sharedownership_start
+            )
 
             # Create the File object
             file_obj = File(
@@ -213,7 +225,7 @@ class Analyzer:
                     current_path = current_path / part
                     if part not in current_dir_container.scan_dirs:
                         current_dir_container.scan_dirs[part] = ScanDir(
-                            dir_name=part, 
+                            dir_name=part,
                             scan_dir_path=str(current_path),
                             repo_root_path=repo_info.repo_root_path,
                             repo_name=repo_info.repo_name
@@ -223,6 +235,7 @@ class Analyzer:
             # Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
             # debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
             # --- Aggregate KPIs for each ScanDir (folder) ---
+
             def aggregate_scan_dir_kpis(scan_dir):
                 # Aggregate KPIs from files and subdirectories
                 complexity_vals = []

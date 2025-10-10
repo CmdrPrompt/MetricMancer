@@ -87,28 +87,33 @@ class MetricMancerApp:
             )
         t_reportgen_end = time.perf_counter()
 
-        debug_print(f"[TIME] Report generation took {t_reportgen_end - t_reportgen_start:.2f} seconds.")
+        debug_print(f"[TIME] Report generation took "
+                    f"{t_reportgen_end - t_reportgen_start:.2f} seconds.")
 
-        total_time = (
-            (t_scan_end - t_scan_start)
-            + (t_analyze_end - t_analyze_start)
-            + (t_reportgen_end - t_reportgen_start)
-        )
         print("\n=== TIME SUMMARY ===")
         print(f"Scanning:           {t_scan_end - t_scan_start:.2f} seconds")
-        print(f"Analysis:           {t_analyze_end - t_analyze_start:.2f} seconds")
-        print(f"Report generation:  {t_reportgen_end - t_reportgen_start:.2f} seconds")
+        print(f"Analysis:           "
+              f"{t_analyze_end - t_analyze_start:.2f} seconds")
+        print(f"Report generation:  "
+              f"{t_reportgen_end - t_reportgen_start:.2f} seconds")
         timing = getattr(self.analyzer, 'timing', None)
         if timing:
             print("-- Analysis breakdown --")
+
             def safe_fmt(val):
                 try:
                     return f"{float(val):.2f}"
                 except Exception:
                     return "N/A"
-            print(f"  Churn analysis:         {safe_fmt(timing['churn'])} seconds")
-            print(f"  Complexity analysis:    {safe_fmt(timing['complexity'])} seconds")
-            print(f"  ChurnKPI (per file):    {safe_fmt(timing['filechurn'])} seconds")
-            print(f"  HotspotKPI:             {safe_fmt(timing['hotspot'])} seconds")
-            print(f"  CodeOwnershipKPI:       {safe_fmt(timing['ownership'])} seconds")
-            print(f"  SharedOwnershipKPI:     {safe_fmt(timing['sharedownership'])} seconds")
+            print(f"  Cache pre-building:     "
+                  f"{safe_fmt(timing['cache_prebuild'])} seconds")
+            print(f"  Complexity analysis:    "
+                  f"{safe_fmt(timing['complexity'])} seconds")
+            print(f"  ChurnKPI (per file):    "
+                  f"{safe_fmt(timing['filechurn'])} seconds")
+            print(f"  HotspotKPI:             "
+                  f"{safe_fmt(timing['hotspot'])} seconds")
+            print(f"  CodeOwnershipKPI:       "
+                  f"{safe_fmt(timing['ownership'])} seconds")
+            print(f"  SharedOwnershipKPI:     "
+                  f"{safe_fmt(timing['sharedownership'])} seconds")
