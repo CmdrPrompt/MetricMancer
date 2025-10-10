@@ -49,8 +49,7 @@ class TestAnalyzer(unittest.TestCase):
         """Clean up the temporary directory."""
         shutil.rmtree(self.test_dir)
 
-    @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
-    def test_analyze_structure_and_kpis(self, mock_codechurn_analyze):
+    def test_analyze_structure_and_kpis(self):
         """
         Test that the analyzer correctly builds the RepoInfo structure and assigns KPIs.
         """
@@ -62,7 +61,6 @@ class TestAnalyzer(unittest.TestCase):
             str(self.utils_py_path): 5,
             str(self.app_java_path): 20,
         }
-        mock_codechurn_analyze.return_value = mock_churn_data
 
         # Mock function analysis data
         mock_functions_data = [
@@ -136,8 +134,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertEqual(app_java_file.kpis["hotspot"].value, 300)  # 15 * 20
 
     @patch('src.app.analyzer.debug_print')
-    @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
-    def test_skips_unsupported_extension_files(self, mock_codechurn_analyze, mock_debug_print):
+    def test_skips_unsupported_extension_files(self, mock_debug_print):
         """Unsupported extensions should be skipped and not appear in RepoInfo."""
         # Create an unsupported file in repo1 root
         readme_path = self.repo1_path / "README.md"
@@ -149,7 +146,7 @@ class TestAnalyzer(unittest.TestCase):
         ]
 
         # Mock churn and complexity
-        mock_codechurn_analyze.return_value = {
+        mock_churn_data = {
             str(self.main_py_path): 3,
             str(self.utils_py_path): 2,
         }
@@ -157,7 +154,9 @@ class TestAnalyzer(unittest.TestCase):
             {'name': 'f1', 'complexity': 5},
             {'name': 'f2', 'complexity': 4},
         ]
-        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data):
+        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data), \
+             patch.object(ChurnKPI, 'calculate', side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
+             patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
             # Repo1 exists
@@ -174,8 +173,7 @@ class TestAnalyzer(unittest.TestCase):
                             f"Expected debug_print call containing: {expected_substr}\nActual calls: {[call.args[0] for call in mock_debug_print.call_args_list]}")
 
     @patch('src.app.analyzer.debug_print')
-    @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
-    def test_unreadable_file_is_skipped_and_warned(self, mock_codechurn_analyze, mock_debug_print):
+    def test_unreadable_file_is_skipped_and_warned(self, mock_debug_print):
         """Analyzer should skip files it cannot read and continue processing others."""
         blocked_path = self.repo1_path / "src" / "blocked.py"
         blocked_path.write_text("def blocked(): pass")
@@ -186,7 +184,7 @@ class TestAnalyzer(unittest.TestCase):
             {'path': str(blocked_missing_path), 'root': str(self.repo1_path), 'ext': '.py'},
         ]
 
-        mock_codechurn_analyze.return_value = {
+        mock_churn_data = {
             str(self.main_py_path): 1,
             str(self.utils_py_path): 1,
             str(blocked_missing_path): 10,
@@ -195,8 +193,10 @@ class TestAnalyzer(unittest.TestCase):
         mock_functions_data = [
             {'name': 'f1', 'complexity': 2},
         ]
-
-        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data):
+        
+        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data), \
+             patch.object(ChurnKPI, 'calculate', side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
+             patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
         repo1_info = summary[str(self.repo1_path)]
@@ -209,8 +209,7 @@ class TestAnalyzer(unittest.TestCase):
             for call in mock_debug_print.call_args_list
         ))
 
-    @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
-    def test_builds_nested_scandir_hierarchy(self, mock_codechurn_analyze):
+    def test_builds_nested_scandir_hierarchy(self):
         """Analyzer should create nested ScanDir objects for deep paths."""
         nested_path = self.repo1_path / "src" / "pkg" / "module" / "utils" / "helper.py"
         (nested_path.parent).mkdir(parents=True, exist_ok=True)
@@ -220,7 +219,8 @@ class TestAnalyzer(unittest.TestCase):
             {'path': str(nested_path), 'root': str(self.repo1_path), 'ext': '.py'},
         ]
 
-        mock_codechurn_analyze.return_value = {
+        # Mock churn data  
+        mock_churn_data = {
             str(self.main_py_path): 1,
             str(self.utils_py_path): 2,
             str(nested_path): 3,
@@ -245,16 +245,14 @@ class TestAnalyzer(unittest.TestCase):
         # file_path should be relative to repo root
         self.assertEqual(helper_file.file_path.replace("\\", "/"), "src/pkg/module/utils/helper.py")
 
-    @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
     @patch('src.utilities.git_cache.GitDataCache.get_churn_data')
-    def test_hotspot_kpi_includes_calculation_values(self, mock_git_cache_churn, mock_codechurn_analyze):
+    def test_hotspot_kpi_includes_calculation_values(self, mock_git_cache_churn):
         """Hotspot KPI should include complexity and churn in calculation_values."""
         churn_values = {
             str(self.main_py_path): 7,
             str(self.utils_py_path): 4,
             str(self.app_java_path): 0,
         }
-        mock_codechurn_analyze.return_value = churn_values
         
         # Mock git cache to return expected churn values
         def mock_churn_lookup(repo_root, file_path):
@@ -280,15 +278,18 @@ class TestAnalyzer(unittest.TestCase):
         # Hotspot should store calculation inputs
         self.assertEqual(main_file.kpis["hotspot"].calculation_values, {"complexity": 9, "churn": 7})
 
-    @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
-    def test_zero_functions_results_in_zero_complexity_and_hotspot(self, mock_codechurn_analyze):
+    def test_zero_functions_results_in_zero_complexity_and_hotspot(self):
         """If no functions are found, complexity should be 0 and hotspot 0."""
-        mock_codechurn_analyze.return_value = {
+        # Mock churn data
+        mock_churn_data = {
             str(self.main_py_path): 5,
             str(self.utils_py_path): 1,
             str(self.app_java_path): 2,
         }
-        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=[]):
+        
+        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=[]), \
+             patch.object(ChurnKPI, 'calculate', side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
+             patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
             summary = self.analyzer.analyze(self.scanner_files)
 
         repo1_info = summary[str(self.repo1_path)]
