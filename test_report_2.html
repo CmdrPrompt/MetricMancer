@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tests - MetricMancer Report</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            color: #1a1a1a;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        nav a {
+            margin-right: 15px;
+            text-decoration: none;
+            color: #007bff;
+        }
+        nav a.selected {
+            font-weight: bold;
+            color: #333;
+            pointer-events: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        /* --- Final, Robust Tree View Styles --- */
+        .file-tree-container {
+            font-family: "Menlo", "Consolas", "Monaco", monospace; /* Monospace for alignment */
+            line-height: 1.5;
+            background-color: #fdfdfd;
+            border: 1px solid #eee;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .tree-line {
+            white-space: pre; /* Crucial for keeping prefix/connector alignment */
+        }
+        .tree-item .toggle {
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            transition: transform 0.15s ease-in-out;
+            color: #666;
+            width: 1em;
+        }
+        .tree-item.is-open > .tree-line .toggle {
+            transform: rotate(90deg);
+        }
+        .tree-item .nested {
+            display: none; /* Hidden by default */
+        }
+        .tree-item.is-open > .nested {
+            display: block; /* Shown when parent has 'is-open' class */
+        }
+        .tree-item .name {
+            font-weight: bold;
+        }
+        .tree-item.is-file .name {
+            font-weight: normal;
+        }
+        .tree-item .kpis {
+            color: #666;
+        }
+        .tree-controls {
+            margin-bottom: 1em;
+        }
+        .tree-controls button {
+            padding: 5px 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MetricMancer Software KPI Report</h1>
+        
+        <nav>
+            <strong>Reports:</strong>
+            
+                <a href="test_report_1.html" class="">src</a>
+            
+        </nav>
+        
+    </header>
+
+    <main class="container">
+        
+  <div class="file-tree-container">
+    <h2>File & KPI Tree for tests</h2>
+    <div class="tree-controls">
+      <button id="expand-all-btn">Expand All</button>
+      <button id="collapse-all-btn">Collapse All</button>
+    </div>
+    <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
+    <div class="tree">
+      
+      <div class="tree-item is-folder">
+        <div class="tree-line"><span class="prefix">├── </span><span class="toggle">▶</span> <span class="name">app/</span></div>
+        <div class="nested">
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">__init__.py</span> <span class="kpis">[C: 0, Churn: 2, Hotspot: 0] [Shared: num_significant_authors (0%), authors ([]%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_analyzer.py</span> <span class="kpis">[C: 35, Churn: 5, Hotspot: 175] [Owners: Thomas Lindqvist, copilot-swe-agent[bot]] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_analyzer_shared_ownership.py</span> <span class="kpis">[C: 8, Churn: 2, Hotspot: 16] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_churn_detection.py</span> <span class="kpis">[C: 19, Churn: 6, Hotspot: 114] [Owners: Thomas Lindqvist, copilot-swe-agent[bot], Commander Prompt] [Shared: num_significant_authors (2%), authors (['Thomas Lindqvist', 'Commander Prompt']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_churn_kpi_path_mismatch.py</span> <span class="kpis">[C: 12, Churn: 2, Hotspot: 24] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_code_churn_analyzer.py</span> <span class="kpis">[C: 13, Churn: 5, Hotspot: 65] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_code_churn_analyzer_edge.py</span> <span class="kpis">[C: 15, Churn: 5, Hotspot: 75] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_complexity_analyzer.py</span> <span class="kpis">[C: 10, Churn: 2, Hotspot: 20] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_complexity_analyzer_edge.py</span> <span class="kpis">[C: 9, Churn: 2, Hotspot: 18] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_debug.py</span> <span class="kpis">[C: 4, Churn: 2, Hotspot: 8] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_hotspot_kpi_edge.py</span> <span class="kpis">[C: 6, Churn: 2, Hotspot: 12] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_metric_mancer_app.py</span> <span class="kpis">[C: 6, Churn: 2, Hotspot: 12] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_metric_mancer_app_edge.py</span> <span class="kpis">[C: 8, Churn: 2, Hotspot: 16] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_scanner.py</span> <span class="kpis">[C: 29, Churn: 7, Hotspot: 203] [Owners: Thomas Lindqvist, copilot-swe-agent[bot]] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   └── </span><span class="name">test_tree_printer.py</span> <span class="kpis">[C: 10, Churn: 3, Hotspot: 30] [Owners: copilot-swe-agent[bot], Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div></div>
+      </div>
+      <div class="tree-item is-folder">
+        <div class="tree-line"><span class="prefix">├── </span><span class="toggle">▶</span> <span class="name">kpis/</span></div>
+        <div class="nested">
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">__init__.py</span> <span class="kpis">[C: 0, Churn: 1, Hotspot: 0] [Shared: num_significant_authors (0%), authors ([]%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_code_churn.py</span> <span class="kpis">[C: 0, Churn: 1, Hotspot: 0] [Shared: num_significant_authors (0%), authors ([]%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_code_ownership.py</span> <span class="kpis">[C: 4, Churn: 3, Hotspot: 12] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_code_ownership_kpi.py</span> <span class="kpis">[C: 5, Churn: 2, Hotspot: 10] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_kpi_classes.py</span> <span class="kpis">[C: 5, Churn: 2, Hotspot: 10] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_shared_ownership_aggregator.py</span> <span class="kpis">[C: 23, Churn: 2, Hotspot: 46] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   └── </span><span class="name">test_Shared_Ownership_KPI.py</span> <span class="kpis">[C: 7, Churn: 2, Hotspot: 14] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div></div>
+      </div>
+      <div class="tree-item is-folder">
+        <div class="tree-line"><span class="prefix">├── </span><span class="toggle">▶</span> <span class="name">report/</span></div>
+        <div class="nested">
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">__init__.py</span> <span class="kpis">[C: 0, Churn: 1, Hotspot: 0] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_cli_cli_report_format.py</span> <span class="kpis">[C: 6, Churn: 2, Hotspot: 12] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_cli_report_format.py</span> <span class="kpis">[C: 7, Churn: 3, Hotspot: 21] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_cli_report_generator.py</span> <span class="kpis">[C: 6, Churn: 2, Hotspot: 12] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_cli_shared_ownership_format.py</span> <span class="kpis">[C: 5, Churn: 2, Hotspot: 10] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_file_filtering.py</span> <span class="kpis">[C: 8, Churn: 2, Hotspot: 16] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_html_report_filename.py</span> <span class="kpis">[C: 8, Churn: 3, Hotspot: 24] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_json_report_filename.py</span> <span class="kpis">[C: 6, Churn: 3, Hotspot: 18] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_json_report_format.py</span> <span class="kpis">[C: 5, Churn: 2, Hotspot: 10] [Owners: Commander Prompt, Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Commander Prompt']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_json_serialization.py</span> <span class="kpis">[C: 4, Churn: 5, Hotspot: 20] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_report_generator.py</span> <span class="kpis">[C: 4, Churn: 4, Hotspot: 16] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   ├── </span><span class="name">test_report_renderer.py</span> <span class="kpis">[C: 5, Churn: 3, Hotspot: 15] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">│   └── </span><span class="name">test_report_writer.py</span> <span class="kpis">[C: 4, Churn: 2, Hotspot: 8] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">├── </span><span class="name">__init__.py</span> <span class="kpis">[C: 0, Churn: 1, Hotspot: 0] [Shared: num_significant_authors (0%), authors ([]%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">├── </span><span class="name">test_main_shared_ownership.py</span> <span class="kpis">[C: 12, Churn: 5, Hotspot: 60] [Owners: Thomas Lindqvist] [Shared: num_significant_authors (1%), authors (['Thomas Lindqvist']%), threshold (20.0%)]</span></div>
+      </div>
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">└── </span><span class="name">test_report_generator.py</span> <span class="kpis">[C: 0, Churn: 7, Hotspot: 0] [Shared: num_significant_authors (0%), authors ([]%), threshold (20.0%)]</span></div>
+      </div>
+    </div>
+  </div>
+
+  
+
+    </main>
+
+    
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.tree-item.is-folder .toggle').forEach(toggle => {
+            const parentItem = toggle.closest('.tree-item');
+            if (parentItem) {
+                toggle.addEventListener('click', () => parentItem.classList.toggle('is-open'));
+            }
+        });
+
+        const allFolders = document.querySelectorAll('.tree-item.is-folder');
+
+        document.getElementById('expand-all-btn').addEventListener('click', () => {
+            allFolders.forEach(folder => {
+                folder.classList.add('is-open');
+            });
+        });
+
+        document.getElementById('collapse-all-btn').addEventListener('click', () => {
+            allFolders.forEach(folder => {
+                folder.classList.remove('is-open');
+            });
+        });
+    });
+</script>
+
+</body>
+</html>
