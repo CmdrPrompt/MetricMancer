@@ -9,7 +9,8 @@ class TestCLIReportFormatCLI(unittest.TestCase):
         self.file = File(name='test.py', file_path='test.py', kpis={
             'complexity': MagicMock(value=7),
             'churn': MagicMock(value=2),
-            'hotspot': MagicMock(value=14)
+            'hotspot': MagicMock(value=14),
+            'Code Ownership': MagicMock(value={'Alice': 75.0, 'Bob': 25.0})
         })
         self.func = Function(name='bar', kpis={
             'complexity': MagicMock(value=3)
