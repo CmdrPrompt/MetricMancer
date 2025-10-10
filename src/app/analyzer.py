@@ -254,12 +254,13 @@ class Analyzer:
                 authors_set = set()
                 for file in scan_dir.files.values():
                     if file.kpis.get('Shared Ownership') and isinstance(file.kpis['Shared Ownership'].value, dict):
-                        file_authors = file.kpis['Shared Ownership'].value.get('authors', [])
+                        file_authors = [a for a in file.kpis['Shared Ownership'].value.get('authors', []) if a != 'Not Committed Yet']
                         authors_set.update(file_authors)
                 for subdir in scan_dir.scan_dirs.values():
                     subdir_authors = subdir.kpis.get('Shared Ownership')
                     if subdir_authors and isinstance(subdir_authors.value, dict):
-                        authors_set.update(subdir_authors.value.get('authors', []))
+                        sub_authors = [a for a in subdir_authors.value.get('authors', []) if a != 'Not Committed Yet']
+                        authors_set.update(sub_authors)
                 shared_ownership_dict = {
                     'num_significant_authors': avg_shared_ownership,
                     'authors': list(authors_set),
