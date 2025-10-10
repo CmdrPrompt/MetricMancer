@@ -9,6 +9,7 @@ license = "MIT"
 dependencies = [
   "jinja2",
   "pytest",
+  "pytest-cov",
   "coverage",
   "pydriller",
   "tqdm"
