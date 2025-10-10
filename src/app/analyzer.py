@@ -1,3 +1,9 @@
+from src.kpis.base_kpi import BaseKPI
+class AggregatedSharedOwnershipKPI(BaseKPI):
+    def calculate(self, *args, **kwargs):
+        return self.value
+
+
 import os
 from collections import defaultdict
 from pathlib import Path
@@ -199,6 +205,64 @@ class Analyzer:
                 current_dir_container.files[file_obj.name] = file_obj
             # Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
             # debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
+            # --- Aggregate KPIs for each ScanDir (folder) ---
+            def aggregate_scan_dir_kpis(scan_dir):
+                # Aggregate KPIs from files and subdirectories
+                complexity_vals = []
+                churn_vals = []
+                hotspot_vals = []
+                ownership_vals = []
+                shared_ownership_counts = []
+                for file in scan_dir.files.values():
+                    if file.kpis.get('complexity') and isinstance(file.kpis['complexity'].value, (int, float)):
+                        complexity_vals.append(file.kpis['complexity'].value)
+                    if file.kpis.get('churn') and isinstance(file.kpis['churn'].value, (int, float)):
+                        churn_vals.append(file.kpis['churn'].value)
+                    if file.kpis.get('hotspot') and isinstance(file.kpis['hotspot'].value, (int, float)):
+                        hotspot_vals.append(file.kpis['hotspot'].value)
+                    if file.kpis.get('Code Ownership') and isinstance(file.kpis['Code Ownership'].value, dict):
+                        ownership_vals.append(file.kpis['Code Ownership'].value)
+                    if file.kpis.get('Shared Ownership') and isinstance(file.kpis['Shared Ownership'].value, dict):
+                        count = file.kpis['Shared Ownership'].value.get('num_significant_authors')
+                        if isinstance(count, int):
+                            shared_ownership_counts.append(count)
+                # Recursively aggregate from subdirectories
+                for subdir in scan_dir.scan_dirs.values():
+                    sub_kpis = aggregate_scan_dir_kpis(subdir)
+                    if sub_kpis['complexity'] is not None:
+                        complexity_vals.append(sub_kpis['complexity'])
+                    if sub_kpis['churn'] is not None:
+                        churn_vals.append(sub_kpis['churn'])
+                    if sub_kpis['hotspot'] is not None:
+                        hotspot_vals.append(sub_kpis['hotspot'])
+                    if sub_kpis['shared_ownership'] is not None:
+                        shared_ownership_counts.append(sub_kpis['shared_ownership'])
+                # Compute averages (or None if no data)
+                avg_complexity = round(sum(complexity_vals) / len(complexity_vals), 1) if complexity_vals else None
+                avg_churn = round(sum(churn_vals) / len(churn_vals), 1) if churn_vals else None
+                avg_hotspot = round(sum(hotspot_vals) / len(hotspot_vals), 1) if hotspot_vals else None
+                avg_shared_ownership = round(sum(shared_ownership_counts) / len(shared_ownership_counts), 1) if shared_ownership_counts else None
+                # Store in scan_dir.kpis
+                from src.kpis.complexity import ComplexityKPI
+                from src.kpis.codechurn import ChurnKPI
+                from src.kpis.hotspot import HotspotKPI
+                scan_dir.kpis['complexity'] = ComplexityKPI(value=avg_complexity)
+                scan_dir.kpis['churn'] = ChurnKPI(value=avg_churn)
+                scan_dir.kpis['hotspot'] = HotspotKPI(value=avg_hotspot)
+                # Store as dict to match file-level format
+                shared_ownership_dict = {
+                    'num_significant_authors': avg_shared_ownership,
+                    'authors': [],
+                    'threshold': 20.0
+                }
+                scan_dir.kpis['Shared Ownership'] = AggregatedSharedOwnershipKPI('Shared Ownership', shared_ownership_dict, unit='authors', description='Avg significant authors')
+                return {
+                    'complexity': avg_complexity,
+                    'churn': avg_churn,
+                    'hotspot': avg_hotspot,
+                    'shared_ownership': avg_shared_ownership
+                }
+            aggregate_scan_dir_kpis(repo_info)
         return repo_info
 
     def analyze(self, files):
