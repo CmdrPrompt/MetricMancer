@@ -250,9 +250,19 @@ class Analyzer:
                 scan_dir.kpis['churn'] = ChurnKPI(value=avg_churn)
                 scan_dir.kpis['hotspot'] = HotspotKPI(value=avg_hotspot)
                 # Store as dict to match file-level format
+                # Aggregate all unique significant authors from files and subdirs
+                authors_set = set()
+                for file in scan_dir.files.values():
+                    if file.kpis.get('Shared Ownership') and isinstance(file.kpis['Shared Ownership'].value, dict):
+                        file_authors = file.kpis['Shared Ownership'].value.get('authors', [])
+                        authors_set.update(file_authors)
+                for subdir in scan_dir.scan_dirs.values():
+                    subdir_authors = subdir.kpis.get('Shared Ownership')
+                    if subdir_authors and isinstance(subdir_authors.value, dict):
+                        authors_set.update(subdir_authors.value.get('authors', []))
                 shared_ownership_dict = {
                     'num_significant_authors': avg_shared_ownership,
-                    'authors': [],
+                    'authors': list(authors_set),
                     'threshold': 20.0
                 }
                 scan_dir.kpis['Shared Ownership'] = AggregatedSharedOwnershipKPI('Shared Ownership', shared_ownership_dict, unit='authors', description='Avg significant authors')
