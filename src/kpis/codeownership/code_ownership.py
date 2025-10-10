@@ -28,4 +28,7 @@ class CodeOwnershipKPI(BaseKPI):
         
         # Use shared git cache instead of class-level cache
         git_cache = get_git_cache()
-        self.value = git_cache.get_ownership_data(repo_root, file_path)
+        # Convert absolute path to relative path from repo root
+        import os
+        relative_path = os.path.relpath(file_path, repo_root)
+        self.value = git_cache.get_ownership_data(repo_root, relative_path)

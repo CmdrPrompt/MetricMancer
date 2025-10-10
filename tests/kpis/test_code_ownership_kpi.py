@@ -7,14 +7,14 @@ class TestCodeOwnershipKPI(unittest.TestCase):
     @patch('os.path.exists', return_value=False)
     def test_file_does_not_exist(self, mock_exists):
         kpi = CodeOwnershipKPI(file_path='missing.py', repo_root='.')
-        self.assertEqual(kpi.value, {'ownership': 'N/A'})
+        self.assertEqual(kpi.value, {})
 
     @patch('os.path.exists', return_value=True)
     @patch('subprocess.run')
     def test_file_not_tracked_by_git(self, mock_run, mock_exists):
         mock_run.return_value.returncode = 1  # Simulate not tracked
         kpi = CodeOwnershipKPI(file_path='not_tracked.py', repo_root='.')
-        self.assertEqual(kpi.value, {'ownership': 'N/A'})
+        self.assertEqual(kpi.value, {})
 
     @patch('os.path.exists', return_value=True)
     @patch('src.utilities.git_cache.subprocess.run')
@@ -42,7 +42,7 @@ class TestCodeOwnershipKPI(unittest.TestCase):
     def test_blame_fails(self, mock_check_output, mock_run, mock_exists):
         mock_run.return_value.returncode = 0  # Tracked
         kpi = CodeOwnershipKPI(file_path='tracked.py', repo_root='.')
-        self.assertEqual(kpi.value, {'ownership': 'N/A'})
+        self.assertEqual(kpi.value, {})
 
 
 if __name__ == '__main__':

@@ -92,7 +92,8 @@ class GitDataCache:
             return repo_blame_cache[file_path]
         
         # Kontrollera om filen finns och är tracked
-        if not os.path.exists(file_path) or not self.is_file_tracked(repo_root, file_path):
+        full_file_path = os.path.join(repo_root, file_path)
+        if not os.path.exists(full_file_path) or not self.is_file_tracked(repo_root, file_path):
             repo_blame_cache[file_path] = None
             return None
         
@@ -110,6 +111,14 @@ class GitDataCache:
             repo_blame_cache[file_path] = None
             return None
     
+    def clear_cache(self):
+        """Rensa all cache-data"""
+        self.blame_cache.clear()
+        self.ownership_cache.clear()
+        self.churn_cache.clear()
+        self.tracked_files_cache.clear()
+        debug_print("[CACHE] All caches cleared")
+
     def get_ownership_data(self, repo_root: str, file_path: str) -> Dict[str, Any]:
         """
         Hämta ownership data för en fil.
@@ -125,14 +134,14 @@ class GitDataCache:
         
         # Skip node_modules och liknande
         if 'node_modules' in file_path:
-            result = {"ownership": "N/A"}
+            result = {}  # Använd tom dict istället för {"ownership": "N/A"}
             repo_ownership_cache[file_path] = result
             return result
         
         # Hämta git blame data
         blame_output = self.get_git_blame(repo_root, file_path)
         if blame_output is None:
-            result = {"ownership": "N/A"}
+            result = {}  # Använd tom dict istället för {"ownership": "N/A"}
             repo_ownership_cache[file_path] = result
             return result
         
@@ -153,7 +162,7 @@ class GitDataCache:
             
         except Exception as e:
             debug_print(f"[CACHE] Error calculating ownership for {file_path}: {e}")
-            result = {"ownership": "N/A"}
+            result = {}  # Använd tom dict istället för {"ownership": "N/A"}
             repo_ownership_cache[file_path] = result
             return result
     

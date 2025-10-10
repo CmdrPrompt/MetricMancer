@@ -29,8 +29,9 @@ class TestKPIUsesCache(unittest.TestCase):
         mock_cache.get_ownership_data.return_value = {"Alice": 75.0, "Bob": 25.0}
         mock_get_cache.return_value = mock_cache
         
-        # Create KPI instance
-        kpi = CodeOwnershipKPI(self.test_file, self.test_repo)
+        # Create KPI instance with absolute path
+        abs_test_file = f"{self.test_repo}/{self.test_file}"
+        kpi = CodeOwnershipKPI(abs_test_file, self.test_repo)
         
         # Verify cache was called
         mock_get_cache.assert_called_once()
