@@ -3,19 +3,19 @@ import subprocess
 from collections import Counter
 from typing import Mapping, Union
 
-
 from src.kpis.base_kpi import BaseKPI
+from src.utilities.git_cache import get_git_cache
 
 class CodeOwnershipKPI(BaseKPI):
-    def calculate(self, *args, **kwargs):
-        # For compatibility with BaseKPI, just return the value
-        return self.value
     """
     Calculates code ownership for a file using git blame.
     Value is a dict: {author: ownership_percent}
+    Now uses shared GitDataCache for improved performance.
     """
-    # Klasscache: {repo_root: {file_path: ownership_dict}}
-    _ownership_cache = {}
+    
+    def calculate(self, *args, **kwargs):
+        # For compatibility with BaseKPI, just return the value
+        return self.value
 
     def __init__(self, file_path: str, repo_root: str):
         super().__init__(
@@ -25,41 +25,7 @@ class CodeOwnershipKPI(BaseKPI):
         )
         self.file_path = file_path
         self.repo_root = repo_root
-        # Använd cache om tillgänglig
-        repo_cache = CodeOwnershipKPI._ownership_cache.setdefault(repo_root, {})
-        if file_path in repo_cache:
-            self.value = repo_cache[file_path]
-        else:
-            ownership = self.calculate_ownership()
-            repo_cache[file_path] = ownership
-            self.value = ownership
-
-    def calculate_ownership(self) -> dict:
-        # Skip node_modules and similar directories
-        if 'node_modules' in self.file_path or not os.path.exists(self.file_path):
-            return {"ownership": "N/A"}
-        # Check if file is tracked by git
-        try:
-            tracked = subprocess.run(
-                ['git', '-C', self.repo_root, 'ls-files', '--error-unmatch', self.file_path],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            if tracked.returncode != 0:
-                return {"ownership": "N/A"}
-        except Exception:
-            return {"ownership": "N/A"}
-        try:
-            blame_output = subprocess.check_output(
-                ['git', '-C', self.repo_root, 'blame', '--line-porcelain', self.file_path],
-                text=True
-            )
-            authors = [line[7:] for line in blame_output.splitlines() if line.startswith('author ')]
-            total_lines = len(authors)
-            if total_lines == 0:
-                return {}
-            counts = Counter(authors)
-            ownership = {author: round(count / total_lines * 100, 1) for author, count in counts.items()}
-            return ownership
-        except Exception as e:
-            # Could not calculate ownership (e.g., not a git repo, file not tracked)
-            return {"ownership": "N/A"}
+        
+        # Use shared git cache instead of class-level cache
+        git_cache = get_git_cache()
+        self.value = git_cache.get_ownership_data(repo_root, file_path)
