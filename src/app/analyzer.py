@@ -62,7 +62,9 @@ class Analyzer:
                 'sharedownership': 0.0
             }
 
+        # 2. Analyze churn using git cache (Issue #41)
         t_churn_start = time.perf_counter()
+        # Legacy churn analyzer for compatibility (can be removed later)
         churn_analyzer = CodeChurnAnalyzer([(repo_root, d) for d in scan_dirs])
         churn_data = churn_analyzer.analyze()
         t_churn_end = time.perf_counter()
@@ -70,6 +72,20 @@ class Analyzer:
         debug_print(f"[DEBUG] churn_data after analyze: {churn_data}")
         debug_print(f"[DEBUG] churn_data keys after analyze: {list(churn_data.keys())}")
         complexity_analyzer = ComplexityAnalyzer()
+
+        # 2.5. Batch prefetch git data to optimize performance (Issue #39)
+        t_prefetch_start = time.perf_counter()
+        from src.utilities.git_cache import get_git_cache
+        git_cache = get_git_cache()
+        
+        # Collect all file paths for batch prefetching
+        file_paths = [str(Path(file_info['path']).relative_to(repo_root_path)) for file_info in files_in_repo]
+        debug_print(f"[BATCH] Prefetching ownership data for {len(file_paths)} files")
+        git_cache.prefetch_ownership_data(str(repo_root_path.resolve()), file_paths)
+        debug_print(f"[BATCH] Prefetching churn data for {len(file_paths)} files")
+        git_cache.prefetch_churn_data(str(repo_root_path.resolve()), file_paths)
+        t_prefetch_end = time.perf_counter()
+        debug_print(f"[BATCH] Prefetch completed in {t_prefetch_end - t_prefetch_start:.3f} seconds")
 
         # 3. Build the hierarchical data model and calculate KPIs
         if not files_in_repo:
@@ -112,13 +128,14 @@ class Analyzer:
             # Aggregate KPIs for the entire file
             file_complexity_kpi = ComplexityKPI().calculate(complexity=total_complexity, function_count=len(function_objects))
 
-            # Create and calculate ChurnKPI efficiently
+            # Create and calculate ChurnKPI using git cache (Issue #41)
             t_filechurn_start = time.perf_counter()
-            debug_print(f"[DEBUG] churn_data keys: {list(churn_data.keys())}")
-            debug_print(f"[DEBUG] Looking up churn for file_path: {file_path}")
-            churn_kpi = ChurnKPI().calculate(file_path=str(file_path), churn_data=churn_data)
+            relative_path = str(file_path.relative_to(repo_root_path))
+            debug_print(f"[DEBUG] Looking up churn for file_path: {relative_path}")
+            # Use git cache by passing repo_root instead of churn_data
+            churn_kpi = ChurnKPI().calculate(file_path=str(file_path), repo_root=str(repo_root_path.resolve()))
             t_filechurn_end = time.perf_counter()
-            debug_print(f"[DEBUG] Setting churn for:              {file_path}: {churn_kpi.value}")
+            debug_print(f"[DEBUG] Setting churn for:              {relative_path}: {churn_kpi.value}")
             self.timing['filechurn'] += t_filechurn_end - t_filechurn_start
 
             t_hotspot_start = time.perf_counter()

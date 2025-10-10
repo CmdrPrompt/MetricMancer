@@ -246,13 +246,24 @@ class TestAnalyzer(unittest.TestCase):
         self.assertEqual(helper_file.file_path.replace("\\", "/"), "src/pkg/module/utils/helper.py")
 
     @patch('src.kpis.codechurn.code_churn.CodeChurnAnalyzer.analyze')
-    def test_hotspot_kpi_includes_calculation_values(self, mock_codechurn_analyze):
+    @patch('src.utilities.git_cache.GitDataCache.get_churn_data')
+    def test_hotspot_kpi_includes_calculation_values(self, mock_git_cache_churn, mock_codechurn_analyze):
         """Hotspot KPI should include complexity and churn in calculation_values."""
-        mock_codechurn_analyze.return_value = {
+        churn_values = {
             str(self.main_py_path): 7,
             str(self.utils_py_path): 4,
             str(self.app_java_path): 0,
         }
+        mock_codechurn_analyze.return_value = churn_values
+        
+        # Mock git cache to return expected churn values
+        def mock_churn_lookup(repo_root, file_path):
+            # Convert relative path back to absolute for lookup
+            abs_path = str(Path(repo_root) / file_path)
+            return churn_values.get(abs_path, 0)
+        
+        mock_git_cache_churn.side_effect = mock_churn_lookup
+        
         mock_functions_data = [
             {'name': 'f1', 'complexity': 5},
             {'name': 'f2', 'complexity': 4},

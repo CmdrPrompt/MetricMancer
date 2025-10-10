@@ -179,12 +179,29 @@ class GitDataCache:
             debug_print(f"[CACHE] Hit: churn data for {file_path}")
             return repo_churn_cache[file_path]
         
-        # Implementera churn-beräkning här eller delegera till befintlig kod
-        # För nu returnerar vi 0 som placeholder
-        debug_print(f"[CACHE] Miss: churn data for {file_path} (placeholder)")
-        result = 0
-        repo_churn_cache[file_path] = result
-        return result
+        # Kontrollera om filen finns och är tracked
+        full_file_path = os.path.join(repo_root, file_path)
+        if not os.path.exists(full_file_path) or not self.is_file_tracked(repo_root, file_path):
+            repo_churn_cache[file_path] = 0
+            return 0
+        
+        try:
+            # Använd git log för att räkna commits som påverkade filen
+            debug_print(f"[CACHE] Miss: calculating churn for {file_path}")
+            result = subprocess.run(
+                ['git', '-C', repo_root, 'log', '--oneline', '--', file_path],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            churn_count = len([line for line in result.stdout.strip().split('\n') if line.strip()])
+            debug_print(f"[CACHE] Calculated churn for {file_path}: {churn_count} commits")
+            repo_churn_cache[file_path] = churn_count
+            return churn_count
+        except Exception as e:
+            debug_print(f"[CACHE] Error calculating churn for {file_path}: {e}")
+            repo_churn_cache[file_path] = 0
+            return 0
     
     def prefetch_ownership_data(self, repo_root: str, file_paths: list[str]):
         """
@@ -207,6 +224,28 @@ class GitDataCache:
         # Hämta data för alla uncached filer
         for file_path in uncached_files:
             self.get_ownership_data(repo_root, file_path)
+    
+    def prefetch_churn_data(self, repo_root: str, file_paths: list[str]):
+        """
+        Förhämta churn data för flera filer i batch.
+        Detta är optimering för att minska antalet git-anrop.
+        """
+        repo_root = os.path.abspath(repo_root)
+        debug_print(f"[CACHE] Prefetching churn data for {len(file_paths)} files")
+        
+        # Filtrera bort redan cachade filer
+        repo_churn_cache = self.churn_cache.setdefault(repo_root, {})
+        uncached_files = [fp for fp in file_paths if fp not in repo_churn_cache]
+        
+        if not uncached_files:
+            debug_print("[CACHE] All churn files already cached")
+            return
+        
+        debug_print(f"[CACHE] Need to fetch churn for {len(uncached_files)} uncached files")
+        
+        # Hämta data för alla uncached filer
+        for file_path in uncached_files:
+            self.get_churn_data(repo_root, file_path)
     
     def get_cache_stats(self) -> Dict[str, Any]:
         """Returnera statistik om cache-användning."""
