@@ -101,9 +101,14 @@ class MetricMancerApp:
         timing = getattr(self.analyzer, 'timing', None)
         if timing:
             print("-- Analysis breakdown --")
-            print(f"  Churn analysis:         {timing['churn']:.2f} seconds")
-            print(f"  Complexity analysis:    {timing['complexity']:.2f} seconds")
-            print(f"  ChurnKPI (per file):    {timing['filechurn']:.2f} seconds")
-            print(f"  HotspotKPI:             {timing['hotspot']:.2f} seconds")
-            print(f"  CodeOwnershipKPI:       {timing['ownership']:.2f} seconds")
-            print(f"  SharedOwnershipKPI:     {timing['sharedownership']:.2f} seconds")
+            def safe_fmt(val):
+                try:
+                    return f"{float(val):.2f}"
+                except Exception:
+                    return "N/A"
+            print(f"  Churn analysis:         {safe_fmt(timing['churn'])} seconds")
+            print(f"  Complexity analysis:    {safe_fmt(timing['complexity'])} seconds")
+            print(f"  ChurnKPI (per file):    {safe_fmt(timing['filechurn'])} seconds")
+            print(f"  HotspotKPI:             {safe_fmt(timing['hotspot'])} seconds")
+            print(f"  CodeOwnershipKPI:       {safe_fmt(timing['ownership'])} seconds")
+            print(f"  SharedOwnershipKPI:     {safe_fmt(timing['sharedownership'])} seconds")
