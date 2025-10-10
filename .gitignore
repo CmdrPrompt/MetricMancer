@@ -20,3 +20,4 @@ labs/*
 dummy.html
 *report*.json
 some_file.py
+.coverage
