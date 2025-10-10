@@ -23,17 +23,17 @@ class GitDataCache:
     """
     
     def __init__(self):
-        # Cache för olika typer av git-data
+        # Cache for different types of git data
         self.ownership_cache: Dict[str, Dict[str, Dict[str, float]]] = {}
         self.churn_cache: Dict[str, Dict[str, int]] = {}
-        self.blame_cache: Dict[str, Dict[str, str]] = {}  # Rå git blame output
+        self.blame_cache: Dict[str, Dict[str, str]] = {}  # Raw git blame output
         self.tracked_files_cache: Dict[str, Set[str]] = {}
         
-        # Cache för git-kommandon som används av flera KPIs
+        # Cache for git commands used by multiple KPIs
         self._ls_files_cache: Dict[str, Set[str]] = {}
         
     def clear_cache(self, repo_root: Optional[str] = None):
-        """Rensa cache för en specifik repo eller hela cachen."""
+        """Clear cache for a specific repo or the entire cache."""
         if repo_root:
             self.ownership_cache.pop(repo_root, None)
             self.churn_cache.pop(repo_root, None)
@@ -51,17 +51,17 @@ class GitDataCache:
     
     def is_file_tracked(self, repo_root: str, file_path: str) -> bool:
         """
-        Kontrollera om en fil är tracked av git.
-        Använder cache för att undvika upprepade git ls-files anrop.
+        Check if a file is tracked by git.
+        Uses cache to avoid repeated git ls-files calls.
         """
-        # Normalisera paths
+        # Normalize paths
         repo_root = os.path.abspath(repo_root)
         
-        # Kontrollera cache först
+        # Check cache first
         if repo_root in self.tracked_files_cache:
             return file_path in self.tracked_files_cache[repo_root]
         
-        # Om inte cached, hämta alla tracked files för repo
+        # If not cached, fetch all tracked files for repo
         try:
             debug_print(f"[CACHE] Fetching tracked files for repo: {repo_root}")
             result = subprocess.run(
@@ -80,18 +80,18 @@ class GitDataCache:
     
     def get_git_blame(self, repo_root: str, file_path: str) -> Optional[str]:
         """
-        Hämta git blame output för en fil.
-        Använder cache för att undvika upprepade git blame anrop.
+        Get git blame output for a file.
+        Uses cache to avoid repeated git blame calls.
         """
         repo_root = os.path.abspath(repo_root)
         
-        # Kontrollera cache först
+        # Check cache first
         repo_blame_cache = self.blame_cache.setdefault(repo_root, {})
         if file_path in repo_blame_cache:
             debug_print(f"[CACHE] Hit: git blame for {file_path}")
             return repo_blame_cache[file_path]
         
-        # Kontrollera om filen finns och är tracked
+        # Check if file exists and is tracked
         full_file_path = os.path.join(repo_root, file_path)
         if not os.path.exists(full_file_path) or not self.is_file_tracked(repo_root, file_path):
             repo_blame_cache[file_path] = None
@@ -112,7 +112,7 @@ class GitDataCache:
             return None
     
     def clear_cache(self):
-        """Rensa all cache-data"""
+        """Clear all cache data"""
         self.blame_cache.clear()
         self.ownership_cache.clear()
         self.churn_cache.clear()
@@ -121,32 +121,32 @@ class GitDataCache:
 
     def get_ownership_data(self, repo_root: str, file_path: str) -> Dict[str, Any]:
         """
-        Hämta ownership data för en fil.
-        Returnerar: {author: ownership_percent} eller {"ownership": "N/A"}
+        Get ownership data for a file.
+        Returns: {author: ownership_percent} or {"ownership": "N/A"}
         """
         repo_root = os.path.abspath(repo_root)
         
-        # Kontrollera cache först
+        # Check cache first
         repo_ownership_cache = self.ownership_cache.setdefault(repo_root, {})
         if file_path in repo_ownership_cache:
             debug_print(f"[CACHE] Hit: ownership data for {file_path}")
             return repo_ownership_cache[file_path]
         
-        # Skip node_modules och liknande
+        # Skip node_modules and similar
         if 'node_modules' in file_path:
-            result = {}  # Använd tom dict istället för {"ownership": "N/A"}
+            result = {}  # Use empty dict instead of {"ownership": "N/A"}
             repo_ownership_cache[file_path] = result
             return result
         
-        # Hämta git blame data
+        # Get git blame data
         blame_output = self.get_git_blame(repo_root, file_path)
         if blame_output is None:
-            result = {}  # Använd tom dict istället för {"ownership": "N/A"}
+            result = {}  # Use empty dict instead of {"ownership": "N/A"}
             repo_ownership_cache[file_path] = result
             return result
         
         try:
-            # Parsea blame output för att få författare
+            # Parse blame output to get authors
             authors = [line[7:] for line in blame_output.splitlines() if line.startswith('author ')]
             total_lines = len(authors)
             
@@ -162,31 +162,31 @@ class GitDataCache:
             
         except Exception as e:
             debug_print(f"[CACHE] Error calculating ownership for {file_path}: {e}")
-            result = {}  # Använd tom dict istället för {"ownership": "N/A"}
+            result = {}  # Use empty dict instead of {"ownership": "N/A"}
             repo_ownership_cache[file_path] = result
             return result
     
     def get_churn_data(self, repo_root: str, file_path: str) -> int:
         """
-        Hämta churn data för en fil.
-        Returnerar antal commits som påverkade filen.
+        Get churn data for a file.
+        Returns number of commits that affected the file.
         """
         repo_root = os.path.abspath(repo_root)
         
-        # Kontrollera cache först
+        # Check cache first
         repo_churn_cache = self.churn_cache.setdefault(repo_root, {})
         if file_path in repo_churn_cache:
             debug_print(f"[CACHE] Hit: churn data for {file_path}")
             return repo_churn_cache[file_path]
         
-        # Kontrollera om filen finns och är tracked
+        # Check if file exists and is tracked
         full_file_path = os.path.join(repo_root, file_path)
         if not os.path.exists(full_file_path) or not self.is_file_tracked(repo_root, file_path):
             repo_churn_cache[file_path] = 0
             return 0
         
         try:
-            # Använd git log för att räkna commits som påverkade filen
+            # Use git log to count commits that affected the file
             debug_print(f"[CACHE] Miss: calculating churn for {file_path}")
             result = subprocess.run(
                 ['git', '-C', repo_root, 'log', '--oneline', '--', file_path],
@@ -205,13 +205,13 @@ class GitDataCache:
     
     def prefetch_ownership_data(self, repo_root: str, file_paths: list[str]):
         """
-        Förhämta ownership data för flera filer i batch.
-        Detta är optimering för att minska antalet git-anrop.
+        Prefetch ownership data for multiple files in batch.
+        This is optimization to reduce the number of git calls.
         """
         repo_root = os.path.abspath(repo_root)
         debug_print(f"[CACHE] Prefetching ownership data for {len(file_paths)} files")
         
-        # Filtrera bort redan cachade filer
+        # Filter out already cached files
         repo_ownership_cache = self.ownership_cache.setdefault(repo_root, {})
         uncached_files = [fp for fp in file_paths if fp not in repo_ownership_cache]
         
@@ -221,19 +221,19 @@ class GitDataCache:
         
         debug_print(f"[CACHE] Need to fetch {len(uncached_files)} uncached files")
         
-        # Hämta data för alla uncached filer
+        # Fetch data for all uncached files
         for file_path in uncached_files:
             self.get_ownership_data(repo_root, file_path)
     
     def prefetch_churn_data(self, repo_root: str, file_paths: list[str]):
         """
-        Förhämta churn data för flera filer i batch.
-        Detta är optimering för att minska antalet git-anrop.
+        Prefetch churn data for multiple files in batch.
+        This is optimization to reduce the number of git calls.
         """
         repo_root = os.path.abspath(repo_root)
         debug_print(f"[CACHE] Prefetching churn data for {len(file_paths)} files")
         
-        # Filtrera bort redan cachade filer
+        # Filter out already cached files
         repo_churn_cache = self.churn_cache.setdefault(repo_root, {})
         uncached_files = [fp for fp in file_paths if fp not in repo_churn_cache]
         
@@ -243,7 +243,7 @@ class GitDataCache:
         
         debug_print(f"[CACHE] Need to fetch churn for {len(uncached_files)} uncached files")
         
-        # Hämta data för alla uncached filer
+        # Fetch data for all uncached files
         for file_path in uncached_files:
             self.get_churn_data(repo_root, file_path)
     
@@ -334,7 +334,7 @@ class GitDataCache:
         debug_print(f"[CACHE] Pre-building completed for {len(valid_files)} files")
     
     def get_cache_stats(self) -> Dict[str, Any]:
-        """Returnera statistik om cache-användning."""
+        """Return statistics about cache usage."""
         stats = {
             "repos_cached": len(self.ownership_cache),
             "total_ownership_entries": sum(len(repo_cache) for repo_cache in self.ownership_cache.values()),
@@ -345,12 +345,12 @@ class GitDataCache:
         return stats
 
 
-# Singleton instance för att dela mellan KPIs
+# Singleton instance to share between KPIs
 _git_cache_instance = None
 
 
 def get_git_cache() -> GitDataCache:
-    """Returnera singleton-instansen av GitDataCache."""
+    """Return singleton instance of GitDataCache."""
     global _git_cache_instance
     if _git_cache_instance is None:
         _git_cache_instance = GitDataCache()
