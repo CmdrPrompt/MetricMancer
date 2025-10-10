@@ -1,6 +1,6 @@
 """
 churn package
 -------------
-Innehåller KPI:er och logik för att beräkna code churn (förändringsfrekvens).
+Contains KPIs and logic for calculating code churn (change frequency).
 """
 from .kpi import ChurnKPI

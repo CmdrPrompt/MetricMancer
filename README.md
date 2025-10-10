@@ -145,6 +145,34 @@ repo_name
 
 See [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for full KPI definitions and up-to-date implementation status.
 
+## Testing
+
+MetricMancer has comprehensive test coverage with 142 tests covering all functionality.
+
+### Running Tests
+
+**Quick test run:**
+```bash
+./run_tests.sh
+```
+
+**Manual test run:**
+```bash
+python -m pytest tests/ -v
+```
+
+**With coverage:**
+```bash
+python -m pytest tests/ -v --cov=src --cov-report=html
+```
+
+### Test Architecture
+
+- **Unittest and Pytest**: Both testing frameworks supported
+- **TDD Implementation**: All new features developed with test-driven development
+- **CI/CD Integration**: All tests run automatically on GitHub Actions
+- **Performance Tests**: Validates optimization improvements (Issue #40)
+
 ## Future Plans
 
 - **Issue tracker integration:** Correlate code metrics with defect data from Jira, GitHub Issues, etc.

@@ -19,7 +19,7 @@ class JSONReportGenerator(ReportInterface):
             repo_json = format_strategy.get_report_data(repo_info, level=level, hierarchical=hierarchical)
             all_repos.append(repo_json)
 
-        # Om bara ett repo, skriv inte ut det i en lista
+        # If only one repo, don't output it in a list
         output_data = all_repos[0] if len(all_repos) == 1 else all_repos
         json_str = json.dumps(output_data, indent=2, ensure_ascii=False)
 

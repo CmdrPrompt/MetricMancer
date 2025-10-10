@@ -13,11 +13,11 @@ class ComplexityKPI(BaseKPI):
 
     def calculate(self, complexity: int, function_count: int, **kwargs):
         """
-        Lagrar ett förberäknat komplexitetsvärde.
+        Stores a pre-calculated complexity value.
 
         Args:
-            complexity: Det beräknade komplexitetsvärdet.
-            function_count: Det beräknade antalet funktioner.
+            complexity: The calculated complexity value.
+            function_count: The calculated number of functions.
         """
         self.value = complexity
         self.calculation_values = {"function_count": function_count}
