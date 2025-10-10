@@ -19,13 +19,31 @@ class CLIReportFormat(ReportFormatStrategy):
 
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
         """Recursively collects all git-tracked File objects from a ScanDir tree."""
+        from src.utilities.debug import debug_print
+        
         def is_tracked_file(file_obj: File):
             co = file_obj.kpis.get('Code Ownership')
-            if not co or not hasattr(co, 'value') or not isinstance(co.value, dict):
-                return True
-            return not (co.value.get('ownership') == 'N/A')
+            debug_print(f"[DEBUG] Checking file {file_obj.file_path}: co={type(co)}")
+            if not co or not hasattr(co, 'value'):
+                debug_print(f"[DEBUG] File {file_obj.file_path}: no valid CO, returning False")
+                return False
+            
+            # Handle new cache structure: value is either None/empty dict for untracked files, 
+            # or dict with author percentages for tracked files
+            if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
+                debug_print(f"[DEBUG] File {file_obj.file_path}: no ownership data, returning False")
+                return False
+            
+            # Check if it's the old 'N/A' format or actual ownership data
+            if co.value.get('ownership') == 'N/A':
+                debug_print(f"[DEBUG] File {file_obj.file_path}: ownership=N/A (old format), returning False")
+                return False
+            
+            debug_print(f"[DEBUG] File {file_obj.file_path}: ownership={co.value}, returning True")
+            return True
 
         files = [f for f in scan_dir.files.values() if is_tracked_file(f)]
+        debug_print(f"[DEBUG] _collect_all_files: {len(files)} files passed filter from {len(scan_dir.files)} total")
         for sub_dir in scan_dir.scan_dirs.values():
             files.extend(self._collect_all_files(sub_dir))
         return files
@@ -33,6 +51,9 @@ class CLIReportFormat(ReportFormatStrategy):
     def _get_repo_stats(self, repo_info: RepoInfo) -> Tuple[str, List[File]]:
         """Calculates statistics for the entire repository by traversing the model."""
         all_files = self._collect_all_files(repo_info)
+        from src.utilities.debug import debug_print
+        debug_print(f"[DEBUG] _get_repo_stats: collected {len(all_files)} files")
+        
         if not all_files:
             return "[No files analyzed]", []
 
@@ -54,9 +75,19 @@ class CLIReportFormat(ReportFormatStrategy):
         """
         def is_tracked_file(file_obj: File):
             co = file_obj.kpis.get('Code Ownership')
-            if not co or not hasattr(co, 'value') or not isinstance(co.value, dict):
-                return True
-            return not (co.value.get('ownership') == 'N/A')
+            if not co or not hasattr(co, 'value'):
+                return False
+            
+            # Handle new cache structure: value is either None/empty dict for untracked files, 
+            # or dict with author percentages for tracked files
+            if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
+                return False
+            
+            # Check if it's the old 'N/A' format or actual ownership data
+            if co.value.get('ownership') == 'N/A':
+                return False
+                
+            return True
 
         # Filter files: only tracked files
         files = [f for f in scan_dir.files.values() if is_tracked_file(f)]
