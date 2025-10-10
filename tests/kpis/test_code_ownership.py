@@ -19,8 +19,11 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         self.assertEqual(kpi.value['Alice'], 75.0)
         self.assertEqual(kpi.value['Bob'], 25.0)
 
+    @patch('os.path.exists', return_value=True)
+    @patch('subprocess.run')
     @patch('subprocess.check_output', side_effect=Exception('not a git repo'))
-    def test_calculate_ownership_error(self, mock_check_output):
+    def test_calculate_ownership_error(self, mock_check_output, mock_run, mock_exists):
+        mock_run.return_value.returncode = 0  # File is tracked by git
         kpi = CodeOwnershipKPI('dummy.py', '/repo')
         self.assertEqual(kpi.value, {'ownership': 'N/A'})
 

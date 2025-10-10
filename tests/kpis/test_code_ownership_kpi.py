@@ -20,8 +20,8 @@ class TestCodeOwnershipKPI(unittest.TestCase):
     @patch('subprocess.run')
     @patch('subprocess.check_output')
     def test_file_tracked_and_blame_works(self, mock_check_output, mock_run, mock_exists):
-    # Rensa cache för att undvika påverkan från andra tester
-    CodeOwnershipKPI._ownership_cache.clear()
+        # Rensa cache för att undvika påverkan från andra tester
+        CodeOwnershipKPI._ownership_cache.clear()
         mock_run.return_value.returncode = 0  # Tracked
         mock_check_output.return_value = 'author Alice\nauthor Bob\nauthor Alice\n'
         kpi = CodeOwnershipKPI(file_path='tracked.py', repo_root='.')
