@@ -18,14 +18,8 @@ class TestAnalyzerSharedOwnership(unittest.TestCase):
             os.unlink(self.temp_file.name)
 
     @patch('src.app.analyzer.SharedOwnershipKPI')
-    @patch('src.app.analyzer.CodeChurnAnalyzer')
-    def test_analyzer_includes_shared_ownership_kpi(self, mock_churn_analyzer, mock_shared_ownership):
+    def test_analyzer_includes_shared_ownership_kpi(self, mock_shared_ownership):
         """Test that analyzer includes SharedOwnershipKPI."""
-        # Mock churn analyzer
-        mock_churn_instance = MagicMock()
-        mock_churn_instance.analyze.return_value = {}
-        mock_churn_analyzer.return_value = mock_churn_instance
-        
         # Mock shared ownership KPI
         mock_shared_ownership_instance = MagicMock()
         mock_shared_ownership_instance.name = "Shared Ownership"
@@ -49,14 +43,8 @@ class TestAnalyzerSharedOwnership(unittest.TestCase):
         self.assertIn("Shared Ownership", file_obj.kpis)
 
     @patch('src.app.analyzer.SharedOwnershipKPI')
-    @patch('src.app.analyzer.CodeChurnAnalyzer')
-    def test_shared_ownership_exception_handling(self, mock_churn_analyzer, mock_shared_ownership):
+    def test_shared_ownership_exception_handling(self, mock_shared_ownership):
         """Test that SharedOwnershipKPI exceptions are handled gracefully."""
-        # Mock churn analyzer
-        mock_churn_instance = MagicMock()
-        mock_churn_instance.analyze.return_value = {}
-        mock_churn_analyzer.return_value = mock_churn_instance
-        
         # Make SharedOwnershipKPI raise an exception
         mock_shared_ownership.side_effect = Exception("Git not available")
         

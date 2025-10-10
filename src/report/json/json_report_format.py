@@ -29,7 +29,7 @@ class JSONReportFormat(ReportFormatStrategy):
         """
         Recursively traverses the data model to produce a flat list of
         file, function, and package (folder) data, suitable for machine processing.
-        Endast git-spårade filer inkluderas.
+        Only git-tracked files are included.
         """
         def is_tracked_file(file_obj: File):
             co = file_obj.kpis.get('Code Ownership')
