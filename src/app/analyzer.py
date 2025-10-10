@@ -201,8 +201,6 @@ class Analyzer:
             # debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
         return repo_info
 
-
-
     def analyze(self, files):
         """Analyzes a list of files, groups them by repository, and returns a summary."""
         if not files:
