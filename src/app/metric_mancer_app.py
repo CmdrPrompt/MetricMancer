@@ -1,14 +1,19 @@
 import os
+import json
 
 from src.app.analyzer import Analyzer
 from src.app.scanner import Scanner
 from src.languages.config import Config
 from src.report.report_generator import ReportGenerator
 from src.utilities.debug import debug_print
+from src.utilities.hotspot_analyzer import (
+    extract_hotspots_from_data, format_hotspots_table, 
+    save_hotspots_to_file, print_hotspots_summary
+)
 
 
 class MetricMancerApp:
-    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human"):
+    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human", list_hotspots=False, hotspot_threshold=50, hotspot_output=None):
         self.config = Config()
         self.scanner = Scanner(self.config.languages)
         self.analyzer = Analyzer(self.config.languages, threshold_low=threshold_low, threshold_high=threshold_high)
@@ -21,6 +26,11 @@ class MetricMancerApp:
         self.level = level
         self.hierarchical = hierarchical
         self.output_format = output_format
+        
+        # Hotspot analysis settings
+        self.list_hotspots = list_hotspots
+        self.hotspot_threshold = hotspot_threshold
+        self.hotspot_output = hotspot_output
 
         # Allow swapping report generator
         self.report_generator_cls = report_generator_cls or ReportGenerator
@@ -90,6 +100,10 @@ class MetricMancerApp:
         debug_print(f"[TIME] Report generation took "
                     f"{t_reportgen_end - t_reportgen_start:.2f} seconds.")
 
+        # Run hotspot analysis if requested
+        if self.list_hotspots:
+            self._run_hotspot_analysis(repo_infos)
+
         print("\n=== TIME SUMMARY ===")
         print(f"Scanning:           {t_scan_end - t_scan_start:.2f} seconds")
         print(f"Analysis:           "
@@ -117,3 +131,66 @@ class MetricMancerApp:
                   f"{safe_fmt(timing['ownership'])} seconds")
             print(f"  SharedOwnershipKPI:     "
                   f"{safe_fmt(timing['sharedownership'])} seconds")
+
+    def _run_hotspot_analysis(self, repo_infos):
+        """
+        Run hotspot analysis on the analyzed repositories.
+        
+        Args:
+            repo_infos: List of RepoInfo objects from analysis
+        """
+        all_hotspots = []
+        
+        for repo_info in repo_infos:
+            # Convert repo_info to dict format that extract_hotspots_from_data expects
+            repo_data = self._convert_repo_info_to_dict(repo_info)
+            hotspots = extract_hotspots_from_data(repo_data, self.hotspot_threshold)
+            all_hotspots.extend(hotspots)
+        
+        if not all_hotspots:
+            print(f"\n✅ No hotspots found above threshold {self.hotspot_threshold}.")
+            return
+        
+        # Display or save results
+        if self.hotspot_output:
+            # Save to file
+            save_hotspots_to_file(all_hotspots, self.hotspot_output, show_risk_categories=True)
+            print_hotspots_summary(all_hotspots)
+        else:
+            # Display on terminal
+            print("\n" + format_hotspots_table(all_hotspots, show_risk_categories=True))
+
+    def _convert_repo_info_to_dict(self, repo_info):
+        """
+        Convert RepoInfo object to dictionary format compatible with hotspot analysis.
+        
+        Args:
+            repo_info: RepoInfo object from analysis
+            
+        Returns:
+            Dictionary representation suitable for hotspot extraction
+        """
+        def scandir_to_dict(scandir):
+            """Recursively convert ScanDir to dict."""
+            result = {
+                'files': {},
+                'scan_dirs': {}
+            }
+            
+            # Convert files
+            for filename, file_obj in scandir.files.items():
+                result['files'][filename] = {
+                    'kpis': {
+                        'complexity': getattr(file_obj.kpis.get('complexity'), 'value', 0) if file_obj.kpis.get('complexity') else 0,
+                        'churn': getattr(file_obj.kpis.get('churn'), 'value', 0) if file_obj.kpis.get('churn') else 0,
+                        'hotspot': getattr(file_obj.kpis.get('hotspot'), 'value', 0) if file_obj.kpis.get('hotspot') else 0
+                    }
+                }
+            
+            # Convert subdirectories
+            for dirname, subdir in scandir.scan_dirs.items():
+                result['scan_dirs'][dirname] = scandir_to_dict(subdir)
+            
+            return result
+        
+        return scandir_to_dict(repo_info)

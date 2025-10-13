@@ -42,6 +42,9 @@ class TestMain:
         mock_args.level = 'file'
         mock_args.hierarchical = False
         mock_args.debug = False
+        mock_args.list_hotspots = False
+        mock_args.hotspot_threshold = 50
+        mock_args.hotspot_output = None
         
         mock_parser = MagicMock()
         mock_parser.parse_args.return_value = mock_args
@@ -66,7 +69,10 @@ class TestMain:
                 report_generator_cls=None,  # HTML defaults to None
                 level='file',
                 hierarchical=False,
-                output_format='html'
+                output_format='html',
+                list_hotspots=False,
+                hotspot_threshold=50,
+                hotspot_output=None
             )
             
             # Verify app.run() was called

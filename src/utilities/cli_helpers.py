@@ -27,6 +27,9 @@ def print_usage():
     print("  --output-format <format>     Set the output format. Options: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV).")
     print("  --level <level>              Set the detail level for reports. Options: 'file' (default), 'function'.")
     print("  --hierarchical               (JSON only) Output the full hierarchical data model instead of a flat list.")
+    print("  --list-hotspots              Display list of highest hotspots after analysis.")
+    print("  --hotspot-threshold <score>  Minimum hotspot score to include (default: 50).")
+    print("  --hotspot-output <file>      Save hotspot list to file instead of terminal.")
     print("  --auto-report-filename       (Optional) Automatically generate a unique report filename based on date and directories.")
     print(
         "  --report-filename <filename> (Optional) Set the report filename directly. "
@@ -43,6 +46,8 @@ def print_usage():
     print("  python -m src.main src test --report-filename myreport.html")
     print("  python -m src.main src test --report-filename myreport.html --with-date")
     print("  python -m src.main src test --report-folder reports")
+    print("  python -m src.main src --list-hotspots --hotspot-threshold 100")
+    print("  python -m src.main src --list-hotspots --hotspot-output hotspots.txt")
 
 
 def parse_args():
@@ -115,5 +120,22 @@ def parse_args():
         "--hierarchical",
         action="store_true",
         help="(JSON only) Output the full hierarchical data model."
+    )
+    parser.add_argument(
+        "--list-hotspots",
+        action="store_true",
+        help="Display list of highest hotspots after analysis."
+    )
+    parser.add_argument(
+        "--hotspot-threshold",
+        type=int,
+        default=50,
+        help="Minimum hotspot score to include in hotspot list (default: 50)."
+    )
+    parser.add_argument(
+        "--hotspot-output",
+        type=str,
+        default=None,
+        help="Save hotspot list to file instead of displaying on terminal."
     )
     return parser

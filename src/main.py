@@ -54,7 +54,10 @@ def main():
         report_generator_cls=generator_cls,
         level=args.level,
         hierarchical=args.hierarchical,
-        output_format=args.output_format
+        output_format=args.output_format,
+        list_hotspots=getattr(args, 'list_hotspots', False),
+        hotspot_threshold=getattr(args, 'hotspot_threshold', 50),
+        hotspot_output=getattr(args, 'hotspot_output', None)
     )
     app.run()
 
