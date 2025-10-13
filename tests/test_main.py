@@ -45,6 +45,10 @@ class TestMain:
         mock_args.list_hotspots = False
         mock_args.hotspot_threshold = 50
         mock_args.hotspot_output = None
+        mock_args.review_strategy = False
+        mock_args.review_output = 'review_strategy.txt'
+        mock_args.review_branch_only = False
+        mock_args.review_base_branch = 'main'
         
         mock_parser = MagicMock()
         mock_parser.parse_args.return_value = mock_args
@@ -72,7 +76,11 @@ class TestMain:
                 output_format='html',
                 list_hotspots=False,
                 hotspot_threshold=50,
-                hotspot_output=None
+                hotspot_output=None,
+                review_strategy=False,
+                review_output='review_strategy.txt',
+                review_branch_only=False,
+                review_base_branch='main'
             )
             
             # Verify app.run() was called

@@ -26,10 +26,10 @@ labs/*
 dummy.html
 *report*.json
 some_file.py
-.coverage
 issue--*.md
 issue-fix--*.md
 ​​git_log.txt
 hotspots.txt
-.coverage
+review_strategy.txt
 coverage.xml
+review_*.txt

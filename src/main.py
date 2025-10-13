@@ -57,7 +57,11 @@ def main():
         output_format=args.output_format,
         list_hotspots=getattr(args, 'list_hotspots', False),
         hotspot_threshold=getattr(args, 'hotspot_threshold', 50),
-        hotspot_output=getattr(args, 'hotspot_output', None)
+        hotspot_output=getattr(args, 'hotspot_output', None),
+        review_strategy=getattr(args, 'review_strategy', False),
+        review_output=getattr(args, 'review_output', 'review_strategy.txt'),
+        review_branch_only=getattr(args, 'review_branch_only', False),
+        review_base_branch=getattr(args, 'review_base_branch', 'main')
     )
     app.run()
 

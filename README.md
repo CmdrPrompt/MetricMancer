@@ -7,13 +7,17 @@ For detailed requirements, architecture, and design, see the [Software Specifica
 
 ## Features
 
-- **Multi-language support:** Analyze codebases in Python, JavaScript, TypeScript, Java, C#, C, C++, Go, Ada, and more (via pluggable parsers).
-- **Cyclomatic complexity:** Calculates logical complexity for each function/method.
+- **Multi-language support:** Analyze codebases in Python, JavaScript, TypeScript, Java, C#, C, C++, Go, Ada, IDL, JSON, YAML, Shell scripts, and more (via pluggable parsers).
+- **Cyclomatic complexity:** Calculates logical complexity for each function/method in code files.
+- **Structural complexity:** Measures nesting depth, object count, and configuration patterns in JSON/YAML files.
+- **IDL complexity:** Analyzes interface definitions with structural metrics (interfaces, operations, inheritance, data structures).
+- **Shell script complexity:** Analyzes control flow, loops, and functions in shell scripts.
 - **Code churn:** Computes the number of commits affecting each file.
 - **Hotspot analysis:** Identifies files/functions with both high complexity and high churn.
+- **Code review advisor:** Generates data-driven code review recommendations based on complexity, churn, and ownership metrics.
 - **Configurable thresholds:** Set custom thresholds for KPIs and grades (Low, Medium, High).
 - **Aggregated KPIs:** Summarizes metrics at file, directory, and repository levels.
-- **Flexible reporting:** Generates reports in CLI, HTML, and JSON formats.
+- **Flexible reporting:** Generates reports in CLI, HTML, JSON formats, plus specialized hotspot and review strategy reports.
 - **Extensible architecture:** Easily add new KPIs, languages, or report formats.
 - **Error and edge case handling:** Robust error messages and handling for unsupported files, empty directories, and parse errors.
 - **CI/CD ready:** Scriptable CLI and machine-readable JSON output for automation.
@@ -39,6 +43,13 @@ python -m src.main <directories> [options]
 - `--output-format <format>`: Output format: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV)
 - `--level <level>`: Detail level for reports: 'file' (default) or 'function'
 - `--hierarchical`: (JSON only) Output the full hierarchical data model
+- `--list-hotspots`: Display list of highest hotspots after analysis
+- `--hotspot-threshold <score>`: Minimum hotspot score to include (default: 50)
+- `--hotspot-output <file>`: Save hotspot list to file instead of terminal
+- `--review-strategy`: Generate code review strategy report based on KPIs
+- `--review-output <file>`: Save review strategy to file (default: review_strategy.txt)
+- `--review-branch-only`: Filter review strategy to only changed files in current branch
+- `--review-base-branch <branch>`: Base branch for comparison (default: main)
 
 ### Examples
 
@@ -66,6 +77,17 @@ python -m src.main path/to/repo --report-folder reports
 
 # Use hierarchical JSON output
 python -m src.main path/to/repo --output-format json --hierarchical
+
+# Generate hotspot analysis
+python -m src.main path/to/repo --list-hotspots --hotspot-threshold 100
+python -m src.main path/to/repo --list-hotspots --hotspot-output hotspots.txt
+
+# Generate code review strategy report (all files)
+python -m src.main path/to/repo --review-strategy
+python -m src.main path/to/repo --review-strategy --review-output review_strategy.txt
+
+# Generate code review strategy for changed files in current branch only
+python -m src.main path/to/repo --review-strategy --review-branch-only
 ```
 
 ## Output

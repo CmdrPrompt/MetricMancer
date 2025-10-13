@@ -13,7 +13,7 @@ from src.utilities.hotspot_analyzer import (
 
 
 class MetricMancerApp:
-    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human", list_hotspots=False, hotspot_threshold=50, hotspot_output=None):
+    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human", list_hotspots=False, hotspot_threshold=50, hotspot_output=None, review_strategy=False, review_output="review_strategy.txt", review_branch_only=False, review_base_branch="main"):
         self.config = Config()
         self.scanner = Scanner(self.config.languages)
         self.analyzer = Analyzer(self.config.languages, threshold_low=threshold_low, threshold_high=threshold_high)
@@ -31,6 +31,12 @@ class MetricMancerApp:
         self.list_hotspots = list_hotspots
         self.hotspot_threshold = hotspot_threshold
         self.hotspot_output = hotspot_output
+        
+        # Review strategy settings
+        self.review_strategy = review_strategy
+        self.review_output = review_output
+        self.review_branch_only = review_branch_only
+        self.review_base_branch = review_base_branch
 
         # Allow swapping report generator
         self.report_generator_cls = report_generator_cls or ReportGenerator
@@ -103,6 +109,10 @@ class MetricMancerApp:
         # Run hotspot analysis if requested
         if self.list_hotspots:
             self._run_hotspot_analysis(repo_infos)
+        
+        # Run review strategy analysis if requested
+        if self.review_strategy:
+            self._run_review_strategy_analysis(repo_infos)
 
         print("\n=== TIME SUMMARY ===")
         print(f"Scanning:           {t_scan_end - t_scan_start:.2f} seconds")
@@ -186,6 +196,106 @@ class MetricMancerApp:
                         'hotspot': getattr(file_obj.kpis.get('hotspot'), 'value', 0) if file_obj.kpis.get('hotspot') else 0
                     }
                 }
+            
+            # Convert subdirectories
+            for dirname, subdir in scandir.scan_dirs.items():
+                result['scan_dirs'][dirname] = scandir_to_dict(subdir)
+            
+            return result
+        
+        return scandir_to_dict(repo_info)
+    
+    def _run_review_strategy_analysis(self, repo_infos):
+        """
+        Generate code review strategy report based on KPI metrics.
+        
+        Args:
+            repo_infos: List of RepoInfo objects from analysis
+        """
+        from src.utilities.code_review_advisor import generate_review_report
+        from src.utilities.git_helpers import get_changed_files_in_branch, get_current_branch
+        
+        # Convert repo_info to dict format
+        all_data = {}
+        for repo_info in repo_infos:
+            repo_data = self._convert_repo_info_to_dict_with_ownership(repo_info)
+            # Merge data from multiple repos
+            if 'files' not in all_data:
+                all_data = repo_data
+            else:
+                # Merge files and directories
+                all_data['files'].update(repo_data.get('files', {}))
+                all_data['scan_dirs'].update(repo_data.get('scan_dirs', {}))
+        
+        # Get changed files if branch-only mode is enabled
+        filter_files = None
+        current_branch = None
+        if self.review_branch_only and self.directories:
+            try:
+                repo_path = self.directories[0]
+                current_branch = get_current_branch(repo_path)
+                if current_branch:
+                    print(f"\n🔍 Filtering review strategy to changed files in branch: {current_branch}")
+                    print(f"   Comparing against base branch: {self.review_base_branch}")
+                    filter_files = get_changed_files_in_branch(repo_path, self.review_base_branch)
+                    if filter_files:
+                        print(f"   Found {len(filter_files)} changed files")
+                    else:
+                        print(f"   ⚠️  No changed files found, showing all files")
+            except Exception as e:
+                print(f"   ⚠️  Could not determine changed files: {e}")
+                debug_print(f"[DEBUG] Error getting changed files: {e}")
+        
+        # Generate the report
+        try:
+            report = generate_review_report(
+                all_data, 
+                output_file=self.review_output,
+                filter_files=filter_files,
+                branch_name=current_branch,
+                base_branch=self.review_base_branch if self.review_branch_only else None
+            )
+            print(f"\n✅ Code review strategy report generated successfully!")
+        except Exception as e:
+            print(f"\n❌ Error generating review strategy report: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    def _convert_repo_info_to_dict_with_ownership(self, repo_info):
+        """
+        Convert RepoInfo object to dictionary format with ownership data.
+        
+        Args:
+            repo_info: RepoInfo object from analysis
+            
+        Returns:
+            Dictionary representation with KPIs and ownership data
+        """
+        def scandir_to_dict(scandir):
+            """Recursively convert ScanDir to dict with ownership."""
+            result = {
+                'files': {},
+                'scan_dirs': {}
+            }
+            
+            # Convert files
+            for filename, file_obj in scandir.files.items():
+                file_data = {
+                    'kpis': {
+                        'complexity': getattr(file_obj.kpis.get('complexity'), 'value', 0) if file_obj.kpis.get('complexity') else 0,
+                        'churn': getattr(file_obj.kpis.get('churn'), 'value', 0) if file_obj.kpis.get('churn') else 0,
+                        'hotspot': getattr(file_obj.kpis.get('hotspot'), 'value', 0) if file_obj.kpis.get('hotspot') else 0
+                    }
+                }
+                
+                # Add ownership data if available
+                ownership_kpi = file_obj.kpis.get('ownership')
+                if ownership_kpi and hasattr(ownership_kpi, 'calculation_values'):
+                    ownership_data = ownership_kpi.calculation_values.get('ownership', {})
+                    if ownership_data:
+                        file_data['ownership'] = ownership_data
+                
+                result['files'][filename] = file_data
             
             # Convert subdirectories
             for dirname, subdir in scandir.scan_dirs.items():

@@ -30,6 +30,10 @@ def print_usage():
     print("  --list-hotspots              Display list of highest hotspots after analysis.")
     print("  --hotspot-threshold <score>  Minimum hotspot score to include (default: 50).")
     print("  --hotspot-output <file>      Save hotspot list to file instead of terminal.")
+    print("  --review-strategy            Generate code review strategy report based on KPIs.")
+    print("  --review-output <file>       Save review strategy to file (default: review_strategy.txt).")
+    print("  --review-branch-only         Only include files changed in current branch in review strategy.")
+    print("  --review-base-branch <name>  Base branch to compare against (default: main).")
     print("  --auto-report-filename       (Optional) Automatically generate a unique report filename based on date and directories.")
     print(
         "  --report-filename <filename> (Optional) Set the report filename directly. "
@@ -48,6 +52,9 @@ def print_usage():
     print("  python -m src.main src test --report-folder reports")
     print("  python -m src.main src --list-hotspots --hotspot-threshold 100")
     print("  python -m src.main src --list-hotspots --hotspot-output hotspots.txt")
+    print("  python -m src.main src --review-strategy --review-output review_strategy.txt")
+    print("  python -m src.main src --review-strategy --review-branch-only")
+    print("  python -m src.main src --review-strategy --review-branch-only --review-base-branch develop")
 
 
 def parse_args():
@@ -137,5 +144,27 @@ def parse_args():
         type=str,
         default=None,
         help="Save hotspot list to file instead of displaying on terminal."
+    )
+    parser.add_argument(
+        "--review-strategy",
+        action="store_true",
+        help="Generate code review strategy report based on complexity, churn, and ownership metrics."
+    )
+    parser.add_argument(
+        "--review-output",
+        type=str,
+        default="review_strategy.txt",
+        help="Output file for code review strategy report (default: review_strategy.txt)."
+    )
+    parser.add_argument(
+        "--review-branch-only",
+        action="store_true",
+        help="Only include files changed in current branch in review strategy report."
+    )
+    parser.add_argument(
+        "--review-base-branch",
+        type=str,
+        default="main",
+        help="Base branch to compare against when using --review-branch-only (default: main)."
     )
     return parser

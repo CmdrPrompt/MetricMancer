@@ -12,7 +12,8 @@ dependencies = [
   "pytest-cov",
   "coverage",
   "pydriller",
-  "tqdm"
+  "tqdm",
+  "PyYAML"
 ]
 
 [build-system]
