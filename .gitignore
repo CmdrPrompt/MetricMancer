@@ -31,3 +31,5 @@ issue--*.md
 issue-fix--*.md
 ​​git_log.txt
 hotspots.txt
+.coverage
+coverage.xml
