@@ -24,7 +24,10 @@ def print_usage():
         "Files above this value are listed under each problematic folder in the summary."
     )
     print("\nOUTPUT FORMATTING:")
-    print("  --output-format <format>     Set the output format. Options: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV).")
+    print("  --output-format <format>     Set the output format. Options: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV).")
+    print("  --summary                    Show executive summary dashboard (default).")
+    print("  --quick-wins                 Show prioritized quick win suggestions (impact vs. effort).")
+    print("  --detailed                   Show detailed file tree output.")
     print("  --level <level>              Set the detail level for reports. Options: 'file' (default), 'function'.")
     print("  --hierarchical               (JSON only) Output the full hierarchical data model instead of a flat list.")
     print("  --list-hotspots              Display list of highest hotspots after analysis.")
@@ -114,8 +117,29 @@ def parse_args():
     parser.add_argument(
         "--output-format",
         type=str,
-        default="human",
-        help="Output format: 'human' (default), 'html', 'json', 'machine' (CSV)."
+        default="summary",
+        help="Output format: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
+    )
+    parser.add_argument(
+        "--summary",
+        action="store_const",
+        const="summary",
+        dest="output_format",
+        help="Show executive summary dashboard (default)."
+    )
+    parser.add_argument(
+        "--quick-wins",
+        action="store_const",
+        const="quick-wins",
+        dest="output_format",
+        help="Show prioritized quick win suggestions (impact vs. effort)."
+    )
+    parser.add_argument(
+        "--detailed",
+        action="store_const",
+        const="human-tree",
+        dest="output_format",
+        help="Show detailed file tree output."
     )
     parser.add_argument(
         "--level",

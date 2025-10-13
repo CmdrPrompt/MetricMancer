@@ -40,7 +40,9 @@ python -m src.main <directories> [options]
 - `--report-filename <filename>`: Set the report filename directly
 - `--with-date`: Append date/time to the filename (used with --report-filename)
 - `--report-folder <folder>`: Folder to write all reports to (default: **'output'**)
-- `--output-format <format>`: Output format: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV)
+- `--output-format <format>`: Output format: 'summary' (default dashboard), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV)
+- `--summary`: Show executive summary dashboard (default)
+- `--detailed`: Show detailed file tree output
 - `--level <level>`: Detail level for reports: 'file' (default) or 'function'
 - `--hierarchical`: (JSON only) Output the full hierarchical data model
 - `--list-hotspots`: Display list of highest hotspots after analysis
@@ -63,8 +65,11 @@ python -m src.main <path-to-gitrepo> test --threshold-low 8 --threshold-high 15
 # Generate HTML report with custom filename
 python -m src.main <path-to-gitrepo> --report-filename myreport.html --output-format html
 
-# Output CLI report (default)
-python -m src.main path/to/repo --output-format human
+# Output executive summary (default)
+python -m src.main path/to/repo
+
+# Output detailed file tree
+python -m src.main path/to/repo --detailed
 
 # Output JSON report
 python -m src.main path/to/repo --output-format json
@@ -77,6 +82,9 @@ python -m src.main path/to/repo --report-folder reports
 
 # Use hierarchical JSON output
 python -m src.main path/to/repo --output-format json --hierarchical
+
+# Show prioritized quick win suggestions
+python -m src.main path/to/repo --quick-wins
 
 # Generate hotspot analysis
 python -m src.main path/to/repo --list-hotspots --hotspot-threshold 100
@@ -94,10 +102,18 @@ python -m src.main path/to/repo --review-strategy --review-branch-only
 
 All reports are saved to the **`output/`** directory by default. This can be customized with the `--report-folder` option.
 
+### Terminal Output Formats
+
+- **Executive Summary (default):** Actionable dashboard showing critical issues, health metrics, and recommendations
+- **Quick Wins:** Prioritized improvement suggestions ranked by ROI (impact vs. effort ratio)
+- **Detailed Tree:** Traditional tree-structured output per repository, showing complexity, churn, hotspot score, and grade for each file
+
+### Report Files
+
 - **HTML report:** Interactive, modern report with summary, details, and usage instructions
-- **CLI report:** Tree-structured output per repository, showing complexity, churn, hotspot score, and grade for each file
 - **JSON report:** Machine-readable output for dashboards and integrations
 - **Hotspot analysis:** Markdown or text file listing high-risk files
+- **Code review strategy:** Markdown or text file with prioritized review recommendations
 - **Review strategy:** Markdown or text file with data-driven code review recommendations
 
 ### Cleaning Output
