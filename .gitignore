@@ -1,3 +1,11 @@
+# Ignorere all in .vscode-folder…
+.vscode/*
+# …but allow specific files
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
 __pycache__/
 *.pyc
 *.pyo
@@ -5,8 +13,6 @@ __pycache__/
 .qodo/testConfig.toml
 .DS_Store
 .env
-.vscode/*
-.vscode/settings.json
 *-log.txt
 terminal.log
 .backup
@@ -22,4 +28,5 @@ dummy.html
 some_file.py
 .coverage
 issue--*.md
+issue-fix--*.md
 ​​git_log.txt
