@@ -39,15 +39,15 @@ python -m src.main <directories> [options]
 - `--auto-report-filename`: Generate a unique report filename based on date and scanned directories
 - `--report-filename <filename>`: Set the report filename directly
 - `--with-date`: Append date/time to the filename (used with --report-filename)
-- `--report-folder <folder>`: Folder to write the report to (default: current directory)
+- `--report-folder <folder>`: Folder to write all reports to (default: **'output'**)
 - `--output-format <format>`: Output format: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV)
 - `--level <level>`: Detail level for reports: 'file' (default) or 'function'
 - `--hierarchical`: (JSON only) Output the full hierarchical data model
 - `--list-hotspots`: Display list of highest hotspots after analysis
 - `--hotspot-threshold <score>`: Minimum hotspot score to include (default: 50)
-- `--hotspot-output <file>`: Save hotspot list to file instead of terminal
+- `--hotspot-output <file>`: Save hotspot list to file. Use .md for markdown (default format), .txt for plain text
 - `--review-strategy`: Generate code review strategy report based on KPIs
-- `--review-output <file>`: Save review strategy to file (default: review_strategy.txt)
+- `--review-output <file>`: Save review strategy to file (default: review_strategy.md, supports .txt and .md)
 - `--review-branch-only`: Filter review strategy to only changed files in current branch
 - `--review-base-branch <branch>`: Base branch for comparison (default: main)
 
@@ -80,11 +80,11 @@ python -m src.main path/to/repo --output-format json --hierarchical
 
 # Generate hotspot analysis
 python -m src.main path/to/repo --list-hotspots --hotspot-threshold 100
-python -m src.main path/to/repo --list-hotspots --hotspot-output hotspots.txt
+python -m src.main path/to/repo --list-hotspots --hotspot-output hotspots.md
 
 # Generate code review strategy report (all files)
 python -m src.main path/to/repo --review-strategy
-python -m src.main path/to/repo --review-strategy --review-output review_strategy.txt
+python -m src.main path/to/repo --review-strategy --review-output review_strategy.md
 
 # Generate code review strategy for changed files in current branch only
 python -m src.main path/to/repo --review-strategy --review-branch-only
@@ -92,9 +92,27 @@ python -m src.main path/to/repo --review-strategy --review-branch-only
 
 ## Output
 
+All reports are saved to the **`output/`** directory by default. This can be customized with the `--report-folder` option.
+
 - **HTML report:** Interactive, modern report with summary, details, and usage instructions
 - **CLI report:** Tree-structured output per repository, showing complexity, churn, hotspot score, and grade for each file
 - **JSON report:** Machine-readable output for dashboards and integrations
+- **Hotspot analysis:** Markdown or text file listing high-risk files
+- **Review strategy:** Markdown or text file with data-driven code review recommendations
+
+### Cleaning Output
+
+To clean the output directory:
+
+```bash
+# Remove all files from output directory
+python clean_output.py
+
+# Preview what would be deleted (dry-run)
+python clean_output.py --dry-run
+
+# Or use VS Code task: "Clean output directory"
+```
 
 **Example CLI Output:**
 

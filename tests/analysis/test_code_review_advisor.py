@@ -3,7 +3,7 @@ Tests for code_review_advisor module.
 """
 
 import unittest
-from src.utilities.code_review_advisor import (
+from src.analysis.code_review_advisor import (
     CodeReviewAdvisor,
     ReviewRecommendation,
     generate_review_report

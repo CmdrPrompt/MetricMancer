@@ -346,9 +346,15 @@ def generate_review_report(data: Dict[str, Any], output_file: str = None,
     # Sort by priority
     recommendations.sort(key=lambda x: (x.priority, -x.estimated_time_minutes))
     
-    # Generate report
-    report = _format_review_report(recommendations, filter_files is not None, 
-                                   branch_name=branch_name, base_branch=base_branch)
+    # Generate report - check file extension to determine format
+    use_markdown = output_file and output_file.endswith('.md')
+    
+    if use_markdown:
+        report = _format_review_report_markdown(recommendations, filter_files is not None, 
+                                               branch_name=branch_name, base_branch=base_branch)
+    else:
+        report = _format_review_report(recommendations, filter_files is not None, 
+                                       branch_name=branch_name, base_branch=base_branch)
     
     if output_file:
         with open(output_file, 'w', encoding='utf-8') as f:
@@ -386,11 +392,167 @@ def _extract_files_from_data(data: Dict[str, Any], path: str = '') -> List[Dict[
     return files
 
 
+def _format_review_report_markdown(recommendations: List[ReviewRecommendation], 
+                                  is_filtered: bool = False,
+                                  branch_name: str = None,
+                                  base_branch: str = None) -> str:
+    """Format recommendations into a markdown report."""
+    output = []
+    
+    # Title and metadata
+    output.append("# 📋 Code Review Strategy Report")
+    output.append("")
+    output.append("**Based on Complexity, Churn, and Ownership Metrics**")
+    output.append("")
+    
+    if is_filtered:
+        output.append("> 🔍 **FILTERED**: Showing only changed files in current branch")
+        if branch_name:
+            output.append(f"> 📍 **Current Branch**: `{branch_name}`")
+        if base_branch:
+            output.append(f"> 📊 **Comparing against**: `{base_branch}`")
+        output.append("")
+    
+    # Executive Summary
+    output.append("## 📊 Executive Summary")
+    output.append("")
+    
+    critical_files = [r for r in recommendations if r.risk_level == "critical"]
+    high_files = [r for r in recommendations if r.risk_level == "high"]
+    total_time = sum(r.estimated_time_minutes for r in recommendations)
+    
+    output.append("| Metric | Value |")
+    output.append("|--------|-------|")
+    output.append(f"| **Total files analyzed** | {len(recommendations)} |")
+    output.append(f"| **Critical risk files** 🔴 | {len(critical_files)} (require immediate attention) |")
+    output.append(f"| **High risk files** 🟡 | {len(high_files)} (require senior review) |")
+    output.append(f"| **Estimated total review time** | {total_time // 60}h {total_time % 60}m |")
+    output.append("")
+    
+    # Priority-based recommendations
+    priority_emojis = {1: "🔴", 2: "🟡", 3: "🟢"}
+    priority_labels = {1: "CRITICAL", 2: "HIGH", 3: "MEDIUM"}
+    
+    for priority in [1, 2, 3]:
+        priority_recs = [r for r in recommendations if r.priority == priority]
+        if not priority_recs:
+            continue
+        
+        emoji = priority_emojis[priority]
+        label = priority_labels[priority]
+        output.append(f"## {emoji} {label} Priority Files (Priority {priority})")
+        output.append("")
+        
+        for rec in priority_recs[:10]:  # Show top 10 per priority
+            output.append(f"### 📄 `{rec.file_path}`")
+            output.append("")
+            
+            # File metrics in table
+            output.append("| Metric | Value |")
+            output.append("|--------|-------|")
+            output.append(f"| **Risk Level** | {rec.risk_level.upper()} |")
+            output.append(f"| **Reviewers Needed** | {rec.reviewers_needed} |")
+            output.append(f"| **Estimated Time** | {rec.estimated_time_minutes} minutes |")
+            output.append("")
+            
+            # Focus areas
+            output.append("**Focus Areas:**")
+            output.append("")
+            for area in rec.focus_areas:
+                output.append(f"- {area}")
+            output.append("")
+            
+            # Review checklist
+            output.append("**Review Checklist:**")
+            output.append("")
+            for item in rec.checklist_items:
+                output.append(f"- [ ] {item}")
+            output.append("")
+            output.append("---")
+            output.append("")
+        
+        if len(priority_recs) > 10:
+            output.append(f"*... and {len(priority_recs) - 10} more files at this priority level*")
+            output.append("")
+    
+    # Example review template
+    if critical_files:
+        output.append("## 📝 Example Review Template")
+        output.append("")
+        output.append("*(For critical files)*")
+        output.append("")
+        output.append("```")
+        output.append(critical_files[0].template)
+        output.append("```")
+        output.append("")
+    
+    # Resource allocation guidance
+    output.append("## 👥 Resource Allocation Guidance")
+    output.append("")
+    
+    output.append("### ⏱️ Recommended Review Time Distribution")
+    output.append("")
+    
+    critical_time = sum(r.estimated_time_minutes for r in critical_files)
+    high_time = sum(r.estimated_time_minutes for r in high_files)
+    
+    if total_time > 0:
+        output.append("| Category | Time | Percentage |")
+        output.append("|----------|------|------------|")
+        output.append(f"| **Critical files** 🔴 | {critical_time}m | {critical_time * 100 // total_time}% |")
+        output.append(f"| **High priority** 🟡 | {high_time}m | {high_time * 100 // total_time}% |")
+        output.append("")
+    
+    output.append("### 👤 Reviewer Assignment Strategy")
+    output.append("")
+    output.append("- **Critical files** 🔴: Senior architect + 2 experienced developers")
+    output.append("- **High priority** 🟡: Senior developer + peer reviewer")
+    output.append("- **Medium/Low** 🟢: Standard peer review")
+    output.append("")
+    
+    # Best practices
+    output.append("## 💡 Best Practices")
+    output.append("")
+    
+    output.append("### 1. Pre-Review KPI Assessment")
+    output.append("")
+    output.append("- Check complexity, churn, and ownership metrics before reviewing")
+    output.append("- Adjust review depth based on risk level")
+    output.append("")
+    
+    output.append("### 2. Use Risk-Based Checklists")
+    output.append("")
+    output.append("- **High complexity files**: Focus on simplification opportunities")
+    output.append("- **High churn files**: Investigate root causes of instability")
+    output.append("- **Single owner files**: Emphasize knowledge transfer")
+    output.append("")
+    
+    output.append("### 3. Knowledge Management")
+    output.append("")
+    output.append("- Use reviews for knowledge transfer in single-owner files")
+    output.append("- Document decisions in high-complexity areas")
+    output.append("- Encourage pair programming for critical hotspots")
+    output.append("")
+    
+    output.append("### 4. Continuous Monitoring")
+    output.append("")
+    output.append("- Track whether changes increase or decrease metrics")
+    output.append("- Celebrate complexity reductions")
+    output.append("- Monitor churn patterns for early warning signs")
+    output.append("")
+    
+    output.append("---")
+    output.append("")
+    output.append("*Report generated by MetricMancer,based on 'Your Code as a Crime Scene' methodology*")
+    
+    return "\n".join(output)
+
+
 def _format_review_report(recommendations: List[ReviewRecommendation], 
                          is_filtered: bool = False,
                          branch_name: str = None,
                          base_branch: str = None) -> str:
-    """Format recommendations into a readable report."""
+    """Format recommendations into a readable text report."""
     output = []
     
     output.append("=" * 100)
@@ -499,7 +661,7 @@ def _format_review_report(recommendations: List[ReviewRecommendation],
     output.append("")
     
     output.append("=" * 100)
-    output.append("Report generated based on 'Your Code as a Crime Scene' methodology")
+    output.append("Report generated by MetricMancer, based on 'Your Code as a Crime Scene' methodology")
     output.append("=" * 100)
     
     return "\n".join(output)

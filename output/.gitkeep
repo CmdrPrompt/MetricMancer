@@ -1,0 +1,3 @@
+# This directory contains MetricMancer output files
+# All files in this directory are ignored by git (see .gitignore)
+# except this .gitkeep file to preserve the directory structure.

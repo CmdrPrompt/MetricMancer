@@ -252,6 +252,43 @@
                 "focus": false,
                 "panel": "shared"
             }
+        },
+        {
+            "label": "Clean output directory",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "clean_output.py"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
+        },
+        {
+            "label": "Clean output directory (dry-run)",
+            "type": "shell",
+            "command": "python",
+            "args": [
+                "clean_output.py",
+                "--dry-run"
+            ],
+            "group": "build",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            }
         }
     ]
 }

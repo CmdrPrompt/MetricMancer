@@ -33,3 +33,8 @@ hotspots.txt
 review_strategy.txt
 coverage.xml
 review_*.txt
+
+# MetricMancer output directory
+output/*
+!output/.gitkeep
+metricmancer_output/

@@ -5,11 +5,11 @@ MetricMancer can generate data-driven code review recommendations based on your 
 ## How to Generate
 
 ```bash
-# Basic usage - generates review_strategy.txt for all files
+# Basic usage - generates review_strategy.md for all files
 python -m src.main src --review-strategy
 
-# Custom output file
-python -m src.main src --review-strategy --review-output my_review_plan.txt
+# Custom output file (supports .md and .txt)
+python -m src.main src --review-strategy --review-output my_review_plan.md
 
 # Focus on changed files in current branch only (vs main)
 python -m src.main src --review-strategy --review-branch-only
@@ -18,7 +18,7 @@ python -m src.main src --review-strategy --review-branch-only
 python -m src.main src --review-strategy --review-branch-only --review-base-branch develop
 
 # Combined with other analyses
-python -m src.main src --review-strategy --list-hotspots --hotspot-output hotspots.txt
+python -m src.main src --review-strategy --list-hotspots --hotspot-output hotspots.md
 ```
 
 ## What's Included
@@ -108,14 +108,14 @@ The advisor also considers ownership patterns:
 ### 1. Sprint Planning
 Use the report to allocate review resources at sprint start:
 ```bash
-python -m src.main src --review-strategy --review-output sprint_review_plan.txt
+python -m src.main src --review-strategy --review-output sprint_review_plan.md
 ```
 
 ### 2. Focus on Your Branch Changes
 Generate a focused review strategy for only the files you've changed:
 ```bash
 # When working on a feature branch
-python -m src.main src --review-strategy --review-branch-only --review-output my_branch_review.txt
+python -m src.main src --review-strategy --review-branch-only --review-output my_branch_review.md
 ```
 
 **Benefits:**
@@ -154,7 +154,7 @@ Ensure review depth matches risk level:
 python -m src.main src --review-strategy --review-branch-only
 
 # Review the generated report before creating your PR
-cat review_strategy.txt
+cat review_strategy.md
 ```
 
 ### Pull Request Template
@@ -170,12 +170,12 @@ Include relevant checklist items from the report in your PR template.
 # Example GitHub Actions step
 - name: Generate Review Strategy
   run: |
-    python -m src.main src --review-strategy --review-output review_strategy.txt
+    python -m src.main src --review-strategy --review-output review_strategy.md
 - name: Upload Review Strategy
   uses: actions/upload-artifact@v2
   with:
     name: review-strategy
-    path: review_strategy.txt
+    path: review_strategy.md
 ```
 
 ### Weekly Team Review
@@ -218,7 +218,7 @@ Based on "Your Code as a Crime Scene" by Adam Tornhill:
 
 ## Customization
 
-The thresholds and recommendations can be adjusted for your project's needs. See `src/utilities/code_review_advisor.py` for implementation details.
+The thresholds and recommendations can be adjusted for your project's needs. See `src/analysis/code_review_advisor.py` for implementation details.
 
 ## Related Features
 

@@ -6,14 +6,14 @@ from src.app.scanner import Scanner
 from src.languages.config import Config
 from src.report.report_generator import ReportGenerator
 from src.utilities.debug import debug_print
-from src.utilities.hotspot_analyzer import (
+from src.analysis.hotspot_analyzer import (
     extract_hotspots_from_data, format_hotspots_table, 
     save_hotspots_to_file, print_hotspots_summary
 )
 
 
 class MetricMancerApp:
-    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human", list_hotspots=False, hotspot_threshold=50, hotspot_output=None, review_strategy=False, review_output="review_strategy.txt", review_branch_only=False, review_base_branch="main"):
+    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human", list_hotspots=False, hotspot_threshold=50, hotspot_output=None, review_strategy=False, review_output="review_strategy.md", review_branch_only=False, review_base_branch="main", report_folder=None):
         self.config = Config()
         self.scanner = Scanner(self.config.languages)
         self.analyzer = Analyzer(self.config.languages, threshold_low=threshold_low, threshold_high=threshold_high)
@@ -26,6 +26,7 @@ class MetricMancerApp:
         self.level = level
         self.hierarchical = hierarchical
         self.output_format = output_format
+        self.report_folder = report_folder if report_folder is not None else 'output'
         
         # Hotspot analysis settings
         self.list_hotspots = list_hotspots
@@ -76,6 +77,9 @@ class MetricMancerApp:
                 })
 
         t_reportgen_start = time.perf_counter()
+        # Ensure report folder exists
+        os.makedirs(self.report_folder, exist_ok=True)
+        
         # Generate one HTML report per repo_info
         for idx, repo_info in enumerate(repo_infos):
             output_file = self.output_file or "complexity_report.html"
@@ -90,12 +94,15 @@ class MetricMancerApp:
             else:
                 links_for_this = report_links
 
+            # Construct full output path with report folder
+            output_path = os.path.join(self.report_folder, output_file)
+            
             # All generators now accept a single repo_info object, making the call uniform.
             report = self.report_generator_cls(
                 repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
             )
             report.generate(
-                output_file=output_file,
+                output_file=output_path,
                 level=self.level,
                 hierarchical=self.hierarchical,
                 output_format=self.output_format,
@@ -163,8 +170,11 @@ class MetricMancerApp:
         
         # Display or save results
         if self.hotspot_output:
-            # Save to file
-            save_hotspots_to_file(all_hotspots, self.hotspot_output, show_risk_categories=True)
+            # Save to file in report folder
+            import os
+            os.makedirs(self.report_folder, exist_ok=True)
+            output_path = os.path.join(self.report_folder, self.hotspot_output)
+            save_hotspots_to_file(all_hotspots, output_path, show_risk_categories=True)
             print_hotspots_summary(all_hotspots)
         else:
             # Display on terminal
@@ -212,7 +222,7 @@ class MetricMancerApp:
         Args:
             repo_infos: List of RepoInfo objects from analysis
         """
-        from src.utilities.code_review_advisor import generate_review_report
+        from src.analysis.code_review_advisor import generate_review_report
         from src.utilities.git_helpers import get_changed_files_in_branch, get_current_branch
         
         # Convert repo_info to dict format
@@ -246,11 +256,14 @@ class MetricMancerApp:
                 print(f"   ⚠️  Could not determine changed files: {e}")
                 debug_print(f"[DEBUG] Error getting changed files: {e}")
         
-        # Generate the report
+        # Generate the report in report folder
         try:
+            import os
+            os.makedirs(self.report_folder, exist_ok=True)
+            output_path = os.path.join(self.report_folder, self.review_output)
             report = generate_review_report(
                 all_data, 
-                output_file=self.review_output,
+                output_file=output_path,
                 filter_files=filter_files,
                 branch_name=current_branch,
                 base_branch=self.review_base_branch if self.review_branch_only else None

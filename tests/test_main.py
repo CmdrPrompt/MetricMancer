@@ -80,7 +80,8 @@ class TestMain:
                 review_strategy=False,
                 review_output='review_strategy.txt',
                 review_branch_only=False,
-                review_base_branch='main'
+                review_base_branch='main',
+                report_folder=mock_args.report_folder
             )
             
             # Verify app.run() was called
