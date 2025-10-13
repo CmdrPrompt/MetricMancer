@@ -21,3 +21,5 @@ dummy.html
 *report*.json
 some_file.py
 .coverage
+issue--*.md
+​​git_log.txt
