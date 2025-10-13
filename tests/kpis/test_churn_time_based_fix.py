@@ -11,7 +11,7 @@ import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
 from src.kpis.codechurn.kpi import ChurnKPI
-from src.kpis.codechurn.kpi import ChurnKPI
+from src.kpis.codechurn.code_churn import CodeChurnAnalyzer
 
 
 class TestCodeChurnTimeBased(unittest.TestCase):
@@ -42,13 +42,13 @@ class TestCodeChurnTimeBased(unittest.TestCase):
         mock_isdir.return_value = True
         
         # Create mock commits spanning 6 months
-        base_date = datetime(2024, 1, 1)
+        now = datetime.now()
         mock_commits = []
         
-        for i in range(12):  # 12 commits over 6 months
+        for i in range(12):  # 12 commits over 6 months  
             mock_commit = MagicMock()
             mock_commit.hash = f"abc{i:03d}"
-            mock_commit.author_date = base_date + timedelta(days=i*15)  # Every 15 days
+            mock_commit.author_date = now - timedelta(days=i*15)  # Every 15 days back from now
             
             mock_modification = MagicMock()
             mock_modification.new_path = "src/main.py"
