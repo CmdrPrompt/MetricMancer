@@ -39,18 +39,27 @@ def main():
     # Create configuration from CLI arguments
     config = AppConfig.from_cli_args(args)
 
-    # Handle output_file generation for json/html formats if not provided
-    if config.output_format in ['html', 'json'] and not config.output_file:
+    # Handle output_file generation for file-based formats if not provided
+    # Check if any format in output_formats needs a file
+    file_based_formats = {'html', 'json', 'machine'}
+    needs_file = any(fmt in file_based_formats for fmt in config.output_formats)
+
+    if needs_file and not config.output_file:
         config.output_file = get_output_filename(args)
 
-    # Use factory to create appropriate report generator
-    generator_cls = ReportGeneratorFactory.create(config.output_format)
-
     debug_print(f"[DEBUG] main: config={config}")
-    debug_print(f"[DEBUG] main: generator_cls={generator_cls}")
 
-    # Create and run application
-    app = MetricMancerApp(config=config, report_generator_cls=generator_cls)
+    # For multi-format, don't create a single generator - let MetricMancerApp handle it
+    if len(config.output_formats) > 1:
+        # Multi-format: MetricMancerApp will create generators per format
+        debug_print(f"[DEBUG] main: Multi-format mode - {len(config.output_formats)} formats")
+        app = MetricMancerApp(config=config, report_generator_cls=None)
+    else:
+        # Single format: Use factory to create appropriate report generator (backward compat)
+        generator_cls = ReportGeneratorFactory.create(config.output_format)
+        debug_print(f"[DEBUG] main: Single format mode - generator_cls={generator_cls}")
+        app = MetricMancerApp(config=config, report_generator_cls=generator_cls)
+
     app.run()
 
 

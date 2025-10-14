@@ -172,8 +172,17 @@ class MetricMancerApp:
                 # Construct full output path with report folder
                 output_path = os.path.join(self.report_folder, output_file)
 
+                # Create appropriate generator for this format
+                if self.report_generator_cls is None:
+                    # Multi-format mode: use factory to create generator for each format
+                    from src.report.report_generator_factory import ReportGeneratorFactory
+                    generator_cls = ReportGeneratorFactory.create(output_format)
+                else:
+                    # Single format mode: use provided generator class
+                    generator_cls = self.report_generator_cls
+
                 # All generators now accept a single repo_info object, making the call uniform.
-                report = self.report_generator_cls(
+                report = generator_cls(
                     repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
                 )
                 report.generate(
