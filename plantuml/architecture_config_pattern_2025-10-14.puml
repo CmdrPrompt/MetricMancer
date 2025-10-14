@@ -1,0 +1,175 @@
+@startuml architecture_config_pattern_2025-10-14
+' MetricMancer Architecture - Configuration Object Pattern (2025-10-14)
+' Shows the new architecture with AppConfig, Factory Pattern, and MetricMancerApp
+
+!define NEWCLASS #E8F5E9
+!define PATTERN #FFF3E0
+!define LEGACY #FFEBEE
+
+package "Entry Point" <<Rectangle>> {
+  class main <<NEWCLASS>> {
+    +main()
+    --
+    Simplified entry point using
+    Configuration Object Pattern
+  }
+}
+
+package "Configuration Layer" <<PATTERN>> {
+  class AppConfig <<PATTERN>> {
+    +directories: List[str]
+    +threshold_low: float
+    +threshold_high: float
+    +problem_file_threshold: Optional[float]
+    +output_format: str
+    +output_file: Optional[str]
+    +report_folder: str
+    +level: str
+    +hierarchical: bool
+    +list_hotspots: bool
+    +hotspot_threshold: int
+    +hotspot_output: Optional[str]
+    +review_strategy: bool
+    +review_output: str
+    +review_branch_only: bool
+    +review_base_branch: str
+    +debug: bool
+    --
+    +from_cli_args(args): AppConfig
+    +__post_init__()
+    --
+    Configuration Object Pattern:
+    - Type-safe fields
+    - Built-in validation
+    - Single source of truth
+  }
+}
+
+package "Factory Layer" <<PATTERN>> {
+  class ReportGeneratorFactory <<PATTERN>> {
+    -_FORMAT_MAP: Dict[str, Type]
+    --
+    +create(format: str): Type
+    +get_supported_formats(): List[str]
+    +is_format_supported(format: str): bool
+    --
+    Factory Pattern:
+    - No conditional logic
+    - Easy to extend
+    - Single responsibility
+  }
+}
+
+package "Application Layer" <<Rectangle>> {
+  class MetricMancerApp {
+    -directories: List[str]
+    -threshold_low: float
+    -threshold_high: float
+    -report_generator_cls: Type
+    -config: Optional[AppConfig]
+    --
+    +__init__(config: Optional[AppConfig], ...)
+    +run(): None
+    --
+    Accepts both:
+    1. AppConfig (new pattern)
+    2. Individual params (backward compatible)
+  }
+}
+
+package "Report Generation" <<Rectangle>> {
+  abstract class ReportInterface {
+    {abstract} +generate(data: ReportData): str
+  }
+  
+  class HTMLReportGenerator {
+    +generate(data: ReportData): str
+  }
+  
+  class JSONReportGenerator {
+    +generate(data: ReportData): str
+  }
+  
+  class CLIReportGenerator {
+    +generate(data: ReportData): str
+  }
+  
+  ReportInterface <|-- HTMLReportGenerator
+  ReportInterface <|-- JSONReportGenerator
+  ReportInterface <|-- CLIReportGenerator
+}
+
+package "Analysis Layer" <<Rectangle>> {
+  class Analyzer {
+    +analyze(files: List[str]): Dict[str, RepoInfo]
+  }
+  
+  class Scanner {
+    +scan_directories(dirs: List[str]): List[str]
+  }
+}
+
+' Relationships - New Pattern Flow
+main ..> AppConfig : "1. Creates from CLI args"
+main ..> ReportGeneratorFactory : "2. Uses to create generator"
+main ..> MetricMancerApp : "3. Instantiates with config"
+
+AppConfig --> MetricMancerApp : "injected as\nconfiguration"
+ReportGeneratorFactory ..> ReportInterface : "creates"
+MetricMancerApp --> ReportInterface : "uses"
+MetricMancerApp --> Analyzer : "uses"
+MetricMancerApp --> Scanner : "uses"
+
+note top of AppConfig
+  **Configuration Object Pattern**
+  
+  Benefits:
+  - All settings in one place
+  - Type-safe with validation
+  - Easy to test and mock
+  - Reduces code churn
+  
+  Example:
+  config = AppConfig.from_cli_args(args)
+end note
+
+note top of ReportGeneratorFactory
+  **Factory Pattern**
+  
+  Benefits:
+  - No conditional logic in main.py
+  - Easy to add new formats
+  - Single responsibility
+  
+  Example:
+  gen = Factory.create(config.output_format)
+end note
+
+note bottom of MetricMancerApp
+  **Dependency Injection**
+  
+  Accepts both patterns:
+  1. New: MetricMancerApp(config=config, ...)
+  2. Old: MetricMancerApp(directories=['src'], ...)
+  
+  100% backward compatible!
+end note
+
+note right of main
+  **Simplified main.py**
+  
+  Before: ~70 lines with conditionals
+  After: 58 lines, clean flow
+  
+  Reduction: 17%
+  Churn reduction: 60-80% predicted
+end note
+
+legend right
+  |= Color |= Meaning |
+  | <back:NEWCLASS>   </back> | New/Updated for refactoring |
+  | <back:PATTERN>   </back> | New design patterns |
+  | <back:#E3F2FD>   </back> | Core application |
+endlegend
+
+@enduml

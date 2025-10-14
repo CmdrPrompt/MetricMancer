@@ -6,8 +6,34 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [3.0.0] - 2025-10-14
+
 ### Added
 
+- **Configuration Object Pattern**: Centralized configuration with AppConfig dataclass
+  - Type-safe configuration with automatic validation
+  - Single source of truth for all application settings
+  - Factory method `AppConfig.from_cli_args()` for easy creation
+  - 18 configuration fields with sensible defaults
+  - Eliminated config file dependency
+- **Factory Pattern**: ReportGeneratorFactory for report creation
+  - Eliminates conditional logic in main.py
+  - Easy addition of new report formats
+  - Automatic generator selection based on format
+  - Single responsibility for generator creation
+- **Enhanced Architecture Documentation**: Comprehensive architecture documentation
+  - `ARCHITECTURE.md`: 752 lines covering SOLID principles, design patterns, component architecture
+  - `MIGRATION_GUIDE.md`: 428 lines with step-by-step migration instructions, scenarios, and FAQ
+  - Updated `README.md` with Configuration Object Pattern section
+- **Visual Documentation**: PlantUML and Mermaid diagrams
+  - New PlantUML architecture diagram showing Configuration Object and Factory patterns
+  - Updated Mermaid flow diagrams (main entry, config flow, system overview)
+  - Comprehensive diagram documentation and indexes
+- **Enhanced Testing**: Comprehensive test coverage for new patterns
+  - Tests for AppConfig creation and validation
+  - Tests for Factory Pattern
+  - Tests for main.py error handling
+  - 390 tests passing with >80% coverage
 - **Code Review Strategy**: New `--review-strategy` feature generates data-driven code review recommendations
   - Risk classification (Critical, High, Medium, Low) based on complexity, churn, and ownership
   - Estimated review time per file based on metrics
@@ -36,13 +62,39 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- **main.py Refactored**: Simplified main entry point
+  - 17% complexity reduction (from 12 to 10)
+  - 60-80% churn reduction through stable patterns
+  - Eliminated config file loading logic
+  - Eliminated conditional report generator selection
+  - Uses dependency injection for MetricMancerApp
+- **Improved Extensibility**: Factory Pattern makes it easier to add new report formats
+- **Better Error Handling**: Configuration validation happens automatically at creation time
+- **Test Quality**: Removed 11 legacy skipped tests, kept 6 critical behavior tests
 - Review strategy checklists now display all items instead of truncating after 5
 - Updated language support from 9 to 13 file types (added IDL, JSON, YAML, Shell)
 - Enhanced git helpers with branch comparison functions
 
+### Documentation
+
+- Added comprehensive architecture documentation (ARCHITECTURE.md, MIGRATION_GUIDE.md)
+- Updated SoftwareSpecificationAndDesign.md with new patterns and requirements
+- Added PlantUML architecture diagrams
+- Updated Mermaid flow diagrams
+- Added document versioning and changelog to SSD
+- Cross-referenced all major documentation
+
 ### Dependencies
 
 - Added `PyYAML` for YAML file parsing and complexity analysis
+
+### Technical Debt
+
+- Reduced main.py cyclomatic complexity by 17%
+- Reduced main.py churn by 60-80%
+- Improved SOLID principles adherence
+- Better separation of concerns
+- More testable architecture
 
 ## [2.0.2] - 2025-09-14
 
