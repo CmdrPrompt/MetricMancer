@@ -17,42 +17,42 @@ Make `main.py` stable by:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ main.py (STABLE - rarely changes)                           │
-│  - Parse CLI args                                            │
-│  - Create AppConfig from args                                │
-│  - Create MetricMancerApp with config                        │
-│  - Call app.run()                                            │
+│  - Parse CLI args                                           │
+│  - Create AppConfig from args                               │
+│  - Create MetricMancerApp with config                       │
+│  - Call app.run()                                           │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ AppConfig (Configuration Object)                             │
-│  - Holds all application settings                            │
-│  - Factory method: from_cli_args(args)                       │
-│  - Validation logic                                          │
-│  - Default values                                            │
+│ AppConfig (Configuration Object)                            │
+│  - Holds all application settings                           │
+│  - Factory method: from_cli_args(args)                      │
+│  - Validation logic                                         │
+│  - Default values                                           │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ MetricMancerApp (Simplified)                                 │
-│  - __init__(config: AppConfig)                               │
-│  - run() - orchestrates workflow                             │
-│  - Uses factories for report generation                      │
+│ MetricMancerApp (Simplified)                                │
+│  - __init__(config: AppConfig)                              │
+│  - run() - orchestrates workflow                            │
+│  - Uses factories for report generation                     │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ ReportGeneratorFactory                                       │
-│  - create(format: str, config: AppConfig)                    │
-│  - Returns appropriate generator instance                    │
+│ ReportGeneratorFactory                                      │
+│  - create(format: str, config: AppConfig)                   │
+│  - Returns appropriate generator instance                   │
 └─────────────────────────────────────────────────────────────┘
                             │
                             ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ FeatureRunner (Optional - for extensibility)                 │
-│  - run_hotspot_analysis(config, data)                        │
-│  - run_review_strategy(config, data)                         │
-│  - Makes features pluggable                                  │
+│ FeatureRunner (Optional - for extensibility)                │
+│  - run_hotspot_analysis(config, data)                       │
+│  - run_review_strategy(config, data)                        │
+│  - Makes features pluggable                                 │
 └─────────────────────────────────────────────────────────────┘
 ```
 

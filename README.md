@@ -164,11 +164,63 @@ repo_name
 }
 ```
 
+## Architecture
+
+### Configuration Object Pattern
+
+MetricMancer uses the **Configuration Object Pattern** to centralize all application settings, making the codebase more maintainable and reducing code churn. This architectural decision was implemented to address high modification frequency in `main.py` (23 commits/month).
+
+**Key Components:**
+
+1. **AppConfig** (`src/config/app_config.py`): A dataclass that encapsulates all configuration parameters with:
+   - Type-safe fields with validation
+   - Factory method `from_cli_args()` for easy CLI integration
+   - Default values and comprehensive documentation
+
+2. **ReportGeneratorFactory** (`src/report/report_generator_factory.py`): Factory pattern for creating report generators:
+   - Eliminates conditional logic in main entry point
+   - Easy to extend with new output formats
+   - Clean separation of concerns
+
+3. **MetricMancerApp** (`src/app/metric_mancer_app.py`): Application class that:
+   - Accepts AppConfig as primary initialization method
+   - Maintains backward compatibility with individual parameters
+   - Provides clean dependency injection
+
+**Benefits:**
+
+- ✅ **Reduced Churn**: New features add to config, not main.py
+- ✅ **Single Responsibility**: Each component has one clear purpose
+- ✅ **Open/Closed Principle**: Closed for modification, open for extension
+- ✅ **Testability**: Easy to mock and test components in isolation
+- ✅ **Maintainability**: Clear, linear code flow with minimal complexity
+
+**Usage Example:**
+
+```python
+from src.config.app_config import AppConfig
+from src.report.report_generator_factory import ReportGeneratorFactory
+from src.app.metric_mancer_app import MetricMancerApp
+
+# Create configuration from CLI args
+config = AppConfig.from_cli_args(args)
+
+# Use factory to create appropriate report generator
+generator_cls = ReportGeneratorFactory.create(config.output_format)
+
+# Instantiate application with configuration
+app = MetricMancerApp(config=config, report_generator_cls=generator_cls)
+app.run()
+```
+
+For migration guidance, see [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md).
+
 ## Extending MetricMancer
 
 - **Add new languages:** Implement a parser module and register it in `src/languages/parsers/` and `src/config.py`.
 - **Add new KPIs:** Create a new KPI calculator in `src/kpis/` and register it in the configuration.
 - **Customize reports:** Update templates in `src/report/templates/` for HTML, or extend CLI/JSON generators.
+- **Add new output formats:** Register new format in `ReportGeneratorFactory.create()` method.
 - **Extensible architecture:** The system is designed for easy addition of new metrics, languages, and report formats with minimal coupling between components. See the [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for details.
 
 ## Requirements

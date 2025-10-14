@@ -13,7 +13,7 @@ def main():
     """
     Main entry point for MetricMancer.
 
-    Simplified version using Configuration Object Pattern to reduce complexity
+    MetricMancer uses the Configuration Object Pattern to reduce complexity
     and code churn. All configuration logic is delegated to AppConfig and
     ReportGeneratorFactory.
     """
