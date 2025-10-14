@@ -33,100 +33,37 @@ This document provides requirements and design specifications. For additional te
 
 ### 1.2 Document Changelog
 
-This section tracks major changes to this document, aligned with MetricMancer releases and significant branch merges.
+This section tracks major changes to this **document** (not the software). For complete software release history, see **[CHANGELOG.md](CHANGELOG.md)**.
 
-#### Version 3.0.0-draft (2025-10-14) - Configuration Object Pattern Refactoring
+#### Version 3.0.0-draft (2025-10-14) - Configuration Object Pattern
 **Status:** Draft - Pending PR #52 merge
 
-**Architecture Updates:**
-- Added section 1.1: Related Documentation with links to ARCHITECTURE.md, MIGRATION_GUIDE.md, and diagram indexes
-- Added section 3.1 introduction: Links to Mermaid and PlantUML diagram collections
-- Updated section 3: System Overview with Configuration Object Pattern, Factory Pattern, Strategy Pattern, and SOLID principles
-- Updated diagram 3.1.1: System Overview - replaced conditionals with Factory Pattern
-- Updated diagram 3.1.2: Application Flow - replaced format selection with Factory Pattern
-- Completely rewrote diagram 3.1.7: Configuration and CLI Flow - Configuration Object Pattern with AppConfig
-- Enhanced section 3.2.1: Data Model UML Diagram with links and clarifications
+**Major Document Changes:**
+- Added Related Documentation section (1.1) with links to ARCHITECTURE.md, MIGRATION_GUIDE.md, PlantUML, and Mermaid diagrams
+- Updated System Overview (3.0) with Configuration Object Pattern, Factory Pattern, Strategy Pattern, SOLID principles
+- Updated 3 architecture diagrams (3.1.1, 3.1.2, 3.1.7) to reflect new patterns
+- Added 4 new Non-Functional Requirements (NFR5-NFR8) for architecture quality
+- Enhanced Implementation Summary with pattern implementations and metrics
+- Updated test case mappings for new NFRs
 
-**Requirements Updates:**
-- Added NFR5: Architecture quality (SOLID principles, design patterns)
-- Added NFR6: Configuration management (centralized, type-safe, validated)
-- Added NFR7: Code complexity (<10 for main entry point)
-- Added NFR8: Test coverage (>80% requirement)
-- Enhanced NFR2: Extensibility via Factory Pattern
-- Enhanced NFR4: Error handling via Configuration Object Pattern
-- Added "Implemented Architecture & Quality" section with pattern implementations
-- Updated test case mappings for NFR2, NFR4, NFR5, NFR6, NFR7, NFR8
+**Key Metrics:** 17% main.py complexity reduction, 390 tests, 4 design patterns, 1,232 lines documentation  
+**Related:** PR #52, Branch 51-refactor-stable-main-config-pattern
 
-**Documentation Quality:**
-- Added document version tracking
-- Added this changelog section
-- Cross-referenced all major architecture documents
-- Linked to visual documentation (Mermaid and PlantUML)
-
-**Metrics:**
-- 17% complexity reduction in main.py (from 12 to 10)
-- 60-80% churn reduction in main.py
-- 390 tests passing (0 skipped)
-- 4 design patterns implemented
-- 1,232 lines of new documentation added
-
-**Related:**
-- PR #52: Refactor: Stabilize main.py using Configuration Object Pattern
-- Branch: 51-refactor-stable-main-config-pattern
-
-#### Version 2.0.2 (2025-09-14) - HTML Report Templates and UTF-8 Support
-**Status:** Released
-
-**Major Changes:**
-- New HTML report templates (base.html, overview.html, repo.html)
-- UTF-8 output enforcement for CLI
-- Improved path normalization and cross-platform compatibility
-- Enhanced warning and status messages with consistent prefixes
-
-**Documentation Updates:**
+#### Version 2.0.2 (2025-09-14) - HTML Report Templates
 - Updated functional requirements status
-- Added test case mappings for HTML report generation
-- Updated implementation summary
+- Added test case mappings for HTML reports
 
-#### Version 2.0.0 (2025-09-14) - Major Documentation Overhaul
-**Status:** Released
-
-**Major Changes:**
+#### Version 2.0.0 (2025-09-14) - Initial Complete Document
 - Complete Software Specification and Design document created
-- Full requirements, architecture, data model documentation
-- User stories and personas added
+- Full requirements, architecture, data model, user stories, personas
 - Mermaid and PlantUML diagrams added
-- HTML, CLI, and JSON report generators modularized
-- Hotspot analysis implemented
-- Test traceability matrices added
+- Test traceability matrices
 
-**Documentation Structure:**
-- Section 1: Introduction
-- Section 2: Glossary and KPI definitions
-- Section 3: System Overview and Architecture
-- Section 4: Detailed Requirements
-- Section 5: Analysis Framework
-
-#### Version 1.2.0 (2025-08-31) - Code Restructuring
-**Status:** Released
-
-**Major Changes:**
-- Core modules moved to subfolders (app, languages, etc.)
-- Improved modularity and separation of concerns
-- Enhanced CLI report readability
-
-**Documentation Updates:**
-- Updated architecture diagrams for new structure
-- Revised module organization documentation
+#### Version 1.2.0 (2025-08-31) - Code Restructuring Documentation
+- Updated architecture diagrams for new module structure
 
 #### Version 1.0.0 (2025-08-30) - Initial Release
-**Status:** Released
-
-**Initial Content:**
 - Basic requirements and functional specifications
-- Cyclomatic complexity for 5 languages (Python, JavaScript, TypeScript, Java, C#)
-- HTML report generation
-- Initial architecture documentation
 
 ---
 
