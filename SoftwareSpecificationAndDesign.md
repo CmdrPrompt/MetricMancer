@@ -1,8 +1,8 @@
 # Requirements and Design
 
-**Document Version:** 3.0.0-draft (Updated: 2025-10-14)  
-**MetricMancer Version:** Unreleased (v3.0.0 candidate)  
-**Status:** Draft - Pending merge of Configuration Object Pattern refactoring
+**Document Version:** 3.0.0 (Updated: 2025-10-14)  
+**MetricMancer Version:** 3.0.0  
+**Status:** Release - Configuration Object Pattern refactoring
 
 ---
 
@@ -35,8 +35,8 @@ This document provides requirements and design specifications. For additional te
 
 This section tracks major changes to this **document** (not the software). For complete software release history, see **[CHANGELOG.md](CHANGELOG.md)**.
 
-#### Version 3.0.0-draft (2025-10-14) - Configuration Object Pattern
-**Status:** Draft - Pending PR #52 merge
+#### Version 3.0.0 (2025-10-14) - Configuration Object Pattern
+**Status:** Released
 
 **Major Document Changes:**
 - Added Related Documentation section (1.1) with links to ARCHITECTURE.md, MIGRATION_GUIDE.md, PlantUML, and Mermaid diagrams
