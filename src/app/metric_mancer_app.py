@@ -140,34 +140,49 @@ class MetricMancerApp:
         # Ensure report folder exists
         os.makedirs(self.report_folder, exist_ok=True)
 
-        # Generate one HTML report per repo_info
-        for idx, repo_info in enumerate(repo_infos):
-            output_file = self.output_file or "complexity_report.html"
-            # If multiple repos, append index to filename
-            if len(repo_infos) > 1:
+        # Loop over all output formats (multi-format support)
+        for output_format in self.app_config.output_formats:
+            debug_print(f"[DEBUG] Generating reports for format: {output_format}")
+
+            # Generate one report per repo_info for this format
+            for idx, repo_info in enumerate(repo_infos):
+                output_file = self.output_file or "complexity_report.html"
+
+                # Adjust extension based on format
                 base, ext = os.path.splitext(output_file)
-                output_file = f"{base}_{idx + 1}{ext}"
-                # Mark the current as selected
-                for link in report_links:
-                    link['selected'] = (link['href'] == output_file)
-                links_for_this = [link for link in report_links if link['href'] != output_file]
-            else:
-                links_for_this = report_links
+                if output_format == 'json':
+                    ext = '.json'
+                elif output_format == 'machine':
+                    ext = '.csv'
+                elif output_format in ['html', 'quick-wins']:
+                    ext = '.html'
+                # For summary/human formats, keep original or default to .txt
 
-            # Construct full output path with report folder
-            output_path = os.path.join(self.report_folder, output_file)
+                # If multiple repos, append index to filename
+                if len(repo_infos) > 1:
+                    output_file = f"{base}_{idx + 1}{ext}"
+                    # Mark the current as selected
+                    for link in report_links:
+                        link['selected'] = (link['href'] == output_file)
+                    links_for_this = [link for link in report_links if link['href'] != output_file]
+                else:
+                    output_file = f"{base}{ext}"
+                    links_for_this = report_links
 
-            # All generators now accept a single repo_info object, making the call uniform.
-            report = self.report_generator_cls(
-                repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
-            )
-            report.generate(
-                output_file=output_path,
-                level=self.level,
-                hierarchical=self.hierarchical,
-                output_format=self.output_format,
-                report_links=links_for_this
-            )
+                # Construct full output path with report folder
+                output_path = os.path.join(self.report_folder, output_file)
+
+                # All generators now accept a single repo_info object, making the call uniform.
+                report = self.report_generator_cls(
+                    repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
+                )
+                report.generate(
+                    output_file=output_path,
+                    level=self.level,
+                    hierarchical=self.hierarchical,
+                    output_format=output_format,
+                    report_links=links_for_this
+                )
         t_reportgen_end = time.perf_counter()
 
         debug_print(f"[TIME] Report generation took "
