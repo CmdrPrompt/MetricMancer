@@ -1,3 +1,11 @@
+# Ignorere all in .vscode-folder…
+.vscode/*
+# …but allow specific files
+!.vscode/settings.json
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
 __pycache__/
 *.pyc
 *.pyo
@@ -5,8 +13,6 @@ __pycache__/
 .qodo/testConfig.toml
 .DS_Store
 .env
-.vscode/*
-.vscode/settings.json
 *-log.txt
 terminal.log
 .backup
@@ -20,4 +26,15 @@ labs/*
 dummy.html
 *report*.json
 some_file.py
-.coverage
+issue--*.md
+issue-fix--*.md
+​​git_log.txt
+hotspots.txt
+review_strategy.txt
+coverage.xml
+review_*.txt
+
+# MetricMancer output directory
+output/*
+!output/.gitkeep
+metricmancer_output/

@@ -25,9 +25,9 @@ class TestMainSharedOwnership(unittest.TestCase):
         subprocess.run(['git', 'add', '.'], cwd=cls.test_dir, check=True)
         subprocess.run(['git', 'commit', '-m', 'Initial commit'], cwd=cls.test_dir, check=True)
 
-        # Run CLI against this directory
+        # Run CLI against this directory with detailed tree format (not summary)
         cls.result = subprocess.run([
-            sys.executable, "-m", "src.main", str(cls.test_dir)
+            sys.executable, "-m", "src.main", str(cls.test_dir), "--detailed"
         ], capture_output=True, text=True, cwd=Path(__file__).parent.parent)
         # Help-result
         cls.help_result = subprocess.run([

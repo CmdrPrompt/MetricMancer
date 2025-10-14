@@ -42,6 +42,13 @@ class TestMain:
         mock_args.level = 'file'
         mock_args.hierarchical = False
         mock_args.debug = False
+        mock_args.list_hotspots = False
+        mock_args.hotspot_threshold = 50
+        mock_args.hotspot_output = None
+        mock_args.review_strategy = False
+        mock_args.review_output = 'review_strategy.txt'
+        mock_args.review_branch_only = False
+        mock_args.review_base_branch = 'main'
         
         mock_parser = MagicMock()
         mock_parser.parse_args.return_value = mock_args
@@ -66,7 +73,15 @@ class TestMain:
                 report_generator_cls=None,  # HTML defaults to None
                 level='file',
                 hierarchical=False,
-                output_format='html'
+                output_format='html',
+                list_hotspots=False,
+                hotspot_threshold=50,
+                hotspot_output=None,
+                review_strategy=False,
+                review_output='review_strategy.txt',
+                review_branch_only=False,
+                review_base_branch='main',
+                report_folder=mock_args.report_folder
             )
             
             # Verify app.run() was called
@@ -142,6 +157,222 @@ class TestMain:
             mock_app_class.assert_called_once()
             args, kwargs = mock_app_class.call_args
             assert kwargs['report_generator_cls'] == mock_cli_gen
+
+    @patch('src.main.MetricMancerApp')
+    @patch('src.main.parse_args')
+    @patch('sys.argv', ['metricmancer', '/test/path', '--output-format', 'summary'])
+    def test_main_with_summary_format(self, mock_parse_args, mock_app_class):
+        """Test main() with summary (executive dashboard) output format."""
+        # Setup mock arguments
+        mock_args = MagicMock()
+        mock_args.directories = ['/test/path']
+        mock_args.output_format = 'summary'
+        mock_args.threshold_low = 10
+        mock_args.threshold_high = 20
+        mock_args.problem_file_threshold = 5
+        mock_args.level = 'file'
+        mock_args.hierarchical = False
+        mock_args.debug = False
+        
+        mock_parser = MagicMock()
+        mock_parser.parse_args.return_value = mock_args
+        mock_parse_args.return_value = mock_parser
+        
+        # Setup mock app
+        mock_app_instance = MagicMock()
+        mock_app_class.return_value = mock_app_instance
+        
+        # Mock CLIReportGenerator (summary uses CLI generator)
+        with patch('src.main.CLIReportGenerator') as mock_cli_gen:
+            
+            # Execute
+            main()
+            
+            # Verify correct report generator was selected
+            mock_app_class.assert_called_once()
+            args, kwargs = mock_app_class.call_args
+            assert kwargs['report_generator_cls'] == mock_cli_gen
+            assert kwargs['output_format'] == 'summary'
+
+    @patch('src.main.MetricMancerApp')
+    @patch('src.main.parse_args')
+    @patch('sys.argv', ['metricmancer', '/test/path', '--summary'])
+    def test_main_with_summary_flag(self, mock_parse_args, mock_app_class):
+        """Test main() with --summary flag (shorthand for summary format)."""
+        # Setup mock arguments
+        mock_args = MagicMock()
+        mock_args.directories = ['/test/path']
+        mock_args.output_format = 'summary'  # --summary flag sets this
+        mock_args.threshold_low = 10
+        mock_args.threshold_high = 20
+        mock_args.problem_file_threshold = 5
+        mock_args.level = 'file'
+        mock_args.hierarchical = False
+        mock_args.debug = False
+        
+        mock_parser = MagicMock()
+        mock_parser.parse_args.return_value = mock_args
+        mock_parse_args.return_value = mock_parser
+        
+        # Setup mock app
+        mock_app_instance = MagicMock()
+        mock_app_class.return_value = mock_app_instance
+        
+        # Mock CLIReportGenerator
+        with patch('src.main.CLIReportGenerator') as mock_cli_gen:
+            
+            # Execute
+            main()
+            
+            # Verify correct report generator and format
+            mock_app_class.assert_called_once()
+            args, kwargs = mock_app_class.call_args
+            assert kwargs['report_generator_cls'] == mock_cli_gen
+            assert kwargs['output_format'] == 'summary'
+
+    @patch('src.main.MetricMancerApp')
+    @patch('src.main.parse_args')
+    @patch('sys.argv', ['metricmancer', '/test/path', '--output-format', 'quick-wins'])
+    def test_main_with_quick_wins_format(self, mock_parse_args, mock_app_class):
+        """Test main() with quick-wins output format."""
+        # Setup mock arguments
+        mock_args = MagicMock()
+        mock_args.directories = ['/test/path']
+        mock_args.output_format = 'quick-wins'
+        mock_args.threshold_low = 10
+        mock_args.threshold_high = 20
+        mock_args.problem_file_threshold = 5
+        mock_args.level = 'file'
+        mock_args.hierarchical = False
+        mock_args.debug = False
+        
+        mock_parser = MagicMock()
+        mock_parser.parse_args.return_value = mock_args
+        mock_parse_args.return_value = mock_parser
+        
+        # Setup mock app
+        mock_app_instance = MagicMock()
+        mock_app_class.return_value = mock_app_instance
+        
+        # Mock CLIReportGenerator (quick-wins uses CLI generator)
+        with patch('src.main.CLIReportGenerator') as mock_cli_gen:
+            
+            # Execute
+            main()
+            
+            # Verify correct report generator was selected
+            mock_app_class.assert_called_once()
+            args, kwargs = mock_app_class.call_args
+            assert kwargs['report_generator_cls'] == mock_cli_gen
+            assert kwargs['output_format'] == 'quick-wins'
+
+    @patch('src.main.MetricMancerApp')
+    @patch('src.main.parse_args')
+    @patch('sys.argv', ['metricmancer', '/test/path', '--quick-wins'])
+    def test_main_with_quick_wins_flag(self, mock_parse_args, mock_app_class):
+        """Test main() with --quick-wins flag (shorthand for quick-wins format)."""
+        # Setup mock arguments
+        mock_args = MagicMock()
+        mock_args.directories = ['/test/path']
+        mock_args.output_format = 'quick-wins'  # --quick-wins flag sets this
+        mock_args.threshold_low = 10
+        mock_args.threshold_high = 20
+        mock_args.problem_file_threshold = 5
+        mock_args.level = 'file'
+        mock_args.hierarchical = False
+        mock_args.debug = False
+        
+        mock_parser = MagicMock()
+        mock_parser.parse_args.return_value = mock_args
+        mock_parse_args.return_value = mock_parser
+        
+        # Setup mock app
+        mock_app_instance = MagicMock()
+        mock_app_class.return_value = mock_app_instance
+        
+        # Mock CLIReportGenerator
+        with patch('src.main.CLIReportGenerator') as mock_cli_gen:
+            
+            # Execute
+            main()
+            
+            # Verify correct report generator and format
+            mock_app_class.assert_called_once()
+            args, kwargs = mock_app_class.call_args
+            assert kwargs['report_generator_cls'] == mock_cli_gen
+            assert kwargs['output_format'] == 'quick-wins'
+
+    @patch('src.main.MetricMancerApp')
+    @patch('src.main.parse_args')
+    @patch('sys.argv', ['metricmancer', '/test/path', '--output-format', 'human-tree'])
+    def test_main_with_human_tree_format(self, mock_parse_args, mock_app_class):
+        """Test main() with human-tree output format (alias for detailed tree view)."""
+        # Setup mock arguments
+        mock_args = MagicMock()
+        mock_args.directories = ['/test/path']
+        mock_args.output_format = 'human-tree'
+        mock_args.threshold_low = 10
+        mock_args.threshold_high = 20
+        mock_args.problem_file_threshold = 5
+        mock_args.level = 'file'
+        mock_args.hierarchical = False
+        mock_args.debug = False
+        
+        mock_parser = MagicMock()
+        mock_parser.parse_args.return_value = mock_args
+        mock_parse_args.return_value = mock_parser
+        
+        # Setup mock app
+        mock_app_instance = MagicMock()
+        mock_app_class.return_value = mock_app_instance
+        
+        # Mock CLIReportGenerator
+        with patch('src.main.CLIReportGenerator') as mock_cli_gen:
+            
+            # Execute
+            main()
+            
+            # Verify correct report generator was selected
+            mock_app_class.assert_called_once()
+            args, kwargs = mock_app_class.call_args
+            assert kwargs['report_generator_cls'] == mock_cli_gen
+            assert kwargs['output_format'] == 'human-tree'
+
+    @patch('src.main.MetricMancerApp')
+    @patch('src.main.parse_args')
+    @patch('sys.argv', ['metricmancer', '/test/path', '--detailed'])
+    def test_main_with_detailed_flag(self, mock_parse_args, mock_app_class):
+        """Test main() with --detailed flag (shorthand for detailed tree view)."""
+        # Setup mock arguments
+        mock_args = MagicMock()
+        mock_args.directories = ['/test/path']
+        mock_args.output_format = 'human-tree'  # --detailed flag sets this
+        mock_args.threshold_low = 10
+        mock_args.threshold_high = 20
+        mock_args.problem_file_threshold = 5
+        mock_args.level = 'file'
+        mock_args.hierarchical = False
+        mock_args.debug = False
+        
+        mock_parser = MagicMock()
+        mock_parser.parse_args.return_value = mock_args
+        mock_parse_args.return_value = mock_parser
+        
+        # Setup mock app
+        mock_app_instance = MagicMock()
+        mock_app_class.return_value = mock_app_instance
+        
+        # Mock CLIReportGenerator
+        with patch('src.main.CLIReportGenerator') as mock_cli_gen:
+            
+            # Execute
+            main()
+            
+            # Verify correct report generator and format
+            mock_app_class.assert_called_once()
+            args, kwargs = mock_app_class.call_args
+            assert kwargs['report_generator_cls'] == mock_cli_gen
+            assert kwargs['output_format'] == 'human-tree'
 
     @patch('src.main.print_usage')
     @patch('sys.argv', ['metricmancer'])

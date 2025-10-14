@@ -1,31 +1,10 @@
-### 2.1. KPI Extension and Implementation Status
-
-[ToC](#table-of-contents)
-
-The following table summarizes key KPIs in MetricMancer and provides extensibility notes for each:
-
-| KPI Name                | Description                                                                 | Extensibility Notes                                  |
-|-------------------------|-----------------------------------------------------------------------------|------------------------------------------------------|
-| Cyclomatic Complexity   | Logical complexity of a function/method (McCabe)                             | New languages can be added via parser modules         |
-| Code Churn              | Number of commits affecting a file/function                                  | Extendable to function-level churn with AST support   |
-| Hotspot Score           | Composite: complexity × churn                                                | Thresholds/configuration can be adjusted              |
-| Temporal Coupling       | How often files change together                                              | Requires commit history analysis                      |
-| Change Coupling         | How often functions change together                                          | Requires fine-grained commit analysis                 |
-| Author Churn/Knowledge Map | Number of unique authors per file/module                                  | Needs author extraction from VCS                      |
-| Code Ownership          | Proportion of code by each developer                                         | Needs author and LOC analysis                         |
-| Defect Density          | Number of bugs/defects per file/module                                       | Needs integration with issue tracker                  |
-| Hotspot Evolution       | How hotspots change over time                                                | Requires historical KPI tracking                      |
-| Complexity Trend        | Complexity increase/decrease over time                                       | Requires historical analysis                          |
-| Code Age                | Age of code in file/module                                                   | Needs commit date analysis                            |
-| Test Coverage           | Proportion of code covered by tests                                          | Needs integration with test tools                     |
-| Logical Coupling        | Files/modules that change together without direct dependency                 | Requires commit and dependency analysis               |
 # Requirements and Design
 
 ## 1. Introduction
 
 [ToC](#table-of-contents)
 
-MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots.
+MetricMancer is a software analytics tool designed to provide actionable insights into code quality, maintainability, and technical risk. Inspired by the principles and techniques from "Your Code as a Crime Scene" by Adam Tornhill, the project analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, hotspots and more.
 
 The tool supports multi-language analysis and can generate reports in several formats, including CLI, HTML, and JSON. JSON reports are designed for integration with OpenSearch and dashboards. MetricMancer is built for extensibility, making it easy to add new metrics or adapt the tool to different codebases. The goal is to help teams identify refactoring candidates, monitor code health trends, and prioritize technical debt reduction—using real data from version control history and static analysis.
 
@@ -37,21 +16,21 @@ The tool supports multi-language analysis and can generate reports in several fo
   - [2. Glossary](#2-glossary)
     - [2.1. KPI Extension and Implementation Status](#21-kpi-extension-and-implementation-status)
   - [3. System Overview](#3-system-overview)
-- [3.1 System Flow and Architecture Diagrams](#31-system-flow-and-architecture-diagrams)
-    - [3.1.1 System Overview](#311-system-overview)
-    - [3.1.2 Application Flow](#312-application-flow)
-    - [3.1.3 Analysis Flow](#313-analysis-flow)
-    - [3.1.4 Scanner and Data Collection](#314-scanner-and-data-collection)
-    - [3.1.5 Report Generation](#315-report-generation)
-      - [3.1.5.1 Report Generation Overview](#3151-report-generation-overview)
-      - [3.1.5.2 HTML Report](#3152-html-report)
-      - [3.1.5.3 CLI Report](#3153-cli-report)
-      - [3.1.5.4 JSON Report](#3154-json-report)
-    - [3.1.6 KPI Modules](#316-kpi-modules)
-    - [3.1.7 Configuration and CLI Flow](#317-configuration-and-cli-flow)
-    - [3.1.8 Error Handling](#318-error-handling)
-    - [3.2 Data Model](#32-data-model)
-      - [3.2.1 UML Diagram](#321-uml-diagram)
+    - [3.1 System Flow and Architecture Diagrams](#31-system-flow-and-architecture-diagrams)
+      - [3.1.1 System Overview](#311-system-overview)
+      - [3.1.2 Application Flow](#312-application-flow)
+      - [3.1.3 Analysis Flow](#313-analysis-flow)
+      - [3.1.4 Scanner and Data Collection](#314-scanner-and-data-collection)
+      - [3.1.5 Report Generation](#315-report-generation)
+        - [3.1.5.1 Report Generation Overview](#3151-report-generation-overview)
+        - [3.1.5.2 HTML Report](#3152-html-report)
+        - [3.1.5.3 CLI Report](#3153-cli-report)
+        - [3.1.5.4 JSON Report](#3154-json-report)
+      - [3.1.6 KPI Modules](#316-kpi-modules)
+      - [3.1.7 Configuration and CLI Flow](#317-configuration-and-cli-flow)
+      - [3.1.8 Error Handling](#318-error-handling)
+      - [3.2 Data Model](#32-data-model)
+        - [3.2.1 UML Diagram](#321-uml-diagram)
   - [4. Detailed Requirements](#4-detailed-requirements)
     - [4.1 User Stories](#41-user-stories)
       - [4.1.1 Persona 1: Alice – The Senior Developer](#411-persona-1-alice--the-senior-developer)
@@ -66,6 +45,32 @@ The tool supports multi-language analysis and can generate reports in several fo
       - [4.2.2 Core Non-Functional Requirements](#422-core-non-functional-requirements)
     - [4.3 Mapping: Requirements to User Stories](#43-mapping-requirements-to-user-stories)
     - [4.4 Mapping: Requirements to test cases](#44-mapping-requirements-to-test-cases)
+    - [4.3 Mapping: Requirements to User Stories](#43-mapping-requirements-to-user-stories)
+    - [4.4 Mapping: Requirements to test cases](#44-mapping-requirements-to-test-cases)
+  - [5. Analysis Framework: Interpreting Metrics for Actionable Insights](#5-analysis-framework-interpreting-metrics-for-actionable-insights)
+    - [5.0 Metric Thresholds and Classifications](#50-metric-thresholds-and-classifications)
+      - [5.0.1 Cyclomatic Complexity Thresholds](#501-cyclomatic-complexity-thresholds)
+      - [5.0.2 Code Churn Thresholds](#502-code-churn-thresholds)
+      - [5.0.3 Hotspot Score Calculation](#503-hotspot-score-calculation)
+      - [5.0.4 Ownership Thresholds](#504-ownership-thresholds)
+      - [5.0.5 Contextual Adjustments](#505-contextual-adjustments)
+    - [5.1 Hotspot Analysis: Prioritizing Improvement Efforts](#51-hotspot-analysis-prioritizing-improvement-efforts)
+    - [5.2 Ownership Analysis: Knowledge Management and Risk Assessment](#52-ownership-analysis-knowledge-management-and-risk-assessment)
+    - [5.3 Testing and Quality Assurance Strategy](#53-testing-and-quality-assurance-strategy)
+      - [5.3.1 Test Prioritization Matrix](#531-test-prioritization-matrix)
+      - [5.3.2 Code Review Strategy](#532-code-review-strategy)
+        - [5.3.2.1 Pre-Review KPI Assessment](#5321-pre-review-kpi-assessment)
+        - [5.3.2.2 Review Focus Areas by KPI Profile](#5322-review-focus-areas-by-kpi-profile)
+        - [5.3.2.3 Review Comments Template by Risk Level](#5323-review-comments-template-by-risk-level)
+        - [5.3.2.4 Reviewer Assignment Strategy](#5324-reviewer-assignment-strategy)
+        - [5.3.2.5 Post-Review KPI Monitoring](#5325-post-review-kpi-monitoring)
+    - [5.4 Organizational Insights and Conway's Law](#54-organizational-insights-and-conways-law)
+      - [5.4.1 Team Structure Analysis](#541-team-structure-analysis)
+      - [5.4.2 Recommended Organizational Actions](#542-recommended-organizational-actions)
+    - [5.5 Continuous Improvement Process](#55-continuous-improvement-process)
+      - [5.5.1 Regular Health Checks](#551-regular-health-checks)
+      - [5.5.2 Success Metrics](#552-success-metrics)
+      - [5.5.3 Integration with Development Workflow](#553-integration-with-development-workflow)
 
 ## 2. Glossary
 
@@ -108,7 +113,7 @@ A measurable indicator used to evaluate code quality, maintainability, and risk.
 A measure of the logical complexity of a function/method, based on the number of independent paths through the code. High complexity indicates increased maintenance cost and testability risk. (Crime Scene: Chapter 2)
 
 **Code Churn:**
-The number of changes (commits) that have affected a file or function over time. High churn can indicate unstable or risky code. (Crime Scene: Chapter 3)
+The frequency of changes (commits) that have affected a file or function over a specific time period (typically monthly). High churn indicates unstable or risky code. Should be measured as commits per time unit, not total historical commits. (Crime Scene: Chapter 3)
 
 **Hotspot:**
 A code section (file or function) that combines high complexity and high churn, making it a prioritized candidate for refactoring. (Crime Scene: Chapter 4)
@@ -136,6 +141,28 @@ A visual overview of KPI results, often with charts and color coding to quickly 
 
 **Crime Scene Principles:**
 The methodology and analysis models from the book "Your Code as a Crime Scene" by Adam Tornhill, which form the basis for the definitions and interpretations of KPIs in this project.
+
+### 2.1. KPI Extension and Implementation Status
+
+[ToC](#table-of-contents)
+
+The following table summarizes key KPIs in MetricMancer and provides extensibility notes for each:
+
+| KPI Name                | Description                                                                 | Extensibility Notes                                  |
+|-------------------------|-----------------------------------------------------------------------------|------------------------------------------------------|
+| Cyclomatic Complexity   | Logical complexity of a function/method (McCabe)                             | New languages can be added via parser modules         |
+| Code Churn              | Frequency of commits affecting a file/function over time period (commits/month) | Time-based measurement needs implementation; current version counts total commits |
+| Hotspot Score           | Composite: complexity × churn                                                | Thresholds/configuration can be adjusted              |
+| Temporal Coupling       | How often files change together                                              | Requires commit history analysis                      |
+| Change Coupling         | How often functions change together                                          | Requires fine-grained commit analysis                 |
+| Author Churn/Knowledge Map | Number of unique authors per file/module                                  | Needs author extraction from VCS                      |
+| Code Ownership          | Proportion of code by each developer                                         | Needs author and LOC analysis                         |
+| Defect Density          | Number of bugs/defects per file/module                                       | Needs integration with issue tracker                  |
+| Hotspot Evolution       | How hotspots change over time                                                | Requires historical KPI tracking                      |
+| Complexity Trend        | Complexity increase/decrease over time                                       | Requires historical analysis                          |
+| Code Age                | Age of code in file/module                                                   | Needs commit date analysis                            |
+| Test Coverage           | Proportion of code covered by tests                                          | Needs integration with test tools                     |
+| Logical Coupling        | Files/modules that change together without direct dependency                 | Requires commit and dependency analysis               |
 
 
 To add a new KPI, implement a new KPI calculator module and register it in the configuration. The system is designed for easy extension with minimal coupling between components.
@@ -968,10 +995,11 @@ MetricMancer is intended for software development teams, technical leads, archit
 | Req-ID | Group                    | Name                              | Description                                                                 | Rationale (Why?) | Implementation Status |
 |--------|--------------------------|-----------------------------------|-----------------------------------------------------------------------------|------------------|----------------------|
 | FR1    | Core Analysis            | Calculate complexity              | The tool shall calculate cyclomatic complexity for all functions/methods.   | Identify complex code and refactoring needs | Implemented |
-| FR2    | Core Analysis            | Calculate churn                   | The tool shall calculate code churn for all files.                          | Find unstable/risky code | Implemented |
+| FR2    | Core Analysis            | Calculate churn                   | The tool shall calculate code churn as commits per time period (default: last 3 months) for all files, following "Your Code as a Crime Scene" methodology. | Find unstable/risky code patterns | Partial - needs time-based implementation |
+| FR2.1  | Core Analysis            | Configurable churn time period    | The tool shall allow configuration of the time period for churn analysis (e.g., 3, 6, or 12 months). | Adapt analysis to different project contexts | Planned |
 | FR3    | Core Analysis            | Identify hotspots                 | The tool shall identify hotspots (high churn × high complexity).            | Focus improvement on risk zones | Implemented |
 | FR4    | Core Analysis            | Calculate code ownership          | The tool shall calculate code ownership per file.                           | Identify knowledge silos and risk | Implemented |
-| FR5    | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | Planned/Partial |
+| FR5    | Core Analysis            | Calculate shared ownership        | The tool shall calculate shared ownership per file and function, and aggregate shared ownership up through directory/package to repository level. | Identify collaboration, knowledge spread, and risk | Implemented |
 | FR6    | Core Analysis            | Calculate logical coupling        | The tool shall calculate logical coupling between files.                    | Find hidden dependencies | Planned |
 | FR7    | Core Analysis            | Calculate temporal coupling       | The tool shall calculate temporal coupling between files.                   | Find hidden dependencies | Planned |
 | FR8    | Core Analysis            | Quality trends                    | The tool shall track and visualize code quality over time.                  | Follow up on improvement work | Planned |
@@ -1016,24 +1044,378 @@ MetricMancer is intended for software development teams, technical leads, archit
 | Requirement | Test Case(s)                                                                                                                        | Status       |
 |-------------|-------------------------------------------------------------------------------------------------------------------------------------|--------------|
 | FR1         | tests/app/test_complexity_analyzer.py:test_calculate_for_file_success, test_analyze_functions_success, test_calculate_for_file_import_error, test_calculate_for_file_no_parser, test_analyze_functions_attribute_error, test_analyze_functions_no_parser, tests/app/test_complexity_analyzer_edge.py:test_calculate_for_file_empty_config, test_calculate_for_file_import_error, test_calculate_for_file_missing_methods, test_analyze_functions_empty_config, test_analyze_functions_attribute_error, test_analyze_functions_missing_method | Implemented  |
-| FR2         | tests/app/test_churn_detection.py:test_churn_detected, tests/app/test_churn_kpi_path_mismatch.py:test_churn_lookup_with_absolute_path, test_churn_lookup_with_relative_path_should_match_absolute, tests/app/test_code_churn_analyzer.py:test_analyze_churn_data, test_analyze_handles_exception, test_init_repo_scan_pairs, tests/app/test_code_churn_analyzer_edge.py:test_analyze_handles_pydriller_exception, test_analyze_no_churn_data, test_empty_repo_scan_pairs, test_find_git_repo_root_exception, test_find_git_repo_root_none | Implemented  |
-| FR3         | tests/kpis/test_hotspot_kpi.py:test_hotspot_kpi, tests/kpis/test_hotspot_kpi_edge.py:test_calculate_with_negative, test_calculate_with_none, test_calculate_with_only_churn, test_calculate_with_only_complexity, test_calculate_with_zero | Implemented  |
+| FR2         | tests/app/test_churn_detection.py:test_churn_detected, tests/app/test_churn_kpi_path_mismatch.py:test_churn_lookup_with_absolute_path, test_churn_lookup_with_relative_path_should_match_absolute, tests/app/test_code_churn_analyzer.py:test_analyze_churn_data, test_analyze_handles_exception, test_init_repo_scan_pairs, tests/app/test_code_churn_analyzer_edge.py:test_analyze_handles_pydriller_exception, test_analyze_no_churn_data, test_empty_repo_scan_pairs, test_find_git_repo_root_exception, test_find_git_repo_root_none | Partial - tests total commits, needs time-based tests |
+| FR2.1       | Not yet implemented - needs tests for configurable time periods | Planned      |
+| FR3         | tests/kpis/test_kpi_classes.py:test_hotspot_kpi, tests/app/test_hotspot_kpi_edge.py:TestHotspotKPIEdgeCases, tests/app/test_analyzer.py:test_hotspot_kpi_includes_calculation_values, test_zero_functions_results_in_zero_complexity_and_hotspot | Implemented  |
 | FR4         | tests/kpis/test_code_ownership.py:test_calculate_ownership_basic, test_calculate_ownership_error, tests/kpis/test_code_ownership_kpi.py:test_file_does_not_exist, test_file_not_tracked_by_git, test_file_tracked_and_blame_works, test_blame_fails | Implemented  |
 | FR5         | tests/kpis/test_Shared_Ownership_KPI.py:test_shared_ownership_basic, test_shared_ownership_all_above_threshold, test_shared_ownership_all_below_threshold, test_shared_ownership_na, test_shared_ownership_with_precomputed_data, tests/kpis/test_shared_ownership_aggregator.py:test_aggregator_basic_statistics, test_aggregator_distribution, test_aggregator_empty_files, test_aggregator_handles_errors, test_aggregator_initialization, test_aggregator_invalid_kpi_value, test_aggregator_missing_shared_ownership_kpi, test_aggregator_most_shared_file, test_aggregator_percentages, test_aggregator_realistic_scenario, test_convenience_functions, test_shared_ownership_stats_dataclass, test_shared_ownership_stats_properties | Implemented  |
-| FR6         | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format, test_generate_machine_calls_cli_csv_report_format, test_generate_unsupported_format_raises, test_init_sets_attributes, tests/report/test_report_writer.py:test_write_html_creates_file_and_writes_content | Implemented  |
-| FR7         | tests/app/test_analyzer.py:test_analyze_structure_and_kpis, test_analyze_empty_list, test_builds_nested_scandir_hierarchy, test_hotspot_kpi_includes_calculation_values, test_skips_unsupported_extension_files, test_unreadable_file_is_skipped_and_warned, test_zero_functions_results_in_zero_complexity_and_hotspot | Implemented  |
-| FR8         | tests/app/test_metric_mancer_app.py:test_init_sets_attributes, test_run_multiple_repos, test_run_single_repo, tests/app/test_metric_mancer_app_edge.py:test_run_with_empty_directories, test_run_with_none_report_generator_cls, test_run_with_report_generate_exception | Implemented  |
-| FR9         | tests/app/test_analyzer.py:test_analyze_structure_and_kpis, test_analyze_empty_list, test_builds_nested_scandir_hierarchy | Implemented  |
-| FR10        | tests/app/test_scanner.py:test_scan_finds_supported_files, test_scan_multiple_directories, test_scan_ignores_hidden_files_and_dirs, test_scan_ignores_hidden_root_directory, test_scan_handles_non_existent_directory, test_scan_returns_empty_list_for_no_supported_files | Implemented  |
-| FR11        | tests/app/test_tree_printer.py:test_build_tree_single_file, test_build_tree_nested, test_sort_paths, test_split_files_folders, test_sort_items, test_print_tree_output | Implemented  |
-| FR12        | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format, test_generate_machine_calls_cli_csv_report_format, test_generate_unsupported_format_raises, test_init_sets_attributes | Implemented  |
-| FR13        | tests/app/test_metric_mancer_app.py:test_run_multiple_repos, test_run_single_repo, tests/app/test_metric_mancer_app_edge.py:test_run_with_empty_directories, test_run_with_none_report_generator_cls, test_run_with_report_generate_exception | Implemented  |
+| FR6         | Not yet implemented | Planned      |
+| FR7         | Not yet implemented | Planned      |
+| FR8         | Not yet implemented | Planned      |
+| FR9         | tests/report/test_cli_report_generator.py:test_generate_human_calls_cli_report_format, test_generate_machine_calls_cli_csv_report_format, test_generate_unsupported_format_raises, test_init_sets_attributes, tests/report/test_report_writer.py:test_write_html_creates_file_and_writes_content | Implemented  |
+| FR10        | tests/report/test_report_generator.py:test_html_report_generation, tests/report/test_html_report_generator.py (HTML visualization tests) | Implemented  |
+| FR11        | Not yet implemented | Planned      |
+| FR12        | Not yet implemented | Planned      |
+| FR13        | tests/app/test_metric_mancer_app.py:test_init_sets_attributes, test_run_multiple_repos, test_run_single_repo, tests/app/test_metric_mancer_app_edge.py:test_run_with_empty_directories, test_run_with_none_report_generator_cls, test_run_with_report_generate_exception | Implemented  |
 | FR14        |  | Planned |
 | FR15        |  | Planned |
 | FR16        |  | Planned |
-| FR17        | tests/app/test_analyzer.py:test_analyze_structure_and_kpis, test_analyze_empty_list, test_builds_nested_scandir_hierarchy | Implemented  |
-| FR18        |  | Planned |
-| FR19        | tests/app/test_analyzer_shared_ownership.py:test_analyzer_includes_shared_ownership_kpi, test_shared_ownership_exception_handling | Planned      |
+| FR17        | tests/app/test_scanner.py:test_scan_finds_supported_files, test_scan_multiple_directories, tests/app/test_analyzer.py:test_analyze_structure_and_kpis (multi-language support) | Implemented  |
+| FR18        | Not yet implemented | Planned      |
+| FR19        | tests/app/test_analyzer_shared_ownership.py:test_analyzer_includes_shared_ownership_kpi, test_shared_ownership_exception_handling | Implemented  |
 
+## Implementation Summary
 
+Based on the current state of the codebase, the following core KPI measurements have been successfully implemented:
 
+### ✅ Implemented KPIs
+- **Complexity Analysis (FR1)**: Full cyclomatic complexity calculation for Python, Java, and other supported languages
+- **Code Churn Analysis (FR2)**: Git-based file change analysis ⚠️ *Currently measures total commits, needs time-based implementation*
+- **Hotspot Detection (FR3)**: Composite metric combining complexity and churn
+- **Code Ownership (FR4)**: Git blame-based ownership calculation per file
+- **Shared Code Ownership (FR5)**: Advanced ownership metrics with aggregation capabilities
+
+### 🔄 Partially Implemented / Needs Fixes
+- **Time-based Churn (FR2.1)**: Current implementation counts total historical commits instead of commits per time period as specified in "Your Code as a Crime Scene"
+
+### ✅ Implemented Reporting & Infrastructure
+- **Multi-format Reports (FR9)**: CLI, HTML, and JSON output formats
+- **HTML Visualizations (FR10)**: Interactive charts and graphs for KPI data
+- **CI/CD Integration (FR13)**: Command-line interface suitable for automation
+- **Multi-language Support (FR17)**: Extensible parser architecture
+
+### 🔄 Partially Implemented / Needs Fixes
+- **Time-based Churn (FR2.1)**: Current implementation counts total historical commits instead of commits per time period as specified in "Your Code as a Crime Scene"
+
+### 🔄 Planned/Future KPIs
+- **Configurable Churn Time Period (FR2.1)**: Allow configuration of analysis time window (3, 6, 12 months)
+- **Logical Coupling (FR6)**: Files that change together analysis
+- **Temporal Coupling (FR7)**: Time-based change correlation analysis  
+- **Quality Trends (FR8)**: Historical KPI tracking and visualization
+- **Management Dashboards (FR11)**: Executive summary reports
+- **External Integrations (FR12)**: Dashboard export capabilities
+- **Issue Tracker Integration (FR14)**: Link code quality to defects
+- **Threshold Alerts (FR15)**: Early warning system
+- **Quality Gates (FR16)**: Automated quality enforcement
+
+## 5. Analysis Framework: Interpreting Metrics for Actionable Insights
+
+[ToC](#table-of-contents)
+
+This chapter describes how to interpret and act upon the implemented metrics based on the methodology from "Your Code as a Crime Scene" by Adam Tornhill. The goal is to transform raw metrics into actionable insights that drive code quality improvements and risk mitigation.
+
+### 5.0 Metric Thresholds and Classifications
+
+[ToC](#table-of-contents)
+
+**Understanding what constitutes "high" vs "low" values** is crucial for effective interpretation. These thresholds are based on research from "Your Code as a Crime Scene", industry studies, and empirical observations from large codebases.
+
+#### 5.0.1 Cyclomatic Complexity Thresholds
+
+| Complexity Range | Classification | Risk Level | Recommended Action |
+|------------------|----------------|------------|-------------------|
+| **1-5** | Low | ✅ Low | Maintain current state |
+| **6-10** | Moderate | ⚠️ Medium | Monitor and consider simplification |
+| **11-15** | High | 🔶 High | Prioritize for refactoring |
+| **16+** | Very High | 🔴 Critical | Immediate attention required |
+
+**Rationale (McCabe's Original Research)**:
+- **1-5**: Simple procedures, low risk
+- **6-10**: Well-structured and stable code
+- **11-15**: More complex, moderate risk
+- **16+**: Untestable code, high risk of defects
+
+**Language-Specific Considerations**:
+- **Java/C#**: Standard thresholds apply
+- **Python**: Consider +2 due to language expressiveness
+- **JavaScript**: Consider +3 due to callback patterns
+- **Functional languages**: May require adjusted thresholds
+
+#### 5.0.2 Code Churn Thresholds
+
+**Definition (per "Your Code as a Crime Scene")**: Code churn measures how frequently a piece of code changes **over a specific time period**, typically measured as commits per month.
+
+| Churn Range (commits/month) | Classification | Risk Level | Recommended Action |
+|----------------------------|----------------|------------|-------------------|
+| **0-2** | Stable | ✅ Low | Document and preserve |
+| **3-5** | Active | ⚠️ Medium | Normal development pattern |
+| **6-10** | High Activity | 🔶 High | Monitor for instability |
+| **11+** | Very High | 🔴 Critical | Investigate root causes |
+
+**⚠️ IMPLEMENTATION GAP**: 
+Current MetricMancer implementation measures **total historical commits** rather than **time-based churn rate**. This deviates from "Your Code as a Crime Scene" methodology and should be corrected.
+
+**Time Period Considerations**:
+- **Monthly**: Standard measurement period
+- **Weekly**: Multiply thresholds by 0.25
+- **Quarterly**: Multiply thresholds by 3
+- **Per release**: Adjust based on release frequency
+
+**Context Factors**:
+- **New features**: Higher churn expected initially
+- **Bug fixes**: May indicate underlying design issues
+- **Refactoring**: Temporary spike, should stabilize
+- **Maintenance**: Should show declining churn over time
+
+#### 5.0.3 Hotspot Score Calculation
+
+**Formula**: `Hotspot Score = Complexity × Churn`
+
+| Hotspot Score | Classification | Priority Level |
+|---------------|----------------|----------------|
+| **0-25** | Low Risk | Monitor |
+| **26-75** | Medium Risk | Plan improvements |
+| **76-150** | High Risk | Prioritize refactoring |
+| **151+** | Critical Risk | Immediate action |
+
+**Example Scenarios**:
+- File with complexity 15 and churn 8 = Score 120 (High Risk)
+- File with complexity 25 and churn 12 = Score 300 (Critical Risk)
+- File with complexity 8 and churn 3 = Score 24 (Low Risk)
+
+#### 5.0.4 Ownership Thresholds
+
+| Ownership Pattern | Primary Owner % | Shared Ownership % | Risk Assessment |
+|-------------------|-----------------|-------------------|-----------------|
+| **Strong Ownership** | >70% | <30% | Low knowledge risk, high bus factor risk |
+| **Balanced Ownership** | 40-70% | 30-60% | Optimal collaboration pattern |
+| **Shared Ownership** | <40% | >60% | High coordination overhead |
+| **Fragmented Ownership** | <30% | >70% | High maintenance risk |
+
+**Ownership Calculation Notes**:
+- Based on lines of code contribution over analysis period
+- Exclude automated commits (formatting, dependency updates)
+- Weight recent contributions higher than historical ones
+- Consider file age when evaluating ownership patterns
+
+#### 5.0.5 Contextual Adjustments
+
+**Project-Specific Factors**:
+- **Team size**: Larger teams may have higher shared ownership thresholds
+- **Domain complexity**: Financial/medical software may warrant lower complexity thresholds
+- **Development phase**: Startup vs. maintenance phase affects acceptable churn levels
+- **Release frequency**: Continuous deployment vs. quarterly releases affects patterns
+
+**Industry Benchmarks** (from Tornhill's research):
+- **Financial services**: Conservative thresholds (complexity <10, churn <5)
+- **Web applications**: Standard thresholds
+- **Game development**: Higher complexity tolerance (complexity <20)
+- **Embedded systems**: Very conservative (complexity <8, churn <3)
+
+### 5.1 Hotspot Analysis: Prioritizing Improvement Efforts
+
+**Principle**: High complexity + High churn = High risk
+
+**What the metrics tell us:**
+- **Complexity** reveals intrinsic difficulty of understanding and modifying code
+- **Churn** indicates frequency of change and instability  
+- **Hotspot Score** (complexity × churn) identifies the most dangerous areas
+
+**Actionable recommendations:**
+
+| Hotspot Category | Complexity | Churn | Action Priority | Recommended Actions |
+|------------------|------------|-------|-----------------|-------------------|
+| **Critical Hotspots** | High (>15) | High (>10) | **Immediate** | • Refactor into smaller functions<br>• Add comprehensive unit tests<br>• Consider architectural redesign<br>• Assign senior developer ownership |
+| **Emerging Hotspots** | Medium (5-15) | High (>10) | **High** | • Monitor closely<br>• Preventive refactoring<br>• Strengthen testing<br>• Code reviews by experienced team members |
+| **Stable Complexity** | High (>15) | Low (<5) | **Low** | • Document thoroughly<br>• Add integration tests<br>• Consider if refactoring adds value |
+| **Active Simple Code** | Low (<5) | High (>10) | **Monitor** | • Good pattern - simple code being actively developed<br>• Ensure it stays simple |
+
+### 5.2 Ownership Analysis: Knowledge Management and Risk Assessment
+
+**Principle**: Knowledge distribution affects maintainability and bus factor
+
+**What the metrics tell us:**
+- **Code Ownership** reveals concentration of knowledge
+- **Shared Ownership** indicates collaboration patterns and knowledge spread
+- Combined with complexity, it shows knowledge risk
+
+**Actionable recommendations:**
+
+| Ownership Pattern | Risk Level | Recommended Actions |
+|-------------------|------------|-------------------|
+| **Single Owner + High Complexity** | **Critical** | • Knowledge transfer sessions<br>• Pair programming<br>• Documentation requirements<br>• Cross-training initiatives |
+| **Low Shared Ownership + High Churn** | **High** | • Enforce code review requirements<br>• Establish coding standards<br>• Regular architecture discussions |
+| **High Shared Ownership + High Complexity** | **Medium** | • Simplification efforts<br>• Clear module boundaries<br>• API documentation |
+| **Balanced Ownership + Low Complexity** | **Low** | • Maintain current practices<br>• Good collaboration model |
+
+### 5.3 Testing and Quality Assurance Strategy
+
+**Based on risk profiles from combined metrics:**
+
+#### 5.3.1 Test Prioritization Matrix
+
+| Code Category | Testing Strategy |
+|---------------|------------------|
+| **Hotspots (High Complexity + High Churn)** | • Minimum 90% test coverage<br>• Property-based testing<br>• Mutation testing<br>• Performance benchmarks |
+| **High Shared Ownership Areas** | • Strong contract testing<br>• Integration test suites<br>• End-to-end validation<br>• Regression test automation |
+| **Single Owner + High Complexity** | • Comprehensive documentation tests<br>• Knowledge verification tests<br>• API contract validation |
+| **Stable Low-Risk Code** | • Basic smoke tests<br>• Regression protection only |
+
+#### 5.3.2 Code Review Strategy
+
+**Metric-Driven Review Process**: Use KPI data to adapt review intensity and focus areas.
+
+| Risk Profile | Review Requirements |
+|--------------|-------------------|
+| **Critical Hotspots** | • Mandatory 2+ reviewer approval<br>• Architecture review for changes<br>• Performance impact assessment |
+| **High Ownership Concentration** | • Domain expert + fresh eyes review<br>• Knowledge transfer documentation<br>• Pair programming sessions |
+| **High Churn Areas** | • Design review before implementation<br>• Pattern consistency checks<br>• Technical debt assessment |
+
+##### 5.3.2.1 Pre-Review KPI Assessment
+
+Before conducting code reviews, reviewers should examine:
+
+**Complexity Context**:
+- Historical complexity trends for modified files
+- Function-level complexity of changed methods
+- Complexity delta (is the change increasing or decreasing complexity?)
+
+**Churn Context**:
+- Recent change frequency in affected files
+- Author patterns (new contributor vs. regular maintainer)
+- Change size relative to file size
+
+**Ownership Context**:
+- Current ownership distribution
+- Reviewer's familiarity with the code area
+- Knowledge transfer opportunities
+
+##### 5.3.2.2 Review Focus Areas by KPI Profile
+
+**For High Complexity Files (>15 McCabe)**:
+```
+Review Checklist:
+□ Is the change adding unnecessary complexity?
+□ Can complex logic be extracted into smaller functions?
+□ Are edge cases properly handled?
+□ Is error handling comprehensive?
+□ Would this benefit from simplification?
+□ Are there clear unit tests for complex paths?
+```
+
+**For High Churn Files (>10 commits/month)**:
+```
+Review Checklist:
+□ Does this change follow established patterns in the file?
+□ Is this change addressing root cause or symptoms?
+□ Could this change reduce future churn?
+□ Are we introducing technical debt?
+□ Is the change scope appropriate?
+□ Do we need architectural discussion before proceeding?
+```
+
+**For Low Ownership Files (<30% single owner)**:
+```
+Review Checklist:
+□ Is the change consistent with existing code style?
+□ Does this require documentation updates?
+□ Should we involve the original author?
+□ Are we following established conventions?
+□ Is knowledge transfer happening during this review?
+□ Could this be an opportunity to establish clearer ownership?
+```
+
+**For High Shared Ownership Files (>80% shared)**:
+```
+Review Checklist:
+□ Does this change affect module interfaces?
+□ Do we need broader team consultation?
+□ Are we maintaining API compatibility?
+□ Should this trigger integration testing?
+□ Is the change breaking established contracts?
+□ Do other teams need to be notified?
+```
+
+##### 5.3.2.3 Review Comments Template by Risk Level
+
+**Critical Hotspot Changes**:
+```
+🔥 HOTSPOT ALERT: This file has high complexity (X) and churn (Y)
+- Consider: Can this logic be simplified or extracted?
+- Requires: Comprehensive test coverage for this change
+- Action: Let's discuss the architectural impact before merging
+```
+
+**Knowledge Transfer Opportunities**:
+```
+📚 KNOWLEDGE SHARING: Low ownership detected
+- @original-author: Could you review this approach?
+- Documentation: Please add/update relevant docs
+- Learning: This is a great opportunity for knowledge transfer
+```
+
+**Pattern Consistency**:
+```
+🔄 HIGH CHURN AREA: This file changes frequently
+- Pattern check: Does this follow existing conventions?
+- Root cause: Are we addressing the underlying issue?
+- Future impact: How will this affect maintenance?
+```
+
+##### 5.3.2.4 Reviewer Assignment Strategy
+
+**Reviewer Suggestions Based on KPIs**:
+
+Maybe automate this for improved consistency.
+1. **For Hotspot Files**: Assign senior developer + domain expert
+2. **For Low Ownership Files**: Assign original author + new team member
+3. **For High Churn Files**: Assign architect + regular contributor
+4. **For Shared Ownership Files**: Assign representatives from affected teams
+
+**Review SLA by Risk Level**:
+- **Critical Hotspots**: 24-hour review requirement
+- **High Risk**: 48-hour review requirement  
+- **Medium Risk**: 72-hour review requirement
+- **Low Risk**: Standard review timeline
+
+##### 5.3.2.5 Post-Review KPI Monitoring
+
+**Track Review Effectiveness**:
+- Defect rates by review type and KPI profile
+- Time-to-review by complexity level
+- Knowledge transfer success (measured by subsequent ownership changes)
+- Review comment quality and actionability
+
+**Continuous Improvement**:
+- Monthly review of review effectiveness by KPI category
+- Adjust review criteria based on outcome data
+- Update reviewer assignment algorithms based on results
+
+### 5.4 Organizational Insights and Conway's Law
+
+**Understanding team dynamics through code metrics:**
+
+#### 5.4.1 Team Structure Analysis
+- **High shared ownership** in complex modules → May indicate communication overhead
+- **Ownership boundaries** aligning with **module boundaries** → Good organizational design  
+- **Temporal coupling** between **team areas** → Suggests coordination issues
+
+#### 5.4.2 Recommended Organizational Actions
+
+| Metric Pattern | Organizational Insight | Recommended Action |
+|----------------|----------------------|-------------------|
+| **Shared ownership without clear boundaries** | Unclear responsibilities | • Define module ownership<br>• Establish team boundaries<br>• Create interface contracts |
+| **High churn in boundary areas** | Integration challenges | • Improve team communication<br>• API design sessions<br>• Cross-team collaboration practices |
+| **Knowledge silos in critical areas** | Bus factor risks | • Knowledge sharing sessions<br>• Rotation programs<br>• Mentoring initiatives |
+
+### 5.5 Continuous Improvement Process
+
+#### 5.5.1 Regular Health Checks
+1. **Weekly**: Monitor hotspot trends and new emergent risks
+2. **Monthly**: Review ownership patterns and knowledge distribution  
+3. **Quarterly**: Assess architectural health and technical debt
+
+#### 5.5.2 Success Metrics
+- **Hotspot reduction**: Decrease in critical hotspot count over time
+- **Knowledge spread**: Increase in balanced ownership patterns
+- **Quality trends**: Correlation between metric improvements and defect reduction
+- **Team efficiency**: Reduced time-to-deliver for changes in well-managed areas
+
+#### 5.5.3 Integration with Development Workflow
+- **Pre-commit**: Complexity threshold checks
+- **CI/CD**: Hotspot trend analysis and alerts
+- **Sprint planning**: Risk-based story prioritization using metrics
+- **Retrospectives**: Metric-driven improvement identification
+
+This framework transforms MetricMancer's raw metrics into a systematic approach for code quality improvement, risk management, and organizational optimization based on empirical evidence from version control history and static analysis.
+- **Onboarding Support (FR18)**: New developer guidance features
