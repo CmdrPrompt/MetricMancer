@@ -1,46 +1,106 @@
 import os
-import json
+from typing import Optional
 
 from src.app.analyzer import Analyzer
 from src.app.scanner import Scanner
 from src.languages.config import Config
+from src.config.app_config import AppConfig
 from src.report.report_generator import ReportGenerator
 from src.utilities.debug import debug_print
 from src.analysis.hotspot_analyzer import (
-    extract_hotspots_from_data, format_hotspots_table, 
+    extract_hotspots_from_data, format_hotspots_table,
     save_hotspots_to_file, print_hotspots_summary
 )
 
 
 class MetricMancerApp:
-    def __init__(self, directories, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, output_file='complexity_report.html', report_generator_cls=None, level="file", hierarchical=False, output_format="human", list_hotspots=False, hotspot_threshold=50, hotspot_output=None, review_strategy=False, review_output="review_strategy.md", review_branch_only=False, review_base_branch="main", report_folder=None):
-        self.config = Config()
-        self.scanner = Scanner(self.config.languages)
-        self.analyzer = Analyzer(self.config.languages, threshold_low=threshold_low, threshold_high=threshold_high)
-        self.directories = directories
-        # Report settings
-        self.threshold_low = threshold_low
-        self.threshold_high = threshold_high
-        self.problem_file_threshold = problem_file_threshold
-        self.output_file = output_file
-        self.level = level
-        self.hierarchical = hierarchical
-        self.output_format = output_format
-        self.report_folder = report_folder if report_folder is not None else 'output'
-        
+    def __init__(self, directories=None, threshold_low=10.0, threshold_high=20.0,
+                 problem_file_threshold=None, output_file='complexity_report.html',
+                 report_generator_cls=None, level="file", hierarchical=False,
+                 output_format="human", list_hotspots=False, hotspot_threshold=50,
+                 hotspot_output=None, review_strategy=False,
+                 review_output="review_strategy.md", review_branch_only=False,
+                 review_base_branch="main", report_folder=None, config: Optional[AppConfig] = None):
+        """
+        Initialize MetricMancerApp.
+
+        Args:
+            config: AppConfig object with all settings (preferred, Configuration Object Pattern)
+            directories: List of directories to analyze (legacy, for backward compatibility)
+            threshold_low: Low complexity threshold (legacy)
+            threshold_high: High complexity threshold (legacy)
+            ... (other legacy parameters for backward compatibility)
+
+        Note:
+            If config is provided, it takes precedence over individual parameters.
+            Individual parameters maintained for backward compatibility during transition.
+        """
+        # Configuration Object Pattern: config parameter takes precedence
+        if config is not None:
+            # Validate config
+            config.validate()
+            self.app_config = config
+        else:
+            # Legacy mode: create config from individual parameters
+            if directories is None:
+                raise TypeError("MetricMancerApp() missing required argument: 'directories' or 'config'")
+
+            self.app_config = AppConfig(
+                directories=directories,
+                threshold_low=threshold_low,
+                threshold_high=threshold_high,
+                problem_file_threshold=problem_file_threshold,
+                output_file=output_file,
+                level=level,
+                hierarchical=hierarchical,
+                output_format=output_format,
+                report_folder=report_folder if report_folder is not None else 'output',
+                list_hotspots=list_hotspots,
+                hotspot_threshold=hotspot_threshold,
+                hotspot_output=hotspot_output,
+                review_strategy=review_strategy,
+                review_output=review_output,
+                review_branch_only=review_branch_only,
+                review_base_branch=review_base_branch,
+                debug=False
+            )
+
+        # Initialize language config, scanner, and analyzer
+        self.lang_config = Config()
+        self.scanner = Scanner(self.lang_config.languages)
+        self.analyzer = Analyzer(
+            self.lang_config.languages,
+            threshold_low=self.app_config.threshold_low,
+            threshold_high=self.app_config.threshold_high
+        )
+
+        # Expose config values as instance attributes for backward compatibility
+        self.directories = self.app_config.directories
+        self.threshold_low = self.app_config.threshold_low
+        self.threshold_high = self.app_config.threshold_high
+        self.problem_file_threshold = self.app_config.problem_file_threshold
+        self.output_file = self.app_config.output_file
+        self.level = self.app_config.level
+        self.hierarchical = self.app_config.hierarchical
+        self.output_format = self.app_config.output_format
+        self.report_folder = self.app_config.report_folder
+
         # Hotspot analysis settings
-        self.list_hotspots = list_hotspots
-        self.hotspot_threshold = hotspot_threshold
-        self.hotspot_output = hotspot_output
-        
+        self.list_hotspots = self.app_config.list_hotspots
+        self.hotspot_threshold = self.app_config.hotspot_threshold
+        self.hotspot_output = self.app_config.hotspot_output
+
         # Review strategy settings
-        self.review_strategy = review_strategy
-        self.review_output = review_output
-        self.review_branch_only = review_branch_only
-        self.review_base_branch = review_base_branch
+        self.review_strategy = self.app_config.review_strategy
+        self.review_output = self.app_config.review_output
+        self.review_branch_only = self.app_config.review_branch_only
+        self.review_base_branch = self.app_config.review_base_branch
 
         # Allow swapping report generator
         self.report_generator_cls = report_generator_cls or ReportGenerator
+
+        # Provide direct access to config for new code
+        self.config = self.app_config
 
     def run(self):
         import time
@@ -79,7 +139,7 @@ class MetricMancerApp:
         t_reportgen_start = time.perf_counter()
         # Ensure report folder exists
         os.makedirs(self.report_folder, exist_ok=True)
-        
+
         # Generate one HTML report per repo_info
         for idx, repo_info in enumerate(repo_infos):
             output_file = self.output_file or "complexity_report.html"
@@ -96,7 +156,7 @@ class MetricMancerApp:
 
             # Construct full output path with report folder
             output_path = os.path.join(self.report_folder, output_file)
-            
+
             # All generators now accept a single repo_info object, making the call uniform.
             report = self.report_generator_cls(
                 repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
@@ -116,7 +176,7 @@ class MetricMancerApp:
         # Run hotspot analysis if requested
         if self.list_hotspots:
             self._run_hotspot_analysis(repo_infos)
-        
+
         # Run review strategy analysis if requested
         if self.review_strategy:
             self._run_review_strategy_analysis(repo_infos)
@@ -152,22 +212,22 @@ class MetricMancerApp:
     def _run_hotspot_analysis(self, repo_infos):
         """
         Run hotspot analysis on the analyzed repositories.
-        
+
         Args:
             repo_infos: List of RepoInfo objects from analysis
         """
         all_hotspots = []
-        
+
         for repo_info in repo_infos:
             # Convert repo_info to dict format that extract_hotspots_from_data expects
             repo_data = self._convert_repo_info_to_dict(repo_info)
             hotspots = extract_hotspots_from_data(repo_data, self.hotspot_threshold)
             all_hotspots.extend(hotspots)
-        
+
         if not all_hotspots:
             print(f"\n✅ No hotspots found above threshold {self.hotspot_threshold}.")
             return
-        
+
         # Display or save results
         if self.hotspot_output:
             # Save to file in report folder
@@ -183,10 +243,10 @@ class MetricMancerApp:
     def _convert_repo_info_to_dict(self, repo_info):
         """
         Convert RepoInfo object to dictionary format compatible with hotspot analysis.
-        
+
         Args:
             repo_info: RepoInfo object from analysis
-            
+
         Returns:
             Dictionary representation suitable for hotspot extraction
         """
@@ -196,35 +256,38 @@ class MetricMancerApp:
                 'files': {},
                 'scan_dirs': {}
             }
-            
+
             # Convert files
             for filename, file_obj in scandir.files.items():
+                complexity_kpi = file_obj.kpis.get('complexity')
+                churn_kpi = file_obj.kpis.get('churn')
+                hotspot_kpi = file_obj.kpis.get('hotspot')
                 result['files'][filename] = {
                     'kpis': {
-                        'complexity': getattr(file_obj.kpis.get('complexity'), 'value', 0) if file_obj.kpis.get('complexity') else 0,
-                        'churn': getattr(file_obj.kpis.get('churn'), 'value', 0) if file_obj.kpis.get('churn') else 0,
-                        'hotspot': getattr(file_obj.kpis.get('hotspot'), 'value', 0) if file_obj.kpis.get('hotspot') else 0
+                        'complexity': getattr(complexity_kpi, 'value', 0) if complexity_kpi else 0,
+                        'churn': getattr(churn_kpi, 'value', 0) if churn_kpi else 0,
+                        'hotspot': getattr(hotspot_kpi, 'value', 0) if hotspot_kpi else 0
                     }
                 }
-            
+
             # Convert subdirectories
             for dirname, subdir in scandir.scan_dirs.items():
                 result['scan_dirs'][dirname] = scandir_to_dict(subdir)
-            
+
             return result
-        
+
         return scandir_to_dict(repo_info)
-    
+
     def _run_review_strategy_analysis(self, repo_infos):
         """
         Generate code review strategy report based on KPI metrics.
-        
+
         Args:
             repo_infos: List of RepoInfo objects from analysis
         """
         from src.analysis.code_review_advisor import generate_review_report
         from src.utilities.git_helpers import get_changed_files_in_branch, get_current_branch
-        
+
         # Convert repo_info to dict format
         all_data = {}
         for repo_info in repo_infos:
@@ -236,7 +299,7 @@ class MetricMancerApp:
                 # Merge files and directories
                 all_data['files'].update(repo_data.get('files', {}))
                 all_data['scan_dirs'].update(repo_data.get('scan_dirs', {}))
-        
+
         # Get changed files if branch-only mode is enabled
         filter_files = None
         current_branch = None
@@ -245,42 +308,43 @@ class MetricMancerApp:
                 repo_path = self.directories[0]
                 current_branch = get_current_branch(repo_path)
                 if current_branch:
-                    print(f"\n🔍 Filtering review strategy to changed files in branch: {current_branch}")
-                    print(f"   Comparing against base branch: {self.review_base_branch}")
+                    print(f"\n🔍 Filtering review strategy to changed files in branch: "
+                          f"{current_branch}")
+                    print(f"   Comparing against base branch: "
+                          f"{self.review_base_branch}")
                     filter_files = get_changed_files_in_branch(repo_path, self.review_base_branch)
                     if filter_files:
                         print(f"   Found {len(filter_files)} changed files")
                     else:
-                        print(f"   ⚠️  No changed files found, showing all files")
+                        print("   ⚠️  No changed files found, showing all files")
             except Exception as e:
                 print(f"   ⚠️  Could not determine changed files: {e}")
                 debug_print(f"[DEBUG] Error getting changed files: {e}")
-        
+
         # Generate the report in report folder
         try:
-            import os
             os.makedirs(self.report_folder, exist_ok=True)
             output_path = os.path.join(self.report_folder, self.review_output)
-            report = generate_review_report(
-                all_data, 
+            generate_review_report(
+                all_data,
                 output_file=output_path,
                 filter_files=filter_files,
                 branch_name=current_branch,
                 base_branch=self.review_base_branch if self.review_branch_only else None
             )
-            print(f"\n✅ Code review strategy report generated successfully!")
+            print("\n✅ Code review strategy report generated successfully!")
         except Exception as e:
             print(f"\n❌ Error generating review strategy report: {e}")
             import traceback
             traceback.print_exc()
-    
+
     def _convert_repo_info_to_dict_with_ownership(self, repo_info):
         """
         Convert RepoInfo object to dictionary format with ownership data.
-        
+
         Args:
             repo_info: RepoInfo object from analysis
-            
+
         Returns:
             Dictionary representation with KPIs and ownership data
         """
@@ -290,30 +354,33 @@ class MetricMancerApp:
                 'files': {},
                 'scan_dirs': {}
             }
-            
+
             # Convert files
             for filename, file_obj in scandir.files.items():
+                complexity_kpi = file_obj.kpis.get('complexity')
+                churn_kpi = file_obj.kpis.get('churn')
+                hotspot_kpi = file_obj.kpis.get('hotspot')
                 file_data = {
                     'kpis': {
-                        'complexity': getattr(file_obj.kpis.get('complexity'), 'value', 0) if file_obj.kpis.get('complexity') else 0,
-                        'churn': getattr(file_obj.kpis.get('churn'), 'value', 0) if file_obj.kpis.get('churn') else 0,
-                        'hotspot': getattr(file_obj.kpis.get('hotspot'), 'value', 0) if file_obj.kpis.get('hotspot') else 0
+                        'complexity': getattr(complexity_kpi, 'value', 0) if complexity_kpi else 0,
+                        'churn': getattr(churn_kpi, 'value', 0) if churn_kpi else 0,
+                        'hotspot': getattr(hotspot_kpi, 'value', 0) if hotspot_kpi else 0
                     }
                 }
-                
+
                 # Add ownership data if available
                 ownership_kpi = file_obj.kpis.get('ownership')
                 if ownership_kpi and hasattr(ownership_kpi, 'calculation_values'):
                     ownership_data = ownership_kpi.calculation_values.get('ownership', {})
                     if ownership_data:
                         file_data['ownership'] = ownership_data
-                
+
                 result['files'][filename] = file_data
-            
+
             # Convert subdirectories
             for dirname, subdir in scandir.scan_dirs.items():
                 result['scan_dirs'][dirname] = scandir_to_dict(subdir)
-            
+
             return result
-        
+
         return scandir_to_dict(repo_info)
