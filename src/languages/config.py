@@ -37,6 +37,33 @@ LANGUAGES = {
     '.adb': {
         'name': 'Ada',
         'parser': 'AdaComplexityParser'
+    },
+    # Structured data files
+    '.json': {
+        'name': 'JSON',
+        'parser': 'JSONComplexityParser'
+    },
+    '.yaml': {
+        'name': 'YAML',
+        'parser': 'YAMLComplexityParser'
+    },
+    '.yml': {
+        'name': 'YAML',
+        'parser': 'YAMLComplexityParser'
+    },
+    # Shell scripts
+    '.sh': {
+        'name': 'Shell Script',
+        'parser': 'ShellComplexityParser'
+    },
+    '.bash': {
+        'name': 'Bash Script',
+        'parser': 'ShellComplexityParser'
+    },
+    # Interface Definition Language
+    '.idl': {
+        'name': 'IDL',
+        'parser': 'IDLComplexityParser'
     }
 }
 

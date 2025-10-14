@@ -43,7 +43,7 @@ class TestMetricMancerApp(unittest.TestCase):
         mock_report_cls.assert_called_once_with(repo_info, 10.0, 20.0, None)
         mock_report_instance.generate.assert_called_once()
         args, kwargs = mock_report_instance.generate.call_args
-        self.assertEqual(kwargs['output_file'], 'report.html')
+        self.assertEqual(kwargs['output_file'], 'output/report.html')
         self.assertEqual(kwargs['level'], 'file')
         self.assertEqual(kwargs['hierarchical'], False)
         self.assertEqual(kwargs['output_format'], 'human')
@@ -70,10 +70,10 @@ class TestMetricMancerApp(unittest.TestCase):
         app.run()
         self.assertEqual(mock_report_cls.call_count, 2)
         self.assertEqual(mock_report_instance.generate.call_count, 2)
-        # Check that output_file is suffixed for each repo
+        # Check that output_file is suffixed for each repo and includes report_folder
         call_args = [call[1]['output_file'] for call in mock_report_instance.generate.call_args_list]
-        self.assertIn('report_1.html', call_args)
-        self.assertIn('report_2.html', call_args)
+        self.assertIn('output/report_1.html', call_args)
+        self.assertIn('output/report_2.html', call_args)
 
 
 if __name__ == '__main__':

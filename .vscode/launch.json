@@ -1,0 +1,112 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python HTTP Server",
+      "type": "python",
+      "request": "launch",
+      "module": "http.server",
+      "args": [
+        "8000"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Debug Current Test File",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "${file}",
+        "-v"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/tests:${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Debug Current Test File (unittest legacy)",
+      "type": "python",
+      "request": "launch",
+      "module": "unittest",
+      "args": [
+        "${relativeFileDirname}.${fileBasenameNoExtension}",
+        "-v"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/tests:${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Debug Churn Tests (unittest)",
+      "type": "python",
+      "request": "launch",
+      "module": "unittest",
+      "args": [
+        "tests.kpis.test_churn_time_based_fix",
+        "-v"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/tests:${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Debug All Tests",
+      "type": "python",
+      "request": "launch",
+      "module": "pytest",
+      "args": [
+        "tests/",
+        "-v",
+        "--tb=short"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/tests:${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Debug All Tests (unittest legacy)",
+      "type": "python",
+      "request": "launch",
+      "module": "unittest", 
+      "args": [
+        "discover",
+        "-s",
+        "tests",
+        "-p",
+        "test_*.py",
+        "-v"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}/tests:${workspaceFolder}"
+      }
+    },
+    {
+      "name": "Run MetricMancer",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/src/main.py",
+      "args": [
+        "src/",
+        "--format",
+        "cli"
+      ],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}/src:${workspaceFolder}"
+      }
+    }
+  ]
+}

@@ -24,16 +24,26 @@ def print_usage():
         "Files above this value are listed under each problematic folder in the summary."
     )
     print("\nOUTPUT FORMATTING:")
-    print("  --output-format <format>     Set the output format. Options: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV).")
+    print("  --output-format <format>     Set the output format. Options: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV).")
+    print("  --summary                    Show executive summary dashboard (default).")
+    print("  --quick-wins                 Show prioritized quick win suggestions (impact vs. effort).")
+    print("  --detailed                   Show detailed file tree output.")
     print("  --level <level>              Set the detail level for reports. Options: 'file' (default), 'function'.")
     print("  --hierarchical               (JSON only) Output the full hierarchical data model instead of a flat list.")
+    print("  --list-hotspots              Display list of highest hotspots after analysis.")
+    print("  --hotspot-threshold <score>  Minimum hotspot score to include (default: 50).")
+    print("  --hotspot-output <file>      Save hotspot list to file instead of terminal. Use .md for markdown (default), .txt for plain text.")
+    print("  --review-strategy            Generate code review strategy report based on KPIs.")
+    print("  --review-output <file>       Save review strategy to file (default: review_strategy.md, supports .txt and .md).")
+    print("  --review-branch-only         Only include files changed in current branch in review strategy.")
+    print("  --review-base-branch <name>  Base branch to compare against (default: main).")
     print("  --auto-report-filename       (Optional) Automatically generate a unique report filename based on date and directories.")
     print(
         "  --report-filename <filename> (Optional) Set the report filename directly. "
         "If used, scanned directories are not included in the filename. Optionally add --with-date to append date/time."
     )
     print("  --with-date                  (Optional) If used with --report-filename, appends date and time to the filename before extension.")
-    print("  --report-folder <folder>     (Optional) Folder to write the report to. Default is current directory.")
+    print("  --report-folder <folder>     (Optional) Folder to write all reports to. Default is 'output'.")
     print("\nEXAMPLE:")
     print(
         "  python -m src.main src test --threshold-low 10 --threshold-high 20 "
@@ -43,6 +53,11 @@ def print_usage():
     print("  python -m src.main src test --report-filename myreport.html")
     print("  python -m src.main src test --report-filename myreport.html --with-date")
     print("  python -m src.main src test --report-folder reports")
+    print("  python -m src.main src --list-hotspots --hotspot-threshold 100")
+    print("  python -m src.main src --list-hotspots --hotspot-output hotspots.md")
+    print("  python -m src.main src --review-strategy --review-output review_strategy.md")
+    print("  python -m src.main src --review-strategy --review-branch-only")
+    print("  python -m src.main src --review-strategy --review-branch-only --review-base-branch develop")
 
 
 def parse_args():
@@ -60,7 +75,7 @@ def parse_args():
         "--report-folder",
         type=str,
         default=None,
-        help="Folder to write the report to. Default is current directory."
+        help="Folder to write all reports to. Default is 'output'."
     )
     parser.add_argument(
         "--threshold-low",
@@ -102,8 +117,29 @@ def parse_args():
     parser.add_argument(
         "--output-format",
         type=str,
-        default="human",
-        help="Output format: 'human' (default), 'html', 'json', 'machine' (CSV)."
+        default="summary",
+        help="Output format: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
+    )
+    parser.add_argument(
+        "--summary",
+        action="store_const",
+        const="summary",
+        dest="output_format",
+        help="Show executive summary dashboard (default)."
+    )
+    parser.add_argument(
+        "--quick-wins",
+        action="store_const",
+        const="quick-wins",
+        dest="output_format",
+        help="Show prioritized quick win suggestions (impact vs. effort)."
+    )
+    parser.add_argument(
+        "--detailed",
+        action="store_const",
+        const="human-tree",
+        dest="output_format",
+        help="Show detailed file tree output."
     )
     parser.add_argument(
         "--level",
@@ -115,5 +151,44 @@ def parse_args():
         "--hierarchical",
         action="store_true",
         help="(JSON only) Output the full hierarchical data model."
+    )
+    parser.add_argument(
+        "--list-hotspots",
+        action="store_true",
+        help="Display list of highest hotspots after analysis."
+    )
+    parser.add_argument(
+        "--hotspot-threshold",
+        type=int,
+        default=50,
+        help="Minimum hotspot score to include in hotspot list (default: 50)."
+    )
+    parser.add_argument(
+        "--hotspot-output",
+        type=str,
+        default=None,
+        help="Save hotspot list to file instead of displaying on terminal. Supports .md (markdown) and .txt (plain text). Default format is markdown."
+    )
+    parser.add_argument(
+        "--review-strategy",
+        action="store_true",
+        help="Generate code review strategy report based on complexity, churn, and ownership metrics."
+    )
+    parser.add_argument(
+        "--review-output",
+        type=str,
+        default="review_strategy.md",
+        help="Output file for code review strategy report (default: review_strategy.md, supports .txt and .md)."
+    )
+    parser.add_argument(
+        "--review-branch-only",
+        action="store_true",
+        help="Only include files changed in current branch in review strategy report."
+    )
+    parser.add_argument(
+        "--review-base-branch",
+        type=str,
+        default="main",
+        help="Base branch to compare against when using --review-branch-only (default: main)."
     )
     return parser

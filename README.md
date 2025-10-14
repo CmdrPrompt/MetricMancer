@@ -7,13 +7,17 @@ For detailed requirements, architecture, and design, see the [Software Specifica
 
 ## Features
 
-- **Multi-language support:** Analyze codebases in Python, JavaScript, TypeScript, Java, C#, C, C++, Go, Ada, and more (via pluggable parsers).
-- **Cyclomatic complexity:** Calculates logical complexity for each function/method.
+- **Multi-language support:** Analyze codebases in Python, JavaScript, TypeScript, Java, C#, C, C++, Go, Ada, IDL, JSON, YAML, Shell scripts, and more (via pluggable parsers).
+- **Cyclomatic complexity:** Calculates logical complexity for each function/method in code files.
+- **Structural complexity:** Measures nesting depth, object count, and configuration patterns in JSON/YAML files.
+- **IDL complexity:** Analyzes interface definitions with structural metrics (interfaces, operations, inheritance, data structures).
+- **Shell script complexity:** Analyzes control flow, loops, and functions in shell scripts.
 - **Code churn:** Computes the number of commits affecting each file.
 - **Hotspot analysis:** Identifies files/functions with both high complexity and high churn.
+- **Code review advisor:** Generates data-driven code review recommendations based on complexity, churn, and ownership metrics.
 - **Configurable thresholds:** Set custom thresholds for KPIs and grades (Low, Medium, High).
 - **Aggregated KPIs:** Summarizes metrics at file, directory, and repository levels.
-- **Flexible reporting:** Generates reports in CLI, HTML, and JSON formats.
+- **Flexible reporting:** Generates reports in CLI, HTML, JSON formats, plus specialized hotspot and review strategy reports.
 - **Extensible architecture:** Easily add new KPIs, languages, or report formats.
 - **Error and edge case handling:** Robust error messages and handling for unsupported files, empty directories, and parse errors.
 - **CI/CD ready:** Scriptable CLI and machine-readable JSON output for automation.
@@ -35,10 +39,19 @@ python -m src.main <directories> [options]
 - `--auto-report-filename`: Generate a unique report filename based on date and scanned directories
 - `--report-filename <filename>`: Set the report filename directly
 - `--with-date`: Append date/time to the filename (used with --report-filename)
-- `--report-folder <folder>`: Folder to write the report to (default: current directory)
-- `--output-format <format>`: Output format: 'human' (default CLI tree), 'html', 'json', 'machine' (CSV)
+- `--report-folder <folder>`: Folder to write all reports to (default: **'output'**)
+- `--output-format <format>`: Output format: 'summary' (default dashboard), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV)
+- `--summary`: Show executive summary dashboard (default)
+- `--detailed`: Show detailed file tree output
 - `--level <level>`: Detail level for reports: 'file' (default) or 'function'
 - `--hierarchical`: (JSON only) Output the full hierarchical data model
+- `--list-hotspots`: Display list of highest hotspots after analysis
+- `--hotspot-threshold <score>`: Minimum hotspot score to include (default: 50)
+- `--hotspot-output <file>`: Save hotspot list to file. Use .md for markdown (default format), .txt for plain text
+- `--review-strategy`: Generate code review strategy report based on KPIs
+- `--review-output <file>`: Save review strategy to file (default: review_strategy.md, supports .txt and .md)
+- `--review-branch-only`: Filter review strategy to only changed files in current branch
+- `--review-base-branch <branch>`: Base branch for comparison (default: main)
 
 ### Examples
 
@@ -52,8 +65,11 @@ python -m src.main <path-to-gitrepo> test --threshold-low 8 --threshold-high 15
 # Generate HTML report with custom filename
 python -m src.main <path-to-gitrepo> --report-filename myreport.html --output-format html
 
-# Output CLI report (default)
-python -m src.main path/to/repo --output-format human
+# Output executive summary (default)
+python -m src.main path/to/repo
+
+# Output detailed file tree
+python -m src.main path/to/repo --detailed
 
 # Output JSON report
 python -m src.main path/to/repo --output-format json
@@ -66,13 +82,53 @@ python -m src.main path/to/repo --report-folder reports
 
 # Use hierarchical JSON output
 python -m src.main path/to/repo --output-format json --hierarchical
+
+# Show prioritized quick win suggestions
+python -m src.main path/to/repo --quick-wins
+
+# Generate hotspot analysis
+python -m src.main path/to/repo --list-hotspots --hotspot-threshold 100
+python -m src.main path/to/repo --list-hotspots --hotspot-output hotspots.md
+
+# Generate code review strategy report (all files)
+python -m src.main path/to/repo --review-strategy
+python -m src.main path/to/repo --review-strategy --review-output review_strategy.md
+
+# Generate code review strategy for changed files in current branch only
+python -m src.main path/to/repo --review-strategy --review-branch-only
 ```
 
 ## Output
 
+All reports are saved to the **`output/`** directory by default. This can be customized with the `--report-folder` option.
+
+### Terminal Output Formats
+
+- **Executive Summary (default):** Actionable dashboard showing critical issues, health metrics, and recommendations
+- **Quick Wins:** Prioritized improvement suggestions ranked by ROI (impact vs. effort ratio)
+- **Detailed Tree:** Traditional tree-structured output per repository, showing complexity, churn, hotspot score, and grade for each file
+
+### Report Files
+
 - **HTML report:** Interactive, modern report with summary, details, and usage instructions
-- **CLI report:** Tree-structured output per repository, showing complexity, churn, hotspot score, and grade for each file
 - **JSON report:** Machine-readable output for dashboards and integrations
+- **Hotspot analysis:** Markdown or text file listing high-risk files
+- **Code review strategy:** Markdown or text file with prioritized review recommendations
+- **Review strategy:** Markdown or text file with data-driven code review recommendations
+
+### Cleaning Output
+
+To clean the output directory:
+
+```bash
+# Remove all files from output directory
+python clean_output.py
+
+# Preview what would be deleted (dry-run)
+python clean_output.py --dry-run
+
+# Or use VS Code task: "Clean output directory"
+```
 
 **Example CLI Output:**
 

@@ -4,6 +4,46 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Code Review Strategy**: New `--review-strategy` feature generates data-driven code review recommendations
+  - Risk classification (Critical, High, Medium, Low) based on complexity, churn, and ownership
+  - Estimated review time per file based on metrics
+  - Priority-based file lists with focus areas and checklists
+  - Review templates for different risk levels
+  - Resource allocation guidance
+- **Branch-based Review Filtering**: New `--review-branch-only` flag to focus reviews on changed files
+  - `--review-base-branch` option to specify comparison branch (default: main)
+  - Shows current branch and base branch in report
+  - Filters review strategy to only files changed in current branch
+- **Enhanced Language Support**: Added complexity parsers for configuration and script files
+  - **IDL (Interface Definition Language)**: Structural complexity for CORBA/COM interfaces (interfaces, operations, structs, unions, exceptions, inheritance)
+  - **JSON**: Structural complexity (nesting depth, objects, arrays, keys)
+  - **YAML**: Structural complexity + YAML-specific features (anchors, aliases, multi-line strings)
+  - **Shell Scripts**: Cyclomatic complexity (control flow, loops, functions, logical operators)
+- **Hotspot Analysis Interpretation Guide**: Added comprehensive guide to hotspot analysis reports
+  - Hotspot score classification thresholds
+  - Complexity thresholds with recommendations
+  - Code churn thresholds with actions
+  - Recommended actions by category
+- **Complete Review Checklists**: Review strategy now shows all checklist items (no truncation)
+- New documentation:
+  - `docs/code_review_strategy.md`: Complete guide for code review strategy feature
+  - `docs/language_support.md`: Comprehensive language and file type support matrix
+  - `docs/future_enhancements.md`: Delta-based complexity analysis planning
+
+### Changed
+
+- Review strategy checklists now display all items instead of truncating after 5
+- Updated language support from 9 to 13 file types (added IDL, JSON, YAML, Shell)
+- Enhanced git helpers with branch comparison functions
+
+### Dependencies
+
+- Added `PyYAML` for YAML file parsing and complexity analysis
+
 ## [2.0.2] - 2025-09-14
 
 ### Added

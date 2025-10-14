@@ -23,10 +23,11 @@ class AggregatedSharedOwnershipKPI(BaseKPI):
 
 class Analyzer:
     def __init__(self, languages_config, threshold_low=10.0,
-                 threshold_high=20.0):
+                 threshold_high=20.0, churn_time_period_months=6):
         self.config = languages_config
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
+        self.churn_time_period_months = churn_time_period_months
 
     def _group_files_by_repo(self, files):
         """Groups files by their repository root directory."""
@@ -271,7 +272,8 @@ class Analyzer:
                 avg_complexity = round(sum(complexity_vals) / len(complexity_vals), 1) if complexity_vals else None
                 avg_churn = round(sum(churn_vals) / len(churn_vals), 1) if churn_vals else None
                 avg_hotspot = round(sum(hotspot_vals) / len(hotspot_vals), 1) if hotspot_vals else None
-                avg_shared_ownership = round(sum(shared_ownership_counts) / len(shared_ownership_counts), 1) if shared_ownership_counts else None
+                avg_shared_ownership = round(sum(shared_ownership_counts) / len(shared_ownership_counts), 1) \
+                    if shared_ownership_counts else None
                 # Store in scan_dir.kpis
                 from src.kpis.complexity import ComplexityKPI
                 from src.kpis.codechurn import ChurnKPI
@@ -284,7 +286,8 @@ class Analyzer:
                 authors_set = set()
                 for file in scan_dir.files.values():
                     if file.kpis.get('Shared Ownership') and isinstance(file.kpis['Shared Ownership'].value, dict):
-                        file_authors = [a for a in file.kpis['Shared Ownership'].value.get('authors', []) if a != 'Not Committed Yet']
+                        file_authors = [a for a in file.kpis['Shared Ownership'].value.get('authors', [])
+                                        if a != 'Not Committed Yet']
                         authors_set.update(file_authors)
                 for subdir in scan_dir.scan_dirs.values():
                     subdir_authors = subdir.kpis.get('Shared Ownership')
@@ -296,7 +299,9 @@ class Analyzer:
                     'authors': list(authors_set),
                     'threshold': 20.0
                 }
-                scan_dir.kpis['Shared Ownership'] = AggregatedSharedOwnershipKPI('Shared Ownership', shared_ownership_dict, unit='authors', description='Avg significant authors')
+                scan_dir.kpis['Shared Ownership'] = AggregatedSharedOwnershipKPI(
+                    'Shared Ownership', shared_ownership_dict, unit='authors',
+                    description='Avg significant authors')
                 return {
                     'complexity': avg_complexity,
                     'churn': avg_churn,

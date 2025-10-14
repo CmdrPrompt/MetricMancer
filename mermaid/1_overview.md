@@ -5,6 +5,7 @@
 - [App Run Flow](2_app_run_flow.md)
 - [Scanner Flow](7_scanner_flow.md)
 - [Analyzer Analyze Flow](3_analyzer_analyze_flow.md)
+- [KPI Dependencies & Status](12_kpi_dependencies_status.md)
 - [ReportGenerator Flow](6_report_generator_flow.md)
 - [HTML Report Flow](4_html_report_flow.md)
 - [CLI Report Flow](5_cli_report_flow.md)
@@ -20,7 +21,9 @@ flowchart TD
     Analyzer -->|"per repo"| RepoInfos[RepoInfo List]
     Analyzer --> CodeChurn[CodeChurnAnalyzer]
     Analyzer --> Complexity[ComplexityAnalyzer]
-    Analyzer --> Hotspot[HotspotAnalyzer]
+    Analyzer --> CodeOwnership[CodeOwnershipKPI]
+    Analyzer --> SharedOwnership[SharedOwnershipKPI]
+    Analyzer --> Hotspot[HotspotKPI]
     Analyzer -->|"edge cases"| AnalyzerWarn[Warn: unknown ext, read error, empty]
     RepoInfos -->|"loop repos"| ReportGenLoop[Loop: per repo]
     ReportGenLoop --> ReportGenerator[ReportGenerator]
@@ -34,6 +37,11 @@ flowchart TD
     ReportGenerator --> ErrorHandling[Error & Edge Case Handling]
     ErrorHandling -.-> App
     Scanner -->|"warn: hidden/empty/perm"| ScannerWarn[Warn: hidden/empty/permission]
+
+    %% Show KPI dependencies
+    Hotspot -.->|"uses"| Complexity
+    Hotspot -.->|"uses"| CodeChurn
+    SharedOwnership -.->|"uses"| CodeOwnership
 
     %% Legend
     LegendStart[Start/End]:::start
@@ -61,7 +69,7 @@ flowchart TD
 
     %% Main node color coding
     class App,CLIOutput,HTMLOutput,JSONOutput start;
-    class Scanner,Files,Analyzer,RepoInfos,CodeChurn,Complexity,Hotspot calc;
+    class Scanner,Files,Analyzer,RepoInfos,CodeChurn,Complexity,CodeOwnership,SharedOwnership,Hotspot calc;
     class ReportGenLoop,ReportGenerator loop;
     class CLIReport,HTMLReport,JSONReport,CrossLinks agg;
     class AnalyzerWarn,ScannerWarn,ErrorHandling warn;

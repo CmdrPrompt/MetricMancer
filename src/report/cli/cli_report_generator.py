@@ -3,6 +3,8 @@ from collections import Counter
 
 from src.report.cli.cli_csv_report_format import CLICSVReportFormat
 from src.report.cli.cli_report_format import CLIReportFormat
+from src.report.cli.cli_summary_format import CLISummaryFormat
+from src.report.cli.cli_quick_wins_format import CLIQuickWinsFormat
 from src.report.report_interface import ReportInterface
 from src.utilities.debug import debug_print
 
@@ -16,7 +18,11 @@ class CLIReportGenerator(ReportInterface):
 
     def generate(self, output_file=None, level="file", output_format="human", **kwargs):
         strategies = {
+            "summary": CLISummaryFormat,
+            "quick-wins": CLIQuickWinsFormat,
             "human": CLIReportFormat,
+            "human-tree": CLIReportFormat,  # Alias for backward compatibility
+            "tree": CLIReportFormat,  # Alias for backward compatibility
             "machine": CLICSVReportFormat
         }
 
