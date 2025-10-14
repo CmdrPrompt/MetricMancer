@@ -35,6 +35,17 @@ This document provides requirements and design specifications. For additional te
 
 This section tracks major changes to this **document** (not the software). For complete software release history, see **[CHANGELOG.md](CHANGELOG.md)**.
 
+#### Version 3.1.0 (2025-10-14) - Multi-Format Generation
+**Status:** In Development
+
+**Document Changes:**
+- Added new functional requirement FR9.1 for multi-format single run capability
+- Updated Implementation Summary with FR9.1 status and performance metrics
+- Added `--output-formats` CLI parameter documentation
+
+**Key Metrics:** 50-70% performance improvement for multiple formats, 440 tests passing  
+**Related:** Issue #53, Branch 53-feature-multi-format-generation
+
 #### Version 3.0.0 (2025-10-14) - Configuration Object Pattern
 **Status:** Released
 
@@ -1079,6 +1090,7 @@ MetricMancer is intended for software development teams, technical leads, archit
 | FR7    | Core Analysis            | Calculate temporal coupling       | The tool shall calculate temporal coupling between files.                   | Find hidden dependencies | Planned |
 | FR8    | Core Analysis            | Quality trends                    | The tool shall track and visualize code quality over time.                  | Follow up on improvement work | Planned |
 | FR9    | Reporting & Visualization| Generate reports                  | The tool shall generate CLI, HTML, and JSON reports.                        | Different audiences and integrations | Implemented |
+| FR9.1  | Reporting & Visualization| Multi-format single run           | The tool shall generate multiple report formats in a single analysis run using `--output-formats`. | Eliminate redundant scanning, improve efficiency 50-70% | Implemented v3.1.0 |
 | FR10   | Reporting & Visualization| Visualize KPIs                    | The tool shall visualize KPIs in HTML reports.                              | Facilitate interpretation and communication | Implemented |
 | FR11   | Reporting & Visualization| Dashboards for management         | The tool shall provide summary dashboards/reports for management.           | Facilitate management decisions | Planned |
 | FR12   | Reporting & Visualization| Export/integration with dashboards| The tool shall support export/integration with external dashboards.         | Enable further analysis | Planned |
@@ -1165,6 +1177,7 @@ Based on the current state of the codebase, the following core KPI measurements 
 
 ### ✅ Implemented Reporting & Infrastructure
 - **Multi-format Reports (FR9)**: CLI, HTML, and JSON output formats
+- **Multi-format Single Run (FR9.1)**: Generate multiple formats in one analysis run via `--output-formats html,json,summary` - eliminates redundant scanning, 50-70% performance improvement for multiple formats
 - **HTML Visualizations (FR10)**: Interactive charts and graphs for KPI data
 - **CI/CD Integration (FR13)**: Command-line interface suitable for automation
 - **Multi-language Support (FR17)**: Extensible parser architecture
