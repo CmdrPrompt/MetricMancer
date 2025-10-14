@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from src.app.metric_mancer_app import MetricMancerApp
+from src.config.app_config import AppConfig
 
 
 class TestMetricMancerAppEdgeCases(unittest.TestCase):
@@ -14,6 +15,8 @@ class TestMetricMancerAppEdgeCases(unittest.TestCase):
         mock_scanner.scan.return_value = []
         mock_analyzer.analyze.return_value = {}
         mock_report_cls = MagicMock()
+        # Note: Keeping legacy pattern here since empty dirs is edge case
+        # and AppConfig validates against this (which is better behavior)
         app = MetricMancerApp([], report_generator_cls=mock_report_cls)
         app.run()
         mock_scanner.scan.assert_called_once_with([])
@@ -32,7 +35,8 @@ class TestMetricMancerAppEdgeCases(unittest.TestCase):
         repo_info.repo_root_path = '/repo'
         repo_info.repo_name = 'repo'
         mock_analyzer.analyze.return_value = {'/repo': repo_info}
-        app = MetricMancerApp(['dir'], report_generator_cls=None)
+        config = AppConfig(directories=['dir'])
+        app = MetricMancerApp(config=config, report_generator_cls=None)
         # Ska inte krascha även om report_generator_cls är None (default används)
         try:
             app.run()
@@ -54,7 +58,8 @@ class TestMetricMancerAppEdgeCases(unittest.TestCase):
         mock_report_instance = MagicMock()
         mock_report_instance.generate.side_effect = Exception('fail')
         mock_report_cls = MagicMock(return_value=mock_report_instance)
-        app = MetricMancerApp(['dir'], report_generator_cls=mock_report_cls)
+        config = AppConfig(directories=['dir'])
+        app = MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
         # Kör och kontrollera att undantag inte bubblar upp
         try:
             app.run()

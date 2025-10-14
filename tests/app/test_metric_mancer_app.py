@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from src.app.metric_mancer_app import MetricMancerApp
+from src.config.app_config import AppConfig
 
 
 class TestMetricMancerApp(unittest.TestCase):
@@ -8,7 +9,17 @@ class TestMetricMancerApp(unittest.TestCase):
     @patch('src.app.metric_mancer_app.Scanner')
     @patch('src.app.metric_mancer_app.Analyzer')
     def test_init_sets_attributes(self, MockAnalyzer, MockScanner, MockConfig):
-        app = MetricMancerApp(['dir1', 'dir2'], threshold_low=1, threshold_high=2, problem_file_threshold=3, output_file='out.html', level='file', hierarchical=True, output_format='human')
+        config = AppConfig(
+            directories=['dir1', 'dir2'],
+            threshold_low=1,
+            threshold_high=2,
+            problem_file_threshold=3,
+            output_file='out.html',
+            level='file',
+            hierarchical=True,
+            output_format='human'
+        )
+        app = MetricMancerApp(config=config)
         self.assertEqual(app.directories, ['dir1', 'dir2'])
         self.assertEqual(app.threshold_low, 1)
         self.assertEqual(app.threshold_high, 2)
@@ -36,7 +47,12 @@ class TestMetricMancerApp(unittest.TestCase):
         repo_info.repo_root_path = '/repo'
         repo_info.repo_name = 'repo'
         mock_analyzer.analyze.return_value = {'/repo': repo_info}
-        app = MetricMancerApp(['dir'], output_file='report.html', report_generator_cls=mock_report_cls)
+        config = AppConfig(
+            directories=['dir'],
+            output_file='report.html',
+            output_format='human'  # Match legacy default
+        )
+        app = MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
         app.run()
         mock_scanner.scan.assert_called_once_with(['dir'])
         mock_analyzer.analyze.assert_called_once_with(['file1', 'file2'])
@@ -66,7 +82,12 @@ class TestMetricMancerApp(unittest.TestCase):
         repo_info2.repo_root_path = '/repo2'
         repo_info2.repo_name = 'repo2'
         mock_analyzer.analyze.return_value = {'/repo1': repo_info1, '/repo2': repo_info2}
-        app = MetricMancerApp(['dir'], output_file='report.html', report_generator_cls=mock_report_cls)
+        config = AppConfig(
+            directories=['dir'],
+            output_file='report.html',
+            output_format='human'  # Match legacy default
+        )
+        app = MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
         app.run()
         self.assertEqual(mock_report_cls.call_count, 2)
         self.assertEqual(mock_report_instance.generate.call_count, 2)
