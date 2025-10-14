@@ -8,9 +8,11 @@
 - [Scanner Flow](7_scanner_flow.md)
 - [Analyzer Analyze Flow](3_analyzer_analyze_flow.md)
 - [KPI Dependencies & Status](12_kpi_dependencies_status.md)
-- [ReportGenerator Flow](6_report_generator_flow.md)
 - [HTML Report Flow](4_html_report_flow.md)
 - [CLI Report Flow](5_cli_report_flow.md)
+- [JSON Report Flow](8_json_report_flow.md)
+- [KPI Module Flow](9_kpi_module_flow.md)
+- [System Error Handling](11_system_error_handling_flow.md)
 
 This overview diagram shows the main components and data flows in MetricMancer, from scanning directories to analyzing files and generating reports in different formats. Edge cases and error handling are visualized, and the color coding matches the legend for consistency across all diagrams.
 
