@@ -173,11 +173,8 @@ class MetricMancerApp:
                     ext = '.html'
                 elif output_format in ['summary', 'quick-wins', 'human-tree'] and is_multi_format:
                     # In multi-format mode ONLY, save CLI formats to files
-                    # summary and quick-wins use markdown, human-tree uses HTML
-                    if output_format in ['summary', 'quick-wins']:
-                        ext = '.md'
-                    else:
-                        ext = '.html'
+                    # All CLI formats use markdown for proper monospace rendering
+                    ext = '.md'
                     # Use descriptive filenames
                     if output_format == 'summary':
                         base = 'summary_report'
