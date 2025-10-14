@@ -57,6 +57,10 @@ def main():
     else:
         # Single format: Use factory to create appropriate report generator (backward compat)
         generator_cls = ReportGeneratorFactory.create(config.output_format)
+        if generator_cls is None:
+            # Factory returns None for 'html' - use default ReportGenerator
+            from src.report.report_generator import ReportGenerator
+            generator_cls = ReportGenerator
         debug_print(f"[DEBUG] main: Single format mode - generator_cls={generator_cls}")
         app = MetricMancerApp(config=config, report_generator_cls=generator_cls)
 

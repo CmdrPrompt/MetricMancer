@@ -186,7 +186,8 @@ class AppConfig:
 
         valid_formats = [
             'summary', 'quick-wins', 'human', 'human-tree', 'tree',
-            'html', 'json', 'machine'
+            'html', 'json', 'machine',
+            'review-strategy', 'review-strategy-branch'
         ]
 
         # Validate output_formats list (NEW: multi-format support)

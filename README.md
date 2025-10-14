@@ -42,7 +42,7 @@ python -m src.main <directories> [options]
 - `--with-date`: Append date/time to the filename (used with --report-filename)
 - `--report-folder <folder>`: Folder to write all reports to (default: **'output'**)
 - `--output-format <format>`: Output format: 'summary' (default dashboard), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV)
-- `--output-formats <formats>`: **[New in v3.1.0]** Generate multiple formats in one run (comma-separated). Example: 'html,json,summary'. Scans code once, generates all formats - 50-70% faster than separate runs
+- `--output-formats <formats>`: **[New in v3.1.0]** Generate multiple formats in one run (comma-separated). Example: 'html,json,summary,review-strategy'. Includes 'review-strategy' (full repo) and 'review-strategy-branch' (changed files only). Scans code once, generates all formats - 50-70% faster than separate runs
 - `--summary`: Show executive summary dashboard (default)
 - `--detailed`: Show detailed file tree output
 - `--level <level>`: Detail level for reports: 'file' (default) or 'function'
@@ -88,6 +88,7 @@ python -m src.main path/to/repo --output-format json --hierarchical
 # Generate multiple formats in one run (NEW in v3.1.0 - much faster!)
 python -m src.main path/to/repo --output-formats html,json,summary
 python -m src.main path/to/repo tests --output-formats html,json
+python -m src.main path/to/repo --output-formats html,review-strategy,review-strategy-branch
 
 # Show prioritized quick win suggestions
 python -m src.main path/to/repo --quick-wins
@@ -127,6 +128,9 @@ python -m src.main src tests --output-formats html,json
 
 # Generate all common formats
 python -m src.main src --output-formats html,json,summary
+
+# Include review strategy reports
+python -m src.main src --output-formats html,review-strategy,review-strategy-branch
 
 # Still works: single format (backward compatible)
 python -m src.main src --output-format html

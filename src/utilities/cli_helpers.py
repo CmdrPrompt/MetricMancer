@@ -27,7 +27,8 @@ def print_usage():
     print("  --output-format <format>     Set the output format. Options: 'summary' (default dashboard), "
           "'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV).")
     print("  --output-formats <formats>   Generate multiple formats in one run (comma-separated). "
-          "Example: 'html,json,summary'. Scans code once, generates all formats.")
+          "Example: 'html,json,summary,review-strategy'. Includes 'review-strategy' and 'review-strategy-branch'. "
+          "Scans code once, generates all formats.")
     print("  --summary                    Show executive summary dashboard (default).")
     print("  --quick-wins                 Show prioritized quick win suggestions (impact vs. effort).")
     print("  --detailed                   Show detailed file tree output.")
@@ -135,7 +136,9 @@ def parse_args():
         type=str,
         default=None,
         help="Generate multiple output formats in a single run (comma-separated). "
-             "Example: 'html,json,summary'. Eliminates redundant scanning for multiple formats."
+             "Example: 'html,json,summary,review-strategy'. "
+             "Includes 'review-strategy' (full repo) and 'review-strategy-branch' (changed files only). "
+             "Eliminates redundant scanning for multiple formats."
     )
     parser.add_argument(
         "--summary",

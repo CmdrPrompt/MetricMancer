@@ -10,16 +10,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - **Multi-Format Report Generation (v3.1.0)**: Generate multiple report formats in a single analysis run
   - New `--output-formats` CLI parameter (plural) accepting comma-separated format list
-  - Example: `--output-formats html,json,summary` generates all three formats in one run
+  - Example: `--output-formats html,json,summary,review-strategy` generates all formats in one run
+  - **NEW:** Support for `review-strategy` and `review-strategy-branch` as output formats
+    - `review-strategy`: Generate code review strategy for full repository
+    - `review-strategy-branch`: Generate review strategy for changed files only (current branch vs main)
+    - Can be combined with other formats: `--output-formats html,json,review-strategy-branch`
   - Eliminates redundant scanning and analysis for multiple formats
   - **Performance improvement**: 50-70% faster than separate runs (scan/analyze once, generate all formats)
-  - AppConfig enhanced with `output_formats: List[str]` field and validation
-  - MetricMancerApp loops over formats, reusing scan/analysis results
+  - AppConfig enhanced with `output_formats: List[str]` field and validation for review-strategy formats
+  - MetricMancerApp loops over formats, reusing scan/analysis results, special handling for aggregate reports
   - main.py detects multi-format mode and delegates generator creation to app
-  - 50 new TDD tests (19 AppConfig + 15 CLI + 9 MetricMancerApp + 7 main.py)
-  - Maintains 100% backward compatibility with `--output-format` (singular)
+  - 54 new TDD tests (23 AppConfig + 15 CLI + 9 MetricMancerApp + 7 main.py)
+  - Maintains 100% backward compatibility with `--output-format` (singular) and `--review-strategy` flags
   - Implements functional requirement FR9.1 from SSD
-  - 440 tests passing with full PEP8 compliance
+  - 445 tests passing with full PEP8 compliance
 
 ## [3.0.0] - 2025-10-14
 

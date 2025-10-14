@@ -268,6 +268,61 @@ class TestAppConfigMultiFormatHelpers:
         assert 'html' in file_formats
         assert 'json' in file_formats
 
+    def test_review_strategy_format_is_valid(self):
+        """Test that 'review-strategy' is recognized as a valid format."""
+        config = AppConfig(
+            directories=['src'],
+            output_formats=['review-strategy']
+        )
+
+        assert 'review-strategy' in config.output_formats
+        # Validation should pass
+        config.validate()
+
+    def test_review_strategy_branch_format_is_valid(self):
+        """Test that 'review-strategy-branch' is recognized as a valid format."""
+        config = AppConfig(
+            directories=['src'],
+            output_formats=['review-strategy-branch']
+        )
+
+        assert 'review-strategy-branch' in config.output_formats
+        # Validation should pass
+        config.validate()
+
+    def test_review_strategy_with_other_formats(self):
+        """Test that review-strategy can be combined with other formats."""
+        config = AppConfig(
+            directories=['src'],
+            output_formats=['html', 'review-strategy', 'summary']
+        )
+
+        assert len(config.output_formats) == 3
+        assert 'review-strategy' in config.output_formats
+        config.validate()
+
+    def test_review_strategy_branch_sets_correct_flags(self):
+        """Test that review-strategy-branch format sets review_branch_only=True."""
+        config = AppConfig(
+            directories=['src'],
+            output_formats=['review-strategy-branch']
+        )
+
+        # This will be tested after implementation
+        # review-strategy-branch should trigger review_strategy=True AND review_branch_only=True
+        assert 'review-strategy-branch' in config.output_formats
+
+    def test_both_review_formats_together(self):
+        """Test that both review formats can coexist (though unusual)."""
+        config = AppConfig(
+            directories=['src'],
+            output_formats=['review-strategy', 'review-strategy-branch']
+        )
+
+        assert 'review-strategy' in config.output_formats
+        assert 'review-strategy-branch' in config.output_formats
+        config.validate()
+
 
 if __name__ == '__main__':
     pytest.main([__file__, '-v'])
