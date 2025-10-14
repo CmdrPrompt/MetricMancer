@@ -1,17 +1,22 @@
-import argparse
-import os
 import sys
 
 import src.utilities.debug
 from src.app.metric_mancer_app import MetricMancerApp
-from src.report.cli.cli_report_generator import CLIReportGenerator
-from src.report.json.json_report_generator import JSONReportGenerator
+from src.config.app_config import AppConfig
+from src.report.report_generator_factory import ReportGeneratorFactory
 from src.report.report_helpers import get_output_filename
 from src.utilities.cli_helpers import parse_args, print_usage
 from src.utilities.debug import debug_print
 
 
 def main():
+    """
+    Main entry point for MetricMancer.
+
+    Simplified version using Configuration Object Pattern to reduce complexity
+    and code churn. All configuration logic is delegated to AppConfig and
+    ReportGeneratorFactory.
+    """
     # Ensure UTF-8 encoding for stdout/stderr for Unicode output (Python 3.7+)
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
@@ -22,48 +27,30 @@ def main():
         print_usage()
         return
 
+    # Parse CLI arguments
     parser = parse_args()
     parser.add_argument('--debug', action='store_true', help='Visa debugutskrifter')
     args = parser.parse_args()
 
+    # Set debug flag
     src.utilities.debug.DEBUG = getattr(args, 'debug', False)
     debug_print(f"[DEBUG] main: args={args}")
 
-    # Determine report generator based on output format
-    if args.output_format == 'json':
-        generator_cls = JSONReportGenerator
-    elif args.output_format == 'machine':
-        generator_cls = CLIReportGenerator
-    elif args.output_format == 'html':
-        debug_print("[DEBUG] main: HTML report mode")
-        generator_cls = None  # Will default to HTMLReportGenerator
-    else:
-        generator_cls = CLIReportGenerator
+    # Create configuration from CLI arguments
+    config = AppConfig.from_cli_args(args)
 
-    # Determine output file
-    output_file = None
-    if args.output_format in ['html', 'json']:
-        output_file = get_output_filename(args)
+    # Handle output_file generation for json/html formats if not provided
+    if config.output_format in ['html', 'json'] and not config.output_file:
+        config.output_file = get_output_filename(args)
 
-    app = MetricMancerApp(
-        directories=args.directories,
-        threshold_low=args.threshold_low,
-        threshold_high=args.threshold_high,
-        problem_file_threshold=args.problem_file_threshold,
-        output_file=output_file,
-        report_generator_cls=generator_cls,
-        level=args.level,
-        hierarchical=args.hierarchical,
-        output_format=args.output_format,
-        list_hotspots=getattr(args, 'list_hotspots', False),
-        hotspot_threshold=getattr(args, 'hotspot_threshold', 50),
-        hotspot_output=getattr(args, 'hotspot_output', None),
-        review_strategy=getattr(args, 'review_strategy', False),
-        review_output=getattr(args, 'review_output', 'review_strategy.md'),
-        review_branch_only=getattr(args, 'review_branch_only', False),
-        review_base_branch=getattr(args, 'review_base_branch', 'main'),
-        report_folder=getattr(args, 'report_folder', None)
-    )
+    # Use factory to create appropriate report generator
+    generator_cls = ReportGeneratorFactory.create(config.output_format)
+
+    debug_print(f"[DEBUG] main: config={config}")
+    debug_print(f"[DEBUG] main: generator_cls={generator_cls}")
+
+    # Create and run application
+    app = MetricMancerApp(config=config, report_generator_cls=generator_cls)
     app.run()
 
 
