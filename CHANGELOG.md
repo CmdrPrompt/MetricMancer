@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Planned
+
+- **Multi-Format Report Generation**: Generate multiple report formats in a single analysis run
+  - New `--output-formats` parameter (plural) accepting comma-separated list
+  - Eliminates redundant scanning and analysis for multiple formats
+  - Significant performance improvement: scan/analyze once, generate all formats
+  - Example: `--output-formats html,json,summary` generates all three formats
+  - Maintains backward compatibility with existing `--output-format` (singular)
+
 ## [3.0.0] - 2025-10-14
 
 ### Added
