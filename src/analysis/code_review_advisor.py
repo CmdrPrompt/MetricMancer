@@ -4,7 +4,7 @@ Based on "Your Code as a Crime Scene" methodology by Adam Tornhill.
 """
 
 import os
-from typing import Dict, List, Tuple, Any
+from typing import Dict, List, Tuple, Any, Optional
 from dataclasses import dataclass
 
 
@@ -28,7 +28,8 @@ class CodeReviewAdvisor:
         self.recommendations = []
     
     def analyze_file(self, file_path: str, complexity: int, churn: float, 
-                    hotspot: int, ownership_data: Dict[str, float] = None) -> ReviewRecommendation:
+                    hotspot: int, ownership_data: Optional[Dict[str, float]] = None, 
+                    shared_ownership_data: Optional[Dict[str, Any]] = None) -> ReviewRecommendation:
         """
         Analyze a single file and generate review recommendations.
         
@@ -37,7 +38,8 @@ class CodeReviewAdvisor:
             complexity: Cyclomatic complexity
             churn: Churn rate (commits/month)
             hotspot: Hotspot score (complexity × churn)
-            ownership_data: Dict of author -> percentage
+            ownership_data: Dict of author -> percentage (Code Ownership)
+            shared_ownership_data: Dict with num_significant_authors, authors, threshold (Shared Ownership)
             
         Returns:
             ReviewRecommendation object
@@ -45,8 +47,8 @@ class CodeReviewAdvisor:
         # Determine risk level and category
         risk_level, category = self._classify_risk(complexity, churn, hotspot)
         
-        # Calculate ownership concentration
-        ownership_type = self._analyze_ownership(ownership_data) if ownership_data else "unknown"
+        # Calculate ownership concentration using both ownership types
+        ownership_type = self._analyze_ownership(ownership_data, shared_ownership_data)
         
         # Generate recommendations
         priority = self._calculate_priority(risk_level, category)
@@ -86,8 +88,28 @@ class CodeReviewAdvisor:
         else:
             return ("low", "low_risk")
     
-    def _analyze_ownership(self, ownership_data: Dict[str, float]) -> str:
-        """Analyze ownership distribution."""
+    def _analyze_ownership(self, ownership_data: Optional[Dict[str, float]] = None, 
+                          shared_ownership_data: Optional[Dict[str, Any]] = None) -> str:
+        """Analyze ownership distribution using both Code and Shared Ownership data."""
+        # Use Shared Ownership data if available (more accurate)
+        if shared_ownership_data and 'num_significant_authors' in shared_ownership_data:
+            num_significant_authors = shared_ownership_data.get('num_significant_authors', 0)
+            authors = shared_ownership_data.get('authors', [])
+            
+            # Filter out "Not Committed Yet" and similar placeholders
+            real_authors = [a for a in authors if a != 'Not Committed Yet' and a.strip()]
+            num_real_authors = len(real_authors)
+            
+            if num_significant_authors <= 1 and num_real_authors <= 1:
+                return "single_owner"
+            elif num_significant_authors >= 4 or num_real_authors >= 4:
+                return "fragmented" 
+            elif num_significant_authors >= 3 or num_real_authors >= 3:
+                return "shared"
+            else:
+                return "balanced"
+        
+        # Fallback to Code Ownership data analysis
         if not ownership_data:
             return "unknown"
         
@@ -96,7 +118,7 @@ class CodeReviewAdvisor:
         
         if max_ownership >= 70:
             return "single_owner"
-        elif max_ownership < 40 and num_authors > 3:
+        elif max_ownership < 30 and num_authors >= 4:
             return "fragmented"
         elif num_authors >= 3:
             return "shared"
@@ -285,10 +307,10 @@ class CodeReviewAdvisor:
         return base_time
 
 
-def generate_review_report(data: Dict[str, Any], output_file: str = None, 
-                          filter_files: List[str] = None, 
-                          branch_name: str = None,
-                          base_branch: str = None) -> str:
+def generate_review_report(data: Dict[str, Any], output_file: Optional[str] = None, 
+                          filter_files: Optional[List[str]] = None,
+                          branch_name: Optional[str] = None,
+                          base_branch: Optional[str] = None) -> str:
     """
     Generate a comprehensive code review strategy report from KPI data.
     
@@ -339,7 +361,8 @@ def generate_review_report(data: Dict[str, Any], output_file: str = None,
             complexity=file_info['complexity'],
             churn=file_info['churn'],
             hotspot=file_info['hotspot'],
-            ownership_data=file_info.get('ownership')
+            ownership_data=file_info.get('ownership'),
+            shared_ownership_data=file_info.get('shared_ownership')
         )
         recommendations.append(rec)
     
@@ -376,12 +399,18 @@ def _extract_files_from_data(data: Dict[str, Any], path: str = '') -> List[Dict[
                 kpis = filedata.get('kpis', {})
                 ownership = filedata.get('ownership', {})
                 
+                # Extract Shared Ownership data from KPIs
+                shared_ownership = {}
+                if 'Shared Ownership' in kpis:
+                    shared_ownership = kpis['Shared Ownership']
+                
                 files.append({
                     'path': file_path,
                     'complexity': kpis.get('complexity', 0),
                     'churn': kpis.get('churn', 0),
                     'hotspot': kpis.get('hotspot', 0),
-                    'ownership': ownership
+                    'ownership': ownership,
+                    'shared_ownership': shared_ownership
                 })
         
         if 'scan_dirs' in data:
@@ -394,8 +423,8 @@ def _extract_files_from_data(data: Dict[str, Any], path: str = '') -> List[Dict[
 
 def _format_review_report_markdown(recommendations: List[ReviewRecommendation], 
                                   is_filtered: bool = False,
-                                  branch_name: str = None,
-                                  base_branch: str = None) -> str:
+                                  branch_name: Optional[str] = None,
+                                  base_branch: Optional[str] = None) -> str:
     """Format recommendations into a markdown report."""
     output = []
     
@@ -550,8 +579,8 @@ def _format_review_report_markdown(recommendations: List[ReviewRecommendation],
 
 def _format_review_report(recommendations: List[ReviewRecommendation], 
                          is_filtered: bool = False,
-                         branch_name: str = None,
-                         base_branch: str = None) -> str:
+                         branch_name: Optional[str] = None,
+                         base_branch: Optional[str] = None) -> str:
     """Format recommendations into a readable text report."""
     output = []
     
