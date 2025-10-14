@@ -2,8 +2,8 @@
 
 # Overview
 
-- [Main Entry Point Flow](13_main_entry_flow.md) **← NEW: Configuration Object Pattern**
-- [Config & CLI Flow](10_config_cli_flow.md) **← UPDATED: Configuration Object Pattern**
+- [Main Entry Point Flow](13_main_entry_flow.md)
+- [Config & CLI Flow](10_config_cli_flow.md)
 - [App Run Flow](2_app_run_flow.md)
 - [Scanner Flow](7_scanner_flow.md)
 - [Analyzer Analyze Flow](3_analyzer_analyze_flow.md)
