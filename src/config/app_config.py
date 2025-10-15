@@ -35,6 +35,7 @@ class AppConfig:
         review_output: Output file for review strategy (default: 'review_strategy.md')
         review_branch_only: Only include changed files in review strategy
         review_base_branch: Base branch to compare against (default: 'main')
+        churn_period: Number of days to analyze for code churn (default: 30)
         debug: Whether to show debug output
     """
 
@@ -64,6 +65,9 @@ class AppConfig:
     review_output: str = "review_strategy.md"
     review_branch_only: bool = False
     review_base_branch: str = "main"
+
+    # Code churn settings
+    churn_period: int = 30
 
     # Debug settings
     debug: bool = False
@@ -153,6 +157,9 @@ class AppConfig:
             review_output=getattr(args, 'review_output', 'review_strategy.md'),
             review_branch_only=getattr(args, 'review_branch_only', False),
             review_base_branch=getattr(args, 'review_base_branch', 'main'),
+
+            # Code churn settings
+            churn_period=getattr(args, 'churn_period', 30),
 
             # Debug
             debug=getattr(args, 'debug', False)
