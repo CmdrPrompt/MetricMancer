@@ -16,16 +16,24 @@ class CodeChurnAnalyzer:
     providing realistic hotspot values for maintainability analysis.
     """
 
-    def __init__(self, repo_scan_pairs: List[tuple], time_period_months: int = 6):
+    def __init__(self, repo_scan_pairs: List[tuple], time_period_months: int = 6, time_period_days: int = None):
         """
         Initialize CodeChurnAnalyzer with time-based configuration.
 
         Args:
             repo_scan_pairs: List of (repo_path, scan_files) tuples
-            time_period_months: Time period in months for churn calculation (default: 6)
+            time_period_months: Time period in months for churn calculation (default: 6, deprecated)
+            time_period_days: Time period in days for churn calculation (preferred, overrides months if set)
         """
         self.repo_scan_pairs = repo_scan_pairs
-        self.time_period_months = time_period_months
+        
+        # Prefer days if provided, otherwise convert months to days or use default 30 days
+        if time_period_days is not None:
+            self.time_period_days = time_period_days
+            self.time_period_months = time_period_days / 30.0
+        else:
+            self.time_period_months = time_period_months
+            self.time_period_days = time_period_months * 30
 
     def calculate_churn_for_files(self) -> Dict[str, float]:
         """
@@ -38,7 +46,7 @@ class CodeChurnAnalyzer:
 
         # Calculate date cutoff for time period
         end_date = datetime.now()
-        start_date = end_date - timedelta(days=self.time_period_months * 30)
+        start_date = end_date - timedelta(days=self.time_period_days)
 
         for repo_path, scan_dir in self.repo_scan_pairs:
             # Get commits within the time period

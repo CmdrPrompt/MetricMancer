@@ -53,6 +53,7 @@ python -m src.main <directories> [options]
 - `--review-output <file>`: Save review strategy to file (default: review_strategy.md, supports .txt and .md)
 - `--review-branch-only`: Filter review strategy to only changed files in current branch
 - `--review-base-branch <branch>`: Base branch for comparison (default: main)
+- `--churn-period <days>`: Number of days to analyze for code churn (default: 30)
 
 ### Examples
 
@@ -95,6 +96,12 @@ python -m src.main path/to/repo --quick-wins
 # Generate hotspot analysis
 python -m src.main path/to/repo --list-hotspots --hotspot-threshold 100
 python -m src.main path/to/repo --list-hotspots --hotspot-output hotspots.md
+
+# Analyze code churn over custom time period (60 days)
+python -m src.main path/to/repo --churn-period 60
+
+# Analyze recent changes only (last 7 days)
+python -m src.main path/to/repo --churn-period 7 --summary
 
 # Generate code review strategy report (all files)
 python -m src.main path/to/repo --review-strategy
