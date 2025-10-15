@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [3.1.0] - 2025-10-15
 
 ### Added
 
@@ -25,95 +25,41 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Implements functional requirement FR9.1 from SSD
   - 445 tests passing with full PEP8 compliance
 
-## [3.0.0] - 2025-10-14
+### Fixed
 
-### Added
-
-- **Configuration Object Pattern**: Centralized configuration with AppConfig dataclass
-  - Type-safe configuration with automatic validation
-  - Single source of truth for all application settings
-  - Factory method `AppConfig.from_cli_args()` for easy creation
-  - 18 configuration fields with sensible defaults
-  - Eliminated config file dependency
-- **Factory Pattern**: ReportGeneratorFactory for report creation
-  - Eliminates conditional logic in main.py
-  - Easy addition of new report formats
-  - Automatic generator selection based on format
-  - Single responsibility for generator creation
-- **Enhanced Architecture Documentation**: Comprehensive architecture documentation
-  - `ARCHITECTURE.md`: 752 lines covering SOLID principles, design patterns, component architecture
-  - `MIGRATION_GUIDE.md`: 428 lines with step-by-step migration instructions, scenarios, and FAQ
-  - Updated `README.md` with Configuration Object Pattern section
-- **Visual Documentation**: PlantUML and Mermaid diagrams
-  - New PlantUML architecture diagram showing Configuration Object and Factory patterns
-  - Updated Mermaid flow diagrams (main entry, config flow, system overview)
-  - Comprehensive diagram documentation and indexes
-- **Enhanced Testing**: Comprehensive test coverage for new patterns
-  - Tests for AppConfig creation and validation
-  - Tests for Factory Pattern
-  - Tests for main.py error handling
-  - 390 tests passing with >80% coverage
-- **Code Review Strategy**: New `--review-strategy` feature generates data-driven code review recommendations
-  - Risk classification (Critical, High, Medium, Low) based on complexity, churn, and ownership
-  - Estimated review time per file based on metrics
-  - Priority-based file lists with focus areas and checklists
-  - Review templates for different risk levels
-  - Resource allocation guidance
-- **Branch-based Review Filtering**: New `--review-branch-only` flag to focus reviews on changed files
-  - `--review-base-branch` option to specify comparison branch (default: main)
-  - Shows current branch and base branch in report
-  - Filters review strategy to only files changed in current branch
-- **Enhanced Language Support**: Added complexity parsers for configuration and script files
-  - **IDL (Interface Definition Language)**: Structural complexity for CORBA/COM interfaces (interfaces, operations, structs, unions, exceptions, inheritance)
-  - **JSON**: Structural complexity (nesting depth, objects, arrays, keys)
-  - **YAML**: Structural complexity + YAML-specific features (anchors, aliases, multi-line strings)
-  - **Shell Scripts**: Cyclomatic complexity (control flow, loops, functions, logical operators)
-- **Hotspot Analysis Interpretation Guide**: Added comprehensive guide to hotspot analysis reports
-  - Hotspot score classification thresholds
-  - Complexity thresholds with recommendations
-  - Code churn thresholds with actions
-  - Recommended actions by category
-- **Complete Review Checklists**: Review strategy now shows all checklist items (no truncation)
-- New documentation:
-  - `docs/code_review_strategy.md`: Complete guide for code review strategy feature
-  - `docs/language_support.md`: Comprehensive language and file type support matrix
-  - `docs/future_enhancements.md`: Delta-based complexity analysis planning
+- Generator selection bug in multi-format mode
+- Markdown rendering for box-drawing characters in CLI reports
 
 ### Changed
 
-- **main.py Refactored**: Simplified main entry point
-  - 17% complexity reduction (from 12 to 10)
-  - 60-80% churn reduction through stable patterns
-  - Eliminated config file loading logic
-  - Eliminated conditional report generator selection
-  - Uses dependency injection for MetricMancerApp
-- **Improved Extensibility**: Factory Pattern makes it easier to add new report formats
-- **Better Error Handling**: Configuration validation happens automatically at creation time
-- **Test Quality**: Removed 11 legacy skipped tests, kept 6 critical behavior tests
-- Review strategy checklists now display all items instead of truncating after 5
-- Updated language support from 9 to 13 file types (added IDL, JSON, YAML, Shell)
-- Enhanced git helpers with branch comparison functions
+- Default output format remains `summary` for backward compatibility
+- All CLI formats use markdown for file output
 
-### Documentation
+## [Unreleased]
 
-- Added comprehensive architecture documentation (ARCHITECTURE.md, MIGRATION_GUIDE.md)
-- Updated SoftwareSpecificationAndDesign.md with new patterns and requirements
-- Added PlantUML architecture diagrams
-- Updated Mermaid flow diagrams
-- Added document versioning and changelog to SSD
-- Cross-referenced all major documentation
+### Planned / In Development
 
-### Dependencies
+**Git/Bitbucket-based KPIs:**
 
-- Added `PyYAML` for YAML file parsing and complexity analysis
+- Code Ownership: Measures how many different developers have modified a file. Identifies files with low ownership (high risk for bugs). Can be retrieved via `git log --pretty="%an" <file>`.
+- Review Latency: Time from pull request creation to first comment. Highlights bottlenecks in the review process. Retrieved via Bitbucket API: `/pullrequests/{id}/comments`.
+- Merge Time: Time from PR creation to merge. Measures collaboration and delivery speed. Bitbucket API: `/pullrequests/{id}` with timestamps.
+- Comment Density: Number of comments per PR. Indicator of code review quality. Can be combined with Review Latency for a "Review Health Score".
 
-### Technical Debt
+**Jira-based KPIs:**
 
-- Reduced main.py cyclomatic complexity by 17%
-- Reduced main.py churn by 60-80%
-- Improved SOLID principles adherence
-- Better separation of concerns
-- More testable architecture
+- Cycle Time: Time from "In Progress" to "Done". Measures delivery speed. Retrieved via Jira API: `issue.changelog` → status changes.
+- Lead Time: Time from issue creation to delivery. Identifies bottlenecks in planning and prioritization.
+- Issue Reopen Rate: How often issues are reopened after being closed. Indicator of solution quality and test coverage.
+- Sprint Accuracy: Amount of planned work actually delivered. Measures team predictability.
+- Flow Efficiency: Active time vs. waiting time in the issue flow. Identifies waste in the process.
+
+**Combined Metric Ideas:**
+
+- Risk Index = churn × complexity × ownership diversity
+- Review Health Score = comment density ÷ review latency
+- Delivery Score = sprint accuracy × flow efficiency
+- Stability Score = low churn × high complexity × low reopen rate
 
 ## [2.0.2] - 2025-09-14
 
@@ -148,13 +94,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Deprecated
 
 - No deprecations in this release.
-
-...existing code...
-# Changelog
-
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [2.0.1] - 2025-09-14
 

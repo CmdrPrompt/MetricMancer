@@ -1,4 +1,3 @@
-
 # MetricMancer
 
 MetricMancer is a software analytics tool that provides actionable insights into code quality, maintainability, and technical risk. Inspired by "Your Code as a Crime Scene" by Adam Tornhill, it analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots. MetricMancer is designed for extensibility, multi-language support, and integration with CI/CD pipelines.
@@ -105,41 +104,21 @@ python -m src.main path/to/repo --review-strategy --review-output review_strateg
 python -m src.main path/to/repo --review-strategy --review-branch-only
 ```
 
-### Multi-Format Generation (v3.1.0+)
+### Multi-Format Report Generation (v3.1.0)
 
-**Performance improvement:** Generate multiple report formats in a single analysis run, avoiding redundant scanning and analysis.
+You can now generate multiple report formats in a single run using the `--output-formats` option:
 
-**Use case:** You need both an HTML report for management and a JSON export for your dashboard - but don't want to wait for two full scans.
-
-**How it works:**
-1. Scans code **once**
-2. Analyzes complexity, churn, and KPIs **once**
-3. Generates **all specified formats** from the same analysis
-
-**Performance:**
-- **Before:** 3 separate runs for HTML, JSON, summary = ~7.8s (2.6s each)
-- **After:** Single run with `--output-formats html,json,summary` = ~2.7s
-- **Savings:** ~5.1 seconds (65% faster for 3 formats)
-
-**Examples:**
 ```sh
-# Generate HTML and JSON in one run
-python -m src.main src tests --output-formats html,json
-
-# Generate all common formats
-python -m src.main src --output-formats html,json,summary
-
-# Include review strategy reports
-python -m src.main src --output-formats html,review-strategy,review-strategy-branch
-
-# Still works: single format (backward compatible)
-python -m src.main src --output-format html
+python -m src.main src --output-formats html,json,summary,quick-wins,human-tree,review-strategy,review-strategy-branch
 ```
 
-**Generated files** (in `output/` folder):
-- `complexity_report.html` - Interactive HTML report
-- `complexity_report.json` - Machine-readable JSON
-- Terminal summary (for 'summary' format)
+- All formats are generated in one scan (much faster)
+- CLI formats (summary, quick-wins, human-tree) are saved as markdown files with code fences for proper monospace rendering
+- Review strategy reports help plan code reviews for the whole repo or just changed files in your branch
+
+**Backward compatibility:**
+- Single-format mode (`--output-format html`) still works as before
+- Default output format is `summary` for quick overview
 
 ## Output
 

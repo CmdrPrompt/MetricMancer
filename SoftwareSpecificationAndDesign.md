@@ -36,7 +36,7 @@ This document provides requirements and design specifications. For additional te
 This section tracks major changes to this **document** (not the software). For complete software release history, see **[CHANGELOG.md](CHANGELOG.md)**.
 
 #### Version 3.1.0 (2025-10-14) - Multi-Format Generation
-**Status:** In Development
+**Status:** Released
 
 **Document Changes:**
 - Added new functional requirement FR9.1 for multi-format single run capability
