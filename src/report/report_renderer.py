@@ -5,6 +5,57 @@ from jinja2 import Environment, FileSystemLoader
 from src.kpis.model import RepoInfo, ScanDir, File
 
 
+def is_tracked_file(file_obj: File) -> bool:
+    """
+    Check if a file is tracked by git based on its Code Ownership KPI.
+    
+    Args:
+        file_obj: File object to check
+        
+    Returns:
+        True if file is tracked, False otherwise
+    """
+    co = file_obj.kpis.get('Code Ownership')
+    if not co or not hasattr(co, 'value') or not isinstance(co.value, dict):
+        return True
+    return not (co.value.get('ownership') == 'N/A')
+
+
+def collect_all_files(scan_dir: ScanDir) -> List[File]:
+    """
+    Recursively collect all git-tracked File objects from a ScanDir tree.
+    
+    Args:
+        scan_dir: Root ScanDir to collect files from
+        
+    Returns:
+        List of all tracked File objects in the directory tree
+    """
+    files = [f for f in scan_dir.files.values() if is_tracked_file(f)]
+    for sub_dir in scan_dir.scan_dirs.values():
+        files.extend(collect_all_files(sub_dir))
+    return files
+
+
+def filter_problem_files(all_files: List[File], threshold: float) -> List[File]:
+    """
+    Filter and sort files that exceed a complexity threshold.
+    
+    Args:
+        all_files: List of files to filter
+        threshold: Complexity threshold for problem files
+        
+    Returns:
+        Sorted list of problem files (highest complexity first)
+    """
+    problem_files = [
+        f for f in all_files 
+        if f.kpis.get('complexity') and f.kpis['complexity'].value >= threshold
+    ]
+    problem_files.sort(key=lambda f: f.kpis['complexity'].value, reverse=True)
+    return problem_files
+
+
 class ReportRenderer:
     """
     Renders the HTML report using Jinja2 templates and the analyzed repository data.
@@ -25,45 +76,28 @@ class ReportRenderer:
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
 
-    def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
-        """
-        Recursively collect all git-tracked File objects from a ScanDir tree.
-        """
-        def is_tracked_file(file_obj: File):
-            co = file_obj.kpis.get('Code Ownership')
-            if not co or not hasattr(co, 'value') or not isinstance(co.value, dict):
-                return True
-            return not (co.value.get('ownership') == 'N/A')
-
-        files = [f for f in scan_dir.files.values() if is_tracked_file(f)]
-        for sub_dir in scan_dir.scan_dirs.values():
-            files.extend(self._collect_all_files(sub_dir))
-        return files
-
     def render(self, repo_info: RepoInfo, problem_file_threshold=None, report_links=None, **kwargs):
         """
         Render the HTML report using the provided template and repository data.
+        
         Args:
             repo_info: The analyzed repository data model (RepoInfo).
             problem_file_threshold: Optional threshold for flagging problematic files.
             report_links: Optional links to include in the report.
+            
         Returns:
             Rendered HTML as a string.
         """
         template = self.env.get_template(self.template_file)
-
+        
         # Collect all files to identify problem files
-        all_files = self._collect_all_files(repo_info)
-
-        # Filter out problem files based on the threshold
+        all_files = collect_all_files(repo_info)
+        
+        # Filter problem files based on the threshold
         problem_files = []
         if problem_file_threshold is not None:
-            problem_files = [
-                f for f in all_files 
-                if f.kpis.get('complexity') and f.kpis['complexity'].value >= problem_file_threshold
-            ]
-            problem_files.sort(key=lambda f: f.kpis['complexity'].value, reverse=True)
-
+            problem_files = filter_problem_files(all_files, problem_file_threshold)
+        
         return template.render(
             repo_info=repo_info,
             problem_files=problem_files,
