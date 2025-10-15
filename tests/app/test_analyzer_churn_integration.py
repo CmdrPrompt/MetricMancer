@@ -79,19 +79,18 @@ class TestChurnIntegrationProblem(unittest.TestCase):
 
     def test_different_time_periods_should_be_configurable(self):
         """
-        EXPECTED TO FAIL with current implementation.
-        
         Tests that different time periods can be configured and affect results.
+        Now uses churn_period_days instead of churn_time_period_months.
         """
-        # Test that Analyzer accepts churn_time_period_months parameter
-        analyzer_3m = Analyzer(self.languages_config.languages, churn_time_period_months=3)
-        analyzer_6m = Analyzer(self.languages_config.languages, churn_time_period_months=6)
-        analyzer_12m = Analyzer(self.languages_config.languages, churn_time_period_months=12)
+        # Test that Analyzer accepts churn_period_days parameter
+        analyzer_90d = Analyzer(self.languages_config.languages, churn_period_days=90)
+        analyzer_180d = Analyzer(self.languages_config.languages, churn_period_days=180)
+        analyzer_365d = Analyzer(self.languages_config.languages, churn_period_days=365)
         
-        # This will FAIL if Analyzer doesn't accept the parameter
-        self.assertEqual(analyzer_3m.churn_time_period_months, 3)
-        self.assertEqual(analyzer_6m.churn_time_period_months, 6)
-        self.assertEqual(analyzer_12m.churn_time_period_months, 12)
+        # Verify the parameter is set correctly
+        self.assertEqual(analyzer_90d.churn_period_days, 90)
+        self.assertEqual(analyzer_180d.churn_period_days, 180)
+        self.assertEqual(analyzer_365d.churn_period_days, 365)
 
     @patch('src.kpis.codechurn.code_churn.Repository')
     @patch('src.kpis.codechurn.code_churn.find_git_repo_root')
