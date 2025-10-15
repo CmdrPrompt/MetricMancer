@@ -5,7 +5,7 @@ This module implements the Configuration Object pattern to centralize all
 application settings and reduce coupling in main.py.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List, Optional
 
 
@@ -22,7 +22,8 @@ class AppConfig:
         threshold_low: Threshold for low complexity rating (default: 10.0)
         threshold_high: Threshold for high complexity rating (default: 20.0)
         problem_file_threshold: Optional threshold for individual file complexity
-        output_format: Output format (summary, quick-wins, html, json, etc.)
+        output_format: Output format (singular, for backward compatibility)
+        output_formats: List of output formats (NEW: multi-format support)
         output_file: Optional output file path
         report_folder: Folder to write all reports to (default: 'output')
         level: Detail level for reports ('file' or 'function')
@@ -46,7 +47,8 @@ class AppConfig:
     problem_file_threshold: Optional[float] = None
 
     # Output settings
-    output_format: str = "summary"
+    output_format: str = "summary"  # Backward compatibility (singular)
+    output_formats: List[str] = field(default_factory=lambda: ['summary'])  # NEW: Multi-format support
     output_file: Optional[str] = None
     report_folder: str = "output"
     level: str = "file"
@@ -66,10 +68,33 @@ class AppConfig:
     # Debug settings
     debug: bool = False
 
+    def __post_init__(self):
+        """
+        Post-initialization to sync output_format and output_formats.
+
+        Ensures backward compatibility:
+        - If output_formats provided, update output_format to first item
+        - If output_format provided but output_formats is default, convert to list
+        - output_formats always takes precedence
+        """
+
+        # If output_formats is provided (not default), use it
+        if self.output_formats != ['summary']:
+            # Update singular to match first item in plural
+            if self.output_formats:
+                object.__setattr__(self, 'output_format', self.output_formats[0])
+        # If output_format differs from default but output_formats is default
+        elif self.output_format != 'summary':
+            # Convert singular to list
+            object.__setattr__(self, 'output_formats', [self.output_format])
+
     @classmethod
-    def from_cli_args(cls, args) -> 'AppConfig':
+    def from_cli_args(cls, args):
         """
         Create AppConfig from parsed CLI arguments.
+
+        Supports both --output-format (singular, backward compat) and
+        --output-formats (plural, new multi-format support).
 
         Args:
             args: Parsed arguments from argparse.ArgumentParser
@@ -82,6 +107,25 @@ class AppConfig:
             >>> args = parser.parse_args()
             >>> config = AppConfig.from_cli_args(args)
         """
+
+        # Determine paths
+        output_formats_value = None
+        if hasattr(args, 'output_formats') and args.output_formats:
+            # New plural parameter provided
+            if isinstance(args.output_formats, str):
+                # Parse comma-separated string
+                output_formats_value = [f.strip() for f in args.output_formats.split(',')]
+            elif isinstance(args.output_formats, list):
+                output_formats_value = args.output_formats
+        elif hasattr(args, 'output_format') and args.output_format:
+            # Fallback to singular for backward compatibility
+            output_formats_value = [args.output_format]
+
+        # Get singular format for backward compatibility
+        output_format_value = getattr(args, 'output_format', 'summary')
+        if output_formats_value and isinstance(output_formats_value, list) and output_formats_value:
+            output_format_value = output_formats_value[0]
+
         return cls(
             # Required
             directories=args.directories,
@@ -92,7 +136,8 @@ class AppConfig:
             problem_file_threshold=args.problem_file_threshold,
 
             # Output settings
-            output_format=args.output_format,
+            output_format=output_format_value,
+            output_formats=output_formats_value if output_formats_value else ['summary'],
             output_file=None,  # Will be set later if needed
             report_folder=getattr(args, 'report_folder', None) or 'output',
             level=args.level,
@@ -141,8 +186,22 @@ class AppConfig:
 
         valid_formats = [
             'summary', 'quick-wins', 'human', 'human-tree', 'tree',
-            'html', 'json', 'machine'
+            'html', 'json', 'machine',
+            'review-strategy', 'review-strategy-branch'
         ]
+
+        # Validate output_formats list (NEW: multi-format support)
+        if not self.output_formats:
+            raise ValueError("At least one output format must be specified")
+
+        for fmt in self.output_formats:
+            if fmt not in valid_formats:
+                raise ValueError(
+                    f"Invalid output format '{fmt}'. "
+                    f"Must be one of: {', '.join(valid_formats)}"
+                )
+
+        # Validate singular output_format for backward compatibility
         if self.output_format not in valid_formats:
             raise ValueError(
                 f"Invalid output format '{self.output_format}'. "

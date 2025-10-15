@@ -96,8 +96,8 @@ class MetricMancerApp:
         self.review_branch_only = self.app_config.review_branch_only
         self.review_base_branch = self.app_config.review_base_branch
 
-        # Allow swapping report generator
-        self.report_generator_cls = report_generator_cls or ReportGenerator
+        # Allow swapping report generator (None means multi-format mode)
+        self.report_generator_cls = report_generator_cls
 
         # Provide direct access to config for new code
         self.config = self.app_config
@@ -140,34 +140,96 @@ class MetricMancerApp:
         # Ensure report folder exists
         os.makedirs(self.report_folder, exist_ok=True)
 
-        # Generate one HTML report per repo_info
-        for idx, repo_info in enumerate(repo_infos):
-            output_file = self.output_file or "complexity_report.html"
-            # If multiple repos, append index to filename
-            if len(repo_infos) > 1:
+        # Check if we're in multi-format mode (used to decide file vs stdout for CLI formats)
+        is_multi_format = len(self.app_config.output_formats) > 1
+
+        # Loop over all output formats (multi-format support)
+        for output_format in self.app_config.output_formats:
+            debug_print(f"[DEBUG] Generating reports for format: {output_format}")
+
+            # Handle review-strategy formats (aggregate report, not per-repo)
+            if output_format in ['review-strategy', 'review-strategy-branch']:
+                # Set flags based on format
+                review_branch_only = (output_format == 'review-strategy-branch')
+                # Use different filename for branch-only version
+                output_filename = ('review_strategy_branch.md' if review_branch_only
+                                   else 'review_strategy.md')
+                self._run_review_strategy_analysis(
+                    repo_infos, review_branch_only, output_filename
+                )
+                continue
+
+            # Generate one report per repo_info for this format
+            for idx, repo_info in enumerate(repo_infos):
+                output_file = self.output_file or "complexity_report.html"
+
+                # Adjust extension based on format
                 base, ext = os.path.splitext(output_file)
-                output_file = f"{base}_{idx + 1}{ext}"
-                # Mark the current as selected
-                for link in report_links:
-                    link['selected'] = (link['href'] == output_file)
-                links_for_this = [link for link in report_links if link['href'] != output_file]
-            else:
-                links_for_this = report_links
+                if output_format == 'json':
+                    ext = '.json'
+                elif output_format == 'machine':
+                    ext = '.csv'
+                elif output_format == 'html':
+                    ext = '.html'
+                elif output_format in ['summary', 'quick-wins', 'human-tree'] and is_multi_format:
+                    # In multi-format mode ONLY, save CLI formats to files
+                    # All CLI formats use markdown for proper monospace rendering
+                    ext = '.md'
+                    # Use descriptive filenames
+                    if output_format == 'summary':
+                        base = 'summary_report'
+                    elif output_format == 'quick-wins':
+                        base = 'quick_wins_report'
+                    elif output_format == 'human-tree':
+                        base = 'file_tree_report'
+                # For other formats, keep original or default to .txt
 
-            # Construct full output path with report folder
-            output_path = os.path.join(self.report_folder, output_file)
+                # If multiple repos, append index to filename
+                if len(repo_infos) > 1:
+                    output_file = f"{base}_{idx + 1}{ext}"
+                    # Mark the current as selected
+                    for link in report_links:
+                        link['selected'] = (link['href'] == output_file)
+                    links_for_this = [link for link in report_links if link['href'] != output_file]
+                else:
+                    output_file = f"{base}{ext}"
+                    links_for_this = report_links
 
-            # All generators now accept a single repo_info object, making the call uniform.
-            report = self.report_generator_cls(
-                repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
-            )
-            report.generate(
-                output_file=output_path,
-                level=self.level,
-                hierarchical=self.hierarchical,
-                output_format=self.output_format,
-                report_links=links_for_this
-            )
+                # Construct full output path with report folder
+                output_path = os.path.join(self.report_folder, output_file)
+
+                # Create appropriate generator for this format
+                if self.report_generator_cls is None:
+                    # Multi-format mode: use factory to create generator for each format
+                    from src.report.report_generator_factory import ReportGeneratorFactory
+                    generator_cls = ReportGeneratorFactory.create(output_format)
+                    # Factory returns None for 'html' format - use default ReportGenerator
+                    if generator_cls is None:
+                        from src.report.report_generator import ReportGenerator
+                        generator_cls = ReportGenerator
+                else:
+                    # Single format mode: use provided generator class
+                    generator_cls = self.report_generator_cls
+
+                # All generators now accept a single repo_info object, making the call uniform.
+                report = generator_cls(
+                    repo_info, self.threshold_low, self.threshold_high, self.problem_file_threshold
+                )
+                
+                # For CLI formats in multi-format mode, we want to save to file
+                save_cli_to_file = (
+                    is_multi_format and 
+                    output_format in ['summary', 'quick-wins', 'human-tree']
+                )
+                
+                report.generate(
+                    output_file=output_path,
+                    level=self.level,
+                    hierarchical=self.hierarchical,
+                    output_format=output_format,
+                    report_links=links_for_this,
+                    save_cli_to_file=save_cli_to_file
+                )
         t_reportgen_end = time.perf_counter()
 
         debug_print(f"[TIME] Report generation took "
@@ -278,13 +340,21 @@ class MetricMancerApp:
 
         return scandir_to_dict(repo_info)
 
-    def _run_review_strategy_analysis(self, repo_infos):
+    def _run_review_strategy_analysis(self, repo_infos, review_branch_only=None,
+                                       output_filename=None):
         """
         Generate code review strategy report based on KPI metrics.
 
         Args:
             repo_infos: List of RepoInfo objects from analysis
+            review_branch_only: Override for branch-only mode (default: use self.review_branch_only)
+            output_filename: Override output filename (default: use self.review_output)
         """
+        # Use parameter if provided, otherwise fall back to instance variable
+        if review_branch_only is None:
+            review_branch_only = self.review_branch_only
+        if output_filename is None:
+            output_filename = self.review_output
         from src.analysis.code_review_advisor import generate_review_report
         from src.utilities.git_helpers import get_changed_files_in_branch, get_current_branch
 
@@ -303,7 +373,7 @@ class MetricMancerApp:
         # Get changed files if branch-only mode is enabled
         filter_files = None
         current_branch = None
-        if self.review_branch_only and self.directories:
+        if review_branch_only and self.directories:
             try:
                 repo_path = self.directories[0]
                 current_branch = get_current_branch(repo_path)
@@ -324,13 +394,13 @@ class MetricMancerApp:
         # Generate the report in report folder
         try:
             os.makedirs(self.report_folder, exist_ok=True)
-            output_path = os.path.join(self.report_folder, self.review_output)
+            output_path = os.path.join(self.report_folder, output_filename)
             generate_review_report(
                 all_data,
                 output_file=output_path,
                 filter_files=filter_files,
                 branch_name=current_branch,
-                base_branch=self.review_base_branch if self.review_branch_only else None
+                base_branch=self.review_base_branch if review_branch_only else None
             )
             print("\n✅ Code review strategy report generated successfully!")
         except Exception as e:

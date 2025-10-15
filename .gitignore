@@ -38,3 +38,4 @@ review_*.txt
 output/*
 !output/.gitkeep
 metricmancer_output/
+quick-wins-report.txt
