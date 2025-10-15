@@ -18,31 +18,40 @@ def print_usage():
         "                               Files/folders with complexity <= this value are rated 'Low'.\n"
         "                               Files/folders with complexity > this value are rated 'High'."
     )
-    
+
     print(
         "  --problem-file-threshold     (Optional) Sets the threshold for individual file complexity. "
         "Files above this value are listed under each problematic folder in the summary."
     )
     print("\nOUTPUT FORMATTING:")
-    print("  --output-format <format>     Set the output format. Options: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV).")
+    print("  --output-format <format>     Set the output format. Options: 'summary' (default dashboard), "
+          "'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV).")
+    print("  --output-formats <formats>   Generate multiple formats in one run (comma-separated). "
+          "Example: 'html,json,summary,review-strategy'. Includes 'review-strategy' and 'review-strategy-branch'. "
+          "Scans code once, generates all formats.")
     print("  --summary                    Show executive summary dashboard (default).")
     print("  --quick-wins                 Show prioritized quick win suggestions (impact vs. effort).")
     print("  --detailed                   Show detailed file tree output.")
     print("  --level <level>              Set the detail level for reports. Options: 'file' (default), 'function'.")
-    print("  --hierarchical               (JSON only) Output the full hierarchical data model instead of a flat list.")
+    print("  --hierarchical               (JSON only) Output the full hierarchical data model "
+          "instead of a flat list.")
     print("  --list-hotspots              Display list of highest hotspots after analysis.")
     print("  --hotspot-threshold <score>  Minimum hotspot score to include (default: 50).")
-    print("  --hotspot-output <file>      Save hotspot list to file instead of terminal. Use .md for markdown (default), .txt for plain text.")
+    print("  --hotspot-output <file>      Save hotspot list to file instead of terminal. "
+          "Use .md for markdown (default), .txt for plain text.")
     print("  --review-strategy            Generate code review strategy report based on KPIs.")
-    print("  --review-output <file>       Save review strategy to file (default: review_strategy.md, supports .txt and .md).")
+    print("  --review-output <file>       Save review strategy to file (default: review_strategy.md, "
+          "supports .txt and .md).")
     print("  --review-branch-only         Only include files changed in current branch in review strategy.")
     print("  --review-base-branch <name>  Base branch to compare against (default: main).")
-    print("  --auto-report-filename       (Optional) Automatically generate a unique report filename based on date and directories.")
+    print("  --auto-report-filename       (Optional) Automatically generate a unique report filename "
+          "based on date and directories.")
     print(
         "  --report-filename <filename> (Optional) Set the report filename directly. "
         "If used, scanned directories are not included in the filename. Optionally add --with-date to append date/time."
     )
-    print("  --with-date                  (Optional) If used with --report-filename, appends date and time to the filename before extension.")
+    print("  --with-date                  (Optional) If used with --report-filename, "
+          "appends date and time to the filename before extension.")
     print("  --report-folder <folder>     (Optional) Folder to write all reports to. Default is 'output'.")
     print("\nEXAMPLE:")
     print(
@@ -53,6 +62,7 @@ def print_usage():
     print("  python -m src.main src test --report-filename myreport.html")
     print("  python -m src.main src test --report-filename myreport.html --with-date")
     print("  python -m src.main src test --report-folder reports")
+    print("  python -m src.main src test --output-formats html,json,summary")
     print("  python -m src.main src --list-hotspots --hotspot-threshold 100")
     print("  python -m src.main src --list-hotspots --hotspot-output hotspots.md")
     print("  python -m src.main src --review-strategy --review-output review_strategy.md")
@@ -118,7 +128,17 @@ def parse_args():
         "--output-format",
         type=str,
         default="summary",
-        help="Output format: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
+        help="Output format: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), "
+             "'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
+    )
+    parser.add_argument(
+        "--output-formats",
+        type=str,
+        default=None,
+        help="Generate multiple output formats in a single run (comma-separated). "
+             "Example: 'html,json,summary,review-strategy'. "
+             "Includes 'review-strategy' (full repo) and 'review-strategy-branch' (changed files only). "
+             "Eliminates redundant scanning for multiple formats."
     )
     parser.add_argument(
         "--summary",
@@ -167,7 +187,8 @@ def parse_args():
         "--hotspot-output",
         type=str,
         default=None,
-        help="Save hotspot list to file instead of displaying on terminal. Supports .md (markdown) and .txt (plain text). Default format is markdown."
+        help="Save hotspot list to file instead of displaying on terminal. "
+             "Supports .md (markdown) and .txt (plain text). Default format is markdown."
     )
     parser.add_argument(
         "--review-strategy",

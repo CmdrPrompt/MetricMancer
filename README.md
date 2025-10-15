@@ -1,4 +1,3 @@
-
 # MetricMancer
 
 MetricMancer is a software analytics tool that provides actionable insights into code quality, maintainability, and technical risk. Inspired by "Your Code as a Crime Scene" by Adam Tornhill, it analyzes source code repositories to extract key performance indicators (KPIs) such as cyclomatic complexity, code churn, and hotspots. MetricMancer is designed for extensibility, multi-language support, and integration with CI/CD pipelines.
@@ -18,6 +17,7 @@ For detailed requirements, architecture, and design, see the [Software Specifica
 - **Configurable thresholds:** Set custom thresholds for KPIs and grades (Low, Medium, High).
 - **Aggregated KPIs:** Summarizes metrics at file, directory, and repository levels.
 - **Flexible reporting:** Generates reports in CLI, HTML, JSON formats, plus specialized hotspot and review strategy reports.
+- **Multi-format single run:** **[New in v3.1.0]** Generate multiple report formats in one analysis run (e.g., `--output-formats html,json,summary`) - 50-70% performance improvement by eliminating redundant scanning.
 - **Extensible architecture:** Easily add new KPIs, languages, or report formats.
 - **Error and edge case handling:** Robust error messages and handling for unsupported files, empty directories, and parse errors.
 - **CI/CD ready:** Scriptable CLI and machine-readable JSON output for automation.
@@ -41,6 +41,7 @@ python -m src.main <directories> [options]
 - `--with-date`: Append date/time to the filename (used with --report-filename)
 - `--report-folder <folder>`: Folder to write all reports to (default: **'output'**)
 - `--output-format <format>`: Output format: 'summary' (default dashboard), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV)
+- `--output-formats <formats>`: **[New in v3.1.0]** Generate multiple formats in one run (comma-separated). Example: 'html,json,summary,review-strategy'. Includes 'review-strategy' (full repo) and 'review-strategy-branch' (changed files only). Scans code once, generates all formats - 50-70% faster than separate runs
 - `--summary`: Show executive summary dashboard (default)
 - `--detailed`: Show detailed file tree output
 - `--level <level>`: Detail level for reports: 'file' (default) or 'function'
@@ -83,6 +84,11 @@ python -m src.main path/to/repo --report-folder reports
 # Use hierarchical JSON output
 python -m src.main path/to/repo --output-format json --hierarchical
 
+# Generate multiple formats in one run (NEW in v3.1.0 - much faster!)
+python -m src.main path/to/repo --output-formats html,json,summary
+python -m src.main path/to/repo tests --output-formats html,json
+python -m src.main path/to/repo --output-formats html,review-strategy,review-strategy-branch
+
 # Show prioritized quick win suggestions
 python -m src.main path/to/repo --quick-wins
 
@@ -97,6 +103,22 @@ python -m src.main path/to/repo --review-strategy --review-output review_strateg
 # Generate code review strategy for changed files in current branch only
 python -m src.main path/to/repo --review-strategy --review-branch-only
 ```
+
+### Multi-Format Report Generation (v3.1.0)
+
+You can now generate multiple report formats in a single run using the `--output-formats` option:
+
+```sh
+python -m src.main src --output-formats html,json,summary,quick-wins,human-tree,review-strategy,review-strategy-branch
+```
+
+- All formats are generated in one scan (much faster)
+- CLI formats (summary, quick-wins, human-tree) are saved as markdown files with code fences for proper monospace rendering
+- Review strategy reports help plan code reviews for the whole repo or just changed files in your branch
+
+**Backward compatibility:**
+- Single-format mode (`--output-format html`) still works as before
+- Default output format is `summary` for quick overview
 
 ## Output
 

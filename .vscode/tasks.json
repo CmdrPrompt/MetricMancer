@@ -200,26 +200,68 @@
         {
             "label": "Open coverage report",
             "type": "shell",
-            "command": "python",
+            "command": "bash",
             "args": [
-                "-m",
-                "http.server",
-                "8080",
-                "--directory",
-                "coverage_html"
+                "-c",
+                "echo '🚀 Starting coverage report server on http://localhost:8080' && echo '📂 Serving files from: coverage_html/' && echo '⚠️  Press Ctrl+C to stop the server' && echo '' && echo '👉 IMPORTANT: Check the PORTS tab and click the globe icon 🌐 next to port 8080 to open in your browser!' && echo '' && python -m http.server 8080 --directory coverage_html"
             ],
             "group": "test",
             "presentation": {
                 "echo": true,
                 "reveal": "always",
-                "focus": false,
+                "focus": true,
                 "panel": "shared"
             },
             "options": {
                 "cwd": "${workspaceFolder}"
             },
             "isBackground": true,
-            "problemMatcher": []
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^Serving HTTP on (.+) port (\\d+)",
+                    "file": 1,
+                    "location": 2,
+                    "message": 0
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Starting",
+                    "endsPattern": "^Serving HTTP"
+                }
+            }
+        },
+        {
+            "label": "Serve output files",
+            "type": "shell",
+            "command": "bash",
+            "args": [
+                "-c",
+                "echo '🚀 Starting web server on http://localhost:8080' && echo '📂 Serving files from: output/' && echo '⚠️  Press Ctrl+C to stop the server' && echo '' && echo '👉 IMPORTANT: Check the PORTS tab and click the globe icon 🌐 next to port 8080 to open in your browser!' && echo '' && python -m http.server 8080 --directory output"
+            ],
+            "group": "none",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "dedicated"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^Serving HTTP on (.+) port (\\d+)",
+                    "file": 1,
+                    "location": 2,
+                    "message": 0
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Starting",
+                    "endsPattern": "^Serving HTTP"
+                }
+            }
         },
         {
             "label": "Full coverage workflow",
@@ -289,6 +331,30 @@
             "options": {
                 "cwd": "${workspaceFolder}"
             }
+        },
+        {
+            "label": "Disable Git commit signing",
+            "type": "shell",
+            "command": "git",
+            "args": [
+                "config",
+                "--local",
+                "commit.gpgsign",
+                "false"
+            ],
+            "group": "none",
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": false,
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            },
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": []
         }
     ]
 }
