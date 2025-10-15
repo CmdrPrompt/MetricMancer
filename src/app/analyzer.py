@@ -2,6 +2,7 @@ from collections import defaultdict
 from pathlib import Path
 from tqdm import tqdm
 
+from src.app.hierarchy_builder import HierarchyBuilder
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership import CodeOwnershipKPI
 from src.kpis.codechurn import ChurnKPI
@@ -28,6 +29,7 @@ class Analyzer:
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
         self.churn_time_period_months = churn_time_period_months
+        self.hierarchy_builder = HierarchyBuilder()
 
     def _group_files_by_repo(self, files):
         """Groups files by their repository root directory."""
@@ -211,28 +213,8 @@ class Analyzer:
                 functions=function_objects
             )
 
-            # Find or create ScanDir objects in the hierarchy
-            relative_dir_path = file_path.relative_to(repo_root_path).parent
-            current_dir_container = repo_info
-            path_parts = [part for part in relative_dir_path.parts if part and part != '.']
-
-            if not path_parts:
-                # The file is in the root directory of the repo
-                repo_info.files[file_obj.name] = file_obj
-            else:
-                # The file is in a subdirectory, navigate there
-                current_path = Path()
-                for part in path_parts:
-                    current_path = current_path / part
-                    if part not in current_dir_container.scan_dirs:
-                        current_dir_container.scan_dirs[part] = ScanDir(
-                            dir_name=part,
-                            scan_dir_path=str(current_path),
-                            repo_root_path=repo_info.repo_root_path,
-                            repo_name=repo_info.repo_name
-                        )
-                    current_dir_container = current_dir_container.scan_dirs[part]
-                current_dir_container.files[file_obj.name] = file_obj
+            # Add file to hierarchy (delegates to HierarchyBuilder)
+            self.hierarchy_builder.add_file_to_hierarchy(repo_info, file_obj)
             # Add logic to aggregate KPIs up the hierarchy (from File -> ScanDir -> RepoInfo)
             # debug_print(f"[DEBUG] Returning repo_info for {repo_root}: {repo_info}")
             # --- Aggregate KPIs for each ScanDir (folder) ---
