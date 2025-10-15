@@ -44,6 +44,7 @@ def print_usage():
           "supports .txt and .md).")
     print("  --review-branch-only         Only include files changed in current branch in review strategy.")
     print("  --review-base-branch <name>  Base branch to compare against (default: main).")
+    print("  --churn-period <days>        Number of days to analyze for code churn (default: 30).")
     print("  --auto-report-filename       (Optional) Automatically generate a unique report filename "
           "based on date and directories.")
     print(
@@ -211,5 +212,11 @@ def parse_args():
         type=str,
         default="main",
         help="Base branch to compare against when using --review-branch-only (default: main)."
+    )
+    parser.add_argument(
+        "--churn-period",
+        type=int,
+        default=30,
+        help="Number of days to analyze for code churn (default: 30)."
     )
     return parser

@@ -22,7 +22,7 @@ class GitDataCache:
     - tracked_files_cache = {repo_root: set(tracked_files)}
     """
     
-    def __init__(self):
+    def __init__(self, churn_period_days: int = 30):
         # Cache for different types of git data
         self.ownership_cache: Dict[str, Dict[str, Dict[str, float]]] = {}
         self.churn_cache: Dict[str, Dict[str, int]] = {}
@@ -31,6 +31,9 @@ class GitDataCache:
         
         # Cache for git commands used by multiple KPIs
         self._ls_files_cache: Dict[str, Set[str]] = {}
+        
+        # Churn calculation settings
+        self.churn_period_days = churn_period_days
         
     def clear_cache(self, repo_root: Optional[str] = None):
         """Clear cache for a specific repo or the entire cache."""
@@ -186,10 +189,12 @@ class GitDataCache:
             return 0
         
         try:
-            # Use git log to count commits that affected the file
-            debug_print(f"[CACHE] Miss: calculating churn for {file_path}")
+            # Use git log to count commits that affected the file within the time period
+            debug_print(f"[CACHE] Miss: calculating churn for {file_path} (last {self.churn_period_days} days)")
+            # Calculate date for --since parameter
+            since_date = f"{self.churn_period_days} days ago"
             result = subprocess.run(
-                ['git', '-C', repo_root, 'log', '--oneline', '--', file_path],
+                ['git', '-C', repo_root, 'log', '--oneline', '--since', since_date, '--', file_path],
                 capture_output=True,
                 text=True,
                 check=True
@@ -317,15 +322,17 @@ class GitDataCache:
         
         for file_path in uncached_churn_files:
             try:
+                # Use time period for churn calculation
+                since_date = f"{self.churn_period_days} days ago"
                 result = subprocess.run(
-                    ['git', '-C', repo_root, 'log', '--oneline', '--', file_path],
+                    ['git', '-C', repo_root, 'log', '--oneline', '--since', since_date, '--', file_path],
                     capture_output=True,
                     text=True,
                     check=True
                 )
                 churn_count = len([line for line in result.stdout.strip().split('\n') if line.strip()])
                 repo_churn_cache[file_path] = churn_count
-                debug_print(f"[CACHE] Pre-built churn for {file_path}: {churn_count} commits")
+                debug_print(f"[CACHE] Pre-built churn for {file_path}: {churn_count} commits (last {self.churn_period_days} days)")
                 
             except Exception as e:
                 debug_print(f"[CACHE] Error pre-building churn for {file_path}: {e}")
@@ -349,10 +356,20 @@ class GitDataCache:
 _git_cache_instance = None
 
 
-def get_git_cache() -> GitDataCache:
-    """Return singleton instance of GitDataCache."""
+def get_git_cache(churn_period_days: int = None) -> GitDataCache:
+    """
+    Return singleton instance of GitDataCache.
+    
+    Args:
+        churn_period_days: Number of days for churn calculation (only used when creating new instance)
+    """
     global _git_cache_instance
     if _git_cache_instance is None:
-        _git_cache_instance = GitDataCache()
-        debug_print("[CACHE] Created new GitDataCache instance")
+        _git_cache_instance = GitDataCache(churn_period_days or 30)
+        debug_print(f"[CACHE] Created new GitDataCache instance with churn_period={_git_cache_instance.churn_period_days} days")
+    elif churn_period_days is not None and _git_cache_instance.churn_period_days != churn_period_days:
+        # Update churn period if different and clear churn cache
+        debug_print(f"[CACHE] Updating churn period from {_git_cache_instance.churn_period_days} to {churn_period_days} days")
+        _git_cache_instance.churn_period_days = churn_period_days
+        _git_cache_instance.churn_cache.clear()
     return _git_cache_instance

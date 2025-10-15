@@ -20,7 +20,8 @@ class MetricMancerApp:
                  output_format="human", list_hotspots=False, hotspot_threshold=50,
                  hotspot_output=None, review_strategy=False,
                  review_output="review_strategy.md", review_branch_only=False,
-                 review_base_branch="main", report_folder=None, config: Optional[AppConfig] = None):
+                 review_base_branch="main", churn_period=30, report_folder=None, 
+                 config: Optional[AppConfig] = None):
         """
         Initialize MetricMancerApp.
 
@@ -62,6 +63,7 @@ class MetricMancerApp:
                 review_output=review_output,
                 review_branch_only=review_branch_only,
                 review_base_branch=review_base_branch,
+                churn_period=churn_period,
                 debug=False
             )
 
@@ -71,7 +73,8 @@ class MetricMancerApp:
         self.analyzer = Analyzer(
             self.lang_config.languages,
             threshold_low=self.app_config.threshold_low,
-            threshold_high=self.app_config.threshold_high
+            threshold_high=self.app_config.threshold_high,
+            churn_period_days=self.app_config.churn_period
         )
 
         # Expose config values as instance attributes for backward compatibility
@@ -95,6 +98,9 @@ class MetricMancerApp:
         self.review_output = self.app_config.review_output
         self.review_branch_only = self.app_config.review_branch_only
         self.review_base_branch = self.app_config.review_base_branch
+
+        # Code churn settings
+        self.churn_period = self.app_config.churn_period
 
         # Allow swapping report generator (None means multi-format mode)
         self.report_generator_cls = report_generator_cls

@@ -15,6 +15,7 @@ from src.kpis.sharedcodeownership.shared_code_ownership import (
 from src.utilities.debug import debug_print
 
 
+
 class AggregatedSharedOwnershipKPI(BaseKPI):
     """Aggregated version of SharedOwnershipKPI for directory aggregation."""
 
@@ -24,11 +25,11 @@ class AggregatedSharedOwnershipKPI(BaseKPI):
 
 class Analyzer:
     def __init__(self, languages_config, threshold_low=10.0,
-                 threshold_high=20.0, churn_time_period_months=6):
+                 threshold_high=20.0, churn_period_days=30):
         self.config = languages_config
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
-        self.churn_time_period_months = churn_time_period_months
+        self.churn_period_days = churn_period_days
         self.hierarchy_builder = HierarchyBuilder()
 
     def _group_files_by_repo(self, files):
@@ -69,7 +70,7 @@ class Analyzer:
         # 2. Pre-build cache before KPI calculation (Issue #40)
         t_prefetch_start = time.perf_counter()
         from src.utilities.git_cache import get_git_cache
-        git_cache = get_git_cache()
+        git_cache = get_git_cache(churn_period_days=self.churn_period_days)
 
         # Collect all file paths for cache pre-building
         file_paths = [
