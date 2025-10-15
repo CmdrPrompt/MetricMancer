@@ -20,11 +20,12 @@ class TestReportRenderer(unittest.TestCase):
         MockEnv.assert_called_once()
 
     def test_collect_all_files_nested(self):
+        from src.report.report_renderer import collect_all_files
         file1 = File(name="a.py", file_path="a.py")
         file2 = File(name="b.py", file_path="b.py")
         subdir = ScanDir(dir_name="sub", scan_dir_path="sub", repo_root_path=".", repo_name="repo", files={"b.py": file2})
         root = ScanDir(dir_name="root", scan_dir_path=".", repo_root_path=".", repo_name="repo", files={"a.py": file1}, scan_dirs={"sub": subdir})
-        result = self.renderer._collect_all_files(root)
+        result = collect_all_files(root)
         self.assertIn(file1, result)
         self.assertIn(file2, result)
         self.assertEqual(len(result), 2)
