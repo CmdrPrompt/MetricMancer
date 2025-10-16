@@ -32,7 +32,8 @@ def average_complexity(files: List[Union[Dict[str, Any], FileInfo]]) -> float:
     return sum(get_complexity(f) for f in files) / len(files)
 
 
-def average_grade(files: List[Union[Dict[str, Any], FileInfo]], threshold_low: float, threshold_high: float) -> Union[str, Dict[str, Any]]:
+def average_grade(files: List[Union[Dict[str, Any], FileInfo]], threshold_low: float,
+                  threshold_high: float) -> Union[str, Dict[str, Any]]:
 
     if not files:
         return "No code"
@@ -46,7 +47,6 @@ def average_grade(files: List[Union[Dict[str, Any], FileInfo]], threshold_low: f
 
 
 def filter_problem_files(files: List[FileInfo], problem_file_threshold: float) -> List[FileInfo]:
-
     """
     Filter and return files with complexity greater than or equal to the problem_file_threshold.
     Args:
@@ -58,8 +58,8 @@ def filter_problem_files(files: List[FileInfo], problem_file_threshold: float) -
     return [f for f in files if f.complexity is not None and f.complexity >= problem_file_threshold]
 
 
-def filter_hotspot_risk_files(files: List[FileInfo], high_score: float = 300, medium_score: float = 100, complexity_limit: float = 15, churn_limit: float = 15) -> List[FileInfo]:
-
+def filter_hotspot_risk_files(files: List[FileInfo], high_score: float = 300, medium_score: float = 100,
+                              complexity_limit: float = 15, churn_limit: float = 15) -> List[FileInfo]:
     """
     Filter and return files that are considered hotspots based on churn and complexity.
     Args:
@@ -82,8 +82,8 @@ def filter_hotspot_risk_files(files: List[FileInfo], high_score: float = 300, me
     return hotspot_risk_files
 
 
-def summarize_and_sort_report(summary: List[dict], sort_key: str = 'average', secondary_keys: List[str] = ['language', 'root'], reverse: bool = True) -> List[dict]:
-
+def summarize_and_sort_report(summary: List[dict], sort_key: str = 'average', secondary_keys: List[str] = [
+                              'language', 'root'], reverse: bool = True) -> List[dict]:
     """
     Sort and summarize report data by the specified keys.
     Args:

@@ -6,11 +6,10 @@ from src.app.scanning.scanner import Scanner
 from src.app.hierarchy.data_converter import DataConverter
 from src.app.coordination.report_coordinator import ReportCoordinator
 from src.app.infrastructure.timing_reporter import TimingReporter
-from src.app.coordination.hotspot_coordinator import HotspotCoordinator
-from src.app.coordination.review_coordinator import ReviewCoordinator
+from src.utilities.path_helpers import normalize_output_path
 from src.languages.config import Config
 from src.config.app_config import AppConfig
-from src.report.report_generator import ReportGenerator
+from src.report.report_generator import ReportGenerator  # noqa: F401 - used in tests for mocking
 from src.utilities.debug import debug_print
 from src.analysis.hotspot_analyzer import (
     extract_hotspots_from_data, format_hotspots_table,
@@ -25,7 +24,7 @@ class MetricMancerApp:
                  output_format="human", list_hotspots=False, hotspot_threshold=50,
                  hotspot_output=None, review_strategy=False,
                  review_output="review_strategy.md", review_branch_only=False,
-                 review_base_branch="main", churn_period=30, report_folder=None, 
+                 review_base_branch="main", churn_period=30, report_folder=None,
                  config: Optional[AppConfig] = None):
         """
         Initialize MetricMancerApp.
@@ -124,12 +123,12 @@ class MetricMancerApp:
         """Analyze files and return repo info objects."""
         summary = self.analyzer.analyze(files)
         debug_print(f"[DEBUG] summary keys: {list(summary.keys())}")
-        
+
         repo_infos = []
         for repo_root, repo_info in summary.items():
             debug_print(f"[DEBUG] repo_info: root={repo_info.repo_root_path}, name={repo_info.repo_name}")
             repo_infos.append(repo_info)
-        
+
         return repo_infos
 
     def _prepare_report_links(self, repo_infos):
@@ -190,10 +189,10 @@ class MetricMancerApp:
             self.app_config,
             self.report_generator_cls
         )
-        
+
         for output_format in self.app_config.output_formats:
             debug_print(f"[DEBUG] Generating reports for format: {output_format}")
-            
+
             # Handle review-strategy formats (aggregate report, not per-repo)
             if output_format in ['review-strategy', 'review-strategy-branch']:
                 review_branch_only = (output_format == 'review-strategy-branch')
@@ -203,7 +202,7 @@ class MetricMancerApp:
                     repo_infos, review_branch_only, output_filename
                 )
                 continue
-            
+
             # Use coordinator for standard report generation
             coordinator.generate_reports_for_format(
                 output_format,
@@ -233,16 +232,14 @@ class MetricMancerApp:
 
         # Display or save results using HotspotCoordinator
         if self.hotspot_output:
-            output_path = os.path.join(self.report_folder, self.hotspot_output)
+            output_path = normalize_output_path(self.report_folder, self.hotspot_output)
             save_hotspots_to_file(all_hotspots, output_path, show_risk_categories=True)
             print_hotspots_summary(all_hotspots)
         else:
             print("\n" + format_hotspots_table(all_hotspots, show_risk_categories=True))
 
-
-
     def _run_review_strategy_analysis(self, repo_infos, review_branch_only=None,
-                                       output_filename=None):
+                                      output_filename=None):
         """
         Generate code review strategy report based on KPI metrics.
 
@@ -295,7 +292,7 @@ class MetricMancerApp:
         # Generate the report in report folder
         try:
             os.makedirs(self.report_folder, exist_ok=True)
-            output_path = os.path.join(self.report_folder, output_filename)
+            output_path = normalize_output_path(self.report_folder, output_filename)
             generate_review_report(
                 all_data,
                 output_file=output_path,

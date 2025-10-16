@@ -3,12 +3,14 @@ from src.report.report_renderer import ReportRenderer
 from src.report.report_writer import ReportWriter
 from src.kpis.model import RepoInfo
 
+
 class HTMLReportFormat(ReportFormatStrategy):
     def __init__(self, template_dir='src/report/templates', template_file='report.html'):
         self.template_dir = template_dir
         self.template_file = template_file
 
-    def print_report(self, repo_info: RepoInfo, debug_print, output_file='complexity_report.html', threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, report_links=None, **kwargs):
+    def print_report(self, repo_info: RepoInfo, debug_print, output_file='complexity_report.html',
+                     threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, report_links=None, **kwargs):
         """
         Generates an HTML report directly from a RepoInfo object.
         """

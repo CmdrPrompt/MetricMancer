@@ -8,7 +8,9 @@ class ReportGenerator(ReportInterface):
     Main entry point for generating reports from the analyzed repository data.
     Uses a strategy pattern to select the report format (HTML by default).
     """
-    def __init__(self, repo_info, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None, template_dir='src/report/templates', template_file='report.html'):
+
+    def __init__(self, repo_info, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None,
+                 template_dir='src/report/templates', template_file='report.html'):
         """
         Initialize the ReportGenerator.
         Args:

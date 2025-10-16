@@ -22,4 +22,3 @@ class ComplexityKPI(BaseKPI):
         self.value = complexity
         self.calculation_values = {"function_count": function_count}
         return self
-

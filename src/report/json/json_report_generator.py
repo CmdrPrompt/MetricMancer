@@ -5,9 +5,10 @@ from src.report.json.json_report_format import JSONReportFormat
 from src.report.report_interface import ReportInterface
 from src.utilities.debug import debug_print
 
+
 class JSONReportGenerator(ReportInterface):
     def __init__(self, repo_info, threshold_low=10.0, threshold_high=20.0, problem_file_threshold=None):
-        self.repo_infos = [repo_info] # Internally, we still work with a list
+        self.repo_infos = [repo_info]  # Internally, we still work with a list
         self.threshold_low = threshold_low
         self.threshold_high = threshold_high
         self.problem_file_threshold = problem_file_threshold

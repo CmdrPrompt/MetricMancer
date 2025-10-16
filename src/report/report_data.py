@@ -10,6 +10,7 @@ class ReportData:
     Holds data for report generation.
     Stores summary and detailed report data.
     """
+
     def __init__(self, summary, details):
         """
         Initialize the ReportData object.
@@ -23,7 +24,8 @@ class ReportData:
 
 class ReportDataBuilder:
 
-    def __init__(self, repo_info, threshold_low: float = 10.0, threshold_high: float = 20.0, problem_file_threshold: Union[float, None] = None):
+    def __init__(self, repo_info, threshold_low: float = 10.0, threshold_high: float = 20.0,
+                 problem_file_threshold: Union[float, None] = None):
         self.repo_info = repo_info
         self.results = repo_info.results
         self.threshold_low = threshold_low
