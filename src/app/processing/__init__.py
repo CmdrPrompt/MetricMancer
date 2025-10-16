@@ -16,7 +16,8 @@ Part of the Analyzer refactoring to reduce complexity and improve modularity.
 """
 
 from .repository_grouper import RepositoryGrouper
+from .kpi_orchestrator import KPIOrchestrator
+from .file_processor import FileProcessor
+from .kpi_aggregator import KPIAggregator
 
-__all__ = [
-    'RepositoryGrouper',
-]
+__all__ = ["RepositoryGrouper", "KPIOrchestrator", "FileProcessor", "KPIAggregator"]
