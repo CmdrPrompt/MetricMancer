@@ -4,12 +4,11 @@ from unittest.mock import patch
 from src.kpis.codeownership.code_ownership import CodeOwnershipKPI
 
 
-
 class TestCodeOwnershipKPICache(unittest.TestCase):
     def setUp(self):
         from src.utilities.git_cache import get_git_cache
         get_git_cache().clear_cache()
-    
+
     @patch("src.utilities.git_cache.subprocess.run")
     @patch("src.utilities.git_cache.subprocess.check_output")
     def test_cache_usage(self, mock_check_output, mock_run):
@@ -20,7 +19,7 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
         # Mock git ls-files (tracked files check)
         mock_run.return_value.stdout = "some_file.py\n"
         mock_run.return_value.returncode = 0
-        
+
         # Mock git blame output
         mock_check_output.return_value = "author Thomas\n" * 10
 
@@ -40,5 +39,7 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
         finally:
             # Städa upp testfilen
             os.remove(file_path)
+
+
 if __name__ == "__main__":
     unittest.main()

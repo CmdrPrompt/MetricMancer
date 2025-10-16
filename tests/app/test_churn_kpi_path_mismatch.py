@@ -28,7 +28,10 @@ class TestChurnKPIPathMismatch(unittest.TestCase):
         churn_data = make_churn_data_for_test()
         abs_path = os.path.abspath("/repo/file1.py")
         churn_kpi = ChurnKPI().calculate(file_path=abs_path, churn_data=churn_data)
-        self.assertEqual(churn_kpi.value, 5, "ChurnKPI should return correct churn when file_path is absolute and matches churn_data")
+        self.assertEqual(
+            churn_kpi.value,
+            5,
+            "ChurnKPI should return correct churn when file_path is absolute and matches churn_data")
 
 
 if __name__ == "__main__":

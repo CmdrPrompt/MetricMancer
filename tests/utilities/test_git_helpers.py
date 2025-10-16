@@ -25,14 +25,14 @@ class TestGitHelpers:
             # Create a .git directory
             git_dir = os.path.join(temp_dir, '.git')
             os.makedirs(git_dir)
-            
+
             # Create a subdirectory to test from
             sub_dir = os.path.join(temp_dir, 'src', 'submodule')
             os.makedirs(sub_dir)
-            
+
             # Test from subdirectory
             result = find_git_repo_root(sub_dir)
-            
+
             # Should find the temp_dir as the git root
             assert result == temp_dir
 
@@ -42,10 +42,10 @@ class TestGitHelpers:
             # Create a .git directory
             git_dir = os.path.join(temp_dir, '.git')
             os.makedirs(git_dir)
-            
+
             # Test from the git root directory itself
             result = find_git_repo_root(temp_dir)
-            
+
             # Should find the temp_dir as the git root
             assert result == temp_dir
 
@@ -55,10 +55,10 @@ class TestGitHelpers:
             # Create a subdirectory without .git
             sub_dir = os.path.join(temp_dir, 'no_git_here')
             os.makedirs(sub_dir)
-            
+
             # Test from subdirectory
             result = find_git_repo_root(sub_dir)
-            
+
             # Should return the original path as absolute path
             assert result == os.path.abspath(sub_dir)
 
@@ -68,14 +68,14 @@ class TestGitHelpers:
             # Create a .git directory at root
             git_dir = os.path.join(temp_dir, '.git')
             os.makedirs(git_dir)
-            
+
             # Create deeply nested subdirectory
             deep_dir = os.path.join(temp_dir, 'level1', 'level2', 'level3', 'level4')
             os.makedirs(deep_dir)
-            
+
             # Test from deep subdirectory
             result = find_git_repo_root(deep_dir)
-            
+
             # Should find the temp_dir as the git root
             assert result == temp_dir
 
@@ -85,17 +85,17 @@ class TestGitHelpers:
             # Create a .git directory
             git_dir = os.path.join(temp_dir, '.git')
             os.makedirs(git_dir)
-            
+
             # Create a subdirectory
             sub_dir = os.path.join(temp_dir, 'src')
             os.makedirs(sub_dir)
-            
+
             # Change to temp directory and use relative path
             old_cwd = os.getcwd()
             try:
                 os.chdir(temp_dir)
                 result = find_git_repo_root('src')
-                
+
                 # Should find the temp_dir as the git root (normalize paths for macOS)
                 assert os.path.realpath(result) == os.path.realpath(temp_dir)
             finally:
@@ -106,7 +106,7 @@ class TestGitHelpers:
         # Use a path that definitely doesn't have a .git directory
         # and will traverse to filesystem root
         non_git_path = '/tmp' if os.path.exists('/tmp') else os.path.expanduser('~')
-        
+
         # Ensure there's no .git in the path we're testing
         test_path = non_git_path
         while os.path.dirname(test_path) != test_path:  # Until we reach root
@@ -114,19 +114,19 @@ class TestGitHelpers:
                 # Skip this test if we accidentally hit a git repo
                 pytest.skip("Test path contains a git repository")
             test_path = os.path.dirname(test_path)
-        
+
         result = find_git_repo_root(non_git_path)
-        
+
         # Should return the original path as absolute
         assert result == os.path.abspath(non_git_path)
 
     def test_find_git_repo_root_with_nonexistent_path(self):
         """Test behavior with nonexistent path."""
         nonexistent_path = '/this/path/does/not/exist/anywhere'
-        
+
         # The function should still work with abspath
         result = find_git_repo_root(nonexistent_path)
-        
+
         # Should return the absolute version of the nonexistent path
         assert result == os.path.abspath(nonexistent_path)
 
@@ -139,7 +139,7 @@ class TestGitHelpers:
         mock_abspath.side_effect = lambda x: f'/abs{x}'
         mock_dirname.side_effect = lambda x: '/parent' if x != '/parent' else '/parent'
         mock_isdir.side_effect = PermissionError("Permission denied")
-        
+
         # This should handle the permission error gracefully
         with pytest.raises(PermissionError):
             find_git_repo_root('/test/path')
@@ -151,10 +151,10 @@ class TestGitHelpers:
             # Create a .git directory
             git_dir = os.path.join(temp_dir, '.git')
             os.makedirs(git_dir)
-            
+
             # Test and capture debug output
             result = find_git_repo_root(temp_dir)
-            
+
             # Verify debug was called and check that the path contains our temp directory
             assert mock_debug_print.called
             call_args = mock_debug_print.call_args[0][0]
@@ -168,10 +168,10 @@ class TestGitHelpers:
             # Create a subdirectory without .git
             sub_dir = os.path.join(temp_dir, 'no_git')
             os.makedirs(sub_dir)
-            
+
             # Test and capture debug output
             result = find_git_repo_root(sub_dir)
-            
+
             # Verify debug was called and check the message content
             assert mock_debug_print.called
             call_args = mock_debug_print.call_args[0][0]
@@ -185,14 +185,14 @@ class TestGitHelpers:
             git_file = os.path.join(temp_dir, '.git')
             with open(git_file, 'w') as f:
                 f.write('gitdir: /some/other/path/.git/worktrees/branch')
-            
+
             # Create a subdirectory to test from
             sub_dir = os.path.join(temp_dir, 'src')
             os.makedirs(sub_dir)
-            
+
             # Test from subdirectory - should not find git root since .git is file, not dir
             result = find_git_repo_root(sub_dir)
-            
+
             # Should return original path since os.path.isdir('.git') will be False
             assert result == os.path.abspath(sub_dir)
 
@@ -202,20 +202,20 @@ class TestGitHelpers:
             # Create outer .git directory
             outer_git = os.path.join(temp_dir, '.git')
             os.makedirs(outer_git)
-            
+
             # Create inner directory structure with its own .git
             inner_repo = os.path.join(temp_dir, 'submodule')
             os.makedirs(inner_repo)
             inner_git = os.path.join(inner_repo, '.git')
             os.makedirs(inner_git)
-            
+
             # Create test directory inside inner repo
             test_dir = os.path.join(inner_repo, 'src')
             os.makedirs(test_dir)
-            
+
             # Test from inner test directory
             result = find_git_repo_root(test_dir)
-            
+
             # Should find the closest git root (inner repo)
             assert result == inner_repo
 
@@ -226,7 +226,7 @@ class TestGitHelpersEdgeCases:
     def test_find_git_repo_root_with_empty_string(self):
         """Test behavior with empty string input."""
         result = find_git_repo_root('')
-        
+
         # Should handle empty string gracefully
         assert result == os.path.abspath('')
 
@@ -234,7 +234,7 @@ class TestGitHelpersEdgeCases:
         """Test behavior with current directory ('.')."""
         current_dir = os.getcwd()
         result = find_git_repo_root('.')
-        
+
         # Should return absolute path of current directory or its git root
         assert os.path.isabs(result)
         # Result should either be current dir or a parent directory
@@ -251,7 +251,7 @@ class TestGitHelpersEdgeCases:
                 './',
                 '../',
             ]
-            
+
             for test_path in test_paths:
                 if os.path.exists(test_path) or test_path in ['.', './', '../']:
                     result = find_git_repo_root(test_path)

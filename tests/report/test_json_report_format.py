@@ -11,7 +11,7 @@ class DummyKPI(BaseKPI):
     def __init__(self, name, value):
         super().__init__(name=name, value=value)
         self._value = value
-    
+
     def calculate(self, *args, **kwargs):
         return self._value
 
@@ -74,6 +74,11 @@ class TestJSONReportFormat(unittest.TestCase):
         main_kpis = filenames["main.py"]
         utils_kpis = filenames["utils.py"]
         self.assertEqual(main_kpis["code_ownership"], {"Alice": 80.0, "Bob": 20.0})
-        self.assertEqual(main_kpis["shared_ownership"], {"num_significant_authors": 1, "significant_authors": ["Alice"]})
+        self.assertEqual(
+            main_kpis["shared_ownership"], {
+                "num_significant_authors": 1, "significant_authors": ["Alice"]})
         self.assertEqual(utils_kpis["code_ownership"], {"Alice": 60.0, "Bob": 40.0})
-        self.assertEqual(utils_kpis["shared_ownership"], {"num_significant_authors": 2, "significant_authors": ["Alice", "Bob"]})
+        self.assertEqual(
+            utils_kpis["shared_ownership"], {
+                "num_significant_authors": 2, "significant_authors": [
+                    "Alice", "Bob"]})

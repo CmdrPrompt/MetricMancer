@@ -23,8 +23,22 @@ class TestReportRenderer(unittest.TestCase):
         from src.report.report_renderer import collect_all_files
         file1 = File(name="a.py", file_path="a.py")
         file2 = File(name="b.py", file_path="b.py")
-        subdir = ScanDir(dir_name="sub", scan_dir_path="sub", repo_root_path=".", repo_name="repo", files={"b.py": file2})
-        root = ScanDir(dir_name="root", scan_dir_path=".", repo_root_path=".", repo_name="repo", files={"a.py": file1}, scan_dirs={"sub": subdir})
+        subdir = ScanDir(
+            dir_name="sub",
+            scan_dir_path="sub",
+            repo_root_path=".",
+            repo_name="repo",
+            files={
+                "b.py": file2})
+        root = ScanDir(
+            dir_name="root",
+            scan_dir_path=".",
+            repo_root_path=".",
+            repo_name="repo",
+            files={
+                "a.py": file1},
+            scan_dirs={
+                "sub": subdir})
         result = collect_all_files(root)
         self.assertIn(file1, result)
         self.assertIn(file2, result)
@@ -40,7 +54,14 @@ class TestReportRenderer(unittest.TestCase):
         # Setup files with complexity
         file1 = File(name="a.py", file_path="a.py", kpis={"complexity": MagicMock(value=10)})
         file2 = File(name="b.py", file_path="b.py", kpis={"complexity": MagicMock(value=20)})
-        root = ScanDir(dir_name="root", scan_dir_path=".", repo_root_path=".", repo_name="repo", files={"a.py": file1, "b.py": file2})
+        root = ScanDir(
+            dir_name="root",
+            scan_dir_path=".",
+            repo_root_path=".",
+            repo_name="repo",
+            files={
+                "a.py": file1,
+                "b.py": file2})
         renderer = ReportRenderer(self.template_dir, self.template_file, threshold_low=5, threshold_high=15)
         renderer.env = mock_env
         html = renderer.render(root, problem_file_threshold=15, report_links=["link"])
