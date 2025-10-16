@@ -172,7 +172,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertTrue(any(expected_substr in call.args[0] for call in mock_debug_print.call_args_list),
                             f"Expected debug_print call containing: {expected_substr}\nActual calls: {[call.args[0] for call in mock_debug_print.call_args_list]}")
 
-    @patch('src.app.analyzer.debug_print')
+    @patch('src.app.file_processor.debug_print')  # Phase 5: debug_print now in FileProcessor
     def test_unreadable_file_is_skipped_and_warned(self, mock_debug_print):
         """Analyzer should skip files it cannot read and continue processing others."""
         blocked_path = self.repo1_path / "src" / "blocked.py"

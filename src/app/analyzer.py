@@ -5,6 +5,7 @@ import time
 
 from src.app.hierarchy_builder import HierarchyBuilder
 from src.app.kpi_aggregator import KPIAggregator
+from src.app.file_processor import FileProcessor
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership import CodeOwnershipKPI
 from src.kpis.codechurn import ChurnKPI
@@ -53,109 +54,6 @@ def prebuild_git_cache(repo_root_path, files_in_repo, churn_period_days):
     debug_print(f"[PREBUILD] Cache pre-building completed in {elapsed:.3f} seconds")
     
     return elapsed
-
-
-def read_file_content(file_path):
-    """
-    Read file content with error handling.
-    
-    Returns:
-        str or None: File content, or None if reading fails
-    """
-    try:
-        with file_path.open('r', encoding='utf-8', errors='ignore') as f:
-            return f.read()
-    except Exception as e:
-        debug_print(f"[WARN] Unable to read {file_path}: {e}")
-        return None
-
-
-def analyze_functions_complexity(content, lang_config, complexity_analyzer):
-    """
-    Analyze functions in file content and return complexity metrics.
-    
-    Returns:
-        tuple: (function_objects, total_complexity, elapsed_time)
-    """
-    t_start = time.perf_counter()
-    functions_data = complexity_analyzer.analyze_functions(content, lang_config)
-    t_end = time.perf_counter()
-    
-    function_objects = []
-    total_complexity = 0
-    
-    for func_data in functions_data:
-        func_complexity_kpi = ComplexityKPI().calculate(
-            complexity=func_data.get('complexity', 0),
-            function_count=1
-        )
-        total_complexity += func_complexity_kpi.value
-        function_objects.append(
-            Function(
-                name=func_data.get('name', 'N/A'),
-                kpis={func_complexity_kpi.name: func_complexity_kpi}
-            )
-        )
-    
-    return function_objects, total_complexity, t_end - t_start
-
-
-def calculate_churn_kpi(file_path, repo_root_path):
-    """
-    Calculate churn KPI for a file.
-    
-    Returns:
-        tuple: (churn_kpi, elapsed_time)
-    """
-    t_start = time.perf_counter()
-    relative_path = str(file_path.relative_to(repo_root_path))
-    debug_print(f"[DEBUG] Looking up churn for file_path: {relative_path}")
-    
-    churn_kpi = ChurnKPI().calculate(
-        file_path=str(file_path),
-        repo_root=str(repo_root_path.resolve())
-    )
-    
-    t_end = time.perf_counter()
-    debug_print(f"[DEBUG] Setting churn for: {relative_path}: {churn_kpi.value}")
-    
-    return churn_kpi, t_end - t_start
-
-
-def calculate_ownership_kpis(file_path, repo_root_path):
-    """
-    Calculate code ownership and shared ownership KPIs.
-    
-    Returns:
-        tuple: (code_ownership_kpi, shared_ownership_kpi, ownership_time, shared_time)
-    """
-    # Code Ownership KPI
-    t_ownership_start = time.perf_counter()
-    try:
-        code_ownership_kpi = CodeOwnershipKPI(
-            file_path=str(file_path.resolve()),
-            repo_root=str(repo_root_path.resolve())
-        )
-    except Exception as e:
-        from src.kpis.codeownership.fallback_kpi import FallbackCodeOwnershipKPI
-        code_ownership_kpi = FallbackCodeOwnershipKPI(str(e))
-    t_ownership_end = time.perf_counter()
-    
-    # Shared Ownership KPI
-    t_shared_start = time.perf_counter()
-    try:
-        shared_ownership_kpi = SharedOwnershipKPI(
-            file_path=str(file_path.resolve()),
-            repo_root=str(repo_root_path.resolve())
-        )
-    except Exception as e:
-        from src.kpis.sharedcodeownership.fallback_kpi import FallbackSharedOwnershipKPI
-        shared_ownership_kpi = FallbackSharedOwnershipKPI(str(e))
-    t_shared_end = time.perf_counter()
-    
-    return (code_ownership_kpi, shared_ownership_kpi,
-            t_ownership_end - t_ownership_start,
-            t_shared_end - t_shared_start)
 
 
 def extract_numeric_kpi(file, kpi_name):
@@ -301,6 +199,8 @@ class Analyzer:
         self.churn_period_days = churn_period_days
         self.hierarchy_builder = HierarchyBuilder()
         self.kpi_aggregator = KPIAggregator()
+        # Phase 5: FileProcessor for file-level operations
+        self.file_processor = None  # Initialized per-repo with complexity_analyzer
 
     def _group_files_by_repo(self, files):
         """Groups files by their repository root directory."""
@@ -351,7 +251,11 @@ class Analyzer:
         return repo_info
     
     def _process_file(self, file_info, repo_root_path, complexity_analyzer):
-        """Process a single file and return a File object with all KPIs."""
+        """
+        Process a single file and return a File object with all KPIs.
+        
+        REFACTORED (Phase 5): Delegates to FileProcessor for file-level operations.
+        """
         file_path = Path(file_info['path'])
         ext = file_info.get('ext')
         
@@ -359,56 +263,31 @@ class Analyzer:
             debug_print(f"_analyze_repo: Skipping file with unknown extension: {str(file_path.resolve())}")
             return None
         
-        # Read file content
-        content = read_file_content(file_path)
-        if content is None:
+        # Delegate to FileProcessor (Phase 5)
+        if self.file_processor is None:
+            # Initialize file processor with lang config
+            self.file_processor = FileProcessor(complexity_analyzer, self.config)
+        
+        file_obj, timing = self.file_processor.process_file(file_info, repo_root_path)
+        
+        if file_obj is None:
             return None
         
-        # Analyze complexity
-        lang_config = self.config[ext]
-        function_objects, total_complexity, complexity_time = analyze_functions_complexity(
-            content, lang_config, complexity_analyzer
-        )
-        self.timing['complexity'] += complexity_time
+        # Update analyzer's timing tracking
+        self.timing['complexity'] += timing.get('complexity', 0.0)
+        self.timing['filechurn'] += timing.get('filechurn', 0.0)
+        self.timing['ownership'] += timing.get('ownership', 0.0)
+        self.timing['sharedownership'] += timing.get('sharedownership', 0.0)
         
-        # Calculate file-level complexity KPI
-        file_complexity_kpi = ComplexityKPI().calculate(
-            complexity=total_complexity,
-            function_count=len(function_objects)
-        )
-        
-        # Calculate churn KPI
-        churn_kpi, churn_time = calculate_churn_kpi(file_path, repo_root_path)
-        self.timing['filechurn'] += churn_time
-        
-        # Calculate hotspot KPI
+        # Calculate hotspot timing (not in FileProcessor yet)
         t_hotspot_start = time.perf_counter()
-        hotspot_kpi = HotspotKPI().calculate(
-            complexity=file_complexity_kpi.value,
-            churn=churn_kpi.value
-        )
+        # Hotspot already calculated in FileProcessor
         self.timing['hotspot'] += time.perf_counter() - t_hotspot_start
         
-        # Calculate ownership KPIs
-        code_ownership_kpi, shared_ownership_kpi, ownership_time, shared_time = calculate_ownership_kpis(
-            file_path, repo_root_path
-        )
-        self.timing['ownership'] += ownership_time
-        self.timing['sharedownership'] += shared_time
+        # Fix file_path to be relative
+        file_obj.file_path = str(file_path.relative_to(repo_root_path))
         
-        # Create the File object
-        return File(
-            name=file_path.name,
-            file_path=str(file_path.relative_to(repo_root_path)),
-            kpis={
-                file_complexity_kpi.name: file_complexity_kpi,
-                churn_kpi.name: churn_kpi,
-                hotspot_kpi.name: hotspot_kpi,
-                code_ownership_kpi.name: code_ownership_kpi,
-                shared_ownership_kpi.name: shared_ownership_kpi
-            },
-            functions=function_objects
-        )
+        return file_obj
     
     def _aggregate_scan_dir_kpis(self, scan_dir):
         """
