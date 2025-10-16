@@ -13,7 +13,10 @@ dependencies = [
   "coverage",
   "pydriller",
   "tqdm",
-  "PyYAML"
+  "PyYAML",
+  "autopep8",
+  "flake8",
+  "pip-licenses"
 ]
 
 [build-system]
@@ -51,4 +54,21 @@ exclude_lines = [
     "raise NotImplementedError",
     "if 0:",
     "if __name__ == .__main__.:"
+]
+
+[tool.autopep8]
+max_line_length = 120
+aggressive = 1
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "*.egg-info"
 ]
