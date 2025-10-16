@@ -8,8 +8,8 @@ Following TDD (Test-Driven Development):
 """
 import pytest
 
-# Import will fail initially (RED phase)
-from src.app.repository_grouper import RepositoryGrouper
+# Import from processing package
+from src.app.processing.repository_grouper import RepositoryGrouper
 
 
 class TestRepositoryGrouper:
