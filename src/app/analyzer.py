@@ -4,6 +4,7 @@ from tqdm import tqdm
 import time
 
 from src.app.hierarchy_builder import HierarchyBuilder
+from src.app.kpi_aggregator import KPIAggregator
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership import CodeOwnershipKPI
 from src.kpis.codechurn import ChurnKPI
@@ -299,6 +300,7 @@ class Analyzer:
         self.threshold_high = threshold_high
         self.churn_period_days = churn_period_days
         self.hierarchy_builder = HierarchyBuilder()
+        self.kpi_aggregator = KPIAggregator()
 
     def _group_files_by_repo(self, files):
         """Groups files by their repository root directory."""
@@ -410,38 +412,34 @@ class Analyzer:
     
     def _aggregate_scan_dir_kpis(self, scan_dir):
         """
-        Recursively aggregate KPIs from files and subdirectories.
+        Aggregate KPIs for directory hierarchy using KPIAggregator (Phase 4).
+        
+        Delegates aggregation to KPIAggregator which handles recursive aggregation
+        using Composite pattern. This reduces complexity from analyzer.py.
         
         Returns:
-            dict: Dictionary of average KPI values
+            dict: Dictionary of aggregated KPI values
         """
-        # Collect KPI values from files
-        kpi_values = collect_kpi_values(scan_dir)
+        # Delegate aggregation to KPIAggregator (Phase 4 component)
+        aggregated_kpis = self.kpi_aggregator.aggregate_directory(scan_dir)
         
-        # Recursively aggregate from subdirectories
-        for subdir in scan_dir.scan_dirs.values():
-            sub_kpis = self._aggregate_scan_dir_kpis(subdir)
-            if sub_kpis['complexity'] is not None:
-                kpi_values['complexity'].append(sub_kpis['complexity'])
-            if sub_kpis['churn'] is not None:
-                kpi_values['churn'].append(sub_kpis['churn'])
-            if sub_kpis['hotspot'] is not None:
-                kpi_values['hotspot'].append(sub_kpis['hotspot'])
-            if sub_kpis['shared_ownership'] is not None:
-                kpi_values['shared_ownership'].append(sub_kpis['shared_ownership'])
-        
-        # Calculate averages
-        avg_kpis = calculate_average_kpis(kpi_values)
-        
-        # Store aggregated KPIs in scan_dir
-        scan_dir.kpis['complexity'] = ComplexityKPI(value=avg_kpis['complexity'])
-        scan_dir.kpis['churn'] = ChurnKPI(value=avg_kpis['churn'])
-        scan_dir.kpis['hotspot'] = HotspotKPI(value=avg_kpis['hotspot'])
-        
-        # Aggregate authors
+        # Handle Shared Ownership separately (requires special aggregation logic)
+        # Collect all authors from the hierarchy
         authors_set = collect_authors_from_hierarchy(scan_dir)
+        
+        # Get average shared ownership count if available
+        avg_shared_ownership = aggregated_kpis.get('Shared Ownership')
+        if avg_shared_ownership is None:
+            # Calculate from collected values if not already aggregated
+            kpi_values = collect_kpi_values(scan_dir)
+            avg_shared_ownership = (
+                round(sum(kpi_values['shared_ownership']) / len(kpi_values['shared_ownership']), 1)
+                if kpi_values['shared_ownership'] else None
+            )
+        
+        # Create aggregated Shared Ownership KPI
         shared_ownership_dict = {
-            'num_significant_authors': avg_kpis['shared_ownership'],
+            'num_significant_authors': avg_shared_ownership,
             'authors': list(authors_set),
             'threshold': 20.0
         }
@@ -450,7 +448,12 @@ class Analyzer:
             description='Avg significant authors'
         )
         
-        return avg_kpis
+        return {
+            'complexity': aggregated_kpis.get('complexity'),
+            'churn': aggregated_kpis.get('churn'),
+            'hotspot': aggregated_kpis.get('hotspot'),
+            'shared_ownership': avg_shared_ownership
+        }
 
     def analyze(self, files):
         """Analyzes a list of files, groups them by repository, and returns a summary."""
