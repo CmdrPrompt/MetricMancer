@@ -1,13 +1,13 @@
 import os
 from typing import Optional
 
-from src.app.analyzer import Analyzer
-from src.app.scanner import Scanner
-from src.app.data_converter import DataConverter
-from src.app.report_coordinator import ReportCoordinator
-from src.app.timing_reporter import TimingReporter
-from src.app.hotspot_coordinator import HotspotCoordinator
-from src.app.review_coordinator import ReviewCoordinator
+from src.app.core.analyzer import Analyzer
+from src.app.scanning.scanner import Scanner
+from src.app.hierarchy.data_converter import DataConverter
+from src.app.coordination.report_coordinator import ReportCoordinator
+from src.app.infrastructure.timing_reporter import TimingReporter
+from src.app.coordination.hotspot_coordinator import HotspotCoordinator
+from src.app.coordination.review_coordinator import ReviewCoordinator
 from src.languages.config import Config
 from src.config.app_config import AppConfig
 from src.report.report_generator import ReportGenerator
