@@ -230,9 +230,8 @@ class CLISummaryFormat(ReportFormatStrategy):
         # Recommendation 2: Emerging hotspots
         if emerging:
             recommendations.append(
-                f"Investigate high churn in {
-                    len(emerging)} emerging hotspot{
-                    's' if len(emerging) > 1 else ''}")
+                f"Investigate high churn in {len(emerging)} emerging hotspot{'s' if len(emerging) > 1 else ''}"
+            )
 
         # Recommendation 3: Testing
         if critical:

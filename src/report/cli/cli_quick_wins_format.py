@@ -291,9 +291,8 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         # Impact bar
         impact_bar = self._create_bar(win['impact'], 10, '█')
         print(
-            f"   Impact:  {impact_bar} {
-                'High' if win['impact'] >= 7 else 'Medium' if win['impact'] >= 5 else 'Low'} ({
-                win['impact']}/10)")
+            f"   Impact:  {impact_bar} {'High' if win['impact'] >= 7 else 'Medium' if win['impact'] >= 5 else 'Low'} ({win['impact']}/10)"
+        )
 
         # Effort bar
         effort_bar = self._create_bar(win['effort'], 10, '█')

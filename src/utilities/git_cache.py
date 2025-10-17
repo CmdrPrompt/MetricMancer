@@ -368,13 +368,13 @@ def get_git_cache(churn_period_days: int = None) -> GitDataCache:
     if _git_cache_instance is None:
         _git_cache_instance = GitDataCache(churn_period_days or 30)
         debug_print(
-            f"[CACHE] Created new GitDataCache instance with churn_period={
-                _git_cache_instance.churn_period_days} days")
+            f"[CACHE] Created new GitDataCache instance with churn_period={_git_cache_instance.churn_period_days} days"
+        )
     elif churn_period_days is not None and _git_cache_instance.churn_period_days != churn_period_days:
         # Update churn period if different and clear churn cache
         debug_print(
-            f"[CACHE] Updating churn period from {
-                _git_cache_instance.churn_period_days} to {churn_period_days} days")
+            f"[CACHE] Updating churn period from {_git_cache_instance.churn_period_days} to {churn_period_days} days"
+        )
         _git_cache_instance.churn_period_days = churn_period_days
         _git_cache_instance.churn_cache.clear()
     return _git_cache_instance

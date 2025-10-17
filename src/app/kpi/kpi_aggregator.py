@@ -18,7 +18,7 @@ ARCHITECTURE ALIGNMENT:
 """
 
 from typing import Dict, Any, Callable, Optional, List
-from utilities.debug import debug_print
+from src.utilities.debug import debug_print
 
 
 class KPIAggregator:
