@@ -18,7 +18,8 @@ dependencies = [
   "PyYAML",
   "autopep8",
   "flake8",
-  "pip-licenses"
+  "pip-licenses",
+  "unidiff>=0.7.5"
 ]
 
 [project.urls]

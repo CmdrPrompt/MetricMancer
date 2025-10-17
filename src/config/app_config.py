@@ -36,6 +36,10 @@ class AppConfig:
         review_branch_only: Only include changed files in review strategy
         review_base_branch: Base branch to compare against (default: 'main')
         churn_period: Number of days to analyze for code churn (default: 30)
+        delta_review: Whether to generate delta-based review (function-level)
+        delta_base_branch: Base branch for delta comparison (default: 'main')
+        delta_target_branch: Target branch for delta comparison (None = current)
+        delta_output: Output file for delta review (default: 'delta_review.md')
         debug: Whether to show debug output
     """
 
@@ -68,6 +72,12 @@ class AppConfig:
 
     # Code churn settings
     churn_period: int = 30
+
+    # Delta review settings (function-level analysis)
+    delta_review: bool = False
+    delta_base_branch: str = "main"
+    delta_target_branch: Optional[str] = None  # None = current branch
+    delta_output: str = "delta_review.md"
 
     # Debug settings
     debug: bool = False
@@ -160,6 +170,12 @@ class AppConfig:
 
             # Code churn settings
             churn_period=getattr(args, 'churn_period', 30),
+
+            # Delta review settings
+            delta_review=getattr(args, 'delta_review', False),
+            delta_base_branch=getattr(args, 'delta_base_branch', 'main'),
+            delta_target_branch=getattr(args, 'delta_target_branch', None),
+            delta_output=getattr(args, 'delta_output', 'delta_review.md'),
 
             # Debug
             debug=getattr(args, 'debug', False)

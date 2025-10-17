@@ -63,10 +63,10 @@ def get_changed_files_in_branch(repo_path: str, base_branch: str = "main") -> Li
 
         # If we're on the base branch, get recent changes
         if current_branch == base_branch:
-            debug_print(f"[DEBUG] get_changed_files_in_branch: On base branch, getting recent commits")
+            debug_print("[DEBUG] get_changed_files_in_branch: On base branch, getting recent commits")
             # Get files changed in last 10 commits
             result = subprocess.run(
-                ['git', 'diff', '--name-only', f'HEAD~10..HEAD'],
+                ['git', 'diff', '--name-only', 'HEAD~10..HEAD'],
                 cwd=repo_root,
                 capture_output=True,
                 text=True,

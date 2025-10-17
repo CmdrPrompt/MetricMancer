@@ -20,6 +20,8 @@ dist/
 terminal.log
 .backup
 .coverage
+htmlcov/
+coverage_html/
 complexity_report*.html
 kpi_report*.html
 labs

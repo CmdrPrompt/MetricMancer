@@ -3,10 +3,8 @@ Tests for Git Data Cache (Issue #38)
 Write tests that expect the KPI classes to use the cache.
 """
 import unittest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import patch, call
 import os
-import tempfile
-import shutil
 
 from src.utilities.git_cache import GitDataCache, get_git_cache
 

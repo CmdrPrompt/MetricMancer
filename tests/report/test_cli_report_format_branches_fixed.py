@@ -5,10 +5,9 @@ This test file focuses on improving branch coverage by testing all conditional p
 in the CLI report formatting logic, especially file filtering and statistics calculation.
 """
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from src.report.cli.cli_report_format import CLIReportFormat
-from src.kpis.model import RepoInfo, ScanDir, File, Function
+from src.kpis.model import RepoInfo, ScanDir, File
 from src.kpis.complexity.kpi import ComplexityKPI
 from src.kpis.codechurn.kpi import ChurnKPI
 from src.kpis.hotspot.hotspot_kpi import HotspotKPI
