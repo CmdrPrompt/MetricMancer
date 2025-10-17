@@ -27,7 +27,10 @@ class TestJSONReportFormat(unittest.TestCase):
                 "churn": DummyKPI("churn", 5),
                 "hotspot": DummyKPI("hotspot", 50),
                 "Code Ownership": DummyKPI("Code Ownership", {"Alice": 80.0, "Bob": 20.0}),
-                "Shared Ownership": DummyKPI("Shared Ownership", {"num_significant_authors": 1, "significant_authors": ["Alice"]}),
+                "Shared Ownership": DummyKPI(
+                    "Shared Ownership",
+                    {"num_significant_authors": 1, "significant_authors": ["Alice"]}
+                ),
             },
             functions=[]
         )
@@ -39,7 +42,10 @@ class TestJSONReportFormat(unittest.TestCase):
                 "churn": DummyKPI("churn", 2),
                 "hotspot": DummyKPI("hotspot", 14),
                 "Code Ownership": DummyKPI("Code Ownership", {"Alice": 60.0, "Bob": 40.0}),
-                "Shared Ownership": DummyKPI("Shared Ownership", {"num_significant_authors": 2, "significant_authors": ["Alice", "Bob"]}),
+                "Shared Ownership": DummyKPI(
+                    "Shared Ownership",
+                    {"num_significant_authors": 2, "significant_authors": ["Alice", "Bob"]}
+                ),
             },
             functions=[]
         )

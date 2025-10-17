@@ -1,7 +1,0 @@
-__init__
-app
-kpis
-languages
-main
-report
-utilities

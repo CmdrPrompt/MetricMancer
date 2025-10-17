@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-full
+.PHONY: help install format lint test coverage licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -15,6 +15,7 @@ help:
 	@echo "  make format               - Auto-format code with autopep8"
 	@echo "  make lint                 - Check code with flake8"
 	@echo "  make test                 - Run all tests with pytest"
+	@echo "  make coverage             - Run tests with coverage report (HTML + terminal)"
 	@echo "  make licenses             - Check license compliance"
 	@echo "  make check                - Run lint + test + licenses (CI workflow)"
 	@echo "  make clean                - Clean temporary files"
@@ -24,6 +25,7 @@ help:
 	@echo "  make analyze-summary      - Summary report with key metrics"
 	@echo "  make analyze-review       - Code review recommendations (full repo)"
 	@echo "  make analyze-review-branch- Code review for changed files only (current branch)"
+	@echo "  make analyze-delta-review - Delta review for function-level changes (current branch)"
 	@echo "  make analyze-full         - Complete analysis with all reports"
 	@echo ""
 
@@ -58,6 +60,14 @@ test:
 	@source .venv/bin/activate && python -m pytest tests/ -v --tb=short
 	@echo "✅ Tests complete!"
 
+coverage:
+	@echo "📊 Running tests with coverage analysis..."
+	@source .venv/bin/activate && python -m pytest tests/ -v --cov=src --cov-report=html --cov-report=term-missing
+	@echo ""
+	@echo "✅ Coverage analysis complete!"
+	@echo "   HTML Report: htmlcov/index.html"
+	@echo "   Open with:   open htmlcov/index.html"
+
 licenses:
 	@echo "📋 Checking license compliance..."
 	@source .venv/bin/activate && python check_licenses.py
@@ -72,7 +82,7 @@ clean:
 	@find . -type f -name "*.pyc" -delete
 	@find . -type f -name "*.pyo" -delete
 	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-	@rm -rf .pytest_cache build dist
+	@rm -rf .pytest_cache build dist htmlcov coverage_html .coverage coverage.xml
 	@echo "✅ Cleanup complete!"
 
 # Self-analysis targets - run MetricMancer on itself for code quality insights
@@ -82,7 +92,7 @@ analyze-quick:
 	@source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
 		--quick-wins \
 		--report-folder output/self-analysis \
-		--churn-period 90 \
+		--churn-period 7 \
 		--threshold-high 15
 	@echo ""
 	@echo "📊 Quick wins report generated!"
@@ -127,6 +137,21 @@ analyze-review-branch:
 	@echo ""
 	@echo "✅ Branch-specific code review recommendations generated!"
 	@echo "   View: output/self-analysis/review_strategy_branch.md"
+
+analyze-delta-review:
+	@echo "🔬 Running delta review analysis on FUNCTION-LEVEL changes..."
+	@echo "   (Shows exactly which functions changed, with complexity deltas)"
+	@CURRENT_BRANCH=$$(git branch --show-current); \
+	echo "   Current branch: $$CURRENT_BRANCH"; \
+	echo "   Comparing against: main"; \
+	source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
+		--delta-review \
+		--delta-base-branch main \
+		--delta-output delta_review.md \
+		--report-folder output/self-analysis
+	@echo ""
+	@echo "✅ Delta review report generated!"
+	@echo "   View: output/self-analysis/delta_review.md"
 
 analyze-full:
 	@echo "🚀 Running complete analysis on MetricMancer codebase..."
