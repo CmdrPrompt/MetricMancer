@@ -42,37 +42,15 @@ class MetricMancerApp:
             Individual parameters maintained for backward compatibility during transition.
         """
         # Configuration Object Pattern: config parameter takes precedence
-        if config is not None:
-            # Validate config
-            config.validate()
-            self.app_config = config
-        else:
-            # Legacy mode: create config from individual parameters
-            if directories is None:
-                raise TypeError("MetricMancerApp() missing required argument: 'directories' or 'config'")
+        self.app_config = self._initialize_config(
+            config, directories, threshold_low, threshold_high,
+            problem_file_threshold, output_file, level, hierarchical,
+            output_format, report_folder, list_hotspots, hotspot_threshold,
+            hotspot_output, review_strategy, review_output, review_branch_only,
+            review_base_branch, churn_period
+        )
 
-            self.app_config = AppConfig(
-                directories=directories,
-                threshold_low=threshold_low,
-                threshold_high=threshold_high,
-                problem_file_threshold=problem_file_threshold,
-                output_file=output_file,
-                level=level,
-                hierarchical=hierarchical,
-                output_format=output_format,
-                report_folder=report_folder if report_folder is not None else 'output',
-                list_hotspots=list_hotspots,
-                hotspot_threshold=hotspot_threshold,
-                hotspot_output=hotspot_output,
-                review_strategy=review_strategy,
-                review_output=review_output,
-                review_branch_only=review_branch_only,
-                review_base_branch=review_base_branch,
-                churn_period=churn_period,
-                debug=False
-            )
-
-        # Initialize language config, scanner, and analyzer
+        # Initialize dependencies (Dependency Injection)
         self.lang_config = Config()
         self.scanner = Scanner(self.lang_config.languages)
         self.analyzer = Analyzer(
@@ -82,7 +60,60 @@ class MetricMancerApp:
             churn_period_days=self.app_config.churn_period
         )
 
-        # Expose config values as instance attributes for backward compatibility
+        # Allow swapping report generator (None means multi-format mode)
+        self.report_generator_cls = report_generator_cls
+
+        # Expose frequently used config values for backward compatibility
+        self._expose_config_attributes()
+
+    def _initialize_config(self, config, directories, threshold_low, threshold_high,
+                          problem_file_threshold, output_file, level, hierarchical,
+                          output_format, report_folder, list_hotspots, hotspot_threshold,
+                          hotspot_output, review_strategy, review_output, review_branch_only,
+                          review_base_branch, churn_period) -> AppConfig:
+        """
+        Initialize configuration using Configuration Object Pattern.
+        
+        Returns:
+            AppConfig: Validated configuration object
+        """
+        if config is not None:
+            # Validate config
+            config.validate()
+            return config
+        
+        # Legacy mode: create config from individual parameters
+        if directories is None:
+            raise TypeError("MetricMancerApp() missing required argument: 'directories' or 'config'")
+
+        return AppConfig(
+            directories=directories,
+            threshold_low=threshold_low,
+            threshold_high=threshold_high,
+            problem_file_threshold=problem_file_threshold,
+            output_file=output_file,
+            level=level,
+            hierarchical=hierarchical,
+            output_format=output_format,
+            report_folder=report_folder if report_folder is not None else 'output',
+            list_hotspots=list_hotspots,
+            hotspot_threshold=hotspot_threshold,
+            hotspot_output=hotspot_output,
+            review_strategy=review_strategy,
+            review_output=review_output,
+            review_branch_only=review_branch_only,
+            review_base_branch=review_base_branch,
+            churn_period=churn_period,
+            debug=False
+        )
+
+    def _expose_config_attributes(self):
+        """
+        Expose config values as instance attributes for backward compatibility.
+        
+        Following the Configuration Object Pattern while maintaining
+        legacy API compatibility during transition period.
+        """
         self.directories = self.app_config.directories
         self.threshold_low = self.app_config.threshold_low
         self.threshold_high = self.app_config.threshold_high
@@ -92,25 +123,14 @@ class MetricMancerApp:
         self.hierarchical = self.app_config.hierarchical
         self.output_format = self.app_config.output_format
         self.report_folder = self.app_config.report_folder
-
-        # Hotspot analysis settings
         self.list_hotspots = self.app_config.list_hotspots
         self.hotspot_threshold = self.app_config.hotspot_threshold
         self.hotspot_output = self.app_config.hotspot_output
-
-        # Review strategy settings
         self.review_strategy = self.app_config.review_strategy
         self.review_output = self.app_config.review_output
         self.review_branch_only = self.app_config.review_branch_only
         self.review_base_branch = self.app_config.review_base_branch
-
-        # Code churn settings
         self.churn_period = self.app_config.churn_period
-
-        # Allow swapping report generator (None means multi-format mode)
-        self.report_generator_cls = report_generator_cls
-
-        # Provide direct access to config for new code
         self.config = self.app_config
 
     def _scan_files(self):
@@ -223,19 +243,26 @@ class MetricMancerApp:
         Args:
             repo_infos: List of RepoInfo objects from analysis
         """
-        all_hotspots = []
-
-        for repo_info in repo_infos:
-            # Convert repo_info to dict format using DataConverter
-            repo_data = DataConverter.convert_repo_info_to_dict(repo_info)
-            hotspots = extract_hotspots_from_data(repo_data, self.hotspot_threshold)
-            all_hotspots.extend(hotspots)
+        all_hotspots = self._extract_all_hotspots(repo_infos)
 
         if not all_hotspots:
             print(f"\n✅ No hotspots found above threshold {self.hotspot_threshold}.")
             return
 
-        # Display or save results using HotspotCoordinator
+        self._display_or_save_hotspots(all_hotspots)
+
+    def _extract_all_hotspots(self, repo_infos):
+        """Extract hotspots from all repo_infos."""
+        all_hotspots = []
+        for repo_info in repo_infos:
+            # Convert repo_info to dict format using DataConverter
+            repo_data = DataConverter.convert_repo_info_to_dict(repo_info)
+            hotspots = extract_hotspots_from_data(repo_data, self.hotspot_threshold)
+            all_hotspots.extend(hotspots)
+        return all_hotspots
+
+    def _display_or_save_hotspots(self, all_hotspots):
+        """Display hotspots to console or save to file."""
         if self.hotspot_output:
             output_path = normalize_output_path(self.report_folder, self.hotspot_output)
             save_hotspots_to_file(all_hotspots, output_path, show_risk_categories=True)
@@ -254,14 +281,23 @@ class MetricMancerApp:
             output_filename: Override output filename (default: use self.review_output)
         """
         # Use parameter if provided, otherwise fall back to instance variable
-        if review_branch_only is None:
-            review_branch_only = self.review_branch_only
-        if output_filename is None:
-            output_filename = self.review_output
-        from src.analysis.code_review_advisor import generate_review_report
-        from src.utilities.git_helpers import get_changed_files_in_branch, get_current_branch
+        review_branch_only = review_branch_only if review_branch_only is not None else self.review_branch_only
+        output_filename = output_filename if output_filename is not None else self.review_output
 
-        # Convert repo_info to dict format using DataConverter
+        # Convert and merge repo data
+        all_data = self._convert_and_merge_repo_data(repo_infos)
+
+        # Get changed files if branch-only mode is enabled
+        filter_files, current_branch = self._get_changed_files_for_review(review_branch_only)
+
+        # Generate and save the report
+        self._generate_and_save_review_report(
+            all_data, filter_files, current_branch,
+            review_branch_only, output_filename
+        )
+
+    def _convert_and_merge_repo_data(self, repo_infos):
+        """Convert RepoInfo objects to dict format and merge multiple repos."""
         all_data = {}
         for repo_info in repo_infos:
             repo_data = DataConverter.convert_repo_info_to_dict_with_ownership(repo_info)
@@ -272,32 +308,53 @@ class MetricMancerApp:
                 # Merge files and directories
                 all_data['files'].update(repo_data.get('files', {}))
                 all_data['scan_dirs'].update(repo_data.get('scan_dirs', {}))
+        return all_data
 
-        # Get changed files if branch-only mode is enabled
-        filter_files = None
-        current_branch = None
-        if review_branch_only and self.directories:
-            try:
-                repo_path = self.directories[0]
-                current_branch = get_current_branch(repo_path)
-                if current_branch:
-                    print(f"\n🔍 Filtering review strategy to changed files in branch: "
-                          f"{current_branch}")
-                    print(f"   Comparing against base branch: "
-                          f"{self.review_base_branch}")
-                    filter_files = get_changed_files_in_branch(repo_path, self.review_base_branch)
-                    if filter_files:
-                        print(f"   Found {len(filter_files)} changed files")
-                    else:
-                        print("   ⚠️  No changed files found, showing all files")
-            except Exception as e:
-                print(f"   ⚠️  Could not determine changed files: {e}")
-                debug_print(f"[DEBUG] Error getting changed files: {e}")
+    def _get_changed_files_for_review(self, review_branch_only):
+        """
+        Get list of changed files if branch-only mode is enabled.
+        
+        Returns:
+            Tuple[Optional[List[str]], Optional[str]]: (filter_files, current_branch)
+        """
+        from src.utilities.git_helpers import get_changed_files_in_branch, get_current_branch
 
-        # Generate the report in report folder
+        if not review_branch_only or not self.directories:
+            return None, None
+
+        try:
+            repo_path = self.directories[0]
+            current_branch = get_current_branch(repo_path)
+            
+            if not current_branch:
+                return None, None
+
+            print(f"\n🔍 Filtering review strategy to changed files in branch: {current_branch}")
+            print(f"   Comparing against base branch: {self.review_base_branch}")
+            
+            filter_files = get_changed_files_in_branch(repo_path, self.review_base_branch)
+            
+            if filter_files:
+                print(f"   Found {len(filter_files)} changed files")
+            else:
+                print("   ⚠️  No changed files found, showing all files")
+            
+            return filter_files, current_branch
+            
+        except Exception as e:
+            print(f"   ⚠️  Could not determine changed files: {e}")
+            debug_print(f"[DEBUG] Error getting changed files: {e}")
+            return None, None
+
+    def _generate_and_save_review_report(self, all_data, filter_files, current_branch,
+                                         review_branch_only, output_filename):
+        """Generate and save the code review strategy report."""
+        from src.analysis.code_review_advisor import generate_review_report
+
         try:
             os.makedirs(self.report_folder, exist_ok=True)
             output_path = normalize_output_path(self.report_folder, output_filename)
+            
             generate_review_report(
                 all_data,
                 output_file=output_path,
@@ -305,9 +362,12 @@ class MetricMancerApp:
                 branch_name=current_branch,
                 base_branch=self.review_base_branch if review_branch_only else None
             )
+            
             print("\n✅ Code review strategy report generated successfully!")
+            
         except Exception as e:
             print(f"\n❌ Error generating review strategy report: {e}")
+            debug_print(f"[DEBUG] Full traceback: {e}")
             import traceback
             traceback.print_exc()
 

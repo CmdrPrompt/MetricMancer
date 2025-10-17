@@ -92,7 +92,7 @@ analyze-quick:
 	@source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
 		--quick-wins \
 		--report-folder output/self-analysis \
-		--churn-period 90 \
+		--churn-period 7 \
 		--threshold-high 15
 	@echo ""
 	@echo "📊 Quick wins report generated!"
