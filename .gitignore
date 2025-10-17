@@ -9,6 +9,9 @@
 __pycache__/
 *.pyc
 *.pyo
+*.egg-info/
+build/
+dist/
 !docs/complexity_report.html
 .qodo/testConfig.toml
 .DS_Store
