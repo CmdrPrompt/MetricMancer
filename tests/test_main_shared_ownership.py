@@ -51,7 +51,7 @@ class TestMainSharedOwnership(unittest.TestCase):
         self.assertEqual(self.result.returncode, 0)
         output = self.result.stdout
         self.assertIn("C:", output, "Complexity not shown")
-        self.assertIn("Churn:", output, "Churn not shown") 
+        self.assertIn("Churn:", output, "Churn not shown")
         self.assertIn("Hotspot:", output, "Hotspot not shown")
         self.assertIn("Shared:", output, "Shared ownership not shown")
 
@@ -63,4 +63,3 @@ class TestMainSharedOwnership(unittest.TestCase):
     def test_main_help_command_works(self):
         self.assertEqual(self.help_result.returncode, 0)
         self.assertIn("usage:", self.help_result.stdout.lower(), "Help should show usage")
-

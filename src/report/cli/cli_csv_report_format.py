@@ -4,6 +4,7 @@ from typing import List
 import sys
 import csv
 
+
 class CLICSVReportFormat(ReportFormatStrategy):
 
     def _collect_flat_list(self, scan_dir: ScanDir, level: str) -> List[dict]:
@@ -30,7 +31,7 @@ class CLICSVReportFormat(ReportFormatStrategy):
                         "churn": file_churn,
                         "hotspot_score": func_complexity * file_churn if func_complexity and file_churn else None,
                     })
-            else: # level == "file"
+            else:  # level == "file"
                 items.append({
                     "filename": file_obj.file_path,
                     "cyclomatic_complexity": file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') else None,
@@ -44,7 +45,7 @@ class CLICSVReportFormat(ReportFormatStrategy):
 
     def print_report(self, repo_info: RepoInfo, debug_print, level="file"):
         writer = csv.writer(sys.stdout, delimiter=';', lineterminator='\n')
-        
+
         flat_data = self._collect_flat_list(repo_info, level)
         if not flat_data:
             return

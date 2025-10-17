@@ -17,19 +17,19 @@ class TestCollectAllFiles(unittest.TestCase):
         # Create mock files
         file1 = File(name="file1.py", file_path="src/file1.py")
         file1.functions = [Function(name="func1"), Function(name="func2")]
-        
+
         # Add ownership KPI to indicate tracked file
         ownership_kpi = MagicMock(spec=BaseKPI)
         ownership_kpi.value = {"Alice": 60, "Bob": 40}
         file1.kpis['Code Ownership'] = ownership_kpi
-        
+
         file2 = File(name="file2.py", file_path="src/file2.py")
         file2.functions = [Function(name="func3")]
-        
+
         ownership_kpi2 = MagicMock(spec=BaseKPI)
         ownership_kpi2.value = {"Charlie": 100}
         file2.kpis['Code Ownership'] = ownership_kpi2
-        
+
         # Create scan directory
         repo_info = RepoInfo(
             dir_name="test_repo",
@@ -38,11 +38,11 @@ class TestCollectAllFiles(unittest.TestCase):
             repo_name="test_repo"
         )
         repo_info.files = {"file1.py": file1, "file2.py": file2}
-        
+
         # Test
         formatter = CLIQuickWinsFormat()
         all_files = formatter._collect_all_files(repo_info)
-        
+
         self.assertEqual(len(all_files), 2)
         self.assertIn(file1, all_files)
         self.assertIn(file2, all_files)
@@ -55,10 +55,10 @@ class TestCollectAllFiles(unittest.TestCase):
             repo_root_path="/test",
             repo_name="empty_repo"
         )
-        
+
         formatter = CLIQuickWinsFormat()
         all_files = formatter._collect_all_files(repo_info)
-        
+
         self.assertEqual(len(all_files), 0)
 
     def test_collect_all_files_multiple_subdirs(self):
@@ -67,12 +67,12 @@ class TestCollectAllFiles(unittest.TestCase):
         ownership_kpi1 = MagicMock(spec=BaseKPI)
         ownership_kpi1.value = {"Alice": 100}
         file1.kpis['Code Ownership'] = ownership_kpi1
-        
+
         file2 = File(name="file2.py", file_path="tests/file2.py")
         ownership_kpi2 = MagicMock(spec=BaseKPI)
         ownership_kpi2.value = {"Bob": 100}
         file2.kpis['Code Ownership'] = ownership_kpi2
-        
+
         subdir = ScanDir(
             dir_name="tests",
             scan_dir_path="tests",
@@ -80,7 +80,7 @@ class TestCollectAllFiles(unittest.TestCase):
             repo_name="test_repo"
         )
         subdir.files = {"file2.py": file2}
-        
+
         repo_info = RepoInfo(
             dir_name="test_repo",
             scan_dir_path=".",
@@ -89,10 +89,10 @@ class TestCollectAllFiles(unittest.TestCase):
         )
         repo_info.files = {"file1.py": file1}
         repo_info.scan_dirs = {"tests": subdir}
-        
+
         formatter = CLIQuickWinsFormat()
         all_files = formatter._collect_all_files(repo_info)
-        
+
         self.assertEqual(len(all_files), 2)
 
 
@@ -192,7 +192,7 @@ class TestCalculateEffort(unittest.TestCase):
         """Test effort with high complexity."""
         file_obj = File(name="test.py", file_path="test.py")
         file_obj.functions = [Function(name=f"func{i}") for i in range(3)]
-        
+
         effort = self.formatter._calculate_effort(complexity=150, file_obj=file_obj)
         # complexity=150 -> 5, functions=3 -> 0, owners=1 -> 0 = 5
         self.assertEqual(effort, 5)
@@ -201,7 +201,7 @@ class TestCalculateEffort(unittest.TestCase):
         """Test effort with many functions."""
         file_obj = File(name="test.py", file_path="test.py")
         file_obj.functions = [Function(name=f"func{i}") for i in range(25)]
-        
+
         effort = self.formatter._calculate_effort(complexity=5, file_obj=file_obj)
         # complexity=5 -> 0, functions=25 -> 3, owners=1 -> 0 = 3
         self.assertEqual(effort, 3)
@@ -210,11 +210,11 @@ class TestCalculateEffort(unittest.TestCase):
         """Test effort with fragmented ownership."""
         file_obj = File(name="test.py", file_path="test.py")
         file_obj.functions = [Function(name="func1")]
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 6}
         file_obj.kpis['Shared Code Ownership'] = shared_kpi
-        
+
         effort = self.formatter._calculate_effort(complexity=5, file_obj=file_obj)
         # complexity=5 -> 0, functions=1 -> 0, owners=6 -> 2 = 2
         self.assertEqual(effort, 2)
@@ -223,11 +223,11 @@ class TestCalculateEffort(unittest.TestCase):
         """Test effort with combined high scores."""
         file_obj = File(name="test.py", file_path="test.py")
         file_obj.functions = [Function(name=f"func{i}") for i in range(25)]
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 6}
         file_obj.kpis['Shared Code Ownership'] = shared_kpi
-        
+
         effort = self.formatter._calculate_effort(complexity=150, file_obj=file_obj)
         # complexity=150 -> 5, functions=25 -> 3, owners=6 -> 2 = 10
         self.assertEqual(effort, 10)
@@ -236,14 +236,14 @@ class TestCalculateEffort(unittest.TestCase):
         """Test effort with all low scores."""
         file_obj = File(name="test.py", file_path="test.py")
         file_obj.functions = [Function(name="func1")]
-        
+
         effort = self.formatter._calculate_effort(complexity=3, file_obj=file_obj)
         self.assertEqual(effort, 0)
 
     def test_effort_medium_complexity(self):
         """Test effort with medium complexity scores."""
         file_obj = File(name="test.py", file_path="test.py")
-        
+
         self.assertEqual(self.formatter._calculate_effort(6, file_obj), 1)
         self.assertEqual(self.formatter._calculate_effort(20, file_obj), 2)
         self.assertEqual(self.formatter._calculate_effort(40, file_obj), 3)
@@ -257,46 +257,46 @@ class TestCalculateQuickWins(unittest.TestCase):
         # High ROI file: high impact, low effort
         file1 = File(name="high_roi.py", file_path="high_roi.py")
         file1.functions = [Function(name="func1")]
-        
+
         complexity_kpi1 = MagicMock(spec=BaseKPI)
         complexity_kpi1.value = 5
         file1.kpis['complexity'] = complexity_kpi1
-        
+
         churn_kpi1 = MagicMock(spec=BaseKPI)
         churn_kpi1.value = 15
         file1.kpis['churn'] = churn_kpi1
-        
+
         hotspot_kpi1 = MagicMock(spec=BaseKPI)
         hotspot_kpi1.value = 200
         file1.kpis['hotspot'] = hotspot_kpi1
-        
+
         ownership_kpi1 = MagicMock(spec=BaseKPI)
         ownership_kpi1.value = {"Alice": 100}
         file1.kpis['Code Ownership'] = ownership_kpi1
-        
+
         # Low ROI file: high impact, high effort
         file2 = File(name="low_roi.py", file_path="low_roi.py")
         file2.functions = [Function(name=f"func{i}") for i in range(25)]
-        
+
         complexity_kpi2 = MagicMock(spec=BaseKPI)
         complexity_kpi2.value = 150
         file2.kpis['complexity'] = complexity_kpi2
-        
+
         churn_kpi2 = MagicMock(spec=BaseKPI)
         churn_kpi2.value = 15
         file2.kpis['churn'] = churn_kpi2
-        
+
         hotspot_kpi2 = MagicMock(spec=BaseKPI)
         hotspot_kpi2.value = 200
         file2.kpis['hotspot'] = hotspot_kpi2
-        
+
         ownership_kpi2 = MagicMock(spec=BaseKPI)
         ownership_kpi2.value = {"Bob": 100}
         file2.kpis['Code Ownership'] = ownership_kpi2
-        
+
         formatter = CLIQuickWinsFormat()
         quick_wins = formatter._calculate_quick_wins([file2, file1])  # Intentionally wrong order
-        
+
         # High ROI should be first
         self.assertEqual(len(quick_wins), 2)
         self.assertEqual(quick_wins[0]['file'], file1)
@@ -307,26 +307,26 @@ class TestCalculateQuickWins(unittest.TestCase):
         """Test that files with low impact are filtered out."""
         file1 = File(name="low_impact.py", file_path="low_impact.py")
         file1.functions = [Function(name="func1")]
-        
+
         complexity_kpi = MagicMock(spec=BaseKPI)
         complexity_kpi.value = 2
         file1.kpis['complexity'] = complexity_kpi
-        
+
         churn_kpi = MagicMock(spec=BaseKPI)
         churn_kpi.value = 1
         file1.kpis['churn'] = churn_kpi
-        
+
         hotspot_kpi = MagicMock(spec=BaseKPI)
         hotspot_kpi.value = 5
         file1.kpis['hotspot'] = hotspot_kpi
-        
+
         ownership_kpi = MagicMock(spec=BaseKPI)
         ownership_kpi.value = {"Alice": 100}
         file1.kpis['Code Ownership'] = ownership_kpi
-        
+
         formatter = CLIQuickWinsFormat()
         quick_wins = formatter._calculate_quick_wins([file1])
-        
+
         # Impact=0, should be filtered
         self.assertEqual(len(quick_wins), 0)
 
@@ -334,7 +334,7 @@ class TestCalculateQuickWins(unittest.TestCase):
         """Test quick wins calculation with empty repository."""
         formatter = CLIQuickWinsFormat()
         quick_wins = formatter._calculate_quick_wins([])
-        
+
         self.assertEqual(len(quick_wins), 0)
 
 
@@ -348,10 +348,10 @@ class TestDetermineAction(unittest.TestCase):
     def test_determine_action_document(self):
         """Test action determination for documentation."""
         file_obj = File(name="test.py", file_path="test.py")
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 1}
-        
+
         action, desc, reason = self.formatter._determine_action(
             file_obj=file_obj,
             complexity=35,
@@ -366,10 +366,10 @@ class TestDetermineAction(unittest.TestCase):
     def test_determine_action_refactor_critical(self):
         """Test action determination for critical refactoring."""
         file_obj = File(name="test.py", file_path="test.py")
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
-        
+
         action, desc, reason = self.formatter._determine_action(
             file_obj=file_obj,
             complexity=20,
@@ -384,10 +384,10 @@ class TestDetermineAction(unittest.TestCase):
     def test_determine_action_refactor_high_complexity(self):
         """Test action determination for high complexity refactoring."""
         file_obj = File(name="test.py", file_path="test.py")
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
-        
+
         action, desc, reason = self.formatter._determine_action(
             file_obj=file_obj,
             complexity=25,
@@ -402,10 +402,10 @@ class TestDetermineAction(unittest.TestCase):
     def test_determine_action_add_tests(self):
         """Test action determination for adding tests."""
         file_obj = File(name="test.py", file_path="test.py")
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
-        
+
         action, desc, reason = self.formatter._determine_action(
             file_obj=file_obj,
             complexity=10,
@@ -420,10 +420,10 @@ class TestDetermineAction(unittest.TestCase):
     def test_determine_action_review_ownership(self):
         """Test action determination for ownership review."""
         file_obj = File(name="test.py", file_path="test.py")
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 5}
-        
+
         action, desc, reason = self.formatter._determine_action(
             file_obj=file_obj,
             complexity=10,
@@ -438,10 +438,10 @@ class TestDetermineAction(unittest.TestCase):
     def test_determine_action_improve(self):
         """Test action determination for general improvement."""
         file_obj = File(name="test.py", file_path="test.py")
-        
+
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
-        
+
         action, desc, reason = self.formatter._determine_action(
             file_obj=file_obj,
             complexity=10,
@@ -544,7 +544,7 @@ class TestPrintMethods(unittest.TestCase):
         """Test printing the summary."""
         file1 = File(name="file1.py", file_path="file1.py")
         file2 = File(name="file2.py", file_path="file2.py")
-        
+
         quick_wins = [
             {
                 'file': file1,
@@ -579,23 +579,23 @@ class TestPrintReportIntegration(unittest.TestCase):
         """Test full report generation with quick wins."""
         file1 = File(name="test.py", file_path="test.py")
         file1.functions = [Function(name=f"func{i}") for i in range(5)]
-        
+
         complexity_kpi = MagicMock(spec=BaseKPI)
         complexity_kpi.value = 25
         file1.kpis['complexity'] = complexity_kpi
-        
+
         churn_kpi = MagicMock(spec=BaseKPI)
         churn_kpi.value = 12
         file1.kpis['churn'] = churn_kpi
-        
+
         hotspot_kpi = MagicMock(spec=BaseKPI)
         hotspot_kpi.value = 300
         file1.kpis['hotspot'] = hotspot_kpi
-        
+
         ownership_kpi = MagicMock(spec=BaseKPI)
         ownership_kpi.value = {"Alice": 100}
         file1.kpis['Code Ownership'] = ownership_kpi
-        
+
         repo_info = RepoInfo(
             dir_name="test_repo",
             scan_dir_path=".",
@@ -603,10 +603,10 @@ class TestPrintReportIntegration(unittest.TestCase):
             repo_name="test_repo"
         )
         repo_info.files = {"test.py": file1}
-        
+
         formatter = CLIQuickWinsFormat()
         formatter.print_report(repo_info, debug_print=lambda x: None)
-        
+
         output = mock_stdout.getvalue()
         self.assertIn("QUICK WIN SUGGESTIONS", output)
         self.assertIn("test.py", output)
@@ -621,10 +621,10 @@ class TestPrintReportIntegration(unittest.TestCase):
             repo_root_path="/test",
             repo_name="empty_repo"
         )
-        
+
         formatter = CLIQuickWinsFormat()
         formatter.print_report(repo_info, debug_print=lambda x: None)
-        
+
         output = mock_stdout.getvalue()
         self.assertIn("No significant improvement opportunities found", output)
 

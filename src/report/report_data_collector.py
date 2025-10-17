@@ -11,6 +11,7 @@ class ReportDataCollector:
     Collects and structures data for the complexity report.
     Traverses the repository data model and prepares file-level and root-level summaries.
     """
+
     def __init__(self, repo_info, threshold_low: float = 10.0, threshold_high: float = 20.0):
         """
         Initialize the ReportDataCollector.

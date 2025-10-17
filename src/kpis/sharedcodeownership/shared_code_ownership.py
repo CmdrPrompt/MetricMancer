@@ -10,7 +10,9 @@ class SharedOwnershipKPI(BaseKPI):
     whose ownership exceeds a given threshold (default: 20%).
     Aggregation can be done by summing or averaging shared files/functions per directory/repo.
     """
-    def __init__(self, file_path: str, repo_root: str, threshold: float = 20.0, ownership_data: Optional[Dict[str, float]] = None):
+
+    def __init__(self, file_path: str, repo_root: str, threshold: float = 20.0,
+                 ownership_data: Optional[Dict[str, float]] = None):
         super().__init__(
             name="Shared Ownership",
             description="Number/proportion of significant authors per file/function (ownership > threshold)",
@@ -26,7 +28,8 @@ class SharedOwnershipKPI(BaseKPI):
             ownership = CodeOwnershipKPI(file_path, repo_root).value
             self.value = self.calculate_shared_ownership(ownership)
 
-    def calculate_shared_ownership(self, ownership: Mapping[str, Union[float, str]]) -> Mapping[str, Union[float, str, int, List[str]]]:
+    def calculate_shared_ownership(
+            self, ownership: Mapping[str, Union[float, str]]) -> Mapping[str, Union[float, str, int, List[str]]]:
         # Debug: print(ownership)
         if (
             not isinstance(ownership, dict)

@@ -26,7 +26,7 @@ class CodeChurnAnalyzer:
             time_period_days: Time period in days for churn calculation (preferred, overrides months if set)
         """
         self.repo_scan_pairs = repo_scan_pairs
-        
+
         # Prefer days if provided, otherwise convert months to days or use default 30 days
         if time_period_days is not None:
             self.time_period_days = time_period_days
@@ -54,7 +54,7 @@ class CodeChurnAnalyzer:
                 repo_path,
                 since=start_date,
                 to=end_date
-                ).traverse_commits())
+            ).traverse_commits())
 
             # Count commits per file
             file_commit_counts = {}

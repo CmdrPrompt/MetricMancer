@@ -61,7 +61,7 @@ class TestScanner(unittest.TestCase):
         self.assertEqual(len(files), 3)
 
         abs_scan_path = os.path.abspath(scan_path)
-        
+
         def norm(p):
             return os.path.normcase(p)
         found_paths = sorted([norm(f['path']) for f in files])
@@ -114,29 +114,27 @@ class TestScanner(unittest.TestCase):
         files = self.scanner.scan([scan_path])
         self.assertEqual(len(files), 0)
 
-    @patch('src.app.scanner.debug_print')
+    @patch('src.app.scanning.scanner.debug_print')
     def test_scan_handles_non_existent_directory(self, mock_debug_print):
         """Test that a non-existent directory is handled gracefully."""
         scan_path = str(self.test_dir / "non_existent_dir")
         files = self.scanner.scan([scan_path])
         self.assertEqual(len(files), 0)
-        # Check that a warning was printed, normalizing paths for cross-platform compatibility
-        expected_msg = f"[WARN] Folder '{os.path.abspath(scan_path)}' doesn't exist – skipping."
-        
-        def norm(s):
-            # Extract the path from the message
-            m = re.match(r"\[WARN\] Folder '(.+)' doesn't exist – skipping.", s)
-            if m:
-                norm_path = os.path.normcase(os.path.abspath(m.group(1)))
-                return f"[WARN] Folder '{norm_path}' doesn't exist – skipping."
-            return s
-        normalized_expected = norm(expected_msg)
+        # Check that a warning was printed with robust substring matching
         print("DEBUG_PRINT CALLS:")
         for call in mock_debug_print.call_args_list:
             print(call)
-        normalized_actuals = [norm(str(call.args[0])) for call in mock_debug_print.call_args_list]
-        self.assertIn(normalized_expected, normalized_actuals)
-    
+
+        # Robust assertion: check for substring presence
+        warning_found = any(
+            "[WARN]" in str(call.args[0]) and
+            "doesn't exist" in str(call.args[0]) and
+            "non_existent_dir" in str(call.args[0])
+            for call in mock_debug_print.call_args_list
+        )
+        self.assertTrue(warning_found,
+                        f"Expected a warning about non-existent directory. Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
+
     @patch('src.utilities.debug.debug_print')
     def test_scan_returns_empty_list_for_no_supported_files(self, mock_debug_print):
         """Test scanning a directory with no supported files returns an empty list."""

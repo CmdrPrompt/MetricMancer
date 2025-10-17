@@ -5,7 +5,9 @@ description = "Multi-language software analytics tool for code quality, maintain
 authors = [
   { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
 ]
-license = "MIT"
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
 dependencies = [
   "jinja2",
   "pytest",
@@ -13,12 +15,26 @@ dependencies = [
   "coverage",
   "pydriller",
   "tqdm",
-  "PyYAML"
+  "PyYAML",
+  "autopep8",
+  "flake8",
+  "pip-licenses"
 ]
 
+[project.urls]
+Homepage = "https://github.com/CmdrPrompt/MetricMancer"
+Repository = "https://github.com/CmdrPrompt/MetricMancer"
+Issues = "https://github.com/CmdrPrompt/MetricMancer/issues"
+
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "."
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -51,4 +67,21 @@ exclude_lines = [
     "raise NotImplementedError",
     "if 0:",
     "if __name__ == .__main__.:"
+]
+
+[tool.autopep8]
+max_line_length = 120
+aggressive = 1
+
+[tool.flake8]
+max-line-length = 120
+extend-ignore = ["E203", "W503"]
+exclude = [
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    "*.egg-info"
 ]
