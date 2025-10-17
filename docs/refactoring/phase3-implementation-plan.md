@@ -270,7 +270,7 @@ class HierarchyBuilder:
 ```python
 import pytest
 from pathlib import Path
-from src.app.hierarchy_builder import HierarchyBuilder
+from src.app.hierarchy.hierarchy_builder import HierarchyBuilder
 from src.models.repo_info import RepoInfo
 from src.models.scan_dir import ScanDir
 from src.models.file import File
@@ -536,7 +536,7 @@ class TestBuildHierarchy:
 
 1. **Add import:**
 ```python
-from src.app.hierarchy_builder import HierarchyBuilder
+from src.app.hierarchy.hierarchy_builder import HierarchyBuilder
 ```
 
 2. **Initialize in `__init__`:**

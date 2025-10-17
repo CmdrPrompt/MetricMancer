@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
-from src.app.kpi_calculator import (
+from src.app.kpi.kpi_calculator import (
     KPICalculator,
     ComplexityKPIStrategy,
     ChurnKPIStrategy,
@@ -277,11 +277,11 @@ class TestKPICalculator(unittest.TestCase):
         self.assertEqual(self.calculator.strategies['custom_kpi'], mock_strategy)
         self.assertIn('custom_kpi', self.calculator.timing)
 
-    @patch('src.app.kpi_calculator.ComplexityKPIStrategy')
-    @patch('src.app.kpi_calculator.ChurnKPIStrategy')
-    @patch('src.app.kpi_calculator.HotspotKPIStrategy')
-    @patch('src.app.kpi_calculator.OwnershipKPIStrategy')
-    @patch('src.app.kpi_calculator.SharedOwnershipKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.ComplexityKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.ChurnKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.HotspotKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.OwnershipKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.SharedOwnershipKPIStrategy')
     def test_calculate_all_orchestration(
         self,
         mock_shared_strategy,

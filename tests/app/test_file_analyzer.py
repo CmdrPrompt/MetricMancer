@@ -10,7 +10,7 @@ from pathlib import Path
 import tempfile
 import os
 
-from src.app.file_analyzer import FileAnalyzer
+from src.app.kpi.file_analyzer import FileAnalyzer
 from src.kpis.model import File, Function
 from src.kpis.complexity import ComplexityKPI
 
@@ -182,7 +182,7 @@ class TestFileAnalyzerAnalyzeFile(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    @patch('src.app.file_analyzer.FileAnalyzer._read_file_content')
+    @patch('src.app.kpi.file_analyzer.FileAnalyzer._read_file_content')
     def test_analyze_file_read_error(self, mock_read):
         """Should return None if file cannot be read."""
         mock_read.return_value = None
@@ -194,7 +194,7 @@ class TestFileAnalyzerAnalyzeFile(unittest.TestCase):
 
         self.assertIsNone(result)
 
-    @patch('src.app.file_analyzer.FileAnalyzer._read_file_content')
+    @patch('src.app.kpi.file_analyzer.FileAnalyzer._read_file_content')
     def test_analyze_file_success(self, mock_read):
         """Should analyze file successfully and return File object."""
         # Setup mocks
@@ -248,7 +248,7 @@ class TestFileAnalyzerMultipleFiles(unittest.TestCase):
         self.mock_calculator.complexity_analyzer = self.mock_complexity_analyzer
         self.analyzer = FileAnalyzer(self.config, self.mock_calculator)
 
-    @patch('src.app.file_analyzer.FileAnalyzer.analyze_file')
+    @patch('src.app.kpi.file_analyzer.FileAnalyzer.analyze_file')
     def test_analyze_multiple_files_all_succeed(self, mock_analyze):
         """Should analyze all files successfully."""
         # Mock successful analysis
@@ -269,7 +269,7 @@ class TestFileAnalyzerMultipleFiles(unittest.TestCase):
         self.assertEqual(result[1], mock_file2)
         self.assertEqual(mock_analyze.call_count, 2)
 
-    @patch('src.app.file_analyzer.FileAnalyzer.analyze_file')
+    @patch('src.app.kpi.file_analyzer.FileAnalyzer.analyze_file')
     def test_analyze_multiple_files_some_fail(self, mock_analyze):
         """Should filter out failed files (None results)."""
         # Mock mixed results
@@ -289,7 +289,7 @@ class TestFileAnalyzerMultipleFiles(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], mock_file1)
 
-    @patch('src.app.file_analyzer.FileAnalyzer.analyze_file')
+    @patch('src.app.kpi.file_analyzer.FileAnalyzer.analyze_file')
     def test_analyze_multiple_files_empty_list(self, mock_analyze):
         """Should handle empty file list."""
         result = self.analyzer.analyze_multiple_files([], Path('/repo'))
@@ -328,7 +328,7 @@ class TestFileAnalyzerIntegration(unittest.TestCase):
 
     def setUp(self):
         from src.kpis.complexity import ComplexityAnalyzer
-        from src.app.kpi_calculator import KPICalculator
+        from src.app.kpi.kpi_calculator import KPICalculator
         from src.languages.config import Config
 
         # Use real language configuration

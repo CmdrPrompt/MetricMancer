@@ -112,16 +112,16 @@ class TestBackwardCompatibility:
         assert Analyzer is not None
 
     def test_file_processor_accessible_from_app_root(self):
-        """Old code should still work: from src.app.file_processor import FileProcessor"""
+        """Old code should still work: from src.app.core.file_processor import FileProcessor"""
         from src.app import FileProcessor
         assert FileProcessor is not None
 
     def test_scanner_accessible_from_app_root(self):
-        """Old code should still work: from src.app.scanner import Scanner"""
+        """Old code should still work: from src.app.scanning.scanner import Scanner"""
         from src.app import Scanner
         assert Scanner is not None
 
     def test_kpi_aggregator_accessible_from_app_root(self):
-        """Old code should still work: from src.app.kpi_aggregator import KPIAggregator"""
+        """Old code should still work: from src.app.kpi.kpi_aggregator import KPIAggregator"""
         from src.app import KPIAggregator
         assert KPIAggregator is not None

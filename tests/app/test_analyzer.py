@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from src.app.analyzer import Analyzer
+from src.app.core.analyzer import Analyzer
 from src.kpis.codechurn import ChurnKPI
 from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI

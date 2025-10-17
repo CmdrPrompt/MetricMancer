@@ -62,8 +62,8 @@ Other: 7 lines (1.5%)
 #### 4. **High Coupling** ❌
 ```python
 # Imports show tight coupling to many modules:
-from src.app.hierarchy_builder import HierarchyBuilder      # Phase 3
-from src.app.kpi_aggregator import KPIAggregator           # Phase 4
+from src.app.hierarchy.hierarchy_builder import HierarchyBuilder      # Phase 3
+from src.app.kpi.kpi_aggregator import KPIAggregator           # Phase 4
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership import CodeOwnershipKPI
 from src.kpis.codechurn import ChurnKPI

@@ -21,7 +21,7 @@ Successfully ported KPIAggregator from `refactor/analyzer-complexity-reduction` 
 
 ### 3. Integration
 - ✅ **Updated `src/app/analyzer.py`**
-  - Added import: `from src.app.kpi_aggregator import KPIAggregator`
+  - Added import: `from src.app.kpi.kpi_aggregator import KPIAggregator`
   - Initialized aggregator: `self.kpi_aggregator = KPIAggregator()`
   - Refactored `_aggregate_scan_dir_kpis()` to delegate to KPIAggregator
   - Reduced complexity by ~40 lines

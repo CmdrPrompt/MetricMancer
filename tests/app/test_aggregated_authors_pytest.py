@@ -1,7 +1,7 @@
 import pytest
 from src.kpis.model import ScanDir, File
 from src.kpis.base_kpi import BaseKPI
-from src.app.analyzer import AggregatedSharedOwnershipKPI
+from src.app.core.analyzer import AggregatedSharedOwnershipKPI
 
 
 def make_file_with_authors(authors):
