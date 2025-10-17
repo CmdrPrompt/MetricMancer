@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-full
+.PHONY: help install format lint test coverage licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -15,6 +15,7 @@ help:
 	@echo "  make format               - Auto-format code with autopep8"
 	@echo "  make lint                 - Check code with flake8"
 	@echo "  make test                 - Run all tests with pytest"
+	@echo "  make coverage             - Run tests with coverage report (HTML + terminal)"
 	@echo "  make licenses             - Check license compliance"
 	@echo "  make check                - Run lint + test + licenses (CI workflow)"
 	@echo "  make clean                - Clean temporary files"
@@ -58,6 +59,14 @@ test:
 	@source .venv/bin/activate && python -m pytest tests/ -v --tb=short
 	@echo "✅ Tests complete!"
 
+coverage:
+	@echo "📊 Running tests with coverage analysis..."
+	@source .venv/bin/activate && python -m pytest tests/ -v --cov=src --cov-report=html --cov-report=term-missing
+	@echo ""
+	@echo "✅ Coverage analysis complete!"
+	@echo "   HTML Report: htmlcov/index.html"
+	@echo "   Open with:   open htmlcov/index.html"
+
 licenses:
 	@echo "📋 Checking license compliance..."
 	@source .venv/bin/activate && python check_licenses.py
@@ -72,7 +81,7 @@ clean:
 	@find . -type f -name "*.pyc" -delete
 	@find . -type f -name "*.pyo" -delete
 	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
-	@rm -rf .pytest_cache build dist
+	@rm -rf .pytest_cache build dist htmlcov coverage_html .coverage coverage.xml
 	@echo "✅ Cleanup complete!"
 
 # Self-analysis targets - run MetricMancer on itself for code quality insights

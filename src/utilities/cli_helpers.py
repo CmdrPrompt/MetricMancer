@@ -44,6 +44,10 @@ def print_usage():
           "supports .txt and .md).")
     print("  --review-branch-only         Only include files changed in current branch in review strategy.")
     print("  --review-base-branch <name>  Base branch to compare against (default: main).")
+    print("  --delta-review               Generate delta-based review (function-level changes only).")
+    print("  --delta-base-branch <name>   Base branch for delta comparison (default: main).")
+    print("  --delta-target-branch <name> Target branch for delta comparison (default: current branch).")
+    print("  --delta-output <file>        Output file for delta review (default: delta_review.md).")
     print("  --churn-period <days>        Number of days to analyze for code churn (default: 30).")
     print("  --auto-report-filename       (Optional) Automatically generate a unique report filename "
           "based on date and directories.")
@@ -69,6 +73,8 @@ def print_usage():
     print("  python -m src.main src --review-strategy --review-output review_strategy.md")
     print("  python -m src.main src --review-strategy --review-branch-only")
     print("  python -m src.main src --review-strategy --review-branch-only --review-base-branch develop")
+    print("  python -m src.main src --delta-review")
+    print("  python -m src.main src --delta-review --delta-base-branch main --delta-target-branch feature/new")
 
 
 def parse_args():
@@ -218,5 +224,28 @@ def parse_args():
         type=int,
         default=30,
         help="Number of days to analyze for code churn (default: 30)."
+    )
+    parser.add_argument(
+        "--delta-review",
+        action="store_true",
+        help="Generate delta-based review strategy with function-level analysis."
+    )
+    parser.add_argument(
+        "--delta-base-branch",
+        type=str,
+        default="main",
+        help="Base branch for delta comparison (default: main)."
+    )
+    parser.add_argument(
+        "--delta-target-branch",
+        type=str,
+        default=None,
+        help="Target branch for delta comparison (default: current branch)."
+    )
+    parser.add_argument(
+        "--delta-output",
+        type=str,
+        default="delta_review.md",
+        help="Output file for delta review report (default: delta_review.md)."
     )
     return parser
