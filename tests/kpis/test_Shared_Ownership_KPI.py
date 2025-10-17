@@ -10,7 +10,7 @@ class TestSharedOwnershipKPI(unittest.TestCase):
         mock_instance = MagicMock()
         mock_instance.value = {'Alice': 60.0, 'Bob': 30.0, 'Carol': 10.0}
         mock_code_ownership_kpi.return_value = mock_instance
-        
+
         kpi = SharedOwnershipKPI('dummy.py', '/repo', threshold=20.0)
         self.assertEqual(kpi.value['num_significant_authors'], 2)
         self.assertIn('Alice', kpi.value['authors'])
@@ -24,7 +24,7 @@ class TestSharedOwnershipKPI(unittest.TestCase):
         mock_instance = MagicMock()
         mock_instance.value = {'Alice': 10.0, 'Bob': 15.0}
         mock_code_ownership_kpi.return_value = mock_instance
-        
+
         kpi = SharedOwnershipKPI('dummy.py', '/repo', threshold=20.0)
         self.assertEqual(kpi.value['num_significant_authors'], 0)
         self.assertEqual(kpi.value['authors'], [])
@@ -36,7 +36,7 @@ class TestSharedOwnershipKPI(unittest.TestCase):
         mock_instance = MagicMock()
         mock_instance.value = {'Alice': 50.0, 'Bob': 50.0}
         mock_code_ownership_kpi.return_value = mock_instance
-        
+
         kpi = SharedOwnershipKPI('dummy.py', '/repo', threshold=20.0)
         self.assertEqual(kpi.value['num_significant_authors'], 2)
         self.assertCountEqual(kpi.value['authors'], ['Alice', 'Bob'])

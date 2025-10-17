@@ -319,4 +319,6 @@ python -m pytest tests/ -v --cov=src --cov-report=html
 
 ## License
 
-MIT
+MetricMancer is licensed under the [MIT License](LICENSE).
+
+All third-party dependencies use permissive licenses (MIT, Apache 2.0, BSD, MPL 2.0). See [LICENSE_INFO.md](LICENSE_INFO.md) for complete licensing information including MetricMancer's license and all dependencies.

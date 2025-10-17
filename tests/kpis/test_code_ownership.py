@@ -8,6 +8,7 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         # Rensa cache före varje test för att undvika delad state
         from src.utilities.git_cache import get_git_cache
         get_git_cache().clear_cache()
+
     @patch('os.path.exists', return_value=True)
     @patch('src.utilities.git_cache.subprocess.run')
     @patch('src.utilities.git_cache.subprocess.check_output')
@@ -15,12 +16,12 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         # Mock git ls-files
         mock_run.return_value.stdout = 'dummy.py\n'
         mock_run.return_value.returncode = 0
-        
+
         # Simulate git blame output for a file with 4 lines, 2 authors
         mock_check_output.return_value = (
             'author Alice\n' * 3 + 'author Bob\n'
         )
-        
+
         kpi = CodeOwnershipKPI('/repo/dummy.py', '/repo')
         self.assertIn('Alice', kpi.value)
         self.assertIn('Bob', kpi.value)
@@ -34,7 +35,7 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         # Mock git ls-files to indicate file is tracked
         mock_run.return_value.stdout = 'dummy.py\n'
         mock_run.return_value.returncode = 0
-        
+
         kpi = CodeOwnershipKPI('/repo/dummy.py', '/repo')
         self.assertEqual(kpi.value, {})
 

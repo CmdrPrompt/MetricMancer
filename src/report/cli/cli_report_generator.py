@@ -33,26 +33,27 @@ class CLIReportGenerator(ReportInterface):
         format_strategy = strategy_class()
 
         # If save_cli_to_file is True (multi-format mode), capture output to file
-        if save_cli_to_file and output_file and output_format != "machine" and (output_file.endswith('.md') or output_file.endswith('.html')):
+        if save_cli_to_file and output_file and output_format != "machine" and (
+                output_file.endswith('.md') or output_file.endswith('.html')):
             import sys
             from io import StringIO
-            
+
             # Capture stdout
             old_stdout = sys.stdout
             sys.stdout = captured_output = StringIO()
-            
+
             try:
                 for repo_info in self.repo_infos:
                     format_strategy.print_report(repo_info, debug_print, level=level)
-                
+
                 # Write captured output to file
                 content = captured_output.getvalue()
                 os.makedirs(os.path.dirname(output_file) or '.', exist_ok=True)
-                
+
                 # Wrap in markdown code fence if .md extension for proper monospace rendering
                 if output_file.endswith('.md'):
                     content = f"```\n{content}\n```\n"
-                
+
                 with open(output_file, 'w', encoding='utf-8') as f:
                     f.write(content)
                 print(f"[OK] Report generated: {output_file}", file=old_stdout)

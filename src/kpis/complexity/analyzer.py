@@ -6,6 +6,7 @@ class ComplexityAnalyzer:
     """
     A class dedicated to calculating complexity for file content.
     """
+
     def calculate_for_file(self, file_content: str, config: dict) -> tuple[int, int]:
         """
         Calculates cyclomatic complexity and number of functions for a given file content.

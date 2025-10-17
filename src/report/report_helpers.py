@@ -95,7 +95,7 @@ def get_output_filename(args):
 
 def ensure_report_folder(report_folder):
     """
-    Ensures the report folder exists. Returns the folder path if specified, 
+    Ensures the report folder exists. Returns the folder path if specified,
     else returns the default 'output' folder.
     """
     if report_folder is None:

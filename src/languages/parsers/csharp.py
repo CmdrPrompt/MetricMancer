@@ -7,6 +7,7 @@ class CSharpComplexityParser(ComplexityParser):
     Complexity parser for C# source code.
     Computes cyclomatic complexity and counts functions using regex patterns.
     """
+
     def compute_complexity(self, code: str) -> int:
         """
         Compute the cyclomatic complexity of the given C# code string.

@@ -4,6 +4,7 @@ from src.kpis.model import RepoInfo, ScanDir, File, Function
 from typing import List, Tuple
 import os
 
+
 class CLIReportFormat(ReportFormatStrategy):
     def print_report(self, repo_info: RepoInfo, debug_print, level="file", **kwargs):
         """
@@ -20,25 +21,25 @@ class CLIReportFormat(ReportFormatStrategy):
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
         """Recursively collects all git-tracked File objects from a ScanDir tree."""
         from src.utilities.debug import debug_print
-        
+
         def is_tracked_file(file_obj: File):
             co = file_obj.kpis.get('Code Ownership')
             debug_print(f"[DEBUG] Checking file {file_obj.file_path}: co={type(co)}")
             if not co or not hasattr(co, 'value'):
                 debug_print(f"[DEBUG] File {file_obj.file_path}: no valid CO, returning False")
                 return False
-            
-            # Handle new cache structure: value is either None/empty dict for untracked files, 
+
+            # Handle new cache structure: value is either None/empty dict for untracked files,
             # or dict with author percentages for tracked files
             if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
                 debug_print(f"[DEBUG] File {file_obj.file_path}: no ownership data, returning False")
                 return False
-            
+
             # Check if it's the old 'N/A' format or actual ownership data
             if co.value.get('ownership') == 'N/A':
                 debug_print(f"[DEBUG] File {file_obj.file_path}: ownership=N/A (old format), returning False")
                 return False
-            
+
             debug_print(f"[DEBUG] File {file_obj.file_path}: ownership={co.value}, returning True")
             return True
 
@@ -53,7 +54,7 @@ class CLIReportFormat(ReportFormatStrategy):
         all_files = self._collect_all_files(repo_info)
         from src.utilities.debug import debug_print
         debug_print(f"[DEBUG] _get_repo_stats: collected {len(all_files)} files")
-        
+
         if not all_files:
             return "[No files analyzed]", []
 
@@ -64,7 +65,7 @@ class CLIReportFormat(ReportFormatStrategy):
         min_complexity = round(min(complexities), 1) if complexities else 0
         max_complexity = round(max(complexities), 1) if complexities else 0
         avg_churn = round(sum(churns) / len(churns), 1) if churns else 0
-        
+
         stats_str = f"[Avg. C:{avg_complexity}, Min C:{min_complexity}, Max C:{max_complexity}, Avg. Churn:{avg_churn}]"
         return stats_str, all_files
 
@@ -77,16 +78,16 @@ class CLIReportFormat(ReportFormatStrategy):
             co = file_obj.kpis.get('Code Ownership')
             if not co or not hasattr(co, 'value'):
                 return False
-            
-            # Handle new cache structure: value is either None/empty dict for untracked files, 
+
+            # Handle new cache structure: value is either None/empty dict for untracked files,
             # or dict with author percentages for tracked files
             if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
                 return False
-            
+
             # Check if it's the old 'N/A' format or actual ownership data
             if co.value.get('ownership') == 'N/A':
                 return False
-                
+
             return True
 
         # Filter files: only tracked files
@@ -129,7 +130,7 @@ class CLIReportFormat(ReportFormatStrategy):
         c_val = file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') else '?'
         ch_val = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') else '?'
         h_val = file_obj.kpis.get('hotspot').value if file_obj.kpis.get('hotspot') else '?'
-        
+
         # Code Ownership
         code_ownership = file_obj.kpis.get('Code Ownership')
         ownership_str = ''
@@ -143,7 +144,7 @@ class CLIReportFormat(ReportFormatStrategy):
                 if len(sorted_owners) > 3:
                     owners.append(f"+ {len(sorted_owners) - 3} more")
                 ownership_str = " Owners: " + ", ".join(owners)
-        
+
         # Shared Ownership
         shared_ownership = file_obj.kpis.get('Shared Ownership')
         shared_str = ''
@@ -154,7 +155,7 @@ class CLIReportFormat(ReportFormatStrategy):
                 num_authors = shared_ownership.value['num_significant_authors']
                 authors = shared_ownership.value.get('authors', [])
                 threshold = shared_ownership.value.get('threshold', 20.0)
-                
+
                 if num_authors == 0:
                     shared_str = f" Shared: None (threshold: {threshold}%)"
                 elif num_authors == 1:
@@ -166,18 +167,19 @@ class CLIReportFormat(ReportFormatStrategy):
                     shared_str = f" Shared: {num_authors} authors ({author_list})"
             elif shared_ownership.value.get('shared_ownership') == 'N/A':
                 shared_str = " Shared: N/A"
-        
+
         # Always append ownership_str and shared_str directly after Hotspot, trimmed
-        return f"[C:{c_val}, Churn:{ch_val}, Hotspot:{h_val}]" + (ownership_str if ownership_str else "") + (" " if ownership_str and shared_str else "") + (shared_str if shared_str else "")
+        return f"[C:{c_val}, Churn:{ch_val}, Hotspot:{h_val}]" + (ownership_str if ownership_str else "") + (
+            " " if ownership_str and shared_str else "") + (shared_str if shared_str else "")
 
     def _print_functions(self, functions: List[Function], prefix: str, is_file_last: bool):
         """Prints the functions for a given file."""
         func_prefix = prefix + ("    " if is_file_last else "│   ")
-        
+
         for i, func in enumerate(sorted(functions, key=lambda f: f.name)):
             is_last_func = (i == len(functions) - 1)
             connector = "└── " if is_last_func else "├── "
-            
+
             c_val = func.kpis['complexity'].value if 'complexity' in func.kpis and func.kpis['complexity'] else '?'
             stats_str = f"[C:{c_val}]"
             print(f"{func_prefix}{connector}{func.name}() {stats_str}")

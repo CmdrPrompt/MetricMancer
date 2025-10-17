@@ -7,6 +7,7 @@ class TypeScriptComplexityParser(ComplexityParser):
     Complexity parser for TypeScript source code.
     Computes cyclomatic complexity and counts functions using regex patterns.
     """
+
     def compute_complexity(self, code: str) -> int:
         """
         Compute the cyclomatic complexity of the given TypeScript code string.

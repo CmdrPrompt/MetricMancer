@@ -23,14 +23,14 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         # Rensa cache för att undvika påverkan från andra tester
         from src.utilities.git_cache import get_git_cache
         get_git_cache().clear_cache()
-        
+
         # Mock git ls-files (för tracked file check)
         mock_run.return_value.stdout = 'tracked.py\n'
         mock_run.return_value.returncode = 0
-        
+
         # Mock git blame
         mock_check_output.return_value = 'author Alice\nauthor Bob\nauthor Alice\n'
-        
+
         kpi = CodeOwnershipKPI(file_path='tracked.py', repo_root='.')
         # Alice: 2/3, Bob: 1/3
         self.assertAlmostEqual(kpi.value['Alice'], 66.7, places=1)

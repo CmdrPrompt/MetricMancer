@@ -6,20 +6,21 @@ Based on "Your Code as a Crime Scene" methodology by Adam Tornhill.
 from typing import List, Tuple, Dict, Any
 
 
-def extract_hotspots_from_data(data: Dict[str, Any], threshold: int = 50, path: str = '') -> List[Tuple[str, int, int, float]]:
+def extract_hotspots_from_data(data: Dict[str, Any], threshold: int = 50,
+                               path: str = '') -> List[Tuple[str, int, int, float]]:
     """
     Extract hotspots from hierarchical report data.
-    
+
     Args:
         data: Report data dictionary (from JSON report)
         threshold: Minimum hotspot score to include
         path: Current path prefix for files
-        
+
     Returns:
         List of tuples: (file_path, hotspot_score, complexity, churn)
     """
     hotspots = []
-    
+
     if isinstance(data, dict):
         # Process files in current directory
         if 'files' in data:
@@ -31,46 +32,46 @@ def extract_hotspots_from_data(data: Dict[str, Any], threshold: int = 50, path: 
                         complexity = filedata['kpis'].get('complexity', 0)
                         churn = filedata['kpis'].get('churn', 0)
                         hotspots.append((file_path, hotspot, complexity, churn))
-        
+
         # Process subdirectories recursively
         if 'scan_dirs' in data:
             for dirname, dirdata in data['scan_dirs'].items():
                 dir_path = f"{path}/{dirname}" if path else dirname
                 hotspots.extend(extract_hotspots_from_data(dirdata, threshold, dir_path))
-    
+
     return hotspots
 
 
-def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]], 
-                         show_risk_categories: bool = True) -> str:
+def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]],
+                          show_risk_categories: bool = True) -> str:
     """
     Format hotspots as a readable table with risk categories.
-    
+
     Args:
         hotspots: List of (file_path, hotspot_score, complexity, churn) tuples
         show_risk_categories: Whether to show risk category analysis
-        
+
     Returns:
         Formatted string ready for display
     """
     if not hotspots:
         return "No hotspots found above the specified threshold."
-    
+
     # Sort by hotspot score (highest first)
     sorted_hotspots = sorted(hotspots, key=lambda x: x[1], reverse=True)
-    
+
     output = []
     output.append("=" * 100)
     output.append("HOTSPOT ANALYSIS - High Risk Files Requiring Attention")
     output.append("=" * 100)
     output.append("")
-    
+
     # Add risk category analysis if requested
     if show_risk_categories:
         critical_hotspots = []
         emerging_hotspots = []
         stable_complexity = []
-        
+
         for file_path, hotspot, complexity, churn in sorted_hotspots:
             if complexity > 15 and churn > 10:
                 critical_hotspots.append((file_path, hotspot, complexity, churn))
@@ -78,7 +79,7 @@ def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]],
                 emerging_hotspots.append((file_path, hotspot, complexity, churn))
             elif complexity > 15 and churn <= 5:
                 stable_complexity.append((file_path, hotspot, complexity, churn))
-        
+
         if critical_hotspots:
             output.append("CRITICAL HOTSPOTS (Immediate Action Required)")
             output.append("   High Complexity (>15) + High Churn (>10)")
@@ -87,7 +88,7 @@ def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]],
             for file_path, hotspot, complexity, churn in critical_hotspots:
                 output.append(f"   {file_path:<60} Hotspot: {hotspot:>6} (C:{complexity:>3}, Ch:{churn:>4.1f})")
             output.append("")
-        
+
         if emerging_hotspots:
             output.append("EMERGING HOTSPOTS (High Priority)")
             output.append("   Medium Complexity (5-15) + High Churn (>10)")
@@ -96,7 +97,7 @@ def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]],
             for file_path, hotspot, complexity, churn in emerging_hotspots:
                 output.append(f"   {file_path:<60} Hotspot: {hotspot:>6} (C:{complexity:>3}, Ch:{churn:>4.1f})")
             output.append("")
-        
+
         if stable_complexity:
             output.append("STABLE COMPLEXITY (Low Priority)")
             output.append("   High Complexity (>15) + Low Churn (≤5)")
@@ -105,11 +106,11 @@ def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]],
             for file_path, hotspot, complexity, churn in stable_complexity:
                 output.append(f"   {file_path:<60} Hotspot: {hotspot:>6} (C:{complexity:>3}, Ch:{churn:>4.1f})")
             output.append("")
-    
+
     # Legend before full table
     output.append("Legend: Hotspot = Complexity × Churn | C = Complexity | Ch = Churn (commits/month)")
     output.append("")
-    
+
     # Interpretation guide
     output.append("INTERPRETATION GUIDE")
     output.append("-" * 100)
@@ -145,7 +146,7 @@ def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]],
     output.append("      and industry research. Adjust based on your project context and domain.")
     output.append("-" * 100)
     output.append("")
-    
+
     # Full table
     output.append("COMPLETE HOTSPOT LIST")
     output.append("-" * 100)
@@ -157,39 +158,39 @@ def format_hotspots_table(hotspots: List[Tuple[str, int, int, float]],
     output.append(f"Total files above threshold: {len(sorted_hotspots)}")
     output.append("")
     output.append("=" * 100)
-    
+
     return "\n".join(output)
 
 
-def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]], 
-                             show_risk_categories: bool = True) -> str:
+def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
+                              show_risk_categories: bool = True) -> str:
     """
     Format hotspots as markdown with tables and emojis.
-    
+
     Args:
         hotspots: List of (file_path, hotspot_score, complexity, churn) tuples
         show_risk_categories: Whether to show risk category analysis
-        
+
     Returns:
         Formatted markdown string
     """
     if not hotspots:
         return "# 🔥 Hotspot Analysis\n\n**No hotspots found above the specified threshold.**\n"
-    
+
     # Sort by hotspot score (highest first)
     sorted_hotspots = sorted(hotspots, key=lambda x: x[1], reverse=True)
-    
+
     output = []
     output.append("# 🔥 Hotspot Analysis - High Risk Files\n")
     output.append("> *Generated by MetricMancer, based on 'Your Code as a Crime Scene' by Adam Tornhill*\n")
     output.append("> **Methodology:** Hotspot Score = Complexity × Churn\n")
-    
+
     # Add risk category analysis if requested
     if show_risk_categories:
         critical_hotspots = []
         emerging_hotspots = []
         stable_complexity = []
-        
+
         for file_path, hotspot, complexity, churn in sorted_hotspots:
             if complexity > 15 and churn > 10:
                 critical_hotspots.append((file_path, hotspot, complexity, churn))
@@ -197,7 +198,7 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
                 emerging_hotspots.append((file_path, hotspot, complexity, churn))
             elif complexity > 15 and churn <= 5:
                 stable_complexity.append((file_path, hotspot, complexity, churn))
-        
+
         if critical_hotspots:
             output.append("\n## 🔴 Critical Hotspots (Immediate Action Required)\n")
             output.append("**Criteria:** High Complexity (>15) + High Churn (>10)\n")
@@ -206,7 +207,7 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
             output.append("|------|---------|------------|-------|")
             for file_path, hotspot, complexity, churn in critical_hotspots:
                 output.append(f"| `{file_path}` | {hotspot} | {complexity} | {churn:.1f} |")
-        
+
         if emerging_hotspots:
             output.append("\n## 🟡 Emerging Hotspots (High Priority)\n")
             output.append("**Criteria:** Medium Complexity (5-15) + High Churn (>10)\n")
@@ -215,7 +216,7 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
             output.append("|------|---------|------------|-------|")
             for file_path, hotspot, complexity, churn in emerging_hotspots:
                 output.append(f"| `{file_path}` | {hotspot} | {complexity} | {churn:.1f} |")
-        
+
         if stable_complexity:
             output.append("\n## 🟢 Stable Complexity (Low Priority)\n")
             output.append("**Criteria:** High Complexity (>15) + Low Churn (≤5)\n")
@@ -224,10 +225,10 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
             output.append("|------|---------|------------|-------|")
             for file_path, hotspot, complexity, churn in stable_complexity:
                 output.append(f"| `{file_path}` | {hotspot} | {complexity} | {churn:.1f} |")
-    
+
     # Interpretation guide
     output.append("\n## 📊 Interpretation Guide\n")
-    
+
     output.append("### Hotspot Score Classification\n")
     output.append("| Score Range | Risk Level | Action |")
     output.append("|-------------|------------|--------|")
@@ -235,7 +236,7 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
     output.append("| 26-75 | 🟡 Medium | Plan improvements in next sprint |")
     output.append("| 76-150 | 🟠 High | Prioritize refactoring soon |")
     output.append("| 151+ | 🔴 Critical | **Immediate action required** |")
-    
+
     output.append("\n### Complexity Thresholds (McCabe Cyclomatic)\n")
     output.append("| Complexity | Level | Assessment |")
     output.append("|------------|-------|------------|")
@@ -243,7 +244,7 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
     output.append("| 6-10 | Moderate | Well-structured, monitor growth |")
     output.append("| 11-15 | High | Consider refactoring |")
     output.append("| 16+ | Very High | **Immediate attention, hard to test** |")
-    
+
     output.append("\n### Code Churn Thresholds (commits/month)\n")
     output.append("| Churn | Activity Level | Assessment |")
     output.append("|-------|----------------|------------|")
@@ -251,34 +252,35 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
     output.append("| 3-5 | Active | Normal development pattern |")
     output.append("| 6-10 | High Activity | Monitor for instability |")
     output.append("| 11+ | Very High | **Investigate root causes** |")
-    
+
     output.append("\n### Recommended Actions by Category\n")
     output.append("| Category | Actions |")
     output.append("|----------|---------|")
     output.append("| 🔴 Critical Hotspots | Refactor into smaller functions, add comprehensive tests, consider architectural redesign, assign senior dev ownership |")
-    output.append("| 🟡 Emerging Hotspots | Monitor closely, preventive refactoring, strengthen testing, code reviews by experienced team members |")
+    output.append(
+        "| 🟡 Emerging Hotspots | Monitor closely, preventive refactoring, strengthen testing, code reviews by experienced team members |")
     output.append("| 🟢 Stable Complexity | Document thoroughly, add integration tests, consider if refactoring adds value |")
     output.append("| ✅ Active Simple Code | Good pattern - ensure it stays simple |")
-    
+
     # Full table
     output.append("\n## 📋 Complete Hotspot List\n")
     output.append("| File | Hotspot | Complexity | Churn |")
     output.append("|------|---------|------------|-------|")
     for file_path, hotspot, complexity, churn in sorted_hotspots:
         output.append(f"| `{file_path}` | {hotspot} | {complexity} | {churn:.1f} |")
-    
+
     output.append(f"\n**Total files above threshold:** {len(sorted_hotspots)}\n")
-    
+
     return "\n".join(output)
 
 
-def save_hotspots_to_file(hotspots: List[Tuple[str, int, int, float]], 
-                         filename: str, 
-                         show_risk_categories: bool = True) -> None:
+def save_hotspots_to_file(hotspots: List[Tuple[str, int, int, float]],
+                          filename: str,
+                          show_risk_categories: bool = True) -> None:
     """
     Save hotspot analysis to a file.
     Automatically detects format based on file extension (.md for markdown, .txt for plain text).
-    
+
     Args:
         hotspots: List of hotspot tuples
         filename: Output filename (.md for markdown, .txt for plain text)
@@ -289,31 +291,31 @@ def save_hotspots_to_file(hotspots: List[Tuple[str, int, int, float]],
         content = _format_hotspots_markdown(hotspots, show_risk_categories)
     else:
         content = format_hotspots_table(hotspots, show_risk_categories)
-    
+
     with open(filename, 'w', encoding='utf-8') as f:
         f.write(content)
-    
+
     print(f"Hotspot analysis saved to: {filename}")
 
 
 def print_hotspots_summary(hotspots: List[Tuple[str, int, int, float]]) -> None:
     """
     Print a brief summary of hotspots to the terminal.
-    
+
     Args:
         hotspots: List of hotspot tuples
     """
     if not hotspots:
         print("No high-risk hotspots found.")
         return
-    
+
     critical_count = len([h for h in hotspots if h[2] > 15 and h[3] > 10])  # complexity > 15, churn > 10
     total_count = len(hotspots)
-    
+
     print(f"\nHOTSPOT SUMMARY:")
     print(f"   Total hotspots found: {total_count}")
     print(f"   Critical hotspots: {critical_count}")
-    
+
     if critical_count > 0:
         print(f"   {critical_count} files need immediate attention!")
     else:

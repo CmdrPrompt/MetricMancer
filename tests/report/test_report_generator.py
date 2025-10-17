@@ -29,7 +29,13 @@ class TestReportGenerator(unittest.TestCase):
         self.assertEqual(kwargs["report_links"], ["link1"])
 
     def test_init_sets_attributes(self):
-        generator = ReportGenerator(self.repo_info, threshold_low=5, threshold_high=15, problem_file_threshold=3, template_dir="foo", template_file="bar.html")
+        generator = ReportGenerator(
+            self.repo_info,
+            threshold_low=5,
+            threshold_high=15,
+            problem_file_threshold=3,
+            template_dir="foo",
+            template_file="bar.html")
         self.assertEqual(generator.repo_info, self.repo_info)
         self.assertEqual(generator.threshold_low, 5)
         self.assertEqual(generator.threshold_high, 15)

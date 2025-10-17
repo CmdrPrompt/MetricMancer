@@ -6,6 +6,7 @@ from src.kpis.model import RepoInfo, ScanDir, File, Function
 from src.kpis.base_kpi import BaseKPI
 from typing import Any, List
 
+
 class JSONReportFormat(ReportFormatStrategy):
 
     def _to_dict(self, obj: Any) -> Any:
@@ -98,7 +99,7 @@ class JSONReportFormat(ReportFormatStrategy):
                         "shared_ownership": func_shared_ownership_value,
                         "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
                     })
-            else: # level == "file"
+            else:  # level == "file"
                 items.append({
                     "filename": file_obj.file_path,
                     "cyclomatic_complexity": file_complexity,
@@ -123,7 +124,7 @@ class JSONReportFormat(ReportFormatStrategy):
             level: 'file' or 'function' for flat list output.
             hierarchical: If True, prints the full hierarchical structure.
                           Otherwise, prints a flat list based on 'level'.
-        
+
         Returns:
             A dictionary (for hierarchical) or a list of dictionaries (for flat).
         """

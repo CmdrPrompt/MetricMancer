@@ -7,6 +7,7 @@ class JavaScriptComplexityParser(ComplexityParser):
     Complexity parser for JavaScript source code.
     Computes cyclomatic complexity and counts functions using regex patterns.
     """
+
     def compute_complexity(self, code: str) -> int:
         """
         Compute the cyclomatic complexity of the given JavaScript code string.
