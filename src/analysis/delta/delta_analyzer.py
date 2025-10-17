@@ -191,8 +191,10 @@ class DeltaAnalyzer:
             target_content = self._get_file_content(file_path, target_ref) if not file_change['is_deleted'] else ""
 
             # Extract functions from both versions
-            base_functions = self.diff_parser.extract_functions_from_source(base_content, language) if base_content else []
-            target_functions = self.diff_parser.extract_functions_from_source(target_content, language) if target_content else []
+            base_functions = self.diff_parser.extract_functions_from_source(
+                base_content, language) if base_content else []
+            target_functions = self.diff_parser.extract_functions_from_source(
+                target_content, language) if target_content else []
 
             # Map changed lines to functions
             affected_target_functions = self.diff_parser.map_lines_to_functions(

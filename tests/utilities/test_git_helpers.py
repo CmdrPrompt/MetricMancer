@@ -11,7 +11,7 @@ This module tests:
 import pytest
 import os
 import tempfile
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from src.utilities.git_helpers import find_git_repo_root
 
@@ -153,7 +153,7 @@ class TestGitHelpers:
             os.makedirs(git_dir)
 
             # Test and capture debug output
-            result = find_git_repo_root(temp_dir)
+            find_git_repo_root(temp_dir)
 
             # Verify debug was called and check that the path contains our temp directory
             assert mock_debug_print.called
@@ -170,7 +170,7 @@ class TestGitHelpers:
             os.makedirs(sub_dir)
 
             # Test and capture debug output
-            result = find_git_repo_root(sub_dir)
+            find_git_repo_root(sub_dir)
 
             # Verify debug was called and check the message content
             assert mock_debug_print.called

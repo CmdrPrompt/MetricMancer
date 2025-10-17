@@ -305,8 +305,8 @@ class TestDeltaDiff:
         )
 
         total_changes = (len(delta.added_functions) +
-                        len(delta.modified_functions) +
-                        len(delta.deleted_functions))
+                         len(delta.modified_functions) +
+                         len(delta.deleted_functions))
         assert total_changes == 3
 
 

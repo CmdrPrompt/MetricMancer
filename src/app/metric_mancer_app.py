@@ -5,6 +5,7 @@ from src.app.core.analyzer import Analyzer
 from src.app.scanning.scanner import Scanner
 from src.app.hierarchy.data_converter import DataConverter
 from src.app.coordination.report_coordinator import ReportCoordinator
+from src.app.coordination.delta_review_coordinator import DeltaReviewCoordinator
 from src.app.infrastructure.timing_reporter import TimingReporter
 from src.utilities.path_helpers import normalize_output_path
 from src.languages.config import Config
@@ -179,6 +180,10 @@ class MetricMancerApp:
         if self.review_strategy:
             self._run_review_strategy_analysis(repo_infos)
 
+        # Run delta review analysis if requested
+        if self.app_config.delta_review:
+            self._run_delta_review_analysis(repo_infos)
+
         # Print timing summary
         analyzer_timing = getattr(self.analyzer, 'timing', None)
         timing_reporter.print_summary(analyzer_timing)
@@ -305,3 +310,39 @@ class MetricMancerApp:
             print(f"\n❌ Error generating review strategy report: {e}")
             import traceback
             traceback.print_exc()
+
+    def _run_delta_review_analysis(self, repo_infos):
+        """
+        Generate delta review report using function-level diff analysis.
+
+        Following Open/Closed Principle, this method delegates all logic to
+        DeltaReviewCoordinator, keeping MetricMancerApp simple.
+
+        Args:
+            repo_infos: List of RepoInfo objects from analysis
+        """
+        if not repo_infos or not self.directories:
+            return
+
+        # Use first repository path for delta analysis
+        repo_path = self.directories[0]
+
+        # Generate delta review using coordinator
+        delta_diff = DeltaReviewCoordinator.generate_delta_review(
+            repo_path=repo_path,
+            config=self.app_config
+        )
+
+        if delta_diff is None:
+            print("\n⚠️  Delta review analysis failed or was skipped")
+            return
+
+        # Write report to file
+        output_path = normalize_output_path(
+            self.report_folder,
+            self.app_config.delta_output
+        )
+        DeltaReviewCoordinator.write_delta_review_file(delta_diff, output_path)
+
+        # Print summary to console
+        DeltaReviewCoordinator.print_delta_summary(delta_diff)

@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test coverage licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-full
+.PHONY: help install format lint test coverage licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -25,6 +25,7 @@ help:
 	@echo "  make analyze-summary      - Summary report with key metrics"
 	@echo "  make analyze-review       - Code review recommendations (full repo)"
 	@echo "  make analyze-review-branch- Code review for changed files only (current branch)"
+	@echo "  make analyze-delta-review - Delta review for function-level changes (current branch)"
 	@echo "  make analyze-full         - Complete analysis with all reports"
 	@echo ""
 
@@ -136,6 +137,21 @@ analyze-review-branch:
 	@echo ""
 	@echo "✅ Branch-specific code review recommendations generated!"
 	@echo "   View: output/self-analysis/review_strategy_branch.md"
+
+analyze-delta-review:
+	@echo "🔬 Running delta review analysis on FUNCTION-LEVEL changes..."
+	@echo "   (Shows exactly which functions changed, with complexity deltas)"
+	@CURRENT_BRANCH=$$(git branch --show-current); \
+	echo "   Current branch: $$CURRENT_BRANCH"; \
+	echo "   Comparing against: main"; \
+	source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
+		--delta-review \
+		--delta-base-branch main \
+		--delta-output delta_review.md \
+		--report-folder output/self-analysis
+	@echo ""
+	@echo "✅ Delta review report generated!"
+	@echo "   View: output/self-analysis/delta_review.md"
 
 analyze-full:
 	@echo "🚀 Running complete analysis on MetricMancer codebase..."

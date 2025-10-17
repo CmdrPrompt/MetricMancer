@@ -49,55 +49,6 @@ def main():
 
     debug_print(f"[DEBUG] main: config={config}")
 
-    # Handle delta review (function-level analysis)
-    if config.delta_review:
-        from src.analysis.delta import DeltaAnalyzer, DeltaReviewStrategyFormat
-        import os
-
-        debug_print(f"[DEBUG] main: Delta review mode activated")
-        debug_print(f"[DEBUG] main: Base={config.delta_base_branch}, Target={config.delta_target_branch}")
-
-        # Use first directory as repo path
-        repo_path = config.directories[0]
-
-        try:
-            # Run delta analysis
-            analyzer = DeltaAnalyzer(repo_path=repo_path)
-            delta_diff = analyzer.analyze_branch_delta(
-                base_branch=config.delta_base_branch,
-                target_branch=config.delta_target_branch
-            )
-
-            # Format report
-            formatter = DeltaReviewStrategyFormat()
-            report = formatter.format(delta_diff)
-
-            # Write to file
-            output_path = os.path.join(config.report_folder, config.delta_output)
-            os.makedirs(config.report_folder, exist_ok=True)
-
-            with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(report)
-
-            print(f"\n✅ Delta review report generated: {output_path}")
-            print(f"\n📊 Summary:")
-            print(f"  - Functions changed: {len(delta_diff.added_functions) + len(delta_diff.modified_functions) + len(delta_diff.deleted_functions)}")
-            print(f"  - Complexity delta: {delta_diff.total_complexity_delta:+d}")
-            print(f"  - Estimated review time: {delta_diff.total_review_time_minutes} minutes")
-
-            if delta_diff.critical_changes:
-                print(f"  - Critical changes: {len(delta_diff.critical_changes)}")
-            if delta_diff.refactorings:
-                print(f"  - Refactorings: {len(delta_diff.refactorings)}")
-
-            return
-
-        except Exception as e:
-            print(f"\n❌ Error generating delta review: {e}")
-            import traceback
-            traceback.print_exc()
-            return
-
     # For multi-format, don't create a single generator - let MetricMancerApp handle it
     if len(config.output_formats) > 1:
         # Multi-format: MetricMancerApp will create generators per format

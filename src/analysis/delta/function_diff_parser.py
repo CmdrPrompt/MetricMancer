@@ -48,7 +48,7 @@ class FunctionDiffParser:
                 file_path = patched_file.source_file[2:]  # Remove 'a/' prefix
             else:
                 file_path = patched_file.target_file[2:] if patched_file.target_file else \
-                           patched_file.source_file[2:]
+                    patched_file.source_file[2:]
 
             # Extract all changed line numbers
             changed_lines = set()

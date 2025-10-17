@@ -1,7 +1,4 @@
 import os
-import subprocess
-from collections import Counter
-from typing import Mapping, Union
 
 from src.kpis.base_kpi import BaseKPI
 from src.utilities.git_cache import get_git_cache
@@ -30,6 +27,5 @@ class CodeOwnershipKPI(BaseKPI):
         # Use shared git cache instead of class-level cache
         git_cache = get_git_cache()
         # Convert absolute path to relative path from repo root
-        import os
         relative_path = os.path.relpath(file_path, repo_root)
         self.value = git_cache.get_ownership_data(repo_root, relative_path)

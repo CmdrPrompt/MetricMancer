@@ -49,9 +49,9 @@ class TestAnalyzeBranchDelta:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Create initial file with a function
             test_file = repo_path / "test.py"
@@ -62,11 +62,11 @@ class TestAnalyzeBranchDelta:
             # Commit initial version
             subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'commit', '-m', 'Initial commit'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Create feature branch
             subprocess.run(['git', 'checkout', '-b', 'feature/test'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Modify function (increase complexity)
             test_file.write_text("""def simple_function():
@@ -80,14 +80,14 @@ class TestAnalyzeBranchDelta:
             # Commit change
             subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'commit', '-m', 'Add complexity'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Get default branch name (git uses 'main' in newer versions)
             result = subprocess.run(['git', 'branch', '--show-current'],
-                                   cwd=repo_path, capture_output=True, text=True)
+                                    cwd=repo_path, capture_output=True, text=True)
             subprocess.run(['git', 'checkout', '-'], cwd=repo_path, check=True, capture_output=True)
             result = subprocess.run(['git', 'branch', '--show-current'],
-                                   cwd=repo_path, capture_output=True, text=True, check=True)
+                                    cwd=repo_path, capture_output=True, text=True, check=True)
             default_branch = result.stdout.strip()
 
             yield (str(repo_path), default_branch)
@@ -110,8 +110,8 @@ class TestAnalyzeBranchDelta:
         assert delta_diff.base_commit != delta_diff.target_commit
         # At least one function should have changed
         total_changes = (len(delta_diff.added_functions) +
-                        len(delta_diff.modified_functions) +
-                        len(delta_diff.deleted_functions))
+                         len(delta_diff.modified_functions) +
+                         len(delta_diff.deleted_functions))
         assert total_changes >= 1
 
     def test_analyze_branch_delta_complexity_increase(self, git_test_repo):
@@ -143,20 +143,20 @@ class TestAnalyzeBranchDelta:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Create and commit a file
             test_file = repo_path / "test.py"
             test_file.write_text("def func(): pass")
             subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'commit', '-m', 'Initial'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Get default branch
             result = subprocess.run(['git', 'branch', '--show-current'],
-                                   cwd=repo_path, capture_output=True, text=True, check=True)
+                                    cwd=repo_path, capture_output=True, text=True, check=True)
             default_branch = result.stdout.strip()
 
             analyzer = DeltaAnalyzer(repo_path=str(repo_path))
@@ -187,9 +187,9 @@ class TestAnalyzeCommitRange:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # First commit
             test_file = repo_path / "test.py"
@@ -199,7 +199,7 @@ class TestAnalyzeCommitRange:
 
             # Get first commit hash
             result = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                                   cwd=repo_path, check=True, capture_output=True, text=True)
+                                    cwd=repo_path, check=True, capture_output=True, text=True)
             first_commit = result.stdout.strip()
 
             # Second commit
@@ -229,9 +229,9 @@ class TestAnalyzeCommitRange:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Create 3 commits
             test_file = repo_path / "test.py"
@@ -240,7 +240,7 @@ class TestAnalyzeCommitRange:
             subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'commit', '-m', 'Commit 1'], cwd=repo_path, check=True, capture_output=True)
             result = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                                   cwd=repo_path, check=True, capture_output=True, text=True)
+                                    cwd=repo_path, check=True, capture_output=True, text=True)
             commit1 = result.stdout.strip()
 
             test_file.write_text("def func1(): pass\ndef func2(): pass")
@@ -261,7 +261,7 @@ class TestAnalyzeCommitRange:
 
             # Should detect multiple function changes/additions
             total_changes = (len(delta_diff.added_functions) +
-                           len(delta_diff.modified_functions))
+                             len(delta_diff.modified_functions))
             assert total_changes >= 2  # At least func2 added, func1 modified
 
 
@@ -278,9 +278,9 @@ class TestAnalyzeWorkingTree:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Commit initial version
             test_file = repo_path / "test.py"
@@ -301,7 +301,7 @@ class TestAnalyzeWorkingTree:
             assert delta_diff.target_commit == 'working-tree'
             # Should have detected the modified function
             total_changes = (len(delta_diff.modified_functions) +
-                           len(delta_diff.added_functions))
+                             len(delta_diff.added_functions))
             assert total_changes >= 1
 
     def test_analyze_working_tree_clean(self):
@@ -314,9 +314,9 @@ class TestAnalyzeWorkingTree:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Commit file
             test_file = repo_path / "test.py"
@@ -348,9 +348,9 @@ class TestComplexityCalculation:
             # Setup git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Initial: Simple function (complexity = 1)
             test_file = repo_path / "test.py"
@@ -358,7 +358,7 @@ class TestComplexityCalculation:
             subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'commit', '-m', 'Initial'], cwd=repo_path, check=True, capture_output=True)
             result = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                                   cwd=repo_path, check=True, capture_output=True, text=True)
+                                    cwd=repo_path, check=True, capture_output=True, text=True)
             commit1 = result.stdout.strip()
 
             # Modified: Add if statement (complexity = 2)
@@ -400,9 +400,9 @@ class TestEdgeCases:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Create initial commit
             test_file = repo_path / "test.py"
@@ -429,9 +429,9 @@ class TestEdgeCases:
             # Initialize git repo
             subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
             subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                          cwd=repo_path, check=True, capture_output=True)
+                           cwd=repo_path, check=True, capture_output=True)
 
             # Add binary file
             binary_file = repo_path / "image.png"
@@ -440,7 +440,7 @@ class TestEdgeCases:
             subprocess.run(['git', 'commit', '-m', 'Add binary'], cwd=repo_path, check=True, capture_output=True)
 
             result = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                                   cwd=repo_path, check=True, capture_output=True, text=True)
+                                    cwd=repo_path, check=True, capture_output=True, text=True)
             commit1 = result.stdout.strip()
 
             # Modify binary file

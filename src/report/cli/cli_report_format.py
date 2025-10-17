@@ -1,8 +1,6 @@
 from src.report.report_format_strategy import ReportFormatStrategy
-from src.utilities.tree_printer import TreePrinter
 from src.kpis.model import RepoInfo, ScanDir, File, Function
 from typing import List, Tuple
-import os
 
 
 class CLIReportFormat(ReportFormatStrategy):
@@ -126,7 +124,10 @@ class CLIReportFormat(ReportFormatStrategy):
         return False
 
     def _format_file_stats(self, file_obj: File) -> str:
-        """Formats the KPI statistics string for a single file, including code ownership and shared ownership if available."""
+        """
+        Formats the KPI statistics string for a single file,
+        including code ownership and shared ownership if available.
+        """
         c_val = file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') else '?'
         ch_val = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') else '?'
         h_val = file_obj.kpis.get('hotspot').value if file_obj.kpis.get('hotspot') else '?'
@@ -136,7 +137,7 @@ class CLIReportFormat(ReportFormatStrategy):
         ownership_str = ''
         if code_ownership and hasattr(code_ownership, 'value') and isinstance(code_ownership.value, dict):
             if 'error' in code_ownership.value:
-                ownership_str = f" Ownership: ERROR"
+                ownership_str = " Ownership: ERROR"
             elif code_ownership.value:
                 # Limit to max 3 owners for readability
                 sorted_owners = sorted(code_ownership.value.items(), key=lambda x: x[1], reverse=True)
@@ -150,7 +151,7 @@ class CLIReportFormat(ReportFormatStrategy):
         shared_str = ''
         if shared_ownership and hasattr(shared_ownership, 'value') and isinstance(shared_ownership.value, dict):
             if 'error' in shared_ownership.value:
-                shared_str = f" Shared: ERROR"
+                shared_str = " Shared: ERROR"
             elif 'num_significant_authors' in shared_ownership.value:
                 num_authors = shared_ownership.value['num_significant_authors']
                 authors = shared_ownership.value.get('authors', [])

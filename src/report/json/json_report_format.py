@@ -1,8 +1,6 @@
-import json
-import os
 from dataclasses import is_dataclass, asdict
 from src.report.report_format_strategy import ReportFormatStrategy
-from src.kpis.model import RepoInfo, ScanDir, File, Function
+from src.kpis.model import RepoInfo, ScanDir, File
 from src.kpis.base_kpi import BaseKPI
 from typing import Any, List
 
@@ -18,7 +16,6 @@ class JSONReportFormat(ReportFormatStrategy):
             return {k: self._to_dict(v) for k, v in obj.items()}
         if isinstance(obj, list):
             return [self._to_dict(v) for v in obj]
-        from src.kpis.base_kpi import BaseKPI
         if is_dataclass(obj):
             # Use asdict for a deep conversion of the dataclass
             return self._to_dict(asdict(obj))

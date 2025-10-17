@@ -35,6 +35,12 @@ class GitDataCache:
         # Churn calculation settings
         self.churn_period_days = churn_period_days
 
+    def _ensure_repo_dict(self, cache: Dict, repo_root: str) -> Dict:
+        """Ensure a repo-specific dictionary exists in the cache."""
+        if repo_root not in cache:
+            cache[repo_root] = {}
+        return cache[repo_root]
+
     def clear_cache(self, repo_root: Optional[str] = None):
         """Clear cache for a specific repo or the entire cache."""
         if repo_root:
@@ -113,14 +119,6 @@ class GitDataCache:
             debug_print(f"[CACHE] Error getting git blame for {file_path}: {e}")
             repo_blame_cache[file_path] = None
             return None
-
-    def clear_cache(self):
-        """Clear all cache data"""
-        self.blame_cache.clear()
-        self.ownership_cache.clear()
-        self.churn_cache.clear()
-        self.tracked_files_cache.clear()
-        debug_print("[CACHE] All caches cleared")
 
     def get_ownership_data(self, repo_root: str, file_path: str) -> Dict[str, Any]:
         """
@@ -333,7 +331,9 @@ class GitDataCache:
                 churn_count = len([line for line in result.stdout.strip().split('\n') if line.strip()])
                 repo_churn_cache[file_path] = churn_count
                 debug_print(
-                    f"[CACHE] Pre-built churn for {file_path}: {churn_count} commits (last {self.churn_period_days} days)")
+                    f"[CACHE] Pre-built churn for {file_path}: {churn_count} commits "
+                    f"(last {self.churn_period_days} days)"
+                )
 
             except Exception as e:
                 debug_print(f"[CACHE] Error pre-building churn for {file_path}: {e}")
