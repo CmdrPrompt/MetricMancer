@@ -5,7 +5,9 @@ description = "Multi-language software analytics tool for code quality, maintain
 authors = [
   { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
 ]
-license = "MIT"
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
 dependencies = [
   "jinja2",
   "pytest",
@@ -19,9 +21,20 @@ dependencies = [
   "pip-licenses"
 ]
 
+[project.urls]
+Homepage = "https://github.com/CmdrPrompt/MetricMancer"
+Repository = "https://github.com/CmdrPrompt/MetricMancer"
+Issues = "https://github.com/CmdrPrompt/MetricMancer/issues"
+
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.setuptools.package-dir]
+"" = "."
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
