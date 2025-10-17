@@ -2,11 +2,14 @@
 
 SHELL := /bin/bash
 
-.PHONY: help format lint test licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-full
+.PHONY: help install format lint test licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
 	@echo "================================"
+	@echo ""
+	@echo "Setup Commands:"
+	@echo "  make install              - Install all dependencies in venv"
 	@echo ""
 	@echo "Code Quality Commands:"
 	@echo "  make format               - Auto-format code with autopep8"
@@ -23,6 +26,22 @@ help:
 	@echo "  make analyze-review-branch- Code review for changed files only (current branch)"
 	@echo "  make analyze-full         - Complete analysis with all reports"
 	@echo ""
+
+install:
+	@echo "📦 Installing MetricMancer dependencies..."
+	@if [ ! -d ".venv" ]; then \
+		echo "❌ Error: Virtual environment .venv not found!"; \
+		echo "   Create it first with: python -m venv .venv"; \
+		exit 1; \
+	fi
+	@echo "   Upgrading pip..."
+	@source .venv/bin/activate && python -m pip install --upgrade pip
+	@echo "   Installing package in editable mode with all dependencies..."
+	@source .venv/bin/activate && pip install -e .
+	@echo "✅ Installation complete!"
+	@echo ""
+	@echo "Installed dependencies:"
+	@source .venv/bin/activate && pip list | grep -E "(jinja2|pytest|pydriller|tqdm|PyYAML|autopep8|flake8|pip-licenses|coverage)"
 
 format:
 	@echo "🎨 Auto-formatting Python code with autopep8..."
