@@ -197,16 +197,16 @@ class CognitiveComplexityKPI(BaseKPI):
     - 25+: Severe (Refactor immediately)
     """
     
-    def __init__(self, value: int = 0, functions: Optional[List[Dict[str, Any]]] = None):
+    def __init__(self, value: int = None, calculation_values: Optional[Dict[str, int]] = None):
         super().__init__(
             value=value,
-            name="Cognitive Complexity",
+            name="cognitive_complexity",
             unit="points",
-            description="Measure of how difficult code is to understand"
+            description="Measure of how difficult code is to understand",
+            calculation_values=calculation_values or {}
         )
-        self.functions = functions or []
     
-    def calculate(self, file_path: str, file_content: str) -> int:
+    def calculate(self, file_path: str, file_content: str) -> 'CognitiveComplexityKPI':
         """
         Calculate cognitive complexity from Python source code.
         
@@ -215,33 +215,29 @@ class CognitiveComplexityKPI(BaseKPI):
             file_content: Source code content
             
         Returns:
-            int: Total cognitive complexity for the file
+            self: CognitiveComplexityKPI instance with calculated values
         """
         try:
             tree = ast.parse(file_content)
             calculator = CognitiveComplexityCalculator()
             
             total_complexity = 0
-            function_complexities = []
+            function_complexities = {}
             
             # Calculate for each function in the file
             for node in ast.walk(tree):
                 if isinstance(node, ast.FunctionDef):
                     func_complexity = calculator.calculate_for_function(node)
                     total_complexity += func_complexity
-                    
-                    function_complexities.append({
-                        'name': node.name,
-                        'cognitive_complexity': func_complexity,
-                        'line_start': node.lineno,
-                        'line_end': node.end_lineno if hasattr(node, 'end_lineno') else None
-                    })
+                    function_complexities[node.name] = func_complexity
             
             self.value = total_complexity
-            self.functions = function_complexities
+            self.calculation_values = function_complexities
             
-            return total_complexity
+            return self
             
         except SyntaxError:
-            # If file has syntax errors, return 0
-            return 0
+            # If file has syntax errors, return empty KPI
+            self.value = None
+            self.calculation_values = {}
+            return self
