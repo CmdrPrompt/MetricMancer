@@ -17,7 +17,7 @@ Test Coverage Goals:
 
 import pytest
 from unittest.mock import Mock, MagicMock
-from src.app.kpi_aggregator import KPIAggregator
+from src.app import KPIAggregator
 from src.kpis.complexity import ComplexityKPI
 from src.kpis.codechurn import ChurnKPI
 from src.kpis.hotspot import HotspotKPI

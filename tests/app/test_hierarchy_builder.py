@@ -9,7 +9,7 @@ directory nodes based on their file paths.
 import pytest
 from pathlib import Path
 
-from src.app.hierarchy_builder import HierarchyBuilder
+from src.app import HierarchyBuilder
 from src.kpis.model import RepoInfo, ScanDir, File
 from src.kpis.complexity import ComplexityKPI
 

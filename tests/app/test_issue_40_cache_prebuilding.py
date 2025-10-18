@@ -6,7 +6,7 @@ import subprocess
 from pathlib import Path
 from unittest.mock import patch, MagicMock
 
-from src.app.analyzer import Analyzer
+from src.app import Analyzer
 from src.utilities.git_cache import get_git_cache
 
 

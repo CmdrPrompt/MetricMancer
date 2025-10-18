@@ -27,7 +27,7 @@ Test Coverage Goals:
 import pytest
 from unittest.mock import Mock, MagicMock, patch, mock_open
 from pathlib import Path
-from src.app.file_processor import FileProcessor
+from src.app import FileProcessor
 from src.kpis.complexity import ComplexityKPI, ComplexityAnalyzer
 from src.kpis.codechurn import ChurnKPI
 from src.kpis.codeownership import CodeOwnershipKPI
