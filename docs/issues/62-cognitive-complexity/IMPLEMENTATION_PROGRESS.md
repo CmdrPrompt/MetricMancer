@@ -306,14 +306,109 @@ Function-level:
 
 ### Phase 4.3: HTML Report 🔜 PLANNED
 
-**Estimated Duration**: 2-3 hours
+**Estimated Duration**: 3-4 hours (extended for tabbed interface)
 
-**Tasks:**
+**Design Goal**: Transform HTML report into comprehensive analysis platform with tabbed interface
 
-- [ ] Add cognitive complexity column to HTML tables
-- [ ] Add chart comparing CC vs CogC
-- [ ] Highlight files with high cognitive complexity
-- [ ] Update templates and CSS
+#### New Tabbed Structure
+
+The HTML report should become a multi-tab dashboard providing complete analysis:
+
+**Tab 1: Overview/Summary** (NEW)
+
+- Repository statistics with cognitive complexity
+- High-level metrics: Avg CC, Avg CogC, Top hotspots
+- Quick insights and recommendations
+
+**Tab 2: File Tree** (EXISTING - Move to tab)
+
+- Current collapsible tree view
+- Add cognitive complexity to file stats: `[C:10, Cog:5, Churn:3, Hotspot:30.0]`
+- Add cognitive complexity to directory aggregates
+
+**Tab 3: Quick Wins** (NEW)
+
+- Integration of Quick Wins report
+- Action items sorted by impact
+- Include cognitive complexity in recommendations
+- Example: "Reduce nesting in function X (Cognitive: 25)"
+
+**Tab 4: Code Review Strategy** (NEW)
+
+- Integration of code review recommendations
+- Files prioritized by risk (complexity × churn)
+- Review time estimates
+- Cognitive complexity insights for each file
+
+**Tab 5: Hotspots** (NEW - Optional)
+
+- Hotspot analysis visualization
+- Table of high-risk files
+- Charts showing CC vs CogC correlation with churn
+
+#### Technical Tasks
+
+- [ ] **Refactor template structure**
+  - [ ] Create tabbed layout in `report.html`
+  - [ ] Extract tree view into separate tab component
+  - [ ] Add CSS for tab navigation
+
+- [ ] **Add cognitive complexity display**
+  - [ ] Update file tree macro to show `Cog:` value
+  - [ ] Add cognitive complexity to directory aggregates
+  - [ ] Update "Problem Files" table with cognitive complexity column
+
+- [ ] **Integrate Quick Wins**
+  - [ ] Generate Quick Wins data in HTML report generator
+  - [ ] Create Quick Wins tab template
+  - [ ] Style recommendations with priority indicators
+
+- [ ] **Integrate Code Review Strategy**
+  - [ ] Generate code review data in HTML report generator
+  - [ ] Create Code Review tab template
+  - [ ] Display review priorities and time estimates
+
+- [ ] **Add charts/visualizations** (Optional enhancement)
+  - [ ] CC vs CogC scatter plot
+  - [ ] Complexity distribution histogram
+  - [ ] Hotspot heatmap
+
+#### Template Structure
+
+```text
+templates/
+├── base.html (updated with tab CSS)
+├── report.html (refactored to use tabs)
+├── components/
+│   ├── tab_overview.html (NEW)
+│   ├── tab_tree.html (extracted from report.html)
+│   ├── tab_quickwins.html (NEW)
+│   ├── tab_review.html (NEW)
+│   └── tab_hotspots.html (NEW - optional)
+```
+
+#### Example Tab Navigation
+
+```html
+<div class="tabs">
+  <button class="tab-btn active" data-tab="overview">Overview</button>
+  <button class="tab-btn" data-tab="tree">File Tree</button>
+  <button class="tab-btn" data-tab="quickwins">Quick Wins</button>
+  <button class="tab-btn" data-tab="review">Code Review</button>
+  <button class="tab-btn" data-tab="hotspots">Hotspots</button>
+</div>
+```
+
+#### Acceptance Criteria
+
+- [ ] Tabbed interface with 4-5 tabs
+- [ ] All tabs show cognitive complexity where relevant
+- [ ] Quick Wins integrated with actionable recommendations
+- [ ] Code Review strategy integrated with priorities
+- [ ] Existing tree view preserved but in dedicated tab
+- [ ] Responsive design (works on mobile/tablet)
+- [ ] No JavaScript errors
+- [ ] All data accessible without expanding/clicking
 
 ### Phase 4.4: JSON Report 🔜 PLANNED
 
@@ -374,10 +469,10 @@ Function-level:
 | Phase 3: Data Model Updates | ✅ Complete | 100% | 1h | 3/3 ✅ |
 | Phase 4.1: CLI Report | ✅ Complete | 100% | 1.5h | 5/5 ✅ |
 | Phase 4.2: Quick Wins | 🔜 Next | 0% | 0h / 1h | TBD |
-| Phase 4.3: HTML Report | 🔜 Planned | 0% | 0h / 2-3h | TBD |
+| Phase 4.3: HTML Report | 🔜 Planned | 0% | 0h / 3-4h | TBD |
 | Phase 4.4: JSON Report | 🔜 Planned | 0% | 0h / 0.5h | TBD |
 | Phase 5: Documentation | 🔜 Planned | 0% | 0h / 1-2h | N/A |
-| **Total** | **75% Complete** | **75%** | **7h / 11-17h** | **679/679 ✅** |
+| **Total** | **75% Complete** | **75%** | **7h / 12-18h** | **679/679 ✅** |
 
 ## Next Steps - Phase 4: Reporting Integration
 
