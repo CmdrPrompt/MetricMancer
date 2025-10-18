@@ -47,6 +47,7 @@ class JSONReportFormat(ReportFormatStrategy):
             return kpi.value if kpi and hasattr(kpi, 'value') else None
 
         package_complexity = kpi_value(scan_dir.kpis, 'complexity')
+        package_cognitive_complexity = kpi_value(scan_dir.kpis, 'cognitive_complexity')
         package_churn = kpi_value(scan_dir.kpis, 'churn')
         package_hotspot = kpi_value(scan_dir.kpis, 'hotspot')
         package_shared_ownership = kpi_value(scan_dir.kpis, 'Shared Ownership')
@@ -65,6 +66,7 @@ class JSONReportFormat(ReportFormatStrategy):
             "filename": scan_dir.scan_dir_path,
             "package": scan_dir.scan_dir_path,
             "cyclomatic_complexity": package_complexity,
+            "cognitive_complexity": package_cognitive_complexity,
             "churn": package_churn,
             "hotspot_score": package_hotspot,
             "code_ownership": package_code_ownership,
@@ -79,17 +81,20 @@ class JSONReportFormat(ReportFormatStrategy):
             code_ownership_value = kpi_value(file_obj.kpis, 'Code Ownership')
             shared_ownership_value = kpi_value(file_obj.kpis, 'Shared Ownership')
             file_complexity = kpi_value(file_obj.kpis, 'complexity')
+            file_cognitive_complexity = kpi_value(file_obj.kpis, 'cognitive_complexity')
             file_hotspot = kpi_value(file_obj.kpis, 'hotspot')
 
             if level == "function":
                 for func_obj in file_obj.functions:
                     func_complexity = kpi_value(func_obj.kpis, 'complexity')
+                    func_cognitive_complexity = kpi_value(func_obj.kpis, 'cognitive_complexity')
                     func_code_ownership_value = kpi_value(func_obj.kpis, 'Code Ownership')
                     func_shared_ownership_value = kpi_value(func_obj.kpis, 'Shared Ownership')
                     items.append({
                         "filename": file_obj.file_path,
                         "function_name": func_obj.name,
                         "cyclomatic_complexity": func_complexity,
+                        "cognitive_complexity": func_cognitive_complexity,
                         "churn": file_churn,
                         "hotspot_score": func_complexity * file_churn if func_complexity and file_churn else 0,
                         "code_ownership": func_code_ownership_value,
@@ -100,6 +105,7 @@ class JSONReportFormat(ReportFormatStrategy):
                 items.append({
                     "filename": file_obj.file_path,
                     "cyclomatic_complexity": file_complexity,
+                    "cognitive_complexity": file_cognitive_complexity,
                     "churn": file_churn,
                     "hotspot_score": file_hotspot,
                     "code_ownership": code_ownership_value,
