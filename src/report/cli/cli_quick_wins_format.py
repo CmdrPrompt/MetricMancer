@@ -65,15 +65,17 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
             complexity_kpi = file_obj.kpis.get('complexity')
             churn_kpi = file_obj.kpis.get('churn')
             hotspot_kpi = file_obj.kpis.get('hotspot')
+            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
             ownership_kpi = file_obj.kpis.get('Code Ownership')
             shared_kpi = file_obj.kpis.get('Shared Code Ownership')
 
             complexity = complexity_kpi.value if complexity_kpi and complexity_kpi.value is not None else 0
             churn = churn_kpi.value if churn_kpi and churn_kpi.value is not None else 0
             hotspot = hotspot_kpi.value if hotspot_kpi and hotspot_kpi.value is not None else 0
+            cognitive_complexity = cognitive_kpi.value if cognitive_kpi and cognitive_kpi.value is not None else 0
 
             # Calculate impact score (0-10)
-            impact = self._calculate_impact(complexity, churn, hotspot)
+            impact = self._calculate_impact(complexity, churn, hotspot, cognitive_complexity)
 
             # Calculate effort score (0-10, higher = more effort)
             effort = self._calculate_effort(complexity, file_obj)
@@ -83,7 +85,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
 
             # Determine action type and description
             action_type, action_desc, reason = self._determine_action(
-                file_obj, complexity, churn, hotspot, ownership_kpi, shared_kpi
+                file_obj, complexity, churn, hotspot, ownership_kpi, shared_kpi, cognitive_complexity
             )
 
             # Estimate time required
@@ -102,6 +104,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
                     'reason': reason,
                     'time_estimate': time_estimate,
                     'complexity': complexity,
+                    'cognitive_complexity': cognitive_complexity,
                     'churn': churn,
                     'hotspot': hotspot
                 })
@@ -111,10 +114,17 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
 
         return quick_wins
 
-    def _calculate_impact(self, complexity: int, churn: float, hotspot: float) -> int:
+    def _calculate_impact(self, complexity: int, churn: float, hotspot: float,
+                          cognitive_complexity: int = 0) -> int:
         """
         Calculate impact score (0-10) based on KPIs.
         Higher score = more impact if improved.
+
+        Args:
+            complexity: Cyclomatic complexity
+            churn: Code churn (commits)
+            hotspot: Hotspot score (complexity × churn)
+            cognitive_complexity: Cognitive complexity (understanding difficulty)
         """
         score = 0
 
@@ -142,6 +152,13 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         if churn > 15:
             score += 2
         elif churn > 10:
+            score += 1
+
+        # Cognitive complexity contributes (0-2 points)
+        # High cognitive = hard to understand, more bugs, higher impact
+        if cognitive_complexity > 25:
+            score += 2
+        elif cognitive_complexity > 15:
             score += 1
 
         return min(score, 10)  # Cap at 10
@@ -186,13 +203,25 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         return min(score, 10)  # Cap at 10
 
     def _determine_action(self, file_obj: File, complexity: int, churn: float,
-                          hotspot: float, ownership_kpi, shared_kpi) -> Tuple[str, str, str]:
+                          hotspot: float, ownership_kpi, shared_kpi,
+                          cognitive_complexity: int = 0) -> Tuple[str, str, str]:
         """
         Determine the recommended action type based on file characteristics.
+
+        Args:
+            cognitive_complexity: Cognitive complexity (understanding difficulty)
 
         Returns:
             (action_type, action_description, reason)
         """
+        # Very high cognitive complexity = reduce nesting (PRIORITY)
+        if cognitive_complexity > 25:
+            return (
+                'Reduce Nesting',
+                f'Reduce nesting depth and extract helper methods',
+                f'Very high cognitive complexity (Cog:{cognitive_complexity}) - hard to understand'
+            )
+
         # Check for single owner + high complexity = documentation opportunity
         if shared_kpi and shared_kpi.value:
             num_authors = shared_kpi.value.get('num_significant_authors', 0)
@@ -217,6 +246,14 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
                 'Refactor',
                 f'Extract functions to reduce complexity',
                 f'High complexity (C:{complexity})'
+            )
+
+        # Moderate cognitive complexity = simplify
+        if cognitive_complexity > 15:
+            return (
+                'Simplify',
+                f'Reduce nesting and simplify boolean conditions',
+                f'Moderate cognitive complexity (Cog:{cognitive_complexity})'
             )
 
         # High churn = add tests
