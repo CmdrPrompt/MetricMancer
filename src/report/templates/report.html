@@ -17,60 +17,132 @@
           <span class="prefix">{{ prefix }}{{ connector }}</span>
           <span class="toggle">▶</span>
           <span class="name">{{ item.dir_name }}/</span>
-          <span class="kpis">[Avg C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Avg Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Avg Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]{% if item.kpis.get('Shared Ownership') and item.kpis['Shared Ownership'].value and item.kpis['Shared Ownership'].value != {'ownership': 'N/A'} %} [Shared: num_significant_authors ({{ item.kpis['Shared Ownership'].value.num_significant_authors }}), authors ({{ item.kpis['Shared Ownership'].value.authors }}), threshold ({{ item.kpis['Shared Ownership'].value.threshold }}%)]{% endif %}</span>
+          <span class="kpis">[Avg C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Avg Cog: {{ item.kpis.cognitive_complexity.value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.cognitive_complexity.value is not none else '?' }}, Avg Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Avg Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span>
         </div><div class="nested">{{- render_tree(item, new_prefix) -}}</div>
       </div>
     {%- else -%} {# It's a file #}
       <div class="tree-item is-file">
-      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]{% if item.kpis.get('Code Ownership') and item.kpis['Code Ownership'].value and item.kpis['Code Ownership'].value != {'ownership': 'N/A'} %} [Owners: {% for author, percent in item.kpis['Code Ownership'].value.items() %}{{ author }}{% if not loop.last %}, {% endif %}{% endfor %}]{% endif %}{% if item.kpis.get('Shared Ownership') and item.kpis['Shared Ownership'].value and item.kpis['Shared Ownership'].value != {'ownership': 'N/A'} %} [Shared: {% for author, percent in item.kpis['Shared Ownership'].value.items() %}{{ author }} ({{ percent }}%){% if not loop.last %}, {% endif %}{% endfor %}]{% endif %}</span></div>
+      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Cog: {{ item.kpis.cognitive_complexity.value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.cognitive_complexity.value is not none else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span></div>
       </div>
     {%- endif -%}
   {%- endfor -%}
 {%- endmacro -%}
 
 {% block content %}
-  <div class="file-tree-container">
-    <h2>File & KPI Tree for {{ repo_info.repo_name }}</h2>
-    <div class="tree-controls">
-      <button id="expand-all-btn">Expand All</button>
-      <button id="collapse-all-btn">Collapse All</button>
-    </div>
-    <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
-    <div class="tree">
-      {{ render_tree(repo_info) }}
+  {# Tab Navigation #}
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="tree">File Tree</button>
+    <button class="tab-btn" data-tab="quickwins">Quick Wins</button>
+  </div>
+
+  {# Tab Content: Overview #}
+  <div id="tab-overview" class="tab-content active">
+    <h2>Overview - {{ repo_info.repo_name }}</h2>
+    <div class="overview-stats">
+      <p><strong>Repository:</strong> {{ repo_info.repo_name }}</p>
+      {% if repo_info.kpis.get('complexity') %}
+      <p><strong>Average Complexity:</strong> {{ repo_info.kpis.complexity.value | round(1) }}</p>
+      {% endif %}
+      {% if repo_info.kpis.get('cognitive_complexity') %}
+      <p><strong>Average Cognitive Complexity:</strong> {{ repo_info.kpis.cognitive_complexity.value | round(1) }}</p>
+      {% endif %}
+      {% if repo_info.kpis.get('churn') %}
+      <p><strong>Average Churn:</strong> {{ repo_info.kpis.churn.value | round(1) }}</p>
+      {% endif %}
     </div>
   </div>
 
-  {% if problem_files %}
-  <div class="problem-files-container">
-    <h2>Problem Files (Complexity >= {{ problem_file_threshold }})</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>File</th>
-          <th>Complexity</th>
-          <th>Churn</th>
-          <th>Hotspot</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for file in problem_files %}
-          <tr>
-            <td>{{ file.file_path }}</td>
-            <td>{{ file.kpis.complexity.value | round(1) if file.kpis.get('complexity') else '?' }}</td>
-            <td>{{ file.kpis.churn.value if file.kpis.get('churn') else '?' }}</td>
-            <td>{{ file.kpis.hotspot.value | round(1) if file.kpis.get('hotspot') else '?' }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+  {# Tab Content: File Tree #}
+  <div id="tab-tree" class="tab-content">
+    <div class="file-tree-container">
+      <h2>File & KPI Tree for {{ repo_info.repo_name }}</h2>
+      <div class="tree-controls">
+        <button id="expand-all-btn">Expand All</button>
+        <button id="collapse-all-btn">Collapse All</button>
+      </div>
+      <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
+      <div class="tree">
+        {{ render_tree(repo_info) }}
+      </div>
+    </div>
   </div>
-  {% endif %}
+
+  {# Tab Content: Quick Wins #}
+  <div id="tab-quickwins" class="tab-content">
+    <h2>Quick Wins</h2>
+    <p>Quick wins analysis will be displayed here.</p>
+    <p><em>Integration coming soon...</em></p>
+  </div>
 {% endblock %}
 
 {% block scripts %}
+<style>
+  /* Tab styles */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background-color: #f2f2f2;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+  .tab-btn:hover {
+    background-color: #e0e0e0;
+  }
+  .tab-btn.active {
+    background-color: #007bff;
+    color: white;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  .overview-stats {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+  .overview-stats p {
+    margin: 10px 0;
+  }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Deactivate all tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Show selected tab content
+                document.getElementById('tab-' + tabName).classList.add('active');
+                button.classList.add('active');
+            });
+        });
+
+        // Tree functionality
         document.querySelectorAll('.tree-item.is-folder .toggle').forEach(toggle => {
             const parentItem = toggle.closest('.tree-item');
             if (parentItem) {
@@ -80,17 +152,24 @@
 
         const allFolders = document.querySelectorAll('.tree-item.is-folder');
 
-        document.getElementById('expand-all-btn').addEventListener('click', () => {
-            allFolders.forEach(folder => {
-                folder.classList.add('is-open');
-            });
-        });
+        const expandBtn = document.getElementById('expand-all-btn');
+        const collapseBtn = document.getElementById('collapse-all-btn');
 
-        document.getElementById('collapse-all-btn').addEventListener('click', () => {
-            allFolders.forEach(folder => {
-                folder.classList.remove('is-open');
+        if (expandBtn) {
+            expandBtn.addEventListener('click', () => {
+                allFolders.forEach(folder => {
+                    folder.classList.add('is-open');
+                });
             });
-        });
+        }
+
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', () => {
+                allFolders.forEach(folder => {
+                    folder.classList.remove('is-open');
+                });
+            });
+        }
     });
 </script>
 {% endblock %}

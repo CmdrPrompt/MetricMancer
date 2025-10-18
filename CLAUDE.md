@@ -274,6 +274,7 @@ tests/
 2. **Run tests after each change**: `python -m pytest tests/ -v`
 3. **Ensure all tests pass** before proposing commits
 4. **Follow ARCHITECTURE.md** - Use Strategy pattern, SOLID principles, etc.
+5. **Claude Code can always run tests without user confirmation** - Test execution is encouraged and never requires permission
 
 ## Documentation
 
