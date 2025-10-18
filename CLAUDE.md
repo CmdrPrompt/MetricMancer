@@ -248,7 +248,7 @@ When using `--output-formats html,json,summary`:
 - **Framework**: pytest (primary), unittest (legacy support)
 - **Coverage Target**: >80% for core functionality
 - **Test Location**: `tests/` directory mirrors `src/` structure
-- **Current Stats**: 390 passing tests, high coverage
+- **Current Stats**: 675+ passing tests, high coverage
 
 **Test Organization:**
 ```
@@ -261,10 +261,19 @@ tests/
 ```
 
 **Key Testing Principles:**
-- TDD approach: Write tests before implementation
+- **TDD RED-GREEN-REFACTOR**: ALWAYS write tests BEFORE implementation
+  1. 🔴 RED: Write failing test first
+  2. 🟢 GREEN: Write minimal code to pass test
+  3. 🔵 REFACTOR: Improve code while keeping tests green
 - Test isolation: Use mocks/fixtures for external dependencies
 - Backward compatibility: All legacy tests maintained during refactoring
 - Edge cases: Explicit edge case test files (e.g., `test_*_edge.py`)
+
+**IMPORTANT - Development Workflow:**
+1. **Always follow RED-GREEN-REFACTOR** for all new features/fixes
+2. **Run tests after each change**: `python -m pytest tests/ -v`
+3. **Ensure all tests pass** before proposing commits
+4. **Follow ARCHITECTURE.md** - Use Strategy pattern, SOLID principles, etc.
 
 ## Documentation
 
@@ -295,10 +304,35 @@ tests/
 - Bugfix: `<issue-number>-bugfix-<name>`
 - Refactor: `<issue-number>-refactor-<name>`
 
-**Commit Messages:**
-- Follow conventional commits format
-- Reference issue numbers
-- Generated commits include: "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+**Commit Workflow (IMPORTANT):**
+1. **Claude Code NEVER commits directly** - User commits manually
+2. When ready to commit, Claude Code should:
+   - Run `git add` for changed files
+   - Propose a commit message following conventional commits format
+   - Wait for user to commit manually
+3. This ensures user maintains control and awareness of changes
+
+**Commit Message Format:**
+- Follow conventional commits: `type(scope): description`
+- Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
+- Reference issue numbers: `feat(#62): add cognitive complexity to CLI report`
+- Include Claude Code attribution: "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+
+**Example Commit Proposal:**
+```bash
+# Claude Code runs:
+git add src/report/cli/cli_report_format.py tests/report/test_cli_report_format.py
+
+# Claude Code proposes:
+# Commit message: "test(#62): add end-to-end tests for cognitive complexity in FileAnalyzer"
+#
+# Then USER runs:
+git commit -m "test(#62): add end-to-end tests for cognitive complexity in FileAnalyzer
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ## Key Files to Know
 
