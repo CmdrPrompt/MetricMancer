@@ -39,16 +39,89 @@
   {# Tab Content: Overview #}
   <div id="tab-overview" class="tab-content active">
     <h2>Overview - {{ repo_info.repo_name }}</h2>
+
+    {# Calculate aggregate statistics from all files #}
+    {% set ns = namespace(
+        total_files=0,
+        total_complexity=0,
+        total_cognitive=0,
+        total_churn=0,
+        files_with_complexity=0,
+        files_with_cognitive=0,
+        files_with_churn=0,
+        high_complexity_files=0,
+        high_cognitive_files=0,
+        hotspot_files=0
+    ) %}
+
+    {% macro collect_stats(scan_dir) %}
+      {% for file_obj in scan_dir.files.values() %}
+        {% set ns.total_files = ns.total_files + 1 %}
+
+        {% if file_obj.kpis.get('complexity') and file_obj.kpis.complexity.value is not none %}
+          {% set ns.total_complexity = ns.total_complexity + file_obj.kpis.complexity.value %}
+          {% set ns.files_with_complexity = ns.files_with_complexity + 1 %}
+          {% if file_obj.kpis.complexity.value > 15 %}
+            {% set ns.high_complexity_files = ns.high_complexity_files + 1 %}
+          {% endif %}
+        {% endif %}
+
+        {% if file_obj.kpis.get('cognitive_complexity') and file_obj.kpis.cognitive_complexity.value is not none %}
+          {% set ns.total_cognitive = ns.total_cognitive + file_obj.kpis.cognitive_complexity.value %}
+          {% set ns.files_with_cognitive = ns.files_with_cognitive + 1 %}
+          {% if file_obj.kpis.cognitive_complexity.value > 15 %}
+            {% set ns.high_cognitive_files = ns.high_cognitive_files + 1 %}
+          {% endif %}
+        {% endif %}
+
+        {% if file_obj.kpis.get('churn') and file_obj.kpis.churn.value is not none %}
+          {% set ns.total_churn = ns.total_churn + file_obj.kpis.churn.value %}
+          {% set ns.files_with_churn = ns.files_with_churn + 1 %}
+        {% endif %}
+
+        {% if file_obj.kpis.get('hotspot') and file_obj.kpis.hotspot.value is not none and file_obj.kpis.hotspot.value > 100 %}
+          {% set ns.hotspot_files = ns.hotspot_files + 1 %}
+        {% endif %}
+      {% endfor %}
+
+      {% for sub_dir in scan_dir.scan_dirs.values() %}
+        {{ collect_stats(sub_dir) }}
+      {% endfor %}
+    {% endmacro %}
+
+    {{ collect_stats(repo_info) }}
+
     <div class="overview-stats">
+      <h3>Repository Summary</h3>
       <p><strong>Repository:</strong> {{ repo_info.repo_name }}</p>
-      {% if repo_info.kpis.get('complexity') %}
-      <p><strong>Average Complexity:</strong> {{ repo_info.kpis.complexity.value | round(1) }}</p>
+      <p><strong>Total Files Analyzed:</strong> {{ ns.total_files }}</p>
+
+      <h3>Complexity Metrics</h3>
+      {% if ns.files_with_complexity > 0 %}
+      <p><strong>Average Cyclomatic Complexity:</strong> {{ (ns.total_complexity / ns.files_with_complexity) | round(1) }}</p>
+      <p><strong>Files with High Complexity (>15):</strong> {{ ns.high_complexity_files }} ({{ (ns.high_complexity_files / ns.files_with_complexity * 100) | round(1) }}%)</p>
+      {% else %}
+      <p><strong>Average Cyclomatic Complexity:</strong> N/A</p>
       {% endif %}
-      {% if repo_info.kpis.get('cognitive_complexity') %}
-      <p><strong>Average Cognitive Complexity:</strong> {{ repo_info.kpis.cognitive_complexity.value | round(1) }}</p>
+
+      {% if ns.files_with_cognitive > 0 %}
+      <p><strong>Average Cognitive Complexity:</strong> {{ (ns.total_cognitive / ns.files_with_cognitive) | round(1) }}</p>
+      <p><strong>Files with High Cognitive Complexity (>15):</strong> {{ ns.high_cognitive_files }} ({{ (ns.high_cognitive_files / ns.files_with_cognitive * 100) | round(1) }}%)</p>
+      {% else %}
+      <p><strong>Average Cognitive Complexity:</strong> N/A</p>
       {% endif %}
-      {% if repo_info.kpis.get('churn') %}
-      <p><strong>Average Churn:</strong> {{ repo_info.kpis.churn.value | round(1) }}</p>
+
+      <h3>Change Frequency</h3>
+      {% if ns.files_with_churn > 0 %}
+      <p><strong>Average Churn:</strong> {{ (ns.total_churn / ns.files_with_churn) | round(1) }} commits</p>
+      {% else %}
+      <p><strong>Average Churn:</strong> N/A</p>
+      {% endif %}
+
+      <h3>Risk Assessment</h3>
+      <p><strong>Hotspot Files (complexity × churn > 100):</strong> {{ ns.hotspot_files }}</p>
+      {% if ns.total_files > 0 %}
+      <p><strong>Hotspot Risk:</strong> {{ (ns.hotspot_files / ns.total_files * 100) | round(1) }}% of files are hotspots</p>
       {% endif %}
     </div>
   </div>
@@ -70,9 +143,158 @@
 
   {# Tab Content: Quick Wins #}
   <div id="tab-quickwins" class="tab-content">
-    <h2>Quick Wins</h2>
-    <p>Quick wins analysis will be displayed here.</p>
-    <p><em>Integration coming soon...</em></p>
+    <h2>Quick Wins - High Impact, Low Effort Improvements</h2>
+    <p>Prioritized list of files that offer the best return on investment for refactoring efforts.</p>
+
+    {# Collect and score all files for quick wins #}
+    {% set quick_wins = [] %}
+
+    {% macro collect_quick_wins(scan_dir) %}
+      {% for file_obj in scan_dir.files.values() %}
+        {% set complexity = file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') and file_obj.kpis.complexity.value is not none else 0 %}
+        {% set cognitive = file_obj.kpis.get('cognitive_complexity').value if file_obj.kpis.get('cognitive_complexity') and file_obj.kpis.cognitive_complexity.value is not none else 0 %}
+        {% set churn = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') and file_obj.kpis.churn.value is not none else 0 %}
+        {% set hotspot = file_obj.kpis.get('hotspot').value if file_obj.kpis.get('hotspot') and file_obj.kpis.hotspot.value is not none else 0 %}
+
+        {# Calculate impact score (0-10) #}
+        {% set impact = 0 %}
+        {% if hotspot > 200 %}
+          {% set impact = impact + 3 %}
+        {% elif hotspot > 100 %}
+          {% set impact = impact + 2 %}
+        {% elif hotspot > 50 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {% if complexity > 20 %}
+          {% set impact = impact + 2 %}
+        {% elif complexity > 15 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {% if cognitive > 25 %}
+          {% set impact = impact + 2 %}
+        {% elif cognitive > 15 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {% if churn > 10 %}
+          {% set impact = impact + 2 %}
+        {% elif churn > 5 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {# Calculate effort score (0-10) - higher complexity = more effort #}
+        {% set effort = 1 %}
+        {% if complexity > 30 %}
+          {% set effort = 10 %}
+        {% elif complexity > 20 %}
+          {% set effort = 7 %}
+        {% elif complexity > 15 %}
+          {% set effort = 5 %}
+        {% elif complexity > 10 %}
+          {% set effort = 3 %}
+        {% endif %}
+
+        {# Calculate ROI #}
+        {% set roi = impact / effort if effort > 0 else 0 %}
+
+        {# Determine action type #}
+        {% set action = "Refactor" %}
+        {% set reason = "" %}
+        {% if cognitive > 25 %}
+          {% set action = "Reduce Nesting" %}
+          {% set reason = "Very high cognitive complexity (" + cognitive|string + ")" %}
+        {% elif complexity > 20 and churn > 5 %}
+          {% set action = "Split & Simplify" %}
+          {% set reason = "High complexity (" + complexity|string + ") and frequent changes" %}
+        {% elif hotspot > 100 %}
+          {% set action = "Refactor Hotspot" %}
+          {% set reason = "High risk hotspot (score: " + hotspot|round(0)|string + ")" %}
+        {% elif complexity > 15 %}
+          {% set action = "Simplify" %}
+          {% set reason = "High complexity (" + complexity|string + ")" %}
+        {% endif %}
+
+        {# Only include if impact > 3 #}
+        {% if impact > 3 %}
+          {% set _ = quick_wins.append({
+            'file_path': file_obj.file_path,
+            'impact': impact,
+            'effort': effort,
+            'roi': roi,
+            'action': action,
+            'reason': reason,
+            'complexity': complexity,
+            'cognitive': cognitive,
+            'churn': churn,
+            'hotspot': hotspot
+          }) %}
+        {% endif %}
+      {% endfor %}
+
+      {% for sub_dir in scan_dir.scan_dirs.values() %}
+        {{ collect_quick_wins(sub_dir) }}
+      {% endfor %}
+    {% endmacro %}
+
+    {{ collect_quick_wins(repo_info) }}
+
+    {% if quick_wins|length > 0 %}
+      <p><strong>Found {{ quick_wins|length }} improvement opportunities</strong></p>
+
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+            <th style="padding: 10px; text-align: left;">Priority</th>
+            <th style="padding: 10px; text-align: left;">File</th>
+            <th style="padding: 10px; text-align: left;">Action</th>
+            <th style="padding: 10px; text-align: left;">Reason</th>
+            <th style="padding: 10px; text-align: center;">Impact</th>
+            <th style="padding: 10px; text-align: center;">Effort</th>
+            <th style="padding: 10px; text-align: center;">ROI</th>
+            <th style="padding: 10px; text-align: center;">Metrics</th>
+          </tr>
+        </thead>
+        <tbody>
+          {# Sort by ROI descending and limit to top 20 #}
+          {% for qw in (quick_wins|sort(attribute='roi', reverse=true))[:20] %}
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 10px;">{{ loop.index }}</td>
+            <td style="padding: 10px; font-family: monospace; font-size: 12px;">{{ qw.file_path }}</td>
+            <td style="padding: 10px;"><span style="background-color: #e3f2fd; padding: 4px 8px; border-radius: 3px; font-weight: bold;">{{ qw.action }}</span></td>
+            <td style="padding: 10px; font-size: 13px;">{{ qw.reason }}</td>
+            <td style="padding: 10px; text-align: center;">
+              <span style="background-color: {% if qw.impact > 7 %}#f44336{% elif qw.impact > 5 %}#ff9800{% else %}#4caf50{% endif %}; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold;">{{ qw.impact }}/10</span>
+            </td>
+            <td style="padding: 10px; text-align: center;">{{ qw.effort }}/10</td>
+            <td style="padding: 10px; text-align: center; font-weight: bold;">{{ qw.roi|round(2) }}</td>
+            <td style="padding: 10px; text-align: center; font-family: monospace; font-size: 11px;">
+              C:{{ qw.complexity|round(0) }}
+              Cog:{{ qw.cognitive|round(0) }}
+              Ch:{{ qw.churn|round(0) }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div style="margin-top: 30px; padding: 15px; background-color: #e8f5e9; border-left: 4px solid #4caf50;">
+        <h3 style="margin-top: 0;">How to use Quick Wins</h3>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Priority</strong>: Files are ranked by ROI (Return on Investment = Impact/Effort)</li>
+          <li><strong>Impact</strong>: Higher scores indicate files that will benefit most from refactoring</li>
+          <li><strong>Effort</strong>: Lower scores mean easier refactoring (smaller files, less complex)</li>
+          <li><strong>ROI</strong>: Focus on files with highest ROI for maximum value with minimum effort</li>
+          <li><strong>Action</strong>: Recommended type of refactoring based on the file's characteristics</li>
+        </ul>
+      </div>
+    {% else %}
+      <div style="padding: 20px; background-color: #e8f5e9; border-left: 4px solid #4caf50;">
+        <p><strong>Great job!</strong> No significant improvement opportunities found.</p>
+        <p>All files appear to be in good shape with manageable complexity and reasonable churn rates.</p>
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
 
