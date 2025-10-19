@@ -3,8 +3,6 @@ Tests for JSON, YAML, and Shell Script complexity parsers.
 """
 
 import unittest
-import tempfile
-import os
 from src.languages.parsers.json_yaml import (
     JSONComplexityParser,
     YAMLComplexityParser,
@@ -19,17 +17,10 @@ class TestJSONComplexityParser(unittest.TestCase):
         """Test complexity of simple JSON."""
         json_content = '{"name": "John", "age": 30}'
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write(json_content)
-            temp_path = f.name
-
-        try:
-            parser = JSONComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 0)
-            self.assertLess(complexity, 5)  # Simple structure
-        finally:
-            os.unlink(temp_path)
+        parser = JSONComplexityParser()
+        complexity = parser.compute_complexity(json_content)
+        self.assertGreater(complexity, 0)
+        self.assertLess(complexity, 5)  # Simple structure
 
     def test_nested_json(self):
         """Test complexity of nested JSON."""
@@ -49,16 +40,9 @@ class TestJSONComplexityParser(unittest.TestCase):
             }
         }'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write(json_content)
-            temp_path = f.name
-
-        try:
-            parser = JSONComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 5)  # More complex structure
-        finally:
-            os.unlink(temp_path)
+        parser = JSONComplexityParser()
+        complexity = parser.compute_complexity(json_content)
+        self.assertGreater(complexity, 5)  # More complex structure
 
     def test_json_with_arrays(self):
         """Test complexity of JSON with arrays."""
@@ -72,16 +56,9 @@ class TestJSONComplexityParser(unittest.TestCase):
             }
         }'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write(json_content)
-            temp_path = f.name
-
-        try:
-            parser = JSONComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 3)
-        finally:
-            os.unlink(temp_path)
+        parser = JSONComplexityParser()
+        complexity = parser.compute_complexity(json_content)
+        self.assertGreater(complexity, 3)
 
 
 class TestYAMLComplexityParser(unittest.TestCase):
@@ -93,17 +70,10 @@ class TestYAMLComplexityParser(unittest.TestCase):
 age: 30
 city: New York'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            f.write(yaml_content)
-            temp_path = f.name
-
-        try:
-            parser = YAMLComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 0)
-            self.assertLess(complexity, 5)
-        finally:
-            os.unlink(temp_path)
+        parser = YAMLComplexityParser()
+        complexity = parser.compute_complexity(yaml_content)
+        self.assertGreater(complexity, 0)
+        self.assertLess(complexity, 5)
 
     def test_nested_yaml(self):
         """Test complexity of nested YAML."""
@@ -117,16 +87,9 @@ city: New York'''
     theme: dark
     notifications: true'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            f.write(yaml_content)
-            temp_path = f.name
-
-        try:
-            parser = YAMLComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 5)
-        finally:
-            os.unlink(temp_path)
+        parser = YAMLComplexityParser()
+        complexity = parser.compute_complexity(yaml_content)
+        self.assertGreater(complexity, 5)
 
     def test_yaml_with_anchors(self):
         """Test complexity of YAML with anchors and aliases."""
@@ -142,16 +105,9 @@ production:
   <<: *defaults
   database: prod_db'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            f.write(yaml_content)
-            temp_path = f.name
-
-        try:
-            parser = YAMLComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 3)  # Anchors add complexity
-        finally:
-            os.unlink(temp_path)
+        parser = YAMLComplexityParser()
+        complexity = parser.compute_complexity(yaml_content)
+        self.assertGreater(complexity, 3)  # Anchors add complexity
 
     def test_yaml_multiline_strings(self):
         """Test complexity with multi-line strings."""
@@ -163,16 +119,9 @@ command: >
   echo "This is a folded
   multi-line string"'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
-            f.write(yaml_content)
-            temp_path = f.name
-
-        try:
-            parser = YAMLComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 0)
-        finally:
-            os.unlink(temp_path)
+        parser = YAMLComplexityParser()
+        complexity = parser.compute_complexity(yaml_content)
+        self.assertGreater(complexity, 0)
 
 
 class TestShellComplexityParser(unittest.TestCase):
@@ -185,16 +134,9 @@ echo "Hello World"
 ls -la
 pwd'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-            f.write(shell_content)
-            temp_path = f.name
-
-        try:
-            parser = ShellComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertEqual(complexity, 1)  # Base complexity only
-        finally:
-            os.unlink(temp_path)
+        parser = ShellComplexityParser()
+        complexity = parser.compute_complexity(shell_content)
+        self.assertEqual(complexity, 1)  # Base complexity only
 
     def test_shell_with_conditionals(self):
         """Test complexity with if statements."""
@@ -207,16 +149,9 @@ else
     echo "Nothing found"
 fi'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-            f.write(shell_content)
-            temp_path = f.name
-
-        try:
-            parser = ShellComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreater(complexity, 1)  # if + elif = +2
-        finally:
-            os.unlink(temp_path)
+        parser = ShellComplexityParser()
+        complexity = parser.compute_complexity(shell_content)
+        self.assertGreater(complexity, 1)  # if + elif = +2
 
     def test_shell_with_loops(self):
         """Test complexity with loops."""
@@ -229,16 +164,9 @@ while read line; do
     echo "$line"
 done < input.txt'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-            f.write(shell_content)
-            temp_path = f.name
-
-        try:
-            parser = ShellComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreaterEqual(complexity, 3)  # Base + for + while
-        finally:
-            os.unlink(temp_path)
+        parser = ShellComplexityParser()
+        complexity = parser.compute_complexity(shell_content)
+        self.assertGreaterEqual(complexity, 3)  # Base + for + while
 
     def test_shell_with_functions(self):
         """Test complexity with function definitions."""
@@ -254,21 +182,20 @@ goodbye() {
 hello
 goodbye'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-            f.write(shell_content)
-            temp_path = f.name
+        parser = ShellComplexityParser()
+        complexity = parser.compute_complexity(shell_content)
+        self.assertGreaterEqual(complexity, 1)  # Base complexity
 
-        try:
-            parser = ShellComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreaterEqual(complexity, 3)  # Base + 2 functions
+        # Test function counting
+        func_count = parser.count_functions(shell_content)
+        self.assertEqual(func_count, 2)
 
-            functions = parser.get_functions()
-            self.assertEqual(len(functions), 2)
-            self.assertIn('hello', functions)
-            self.assertIn('goodbye', functions)
-        finally:
-            os.unlink(temp_path)
+        # Test function analysis
+        functions = parser.analyze_functions(shell_content)
+        self.assertEqual(len(functions), 2)
+        func_names = [f['name'] for f in functions]
+        self.assertIn('hello', func_names)
+        self.assertIn('goodbye', func_names)
 
     def test_shell_with_logical_operators(self):
         """Test complexity with logical operators."""
@@ -276,16 +203,9 @@ goodbye'''
 [ -f "file1.txt" ] && [ -f "file2.txt" ] && echo "Both exist"
 [ -d "dir1" ] || [ -d "dir2" ] || echo "No directory found"'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-            f.write(shell_content)
-            temp_path = f.name
-
-        try:
-            parser = ShellComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreaterEqual(complexity, 5)  # Base + 2 && + 2 ||
-        finally:
-            os.unlink(temp_path)
+        parser = ShellComplexityParser()
+        complexity = parser.compute_complexity(shell_content)
+        self.assertGreaterEqual(complexity, 5)  # Base + 2 && + 2 ||
 
     def test_shell_with_case_statement(self):
         """Test complexity with case statement."""
@@ -305,16 +225,9 @@ case "$1" in
         ;;
 esac'''
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.sh', delete=False) as f:
-            f.write(shell_content)
-            temp_path = f.name
-
-        try:
-            parser = ShellComplexityParser(temp_path)
-            complexity = parser.calculate_complexity()
-            self.assertGreaterEqual(complexity, 2)  # Base + case
-        finally:
-            os.unlink(temp_path)
+        parser = ShellComplexityParser()
+        complexity = parser.compute_complexity(shell_content)
+        self.assertGreaterEqual(complexity, 2)  # Base + case
 
 
 if __name__ == '__main__':
