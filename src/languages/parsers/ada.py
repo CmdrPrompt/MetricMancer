@@ -12,4 +12,15 @@ class AdaComplexityParser(ComplexityParser):
         r'\bif(?!\s*;)\b', r'\belsif\b', r'\bcase\b', r'\bwhen\b',
         r'\bloop\b', r'\bwhile\b', r'\bfor\b', r'\bexit\b', r'\bexception\b'
     ]
-    FUNCTION_PATTERN = r'\bfunction\s+([a-zA-Z_]\w*)\s*\(.*?\)\s+is\b'
+    # Matches Ada function definitions including:
+    # - 'function Name return Boolean is' (no parameters)
+    # - 'function Add (X : Integer; Y : Integer) return Integer is' (with parameters)
+    # - 'function Get_Name return String is' (simple return)
+    # Pattern breakdown:
+    # - '\bfunction\s+' matches function keyword
+    # - '([a-zA-Z_]\w*)' captures function name
+    # - '(?:\s*\([^)]*\))?' optionally matches parameters (X : Type; Y : Type)
+    # - '\s+return\s+' matches return keyword
+    # - '\w+' matches return type
+    # - '\s+is\b' matches is keyword
+    FUNCTION_PATTERN = r'\bfunction\s+([a-zA-Z_]\w*)(?:\s*\([^)]*\))?\s+return\s+\w+\s+is\b'
