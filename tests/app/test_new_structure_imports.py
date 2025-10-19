@@ -21,10 +21,13 @@ class TestCoreModuleImports:
         from src.app.core.analyzer import Analyzer
         assert Analyzer is not None
 
-    def test_can_import_file_processor_from_core(self):
-        """Should be able to import FileProcessor from core module."""
-        from src.app.core.file_processor import FileProcessor
-        assert FileProcessor is not None
+    def test_can_import_analyzer_from_core_uses_file_analyzer(self):
+        """Analyzer now uses FileAnalyzer (via KPICalculator) instead of FileProcessor."""
+        from src.app.core.analyzer import Analyzer
+        from src.app.kpi.file_analyzer import FileAnalyzer
+        # Verify both are accessible
+        assert Analyzer is not None
+        assert FileAnalyzer is not None
 
 
 class TestScanningModuleImports:
@@ -96,11 +99,6 @@ class TestInfrastructureModuleImports:
         from src.app.infrastructure import timing_reporter
         assert timing_reporter is not None
 
-    def test_can_import_collector(self):
-        """Should be able to import from collector."""
-        from src.app.infrastructure import collector
-        assert collector is not None
-
 
 class TestBackwardCompatibility:
     """Test that old imports still work via __init__.py exports."""
@@ -111,10 +109,10 @@ class TestBackwardCompatibility:
         from src.app import Analyzer
         assert Analyzer is not None
 
-    def test_file_processor_accessible_from_app_root(self):
-        """Old code should still work: from src.app.file_processor import FileProcessor"""
-        from src.app import FileProcessor
-        assert FileProcessor is not None
+    def test_file_analyzer_accessible_from_app_root(self):
+        """FileAnalyzer replaces FileProcessor - accessible via src.app"""
+        from src.app import FileAnalyzer
+        assert FileAnalyzer is not None
 
     def test_scanner_accessible_from_app_root(self):
         """Old code should still work: from src.app.scanner import Scanner"""

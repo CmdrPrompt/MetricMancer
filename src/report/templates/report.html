@@ -22,7 +22,8 @@
       </div>
     {%- else -%} {# It's a file #}
       <div class="tree-item is-file">
-      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Cog: {{ item.kpis.cognitive_complexity.value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.cognitive_complexity.value is not none else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span></div>
+      <!-- DEBUG: file={{ item.name }}, kpi_keys={{ item.kpis.keys()|list }}, cog_exists={{ 'cognitive_complexity' in item.kpis }}, cog={{ item.kpis.get('cognitive_complexity') }} -->
+      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Cog: {{ item.kpis.get('cognitive_complexity').value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.get('cognitive_complexity').value is not none else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span></div>
       </div>
     {%- endif -%}
   {%- endfor -%}
