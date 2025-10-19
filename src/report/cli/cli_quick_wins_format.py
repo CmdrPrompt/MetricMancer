@@ -32,22 +32,27 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         self._print_footer(elapsed)
 
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
-        """Recursively collects all git-tracked File objects from a ScanDir tree."""
+        """Recursively collects all File objects from a ScanDir tree.
 
-        def is_tracked_file(file_obj: File):
-            co = file_obj.kpis.get('Code Ownership')
-            if not co or not hasattr(co, 'value'):
-                return False
+        Includes both git-tracked and non-git-tracked files.
+        Quick wins analysis works best with git history (for churn/hotspot metrics),
+        but can still provide value based on complexity alone.
+        """
 
-            if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
-                return False
+        def is_valid_file(file_obj: File):
+            # Accept files with complexity metrics (basic requirement)
+            complexity_kpi = file_obj.kpis.get('complexity')
+            if complexity_kpi and complexity_kpi.value is not None and complexity_kpi.value > 0:
+                return True
 
-            if co.value.get('ownership') == 'N/A':
-                return False
+            # Also accept files with cognitive complexity
+            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
+            if cognitive_kpi and cognitive_kpi.value is not None and cognitive_kpi.value > 0:
+                return True
 
-            return True
+            return False
 
-        files = [f for f in scan_dir.files.values() if is_tracked_file(f)]
+        files = [f for f in scan_dir.files.values() if is_valid_file(f)]
         for sub_dir in scan_dir.scan_dirs.values():
             files.extend(self._collect_all_files(sub_dir))
         return files
