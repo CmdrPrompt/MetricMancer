@@ -18,6 +18,11 @@ class TestCollectAllFiles(unittest.TestCase):
         file1 = File(name="file1.py", file_path="src/file1.py")
         file1.functions = [Function(name="func1"), Function(name="func2")]
 
+        # Add complexity KPI (required for quick wins)
+        complexity_kpi = MagicMock(spec=BaseKPI)
+        complexity_kpi.value = 10
+        file1.kpis['complexity'] = complexity_kpi
+
         # Add ownership KPI to indicate tracked file
         ownership_kpi = MagicMock(spec=BaseKPI)
         ownership_kpi.value = {"Alice": 60, "Bob": 40}
@@ -25,6 +30,11 @@ class TestCollectAllFiles(unittest.TestCase):
 
         file2 = File(name="file2.py", file_path="src/file2.py")
         file2.functions = [Function(name="func3")]
+
+        # Add complexity KPI
+        complexity_kpi2 = MagicMock(spec=BaseKPI)
+        complexity_kpi2.value = 15
+        file2.kpis['complexity'] = complexity_kpi2
 
         ownership_kpi2 = MagicMock(spec=BaseKPI)
         ownership_kpi2.value = {"Charlie": 100}
@@ -64,11 +74,23 @@ class TestCollectAllFiles(unittest.TestCase):
     def test_collect_all_files_multiple_subdirs(self):
         """Test collecting files from nested subdirectories."""
         file1 = File(name="file1.py", file_path="src/file1.py")
+
+        # Add complexity KPI
+        complexity_kpi1 = MagicMock(spec=BaseKPI)
+        complexity_kpi1.value = 12
+        file1.kpis['complexity'] = complexity_kpi1
+
         ownership_kpi1 = MagicMock(spec=BaseKPI)
         ownership_kpi1.value = {"Alice": 100}
         file1.kpis['Code Ownership'] = ownership_kpi1
 
         file2 = File(name="file2.py", file_path="tests/file2.py")
+
+        # Add complexity KPI
+        complexity_kpi2 = MagicMock(spec=BaseKPI)
+        complexity_kpi2.value = 8
+        file2.kpis['complexity'] = complexity_kpi2
+
         ownership_kpi2 = MagicMock(spec=BaseKPI)
         ownership_kpi2.value = {"Bob": 100}
         file2.kpis['Code Ownership'] = ownership_kpi2

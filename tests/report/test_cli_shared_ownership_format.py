@@ -24,6 +24,10 @@ class TestCLISharedOwnershipFormat(unittest.TestCase):
         hotspot_kpi = MagicMock()
         hotspot_kpi.value = 15.0
 
+        # Mock cognitive complexity KPI
+        cognitive_kpi = MagicMock()
+        cognitive_kpi.value = None  # Can be None if not available
+
         # Mock shared ownership KPI
         shared_ownership_kpi = MagicMock()
         shared_ownership_kpi.value = {
@@ -34,6 +38,7 @@ class TestCLISharedOwnershipFormat(unittest.TestCase):
 
         file_obj.kpis = {
             'complexity': complexity_kpi,
+            'cognitive_complexity': cognitive_kpi,
             'churn': churn_kpi,
             'hotspot': hotspot_kpi,
             'Shared Ownership': shared_ownership_kpi
@@ -43,7 +48,9 @@ class TestCLISharedOwnershipFormat(unittest.TestCase):
 
         # Verify shared ownership is included
         self.assertIn("Shared: 2 authors (Alice, Bob)", result)
-        self.assertIn("[C:5, Churn:3, Hotspot:15.0]", result)
+        # Cognitive complexity is now included (may show as ?)
+        self.assertIn("[C:5, Cog:", result)
+        self.assertIn("Churn:3, Hotspot:15.0]", result)
 
     def test_format_file_stats_single_owner(self):
         """Test formatting when file has single owner."""

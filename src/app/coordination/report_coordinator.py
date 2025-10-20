@@ -95,7 +95,7 @@ class ReportCoordinator:
         if simple_ext:
             return base, simple_ext
 
-        if output_format in ['summary', 'quick-wins', 'human-tree'] and is_multi_format:
+        if output_format in ['summary', 'quick-wins', 'human-tree'] and (is_multi_format or self.app_config.using_output_formats_flag):
             ext = '.md'
             cli_base = self.get_cli_format_details(output_format)
             if cli_base:
@@ -183,7 +183,7 @@ class ReportCoordinator:
         )
 
         save_cli_to_file = (
-            is_multi_format and
+            (is_multi_format or self.app_config.using_output_formats_flag) and
             output_format in ['summary', 'quick-wins', 'human-tree']
         )
 
@@ -193,7 +193,11 @@ class ReportCoordinator:
             hierarchical=self.hierarchical,
             output_format=output_format,
             report_links=links_for_this,
-            save_cli_to_file=save_cli_to_file
+            save_cli_to_file=save_cli_to_file,
+            # Pass review tab settings for HTML reports
+            include_review_tab=self.app_config.include_review_tab,
+            review_branch_only=self.app_config.review_branch_only,
+            review_base_branch=self.app_config.review_base_branch
         )
 
     def generate_reports_for_format(self, output_format: str, repo_infos: List[RepoInfo],

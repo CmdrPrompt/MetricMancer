@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from src.app.scanner import Scanner
+from src.app import Scanner
 from src.languages.config import Config
 
 

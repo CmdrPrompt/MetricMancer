@@ -4,7 +4,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
-from src.app.analyzer import Analyzer
+from src.app import Analyzer
 from src.kpis.codechurn import ChurnKPI
 from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
 from src.kpis.hotspot import HotspotKPI
@@ -133,7 +133,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertEqual(app_java_file.kpis["churn"].value, 20)
             self.assertEqual(app_java_file.kpis["hotspot"].value, 300)  # 15 * 20
 
-    @patch('src.app.core.analyzer.debug_print')  # Phase 5: debug_print in core.analyzer
+    @patch('src.app.kpi.file_analyzer.debug_print')  # FileAnalyzer handles file processing
     def test_skips_unsupported_extension_files(self, mock_debug_print):
         """Unsupported extensions should be skipped and not appear in RepoInfo."""
         # Create an unsupported file in repo1 root
@@ -174,7 +174,7 @@ class TestAnalyzer(unittest.TestCase):
                 for call in mock_debug_print.call_args_list
             ), f"Expected debug_print call containing '{expected_substr}' and the file name. Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
 
-    @patch('src.app.core.file_processor.debug_print')  # Phase 5: debug_print now in core.file_processor
+    @patch('src.app.kpi.file_analyzer.debug_print')  # FileAnalyzer handles file processing
     def test_unreadable_file_is_skipped_and_warned(self, mock_debug_print):
         """Analyzer should skip files it cannot read and continue processing others."""
         blocked_path = self.repo1_path / "src" / "blocked.py"

@@ -21,4 +21,19 @@ class CppComplexityParser(ComplexityParser):
         r'\bswitch\b', r'\bcase\b', r'\bdefault\b', r'\bbreak\b', r'\bcontinue\b',
         r'\bgoto\b', r'\breturn\b', r'&&', r'\|\|'
     ]
-    FUNCTION_PATTERN = r'(?:\b\w+\s+)+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'
+    # Matches C++ function definitions including:
+    # - 'int main()' (simple function)
+    # - 'void MyClass::method()' (class method)
+    # - 'template<typename T> T getValue()' (template function)
+    # - 'virtual void process() override' (virtual with override)
+    # Pattern breakdown:
+    # - '(?:template<[^>]+>\s+)?' optionally matches template declaration
+    # - '(?:\b\w+\s+)+' matches return type and modifiers (virtual, static, etc.)
+    # - '(?:\w+::)*' optionally matches class scope (MyClass::)
+    # - '([a-zA-Z_]\w*)' captures function name
+    # - '\s*\(' matches opening parenthesis
+    # - '[^)]*' matches parameters
+    # - '\)' matches closing parenthesis
+    # - '(?:\s+(?:const|override|final|noexcept))*' optionally matches trailing qualifiers
+    # - '\s*\{' matches opening brace
+    FUNCTION_PATTERN = r'(?:template<[^>]+>\s+)?(?:\b\w+\s+)+(?:\w+::)*([a-zA-Z_]\w*)\s*\([^)]*\)(?:\s+(?:const|override|final|noexcept))*\s*\{'

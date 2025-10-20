@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}{{ repo_info.repo_name }} - MetricMancer Report{% endblock %}
+
+{%- macro render_tree(directory, prefix="") -%}
+  {#- Combine and sort directories and files into a single list -#}
+  {%- set items = (directory.scan_dirs.values()|sort(attribute='dir_name')) + (directory.files.values()|sort(attribute='name')) -%}
+
+  {%- for item in items -%}
+    {%- set is_last = loop.last -%}
+    {%- set connector = "└── " if is_last else "├── " -%}
+    {%- set new_prefix = prefix + ("    " if is_last else "│   ") -%}
+
+    {%- if item.dir_name is defined -%} {# It's a directory (ScanDir) #}
+      <div class="tree-item is-folder">
+        <div class="tree-line">
+          <span class="prefix">{{ prefix }}{{ connector }}</span>
+          <span class="toggle">▶</span>
+          <span class="name">{{ item.dir_name }}/</span>
+          <span class="kpis">[Avg C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Avg Cog: {{ item.kpis.cognitive_complexity.value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.cognitive_complexity.value is not none else '?' }}, Avg Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Avg Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]{% if item.kpis.get('Shared Ownership') and item.kpis['Shared Ownership'].value and item.kpis['Shared Ownership'].value != {'ownership': 'N/A'} %} [Shared: num_significant_authors ({{ item.kpis['Shared Ownership'].value.num_significant_authors }}), authors ({{ item.kpis['Shared Ownership'].value.authors }}), threshold ({{ item.kpis['Shared Ownership'].value.threshold }}%)]{% endif %}</span>
+        </div><div class="nested">{{- render_tree(item, new_prefix) -}}</div>
+      </div>
+    {%- else -%} {# It's a file #}
+      <div class="tree-item is-file">
+      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Cog: {{ item.kpis.cognitive_complexity.value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.cognitive_complexity.value is not none else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]{% if item.kpis.get('Code Ownership') and item.kpis['Code Ownership'].value and item.kpis['Code Ownership'].value != {'ownership': 'N/A'} %} [Owners: {% for author, percent in item.kpis['Code Ownership'].value.items() %}{{ author }}{% if not loop.last %}, {% endif %}{% endfor %}]{% endif %}{% if item.kpis.get('Shared Ownership') and item.kpis['Shared Ownership'].value and item.kpis['Shared Ownership'].value != {'ownership': 'N/A'} %} [Shared: {% for author, percent in item.kpis['Shared Ownership'].value.items() %}{{ author }} ({{ percent }}%){% if not loop.last %}, {% endif %}{% endfor %}]{% endif %}</span></div>
+      </div>
+    {%- endif -%}
+  {%- endfor -%}
+{%- endmacro -%}
+
+{% block content %}
+  <div class="file-tree-container">
+    <h2>File & KPI Tree for {{ repo_info.repo_name }}</h2>
+    <div class="tree-controls">
+      <button id="expand-all-btn">Expand All</button>
+      <button id="collapse-all-btn">Collapse All</button>
+    </div>
+    <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
+    <div class="tree">
+      {{ render_tree(repo_info) }}
+    </div>
+  </div>
+
+  {% if problem_files %}
+  <div class="problem-files-container">
+    <h2>Problem Files (Complexity >= {{ problem_file_threshold }})</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>File</th>
+          <th>Complexity</th>
+          <th>Churn</th>
+          <th>Hotspot</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in problem_files %}
+          <tr>
+            <td>{{ file.file_path }}</td>
+            <td>{{ file.kpis.complexity.value | round(1) if file.kpis.get('complexity') else '?' }}</td>
+            <td>{{ file.kpis.churn.value if file.kpis.get('churn') else '?' }}</td>
+            <td>{{ file.kpis.hotspot.value | round(1) if file.kpis.get('hotspot') else '?' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.tree-item.is-folder .toggle').forEach(toggle => {
+            const parentItem = toggle.closest('.tree-item');
+            if (parentItem) {
+                toggle.addEventListener('click', () => parentItem.classList.toggle('is-open'));
+            }
+        });
+
+        const allFolders = document.querySelectorAll('.tree-item.is-folder');
+
+        document.getElementById('expand-all-btn').addEventListener('click', () => {
+            allFolders.forEach(folder => {
+                folder.classList.add('is-open');
+            });
+        });
+
+        document.getElementById('collapse-all-btn').addEventListener('click', () => {
+            allFolders.forEach(folder => {
+                folder.classList.remove('is-open');
+            });
+        });
+    });
+</script>
+{% endblock %}

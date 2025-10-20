@@ -21,4 +21,14 @@ class CComplexityParser(ComplexityParser):
         r'\bswitch\b', r'\bcase\b', r'\bdefault\b', r'\bbreak\b', r'\bcontinue\b',
         r'\bgoto\b', r'\breturn\b', r'&&', r'\|\|'
     ]
-    FUNCTION_PATTERN = r'\b\w+\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'
+    # Matches C function definitions including:
+    # - 'int main()' (simple function)
+    # - 'void process(int x, char *s)' (with parameters)
+    # - 'static const char* getName()' (with modifiers and pointer return)
+    # Pattern breakdown:
+    # - '\b(?:\w+\s+)*' matches return type and modifiers (static, const, etc.)
+    # - '([a-zA-Z_]\w*)' captures function name
+    # - '\s*\(' matches opening parenthesis
+    # - '[^)]*' matches parameters
+    # - '\)\s*\{' matches closing parenthesis and opening brace
+    FUNCTION_PATTERN = r'\b(?:\w+\s+)*([a-zA-Z_]\w*)\s*\([^)]*\)\s*\{'

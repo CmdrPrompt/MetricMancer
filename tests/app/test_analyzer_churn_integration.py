@@ -10,7 +10,7 @@ EXPECTED TO FAIL with current implementation.
 import unittest
 from unittest.mock import patch, MagicMock
 from datetime import datetime, timedelta
-from src.app.analyzer import Analyzer
+from src.app import Analyzer
 from src.languages.config import Config
 
 

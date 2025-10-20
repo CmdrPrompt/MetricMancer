@@ -21,4 +21,19 @@ class TypeScriptComplexityParser(ComplexityParser):
         r'\bswitch\b', r'\bcase\b', r'\bcatch\b', r'\bthrow\b',
         r'\breturn\b', r'&&', r'\|\|'
     ]
-    FUNCTION_PATTERN = r'function\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'
+    # Matches TypeScript function definitions including:
+    # - 'async function' (async keyword)
+    # - 'function name<T>' (generics)
+    # - 'function name(x: Type)' (parameter type hints)
+    # - 'function name(): ReturnType' (return type hints)
+    # Pattern breakdown:
+    # - '(?:async\s+)?' optionally matches async keyword
+    # - 'function\s+' matches function keyword
+    # - '([a-zA-Z_]\w*)' captures function name
+    # - '(?:<[^>]+>)?' optionally matches generics <T>
+    # - '\s*\(' matches opening parenthesis
+    # - '[^)]*' matches parameters (non-greedy, stops at ))
+    # - '\)' matches closing parenthesis
+    # - '(?:\s*:\s*[^{]+)?' optionally matches return type hint ': Type'
+    # - '\s*\{' matches opening brace
+    FUNCTION_PATTERN = r'(?:async\s+)?function\s+([a-zA-Z_]\w*)(?:<[^>]+>)?\s*\([^)]*\)(?:\s*:\s*[^{]+)?\s*\{'

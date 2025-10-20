@@ -265,6 +265,12 @@ def _add_review_args(parser):
         default="main",
         help="Base branch to compare against when using --review-branch-only (default: main)."
     )
+    parser.add_argument(
+        "--include-review-tab",
+        action="store_true",
+        help="Include Code Review tab in HTML report with review recommendations. "
+             "Use with --review-branch-only to show only changed files."
+    )
 
 
 def _add_delta_args(parser):

@@ -8,6 +8,7 @@ MetricMancer is a software analytics tool that analyzes code repositories to ext
 
 **Key Features:**
 - Multi-language support (Python, JavaScript, TypeScript, Java, C#, C++, Go, Shell, Ada, IDL, JSON, YAML)
+- Cyclomatic Complexity and **Cognitive Complexity** (Python only - human-centric understandability metric)
 - Multiple report formats (CLI summary/tree, HTML, JSON, CSV)
 - Multi-format generation in single run (50-70% faster than separate runs)
 - Hotspot analysis (complexity × churn)
@@ -150,7 +151,8 @@ src/
 │   ├── scanner.py           # Directory/file scanning
 │   └── hierarchy_builder.py # Data model construction
 ├── kpis/                    # KPI calculators (complexity, churn, hotspots, ownership)
-│   ├── complexity/
+│   ├── complexity/          # Cyclomatic complexity (multi-language)
+│   ├── cognitive_complexity/ # Cognitive complexity (Python only, tree-sitter planned)
 │   ├── codechurn/
 │   ├── hotspot/
 │   ├── codeownership/
@@ -248,7 +250,7 @@ When using `--output-formats html,json,summary`:
 - **Framework**: pytest (primary), unittest (legacy support)
 - **Coverage Target**: >80% for core functionality
 - **Test Location**: `tests/` directory mirrors `src/` structure
-- **Current Stats**: 390 passing tests, high coverage
+- **Current Stats**: 675+ passing tests, high coverage
 
 **Test Organization:**
 ```
@@ -261,10 +263,20 @@ tests/
 ```
 
 **Key Testing Principles:**
-- TDD approach: Write tests before implementation
+- **TDD RED-GREEN-REFACTOR**: ALWAYS write tests BEFORE implementation
+  1. 🔴 RED: Write failing test first
+  2. 🟢 GREEN: Write minimal code to pass test
+  3. 🔵 REFACTOR: Improve code while keeping tests green
 - Test isolation: Use mocks/fixtures for external dependencies
 - Backward compatibility: All legacy tests maintained during refactoring
 - Edge cases: Explicit edge case test files (e.g., `test_*_edge.py`)
+
+**IMPORTANT - Development Workflow:**
+1. **Always follow RED-GREEN-REFACTOR** for all new features/fixes
+2. **Run tests after each change**: `python -m pytest tests/ -v`
+3. **Ensure all tests pass** before proposing commits
+4. **Follow ARCHITECTURE.md** - Use Strategy pattern, SOLID principles, etc.
+5. **Claude Code can always run tests without user confirmation** - Test execution is encouraged and never requires permission
 
 ## Documentation
 
@@ -295,10 +307,35 @@ tests/
 - Bugfix: `<issue-number>-bugfix-<name>`
 - Refactor: `<issue-number>-refactor-<name>`
 
-**Commit Messages:**
-- Follow conventional commits format
-- Reference issue numbers
-- Generated commits include: "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+**Commit Workflow (IMPORTANT):**
+1. **Claude Code NEVER commits directly** - User commits manually
+2. When ready to commit, Claude Code should:
+   - Run `git add` for changed files
+   - Propose a commit message following conventional commits format
+   - Wait for user to commit manually
+3. This ensures user maintains control and awareness of changes
+
+**Commit Message Format:**
+- Follow conventional commits: `type(scope): description`
+- Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
+- Reference issue numbers: `feat(#62): add cognitive complexity to CLI report`
+- Include Claude Code attribution: "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+
+**Example Commit Proposal:**
+```bash
+# Claude Code runs:
+git add src/report/cli/cli_report_format.py tests/report/test_cli_report_format.py
+
+# Claude Code proposes:
+# Commit message: "test(#62): add end-to-end tests for cognitive complexity in FileAnalyzer"
+#
+# Then USER runs:
+git commit -m "test(#62): add end-to-end tests for cognitive complexity in FileAnalyzer
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
 
 ## Key Files to Know
 
@@ -306,7 +343,8 @@ tests/
 - `src/config/app_config.py` - Central configuration (70+ lines)
 - `src/app/metric_mancer_app.py` - Main application class
 - `src/report/report_generator_factory.py` - Generator factory
-- `src/kpis/complexity/analyzer.py` - Complexity calculation (supports 10+ languages)
+- `src/kpis/complexity/analyzer.py` - Cyclomatic complexity (supports 10+ languages)
+- **`src/kpis/cognitive_complexity/cognitive_complexity_kpi.py`** - **[New v3.2.0]** Cognitive complexity (Python only, tree-sitter planned)
 - `src/kpis/codechurn/code_churn.py` - Churn analysis (needs time-based fix)
 - `src/analysis/code_review_advisor.py` - Code review recommendations
 
@@ -346,6 +384,52 @@ Tasks defined in `.vscode/tasks.json`:
 - tqdm - Progress bars
 
 **Python Version**: 3.10+ required
+
+## Cognitive Complexity (v3.2.0)
+
+**Overview**: Human-centric metric measuring code understandability (nesting-aware), complementing Cyclomatic Complexity.
+
+**Current State**:
+- ✅ **Python support**: Fully implemented with AST-based analysis
+- ❌ **Multi-language**: Not yet supported (see issue for tree-sitter implementation)
+- ✅ **TDD**: 51 tests covering all edge cases
+- ✅ **Integrated**: CLI, HTML, JSON reports + Quick Wins
+
+**Key Concepts**:
+- **Nesting penalty**: Each nesting level increases cognitive load
+- **Boolean sequences**: Count once, not per operator
+- **Flat vs Nested**: Same cyclomatic, very different cognitive scores
+
+**Example**:
+```python
+# Low Cognitive (3), High Cyclomatic (4)
+if a: return 1
+if b: return 2
+if c: return 3
+# Easy to understand
+
+# High Cognitive (6), Same Cyclomatic (4)
+if a:           # +1
+    if b:       # +2 (1 + nesting)
+        if c:   # +3 (1 + 2 nesting)
+            return 1
+# Hard to understand
+```
+
+**Thresholds** (SonarSource):
+- 0-5: ✅ Excellent
+- 6-10: 🟡 Good
+- 11-15: 🟠 Consider refactoring
+- 16-25: 🔴 Refactor soon
+- 25+: 💀 Refactor immediately
+
+**Files**:
+- Calculator: `src/kpis/cognitive_complexity/cognitive_complexity_kpi.py`
+- Strategy: `src/app/kpi/kpi_calculator.py` (CognitiveComplexityKPIStrategy)
+- Tests: `tests/kpis/test_cognitive_complexity.py` (21 tests)
+- Integration: `tests/app/test_kpi_calculator_cognitive_complexity.py` (5 tests)
+
+**Future Work**: Multi-language support using tree-sitter (see related GitHub issue)
 
 ## Common Pitfalls
 

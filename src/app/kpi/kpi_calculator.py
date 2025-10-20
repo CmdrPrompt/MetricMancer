@@ -91,6 +91,48 @@ class ComplexityKPIStrategy:
         )
 
 
+class CognitiveComplexityKPIStrategy:
+    """Strategy for calculating Cognitive Complexity KPI from Python source code."""
+
+    def calculate(
+        self,
+        file_info: Dict,
+        repo_root: Path,
+        content: str = None,
+        **kwargs
+    ) -> BaseKPI:
+        """
+        Calculate Cognitive Complexity for Python files.
+
+        Uses AST-based analysis to compute cognitive complexity following
+        the SonarSource specification. Only processes Python files.
+
+        Args:
+            file_info: File information dict with 'path' and 'ext' keys
+            repo_root: Repository root path
+            content: File content as string (required for analysis)
+            **kwargs: Additional parameters
+
+        Returns:
+            CognitiveComplexityKPI with per-function complexity data
+        """
+        from src.kpis.cognitive_complexity import CognitiveComplexityKPI
+
+        # Only calculate for Python files
+        ext = file_info.get('ext', '')
+        if ext not in ['.py', 'py']:
+            return CognitiveComplexityKPI()
+
+        if not content:
+            return CognitiveComplexityKPI()
+
+        file_path = file_info.get('path')
+        return CognitiveComplexityKPI().calculate(
+            file_path=str(file_path),
+            file_content=content
+        )
+
+
 class ChurnKPIStrategy:
     """Strategy for calculating churn KPI using git cache."""
 
@@ -260,6 +302,7 @@ class KPICalculator:
         # Register default strategies
         self.strategies = {
             'complexity': ComplexityKPIStrategy(complexity_analyzer),
+            'cognitive_complexity': CognitiveComplexityKPIStrategy(),
             'churn': ChurnKPIStrategy(),
             'hotspot': HotspotKPIStrategy(),
             'ownership': OwnershipKPIStrategy(),
@@ -336,7 +379,17 @@ class KPICalculator:
         kpis[complexity_kpi.name] = complexity_kpi
         self.timing['complexity'] += time.perf_counter() - t_start
 
-        # 2. Churn (independent - queries git)
+        # 2. Cognitive Complexity (independent - AST-based Python analysis)
+        t_start = time.perf_counter()
+        cognitive_complexity_kpi = self.strategies['cognitive_complexity'].calculate(
+            file_info=file_info,
+            repo_root=repo_root,
+            content=content
+        )
+        kpis[cognitive_complexity_kpi.name] = cognitive_complexity_kpi
+        self.timing['cognitive_complexity'] += time.perf_counter() - t_start
+
+        # 3. Churn (independent - queries git)
         t_start = time.perf_counter()
         churn_kpi = self.strategies['churn'].calculate(
             file_info=file_info,
@@ -345,7 +398,7 @@ class KPICalculator:
         kpis[churn_kpi.name] = churn_kpi
         self.timing['churn'] += time.perf_counter() - t_start
 
-        # 3. Hotspot (depends on complexity + churn)
+        # 4. Hotspot (depends on complexity + churn)
         t_start = time.perf_counter()
         hotspot_kpi = self.strategies['hotspot'].calculate(
             file_info=file_info,
@@ -356,7 +409,7 @@ class KPICalculator:
         kpis[hotspot_kpi.name] = hotspot_kpi
         self.timing['hotspot'] += time.perf_counter() - t_start
 
-        # 4. Ownership (independent - queries git blame)
+        # 5. Ownership (independent - queries git blame)
         t_start = time.perf_counter()
         ownership_kpi = self.strategies['ownership'].calculate(
             file_info=file_info,
@@ -365,7 +418,7 @@ class KPICalculator:
         kpis[ownership_kpi.name] = ownership_kpi
         self.timing['ownership'] += time.perf_counter() - t_start
 
-        # 5. Shared Ownership (independent - queries git)
+        # 6. Shared Ownership (independent - queries git)
         t_start = time.perf_counter()
         shared_kpi = self.strategies['shared_ownership'].calculate(
             file_info=file_info,

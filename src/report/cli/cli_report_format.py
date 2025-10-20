@@ -123,14 +123,25 @@ class CLIReportFormat(ReportFormatStrategy):
                 return True
         return False
 
+    def _get_kpi_value(self, kpis: dict, kpi_name: str) -> str:
+        """
+        Extract KPI value with proper None handling.
+
+        Returns '?' if KPI is missing or value is None.
+        This ensures consistent fallback behavior across all KPIs.
+        """
+        kpi = kpis.get(kpi_name)
+        return kpi.value if kpi and kpi.value is not None else '?'
+
     def _format_file_stats(self, file_obj: File) -> str:
         """
         Formats the KPI statistics string for a single file,
-        including code ownership and shared ownership if available.
+        including code ownership, shared ownership, and cognitive complexity if available.
         """
-        c_val = file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') else '?'
-        ch_val = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') else '?'
-        h_val = file_obj.kpis.get('hotspot').value if file_obj.kpis.get('hotspot') else '?'
+        c_val = self._get_kpi_value(file_obj.kpis, 'complexity')
+        cog_val = self._get_kpi_value(file_obj.kpis, 'cognitive_complexity')
+        ch_val = self._get_kpi_value(file_obj.kpis, 'churn')
+        h_val = self._get_kpi_value(file_obj.kpis, 'hotspot')
 
         # Code Ownership
         code_ownership = file_obj.kpis.get('Code Ownership')
@@ -170,17 +181,18 @@ class CLIReportFormat(ReportFormatStrategy):
                 shared_str = " Shared: N/A"
 
         # Always append ownership_str and shared_str directly after Hotspot, trimmed
-        return f"[C:{c_val}, Churn:{ch_val}, Hotspot:{h_val}]" + (ownership_str if ownership_str else "") + (
+        return f"[C:{c_val}, Cog:{cog_val}, Churn:{ch_val}, Hotspot:{h_val}]" + (ownership_str if ownership_str else "") + (
             " " if ownership_str and shared_str else "") + (shared_str if shared_str else "")
 
     def _print_functions(self, functions: List[Function], prefix: str, is_file_last: bool):
-        """Prints the functions for a given file."""
+        """Prints the functions for a given file, including cognitive complexity if available."""
         func_prefix = prefix + ("    " if is_file_last else "│   ")
 
         for i, func in enumerate(sorted(functions, key=lambda f: f.name)):
             is_last_func = (i == len(functions) - 1)
             connector = "└── " if is_last_func else "├── "
 
-            c_val = func.kpis['complexity'].value if 'complexity' in func.kpis and func.kpis['complexity'] else '?'
-            stats_str = f"[C:{c_val}]"
+            c_val = self._get_kpi_value(func.kpis, 'complexity')
+            cog_val = self._get_kpi_value(func.kpis, 'cognitive_complexity')
+            stats_str = f"[C:{c_val}, Cog:{cog_val}]"
             print(f"{func_prefix}{connector}{func.name}() {stats_str}")

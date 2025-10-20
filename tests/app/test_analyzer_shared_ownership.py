@@ -17,9 +17,9 @@ class TestAnalyzerSharedOwnership(unittest.TestCase):
         if os.path.exists(self.temp_file.name):
             os.unlink(self.temp_file.name)
 
-    @patch('src.app.core.file_processor.SharedOwnershipKPI')  # Phase 5: KPIs now in core.file_processor
-    @patch('src.app.core.file_processor.CodeOwnershipKPI')
-    @patch('src.app.core.file_processor.ChurnKPI')
+    @patch('src.kpis.sharedcodeownership.shared_code_ownership.SharedOwnershipKPI')
+    @patch('src.kpis.codeownership.code_ownership.CodeOwnershipKPI')
+    @patch('src.kpis.codechurn.kpi.ChurnKPI')
     @patch('src.app.core.analyzer.ComplexityAnalyzer')
     def test_analyzer_includes_shared_ownership_kpi(
         self, mock_complexity_analyzer, mock_churn, mock_code_ownership, mock_shared_ownership
@@ -47,7 +47,7 @@ class TestAnalyzerSharedOwnership(unittest.TestCase):
         file_obj = list(repo_info.files.values())[0]
         self.assertIn("Shared Ownership", file_obj.kpis)
 
-    @patch('src.app.core.file_processor.SharedOwnershipKPI')  # Phase 5: KPIs now in core.file_processor
+    @patch('src.kpis.sharedcodeownership.shared_code_ownership.SharedOwnershipKPI')
     def test_shared_ownership_exception_handling(self, mock_shared_ownership):
         """Test that SharedOwnershipKPI exceptions are handled gracefully."""
         # Make SharedOwnershipKPI raise an exception

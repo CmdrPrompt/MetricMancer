@@ -6,8 +6,16 @@ LANGUAGES = {
         'name': 'JavaScript',
         'parser': 'JavaScriptComplexityParser'
     },
+    '.jsx': {
+        'name': 'JavaScript (JSX)',
+        'parser': 'JavaScriptComplexityParser'
+    },
     '.ts': {
         'name': 'TypeScript',
+        'parser': 'TypeScriptComplexityParser'
+    },
+    '.tsx': {
+        'name': 'TypeScript (TSX)',
         'parser': 'TypeScriptComplexityParser'
     },
     '.py': {

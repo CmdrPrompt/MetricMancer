@@ -5,7 +5,8 @@ import time
 
 from src.app.hierarchy.hierarchy_builder import HierarchyBuilder
 from src.app.kpi.kpi_aggregator import KPIAggregator
-from src.app.core.file_processor import FileProcessor
+from src.app.kpi.file_analyzer import FileAnalyzer
+from src.app.kpi.kpi_calculator import KPICalculator
 from src.kpis.base_kpi import BaseKPI
 from src.kpis.codeownership import CodeOwnershipKPI
 from src.kpis.codechurn import ChurnKPI
@@ -199,8 +200,8 @@ class Analyzer:
         self.churn_period_days = churn_period_days
         self.hierarchy_builder = HierarchyBuilder()
         self.kpi_aggregator = KPIAggregator()
-        # Phase 5: FileProcessor for file-level operations
-        self.file_processor = None  # Initialized per-repo with complexity_analyzer
+        # File analyzer with KPI calculator (Strategy pattern)
+        self.file_analyzer = None  # Initialized per-repo with KPICalculator
 
     def _group_files_by_repo(self, files):
         """Groups files by their repository root directory."""
@@ -254,38 +255,18 @@ class Analyzer:
         """
         Process a single file and return a File object with all KPIs.
 
-        REFACTORED (Phase 5): Delegates to FileProcessor for file-level operations.
+        REFACTORED: Delegates to FileAnalyzer (Strategy pattern with KPICalculator).
         """
-        file_path = Path(file_info['path'])
-        ext = file_info.get('ext')
+        # Initialize file analyzer with KPICalculator (once per repo)
+        if self.file_analyzer is None:
+            kpi_calculator = KPICalculator(complexity_analyzer)
+            self.file_analyzer = FileAnalyzer(
+                languages_config=self.config,
+                kpi_calculator=kpi_calculator
+            )
 
-        if ext not in self.config:
-            debug_print(f"_analyze_repo: Skipping file with unknown extension: {str(file_path.resolve())}")
-            return None
-
-        # Delegate to FileProcessor (Phase 5)
-        if self.file_processor is None:
-            # Initialize file processor with lang config
-            self.file_processor = FileProcessor(complexity_analyzer, self.config)
-
-        file_obj, timing = self.file_processor.process_file(file_info, repo_root_path)
-
-        if file_obj is None:
-            return None
-
-        # Update analyzer's timing tracking
-        self.timing['complexity'] += timing.get('complexity', 0.0)
-        self.timing['filechurn'] += timing.get('filechurn', 0.0)
-        self.timing['ownership'] += timing.get('ownership', 0.0)
-        self.timing['sharedownership'] += timing.get('sharedownership', 0.0)
-
-        # Calculate hotspot timing (not in FileProcessor yet)
-        t_hotspot_start = time.perf_counter()
-        # Hotspot already calculated in FileProcessor
-        self.timing['hotspot'] += time.perf_counter() - t_hotspot_start
-
-        # Fix file_path to be relative
-        file_obj.file_path = str(file_path.relative_to(repo_root_path))
+        # Delegate to FileAnalyzer - clean interface, returns File object
+        file_obj = self.file_analyzer.analyze_file(file_info, repo_root_path)
 
         return file_obj
 

@@ -34,7 +34,7 @@ class ReportGenerator(ReportInterface):
         Args:
             output_file: Output filename for the report.
             report_links: Optional links to include in the report.
-            **kwargs: Additional arguments that are ignored by this generator.
+            **kwargs: Additional arguments (include_review_tab, review_branch_only, etc.)
         """
         format_strategy = HTMLReportFormat(self.template_dir, self.template_file)
         format_strategy.print_report(
@@ -45,5 +45,5 @@ class ReportGenerator(ReportInterface):
             threshold_high=self.threshold_high,
             problem_file_threshold=self.problem_file_threshold,
             report_links=report_links,
-            # kwargs may include level, hierarchical, etc. (not used by HTML report)
+            **kwargs  # Pass through review tab settings and other kwargs
         )

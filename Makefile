@@ -43,7 +43,7 @@ install:
 	@echo "✅ Installation complete!"
 	@echo ""
 	@echo "Installed dependencies:"
-	@source .venv/bin/activate && pip list | grep -E "(jinja2|pytest|pydriller|tqdm|PyYAML|autopep8|flake8|pip-licenses|coverage)"
+	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff)"
 
 format:
 	@echo "🎨 Auto-formatting Python code with autopep8..."
@@ -90,7 +90,7 @@ analyze-quick:
 	@echo "🎯 Running quick wins analysis on MetricMancer codebase..."
 	@echo "   (Identifies low-effort, high-impact improvements)"
 	@source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
-		--quick-wins \
+		--output-formats quick-wins \
 		--report-folder output/self-analysis \
 		--churn-period 7 \
 		--threshold-high 15
@@ -155,15 +155,24 @@ analyze-delta-review:
 
 analyze-full:
 	@echo "🚀 Running complete analysis on MetricMancer codebase..."
-	@echo "   (Generates all reports: HTML, JSON, CLI)"
+	@echo "   (Generates comprehensive HTML report with tabbed interface + JSON + CLI)"
 	@source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
 		--output-formats html,json,summary \
 		--report-folder output/self-analysis \
-		--churn-period 90 \
-		--threshold-high 15
+		--report-filename metricmancer_analysis.html \
+		--churn-period 10 \
+		--threshold-high 15 \
+		--include-review-tab
 	@echo ""
 	@echo "📦 Complete analysis generated!"
-	@echo "   HTML Report: output/self-analysis/index.html"
-	@echo "   JSON Report: output/self-analysis/report.json"
-	@echo "   Summary:     View CLI output above"
+	@echo "   📊 HTML Report: output/self-analysis/metricmancer_analysis.html"
+	@echo "      - Overview tab with repository statistics"
+	@echo "      - File Tree tab with complexity metrics (C, Cog, Churn, Hotspot)"
+	@echo "      - Quick Wins tab for actionable improvements"
+	@echo "      - Code Review tab with intelligent review recommendations"
+	@echo "   📄 JSON Report: output/self-analysis/report.json"
+	@echo "   📋 Summary:     View CLI output above"
+	@echo ""
+	@echo "💡 Open HTML report in browser:"
+	@echo "   open output/self-analysis/metricmancer_analysis.html"
 
