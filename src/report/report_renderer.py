@@ -86,6 +86,7 @@ class ReportRenderer:
             repo_info: The analyzed repository data model (RepoInfo).
             problem_file_threshold: Optional threshold for flagging problematic files.
             report_links: Optional links to include in the report.
+            **kwargs: Additional context variables (e.g., review_data)
 
         Returns:
             Rendered HTML as a string.
@@ -108,5 +109,6 @@ class ReportRenderer:
             problem_file_threshold=problem_file_threshold,
             report_links=report_links,
             # Pass the grade function to the template so it can be used there
-            grade=self.env.globals.get('grade')
+            grade=self.env.globals.get('grade'),
+            **kwargs  # Pass through additional context (e.g., review_data)
         )

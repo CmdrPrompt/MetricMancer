@@ -90,7 +90,7 @@ analyze-quick:
 	@echo "🎯 Running quick wins analysis on MetricMancer codebase..."
 	@echo "   (Identifies low-effort, high-impact improvements)"
 	@source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
-		--quick-wins \
+		--output-formats quick-wins \
 		--report-folder output/self-analysis \
 		--churn-period 7 \
 		--threshold-high 15
@@ -161,13 +161,15 @@ analyze-full:
 		--report-folder output/self-analysis \
 		--report-filename metricmancer_analysis.html \
 		--churn-period 90 \
-		--threshold-high 15
+		--threshold-high 15 \
+		--include-review-tab
 	@echo ""
 	@echo "📦 Complete analysis generated!"
 	@echo "   📊 HTML Report: output/self-analysis/metricmancer_analysis.html"
 	@echo "      - Overview tab with repository statistics"
 	@echo "      - File Tree tab with complexity metrics (C, Cog, Churn, Hotspot)"
 	@echo "      - Quick Wins tab for actionable improvements"
+	@echo "      - Code Review tab with intelligent review recommendations"
 	@echo "   📄 JSON Report: output/self-analysis/report.json"
 	@echo "   📋 Summary:     View CLI output above"
 	@echo ""

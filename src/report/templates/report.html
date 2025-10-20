@@ -35,6 +35,9 @@
     <button class="tab-btn active" data-tab="overview">Overview</button>
     <button class="tab-btn" data-tab="tree">File Tree</button>
     <button class="tab-btn" data-tab="quickwins">Quick Wins</button>
+    {% if review_data %}
+    <button class="tab-btn" data-tab="review">Code Review</button>
+    {% endif %}
   </div>
 
   {# Tab Content: Overview #}
@@ -297,6 +300,145 @@
       </div>
     {% endif %}
   </div>
+
+  {# Tab Content: Code Review #}
+  {% if review_data %}
+  <div id="tab-review" class="tab-content">
+    <h2>Code Review Strategy</h2>
+    <p>Intelligent code review recommendations based on complexity, churn, and ownership metrics.</p>
+
+    {% if review_data.branch_filter %}
+    <div style="padding: 15px; background-color: #e3f2fd; border-left: 4px solid #2196f3; margin-bottom: 20px;">
+      <p style="margin: 0;"><strong>🔍 FILTERED VIEW:</strong> Showing only changed files in current branch</p>
+      <p style="margin: 5px 0 0 0; font-size: 0.9em;">📊 Comparing against: <code>{{ review_data.base_branch }}</code></p>
+    </div>
+    {% endif %}
+
+    {# Executive Summary #}
+    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+      <h3 style="margin-top: 0;">📊 Executive Summary</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 10px;"><strong>Total files analyzed</strong></td>
+          <td style="padding: 10px;">{{ review_data.total_files }}</td>
+        </tr>
+        <tr style="background-color: #ffebee;">
+          <td style="padding: 10px;"><strong>Critical risk files 🔴</strong></td>
+          <td style="padding: 10px;">{{ review_data.risk_counts.critical }} (require immediate attention)</td>
+        </tr>
+        <tr style="background-color: #fff3e0;">
+          <td style="padding: 10px;"><strong>High risk files 🟡</strong></td>
+          <td style="padding: 10px;">{{ review_data.risk_counts.high }} (require senior review)</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px;"><strong>Estimated total review time</strong></td>
+          <td style="padding: 10px;">{{ (review_data.total_time_minutes // 60)|int }}h {{ review_data.total_time_minutes % 60 }}m</td>
+        </tr>
+      </table>
+    </div>
+
+    {# Group recommendations by priority #}
+    {% set priority_labels = {1: '🔴 CRITICAL', 2: '🟠 HIGH', 3: '🟡 MEDIUM', 4: '🟢 LOW', 5: '⚪ MINIMAL'} %}
+    {% set priority_colors = {1: '#ffebee', 2: '#fff3e0', 3: '#fffde7', 4: '#e8f5e9', 5: '#f5f5f5'} %}
+
+    {% for priority in [1, 2, 3, 4, 5] %}
+      {% set priority_recs = review_data.recommendations | selectattr('priority', 'equalto', priority) | list %}
+      {% if priority_recs | length > 0 %}
+      <div style="margin-bottom: 30px;">
+        <h3>{{ priority_labels[priority] }} Priority Files (Priority {{ priority }})</h3>
+
+        {% for rec in priority_recs %}
+        <div style="border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin-bottom: 20px; background-color: {{ priority_colors[priority] }};">
+          <h4 style="margin-top: 0;">📄 <code>{{ rec.file_path }}</code></h4>
+
+          <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 5px;"><strong>Risk Level</strong></td>
+              <td style="padding: 5px;">{{ rec.risk_level | upper }}</td>
+              <td style="padding: 5px;"><strong>Reviewers Needed</strong></td>
+              <td style="padding: 5px;">{{ rec.reviewers_needed }}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px;"><strong>Estimated Time</strong></td>
+              <td style="padding: 5px;">{{ rec.estimated_time_minutes }} minutes</td>
+              <td style="padding: 5px;"><strong>Priority</strong></td>
+              <td style="padding: 5px;">{{ rec.priority }}/5</td>
+            </tr>
+          </table>
+
+          <div style="margin-bottom: 15px;">
+            <strong>🎯 Focus Areas:</strong>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+              {% for area in rec.focus_areas %}
+              <li>{{ area }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <strong>✓ Review Checklist:</strong>
+            <ul style="margin: 5px 0; padding-left: 20px; list-style-type: none;">
+              {% for item in rec.checklist_items %}
+              <li>☐ {{ item }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          {% if rec.template %}
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; font-weight: bold; padding: 5px;">📋 Review Template</summary>
+            <pre style="background-color: white; padding: 15px; border-radius: 5px; margin-top: 10px; overflow-x: auto; white-space: pre-wrap; font-size: 0.85em;">{{ rec.template }}</pre>
+          </details>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    {# Resource Allocation Guidance #}
+    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 5px; margin-top: 30px;">
+      <h3 style="margin-top: 0;">👥 Resource Allocation Guidance</h3>
+
+      <h4>⏱️ Recommended Review Time Distribution</h4>
+      {% set critical_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'critical') | sum(attribute='estimated_time_minutes')) %}
+      {% set high_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'high') | sum(attribute='estimated_time_minutes')) %}
+      {% set medium_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'medium') | sum(attribute='estimated_time_minutes')) %}
+      {% set low_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'low') | sum(attribute='estimated_time_minutes')) %}
+      {% set total = critical_time + high_time + medium_time + low_time %}
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <tr>
+          <th style="text-align: left; padding: 10px; background-color: #fff;">Category</th>
+          <th style="text-align: right; padding: 10px; background-color: #fff;">Time</th>
+          <th style="text-align: right; padding: 10px; background-color: #fff;">Percentage</th>
+        </tr>
+        <tr>
+          <td style="padding: 10px;">Critical files 🔴</td>
+          <td style="padding: 10px; text-align: right;">{{ (critical_time // 60)|int }}h {{ critical_time % 60 }}m</td>
+          <td style="padding: 10px; text-align: right;">{{ ((critical_time / total * 100) | round(1)) if total > 0 else 0 }}%</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px;">High priority 🟡</td>
+          <td style="padding: 10px; text-align: right;">{{ (high_time // 60)|int }}h {{ high_time % 60 }}m</td>
+          <td style="padding: 10px; text-align: right;">{{ ((high_time / total * 100) | round(1)) if total > 0 else 0 }}%</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px;">Medium/Low 🟢</td>
+          <td style="padding: 10px; text-align: right;">{{ ((medium_time + low_time) // 60)|int }}h {{ (medium_time + low_time) % 60 }}m</td>
+          <td style="padding: 10px; text-align: right;">{{ (((medium_time + low_time) / total * 100) | round(1)) if total > 0 else 0 }}%</td>
+        </tr>
+      </table>
+
+      <h4>👤 Reviewer Assignment Strategy</h4>
+      <ul>
+        <li><strong>Critical files 🔴:</strong> Senior architect + 2 experienced developers</li>
+        <li><strong>High priority 🟡:</strong> Senior developer + peer reviewer</li>
+        <li><strong>Medium/Low 🟢:</strong> Standard peer review</li>
+      </ul>
+    </div>
+  </div>
+  {% endif %}
 {% endblock %}
 
 {% block scripts %}

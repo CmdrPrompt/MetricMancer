@@ -54,6 +54,7 @@ class AppConfig:
     # Output settings
     output_format: str = "summary"  # Backward compatibility (singular)
     output_formats: List[str] = field(default_factory=lambda: ['summary'])  # NEW: Multi-format support
+    using_output_formats_flag: bool = False  # True if user explicitly used --output-formats
     output_file: Optional[str] = None
     report_folder: str = "output"
     level: str = "file"
@@ -69,6 +70,7 @@ class AppConfig:
     review_output: str = "review_strategy.md"
     review_branch_only: bool = False
     review_base_branch: str = "main"
+    include_review_tab: bool = False  # Include Code Review tab in HTML report
 
     # Code churn settings
     churn_period: int = 30
@@ -124,8 +126,10 @@ class AppConfig:
 
         # Determine paths
         output_formats_value = None
+        using_output_formats_flag = False
         if hasattr(args, 'output_formats') and args.output_formats:
             # New plural parameter provided
+            using_output_formats_flag = True
             if isinstance(args.output_formats, str):
                 # Parse comma-separated string
                 output_formats_value = [f.strip() for f in args.output_formats.split(',')]
@@ -152,6 +156,7 @@ class AppConfig:
             # Output settings
             output_format=output_format_value,
             output_formats=output_formats_value if output_formats_value else ['summary'],
+            using_output_formats_flag=using_output_formats_flag,
             output_file=None,  # Will be set later if needed
             report_folder=getattr(args, 'report_folder', None) or 'output',
             level=args.level,
@@ -167,6 +172,7 @@ class AppConfig:
             review_output=getattr(args, 'review_output', 'review_strategy.md'),
             review_branch_only=getattr(args, 'review_branch_only', False),
             review_base_branch=getattr(args, 'review_base_branch', 'main'),
+            include_review_tab=getattr(args, 'include_review_tab', False),
 
             # Code churn settings
             churn_period=getattr(args, 'churn_period', 30),
