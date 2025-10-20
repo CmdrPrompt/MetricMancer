@@ -30,9 +30,9 @@ Integrate [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) - a universa
 
 ### Implementation Plan
 
-**Phase 1:** JavaScript/TypeScript support (highest priority)
+**Phase 1:** JavaScript/TypeScript support (Is available locally)
 **Phase 2:** Java support
-**Phase 3:** Go, C#, C++ support (optional)
+**Phase 3:** Go, Ada, C#, C++ support (optional)
 
 ### Technical Approach
 
