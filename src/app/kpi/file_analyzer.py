@@ -102,8 +102,6 @@ class FileAnalyzer:
             content, lang_config
         )
 
-        # Step 5: Create Function objects with complexity KPIs
-        function_objects = self._create_function_objects(functions_data)
 
         # Step 6: Calculate all file-level KPIs
         file_kpis = self.kpi_calculator.calculate_all(
@@ -113,13 +111,20 @@ class FileAnalyzer:
             functions_data=functions_data
         )
 
-        # Step 7: Create and return File object
+        # Step 7: Create Function objects with complexity and cognitive_complexity KPIs
+        function_objects = self._create_function_objects(functions_data, file_kpis=file_kpis)
+
+        # Step 8: Create and return File object
         file_obj = File(
             name=file_path.name,
             file_path=str(file_path.relative_to(repo_root)),
             kpis=file_kpis,
             functions=function_objects
         )
+
+        # Koppla parent_file på varje Function-objekt
+        for func in file_obj.functions:
+            func.parent_file = file_obj
 
         return file_obj
 
@@ -155,30 +160,31 @@ class FileAnalyzer:
 
     def _create_function_objects(
         self,
-        functions_data: List[Dict]
+        functions_data: List[Dict],
+        file_kpis: Dict[str, 'BaseKPI'] = None
     ) -> List[Function]:
         """
-        Create Function objects with complexity KPIs.
+        Create Function objects with complexity and cognitive_complexity KPIs.
 
         Args:
             functions_data: List of dicts with keys:
                           - 'name': Function name
                           - 'complexity': Cyclomatic complexity value
+            file_kpis: Dict of file-level KPIs (needed for per-function cognitive_complexity)
 
         Returns:
-            List of Function objects with complexity KPIs
-
-        Example:
-            functions_data = [
-                {'name': 'main', 'complexity': 5},
-                {'name': 'helper', 'complexity': 2}
-            ]
-            # Returns: [
-            #   Function(name='main', kpis={'complexity': ComplexityKPI(5)}),
-            #   Function(name='helper', kpis={'complexity': ComplexityKPI(2)})
-            # ]
+            List of Function objects with complexity and cognitive_complexity KPIs
         """
+        from src.kpis.cognitive_complexity import CognitiveComplexityKPI
         function_objects = []
+
+        # Get per-function cognitive_complexity values if available
+        cog_values = {}
+        if file_kpis and 'cognitive_complexity' in file_kpis:
+            cog_kpi = file_kpis['cognitive_complexity']
+            if hasattr(cog_kpi, 'calculation_values'):
+                cog_values = cog_kpi.calculation_values or {}
+
 
         for func_data in functions_data:
             # Create complexity KPI for this function
@@ -187,11 +193,21 @@ class FileAnalyzer:
                 function_count=1
             )
 
-            # Create Function object
+            # Create cognitive_complexity KPI for this function (if available)
+            func_name = func_data.get('name', 'N/A')
+            cog_value = cog_values.get(func_name)
+            func_cog_kpi = None
+            if cog_value is not None:
+                func_cog_kpi = CognitiveComplexityKPI(value=cog_value)
+
+            kpis = {func_complexity_kpi.name: func_complexity_kpi}
+            if func_cog_kpi is not None:
+                kpis[func_cog_kpi.name] = func_cog_kpi
+
             function_objects.append(
                 Function(
-                    name=func_data.get('name', 'N/A'),
-                    kpis={func_complexity_kpi.name: func_complexity_kpi}
+                    name=func_name,
+                    kpis=kpis
                 )
             )
 

@@ -21,4 +21,18 @@ class JavaComplexityParser(ComplexityParser):
         r'\bcase\b', r'\bcatch\b', r'\bthrow\b', r'\breturn\b',
         r'&&', r'\|\|'
     ]
-    FUNCTION_PATTERN = r'(?:public|private|protected)?\s+\w+\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'
+    # Matches Java method definitions including:
+    # - 'public void method()' (with visibility modifier)
+    # - 'int calculate()' (without modifier)
+    # - 'List<String> getItems()' (generics in return type)
+    # - 'void process() throws Exception' (with throws clause)
+    # Pattern breakdown:
+    # - '(?:public|private|protected|static|final)?' optionally matches modifiers
+    # - '\s+(?:\w+(?:<[^>]+>)?)+' matches return type (including generics)
+    # - '\s+([a-zA-Z_]\w*)' captures method name
+    # - '\s*\(' matches opening parenthesis
+    # - '[^)]*' matches parameters
+    # - '\)' matches closing parenthesis
+    # - '(?:\s+throws\s+[^{]+)?' optionally matches throws clause
+    # - '\s*\{' matches opening brace
+    FUNCTION_PATTERN = r'(?:(?:public|private|protected|static|final)\s+)*(?:\w+(?:<[^>]+>)?)+\s+([a-zA-Z_]\w*)\s*\([^)]*\)(?:\s+throws\s+[^{]+)?\s*\{'

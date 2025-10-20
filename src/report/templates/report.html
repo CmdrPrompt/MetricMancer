@@ -17,60 +17,571 @@
           <span class="prefix">{{ prefix }}{{ connector }}</span>
           <span class="toggle">▶</span>
           <span class="name">{{ item.dir_name }}/</span>
-          <span class="kpis">[Avg C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Avg Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Avg Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]{% if item.kpis.get('Shared Ownership') and item.kpis['Shared Ownership'].value and item.kpis['Shared Ownership'].value != {'ownership': 'N/A'} %} [Shared: num_significant_authors ({{ item.kpis['Shared Ownership'].value.num_significant_authors }}), authors ({{ item.kpis['Shared Ownership'].value.authors }}), threshold ({{ item.kpis['Shared Ownership'].value.threshold }}%)]{% endif %}</span>
+          <span class="kpis">[Avg C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Avg Cog: {{ item.kpis.cognitive_complexity.value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.cognitive_complexity.value is not none else '?' }}, Avg Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Avg Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span>
         </div><div class="nested">{{- render_tree(item, new_prefix) -}}</div>
       </div>
     {%- else -%} {# It's a file #}
       <div class="tree-item is-file">
-      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]{% if item.kpis.get('Code Ownership') and item.kpis['Code Ownership'].value and item.kpis['Code Ownership'].value != {'ownership': 'N/A'} %} [Owners: {% for author, percent in item.kpis['Code Ownership'].value.items() %}{{ author }}{% if not loop.last %}, {% endif %}{% endfor %}]{% endif %}{% if item.kpis.get('Shared Ownership') and item.kpis['Shared Ownership'].value and item.kpis['Shared Ownership'].value != {'ownership': 'N/A'} %} [Shared: {% for author, percent in item.kpis['Shared Ownership'].value.items() %}{{ author }} ({{ percent }}%){% if not loop.last %}, {% endif %}{% endfor %}]{% endif %}</span></div>
+      <!-- DEBUG: file={{ item.name }}, kpi_keys={{ item.kpis.keys()|list }}, cog_exists={{ 'cognitive_complexity' in item.kpis }}, cog={{ item.kpis.get('cognitive_complexity') }} -->
+      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Cog: {{ item.kpis.get('cognitive_complexity').value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.get('cognitive_complexity').value is not none else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span></div>
       </div>
     {%- endif -%}
   {%- endfor -%}
 {%- endmacro -%}
 
 {% block content %}
-  <div class="file-tree-container">
-    <h2>File & KPI Tree for {{ repo_info.repo_name }}</h2>
-    <div class="tree-controls">
-      <button id="expand-all-btn">Expand All</button>
-      <button id="collapse-all-btn">Collapse All</button>
-    </div>
-    <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
-    <div class="tree">
-      {{ render_tree(repo_info) }}
+  {# Tab Navigation #}
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="tree">File Tree</button>
+    <button class="tab-btn" data-tab="quickwins">Quick Wins</button>
+    {% if review_data %}
+    <button class="tab-btn" data-tab="review">Code Review</button>
+    {% endif %}
+  </div>
+
+  {# Tab Content: Overview #}
+  <div id="tab-overview" class="tab-content active">
+    <h2>Overview - {{ repo_info.repo_name }}</h2>
+
+    {# Calculate aggregate statistics from all files #}
+    {% set ns = namespace(
+        total_files=0,
+        total_complexity=0,
+        total_cognitive=0,
+        total_churn=0,
+        files_with_complexity=0,
+        files_with_cognitive=0,
+        files_with_churn=0,
+        high_complexity_files=0,
+        high_cognitive_files=0,
+        hotspot_files=0
+    ) %}
+
+    {% macro collect_stats(scan_dir) %}
+      {% for file_obj in scan_dir.files.values() %}
+        {% set ns.total_files = ns.total_files + 1 %}
+
+        {% if file_obj.kpis.get('complexity') and file_obj.kpis.complexity.value is not none %}
+          {% set ns.total_complexity = ns.total_complexity + file_obj.kpis.complexity.value %}
+          {% set ns.files_with_complexity = ns.files_with_complexity + 1 %}
+          {% if file_obj.kpis.complexity.value > 15 %}
+            {% set ns.high_complexity_files = ns.high_complexity_files + 1 %}
+          {% endif %}
+        {% endif %}
+
+        {% if file_obj.kpis.get('cognitive_complexity') and file_obj.kpis.cognitive_complexity.value is not none %}
+          {% set ns.total_cognitive = ns.total_cognitive + file_obj.kpis.cognitive_complexity.value %}
+          {% set ns.files_with_cognitive = ns.files_with_cognitive + 1 %}
+          {% if file_obj.kpis.cognitive_complexity.value > 15 %}
+            {% set ns.high_cognitive_files = ns.high_cognitive_files + 1 %}
+          {% endif %}
+        {% endif %}
+
+        {% if file_obj.kpis.get('churn') and file_obj.kpis.churn.value is not none %}
+          {% set ns.total_churn = ns.total_churn + file_obj.kpis.churn.value %}
+          {% set ns.files_with_churn = ns.files_with_churn + 1 %}
+        {% endif %}
+
+        {% if file_obj.kpis.get('hotspot') and file_obj.kpis.hotspot.value is not none and file_obj.kpis.hotspot.value > 100 %}
+          {% set ns.hotspot_files = ns.hotspot_files + 1 %}
+        {% endif %}
+      {% endfor %}
+
+      {% for sub_dir in scan_dir.scan_dirs.values() %}
+        {{ collect_stats(sub_dir) }}
+      {% endfor %}
+    {% endmacro %}
+
+    {{ collect_stats(repo_info) }}
+
+    <div class="overview-stats">
+      <h3>Repository Summary</h3>
+      <p><strong>Repository:</strong> {{ repo_info.repo_name }}</p>
+      <p><strong>Total Files Analyzed:</strong> {{ ns.total_files }}</p>
+
+      <h3>Complexity Metrics</h3>
+      {% if ns.files_with_complexity > 0 %}
+      <p><strong>Average Cyclomatic Complexity:</strong> {{ (ns.total_complexity / ns.files_with_complexity) | round(1) }}</p>
+      <p><strong>Files with High Complexity (>15):</strong> {{ ns.high_complexity_files }} ({{ (ns.high_complexity_files / ns.files_with_complexity * 100) | round(1) }}%)</p>
+      {% else %}
+      <p><strong>Average Cyclomatic Complexity:</strong> N/A</p>
+      {% endif %}
+
+      {% if ns.files_with_cognitive > 0 %}
+      <p><strong>Average Cognitive Complexity:</strong> {{ (ns.total_cognitive / ns.files_with_cognitive) | round(1) }}</p>
+      <p><strong>Files with High Cognitive Complexity (>15):</strong> {{ ns.high_cognitive_files }} ({{ (ns.high_cognitive_files / ns.files_with_cognitive * 100) | round(1) }}%)</p>
+      {% else %}
+      <p><strong>Average Cognitive Complexity:</strong> N/A</p>
+      {% endif %}
+
+      <h3>Change Frequency</h3>
+      {% if ns.files_with_churn > 0 %}
+      <p><strong>Average Churn:</strong> {{ (ns.total_churn / ns.files_with_churn) | round(1) }} commits</p>
+      {% else %}
+      <p><strong>Average Churn:</strong> N/A</p>
+      {% endif %}
+
+      <h3>Risk Assessment</h3>
+      <p><strong>Hotspot Files (complexity × churn > 100):</strong> {{ ns.hotspot_files }}</p>
+      {% if ns.total_files > 0 %}
+      <p><strong>Hotspot Risk:</strong> {{ (ns.hotspot_files / ns.total_files * 100) | round(1) }}% of files are hotspots</p>
+      {% endif %}
     </div>
   </div>
 
-  {% if problem_files %}
-  <div class="problem-files-container">
-    <h2>Problem Files (Complexity >= {{ problem_file_threshold }})</h2>
-    <table>
-      <thead>
-        <tr>
-          <th>File</th>
-          <th>Complexity</th>
-          <th>Churn</th>
-          <th>Hotspot</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for file in problem_files %}
-          <tr>
-            <td>{{ file.file_path }}</td>
-            <td>{{ file.kpis.complexity.value | round(1) if file.kpis.get('complexity') else '?' }}</td>
-            <td>{{ file.kpis.churn.value if file.kpis.get('churn') else '?' }}</td>
-            <td>{{ file.kpis.hotspot.value | round(1) if file.kpis.get('hotspot') else '?' }}</td>
+  {# Tab Content: File Tree #}
+  <div id="tab-tree" class="tab-content">
+    <div class="file-tree-container">
+      <h2>File & KPI Tree for {{ repo_info.repo_name }}</h2>
+      <div class="tree-controls">
+        <button id="expand-all-btn">Expand All</button>
+        <button id="collapse-all-btn">Collapse All</button>
+      </div>
+      <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
+      <div class="tree">
+        {{ render_tree(repo_info) }}
+      </div>
+    </div>
+  </div>
+
+  {# Tab Content: Quick Wins #}
+  <div id="tab-quickwins" class="tab-content">
+    <h2>Quick Wins - High Impact, Low Effort Improvements</h2>
+    <p>Prioritized list of files that offer the best return on investment for refactoring efforts.</p>
+
+    {# Use Python-calculated quick_wins if available, otherwise collect in template #}
+    {% if quick_wins is not defined %}
+    {% set quick_wins = [] %}
+
+    {% macro collect_quick_wins(scan_dir) %}
+      {% for file_obj in scan_dir.files.values() %}
+        {% set complexity = file_obj.kpis.get('complexity').value if file_obj.kpis.get('complexity') and file_obj.kpis.complexity.value is not none else 0 %}
+        {% set cognitive = file_obj.kpis.get('cognitive_complexity').value if file_obj.kpis.get('cognitive_complexity') and file_obj.kpis.cognitive_complexity.value is not none else 0 %}
+        {% set churn = file_obj.kpis.get('churn').value if file_obj.kpis.get('churn') and file_obj.kpis.churn.value is not none else 0 %}
+        {% set hotspot = file_obj.kpis.get('hotspot').value if file_obj.kpis.get('hotspot') and file_obj.kpis.hotspot.value is not none else 0 %}
+
+        {# Calculate impact score (0-10) #}
+        {% set impact = 0 %}
+        {% if hotspot > 200 %}
+          {% set impact = impact + 3 %}
+        {% elif hotspot > 100 %}
+          {% set impact = impact + 2 %}
+        {% elif hotspot > 50 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {% if complexity > 20 %}
+          {% set impact = impact + 2 %}
+        {% elif complexity > 15 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {% if cognitive > 25 %}
+          {% set impact = impact + 2 %}
+        {% elif cognitive > 15 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {% if churn > 10 %}
+          {% set impact = impact + 2 %}
+        {% elif churn > 5 %}
+          {% set impact = impact + 1 %}
+        {% endif %}
+
+        {# Calculate effort score (0-10) - higher complexity = more effort #}
+        {% set effort = 1 %}
+        {% if complexity > 30 %}
+          {% set effort = 10 %}
+        {% elif complexity > 20 %}
+          {% set effort = 7 %}
+        {% elif complexity > 15 %}
+          {% set effort = 5 %}
+        {% elif complexity > 10 %}
+          {% set effort = 3 %}
+        {% endif %}
+
+        {# Calculate ROI #}
+        {% set roi = impact / effort if effort > 0 else 0 %}
+
+        {# Determine action type #}
+        {% set action = "Refactor" %}
+        {% set reason = "" %}
+        {% if cognitive > 25 %}
+          {% set action = "Reduce Nesting" %}
+          {% set reason = "Very high cognitive complexity (" + cognitive|string + ")" %}
+        {% elif complexity > 20 and churn > 5 %}
+          {% set action = "Split & Simplify" %}
+          {% set reason = "High complexity (" + complexity|string + ") and frequent changes" %}
+        {% elif hotspot > 100 %}
+          {% set action = "Refactor Hotspot" %}
+          {% set reason = "High risk hotspot (score: " + hotspot|round(0)|string + ")" %}
+        {% elif complexity > 15 %}
+          {% set action = "Simplify" %}
+          {% set reason = "High complexity (" + complexity|string + ")" %}
+        {% endif %}
+
+        {# Only include if impact > 3 #}
+        {% if impact > 3 %}
+          {% set _ = quick_wins.append({
+            'file_path': file_obj.file_path,
+            'impact': impact,
+            'effort': effort,
+            'roi': roi,
+            'action': action,
+            'reason': reason,
+            'complexity': complexity,
+            'cognitive': cognitive,
+            'churn': churn,
+            'hotspot': hotspot
+          }) %}
+        {% endif %}
+      {% endfor %}
+
+      {% for sub_dir in scan_dir.scan_dirs.values() %}
+        {{ collect_quick_wins(sub_dir) }}
+      {% endfor %}
+    {% endmacro %}
+
+    {{ collect_quick_wins(repo_info) }}
+    {% endif %}
+
+    {% if quick_wins|length > 0 %}
+      <div style="background-color: #f0f8ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #007bff;">
+        <p style="margin: 8px 0;"><strong>Total Opportunities:</strong> {{ quick_wins|length }}</p>
+        <p style="margin: 8px 0;"><strong>Best ROI:</strong> {{ quick_wins[0].file_path }} (Impact: {{ quick_wins[0].impact }}/10, Effort: {{ quick_wins[0].effort }}/10)</p>
+        <p style="color: #0066cc; font-style: italic; margin-top: 12px; margin-bottom: 0;">💡 Start with items 1-3 for maximum return on investment</p>
+      </div>
+
+      <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+        <thead>
+          <tr style="background-color: #f2f2f2; border-bottom: 2px solid #ddd;">
+            <th style="padding: 10px; text-align: left;">#</th>
+            <th style="padding: 10px; text-align: left;">File</th>
+            <th style="padding: 10px; text-align: left;">Action Type</th>
+            <th style="padding: 10px; text-align: center;">Impact</th>
+            <th style="padding: 10px; text-align: center;">Effort</th>
+            <th style="padding: 10px; text-align: center;">Time</th>
+            <th style="padding: 10px; text-align: left;">Reason</th>
+            <th style="padding: 10px; text-align: left;">Action</th>
           </tr>
+        </thead>
+        <tbody>
+          {# Display top 10 quick wins - always visible #}
+          {% for qw in quick_wins[:10] %}
+          <tr style="border-bottom: 1px solid #eee;">
+            <td style="padding: 10px;">{{ loop.index }}</td>
+            <td style="padding: 10px; font-family: monospace; font-size: 12px;">{{ qw.file_path }}</td>
+            <td style="padding: 10px;">
+              <span style="background-color: #e3f2fd; padding: 4px 8px; border-radius: 3px; font-weight: bold;">
+                {{ qw.action_type if qw.action_type is defined else qw.action }}
+              </span>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+              <span style="background-color: {% if qw.impact >= 7 %}#f44336{% elif qw.impact >= 5 %}#ff9800{% else %}#4caf50{% endif %}; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold;">
+                {% if qw.impact >= 7 %}High{% elif qw.impact >= 5 %}Medium{% else %}Low{% endif %} ({{ qw.impact }}/10)
+              </span>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+              <span style="padding: 4px 8px;">
+                {% if qw.effort >= 7 %}High{% elif qw.effort >= 4 %}Medium{% else %}Low{% endif %} ({{ qw.effort }}/10)
+              </span>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+              {{ qw.time_estimate if qw.time_estimate is defined else 'N/A' }}
+            </td>
+            <td style="padding: 10px; font-size: 13px;">{{ qw.reason }}</td>
+            <td style="padding: 10px; font-size: 13px;">
+              {{ qw.action_desc if qw.action_desc is defined else 'See action type' }}
+            </td>
+          </tr>
+          {% endfor %}
+
+          {# Display remaining quick wins - hidden by default, expandable #}
+          {% if quick_wins|length > 10 %}
+          {% for qw in quick_wins[10:] %}
+          <tr class="quick-wins-extra-row" style="display: none; border-bottom: 1px solid #eee;">
+            <td style="padding: 10px;">{{ loop.index + 10 }}</td>
+            <td style="padding: 10px; font-family: monospace; font-size: 12px;">{{ qw.file_path }}</td>
+            <td style="padding: 10px;">
+              <span style="background-color: #e3f2fd; padding: 4px 8px; border-radius: 3px; font-weight: bold;">
+                {{ qw.action_type if qw.action_type is defined else qw.action }}
+              </span>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+              <span style="background-color: {% if qw.impact >= 7 %}#f44336{% elif qw.impact >= 5 %}#ff9800{% else %}#4caf50{% endif %}; color: white; padding: 4px 8px; border-radius: 3px; font-weight: bold;">
+                {% if qw.impact >= 7 %}High{% elif qw.impact >= 5 %}Medium{% else %}Low{% endif %} ({{ qw.impact }}/10)
+              </span>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+              <span style="padding: 4px 8px;">
+                {% if qw.effort >= 7 %}High{% elif qw.effort >= 4 %}Medium{% else %}Low{% endif %} ({{ qw.effort }}/10)
+              </span>
+            </td>
+            <td style="padding: 10px; text-align: center;">
+              {{ qw.time_estimate if qw.time_estimate is defined else 'N/A' }}
+            </td>
+            <td style="padding: 10px; font-size: 13px;">{{ qw.reason }}</td>
+            <td style="padding: 10px; font-size: 13px;">
+              {{ qw.action_desc if qw.action_desc is defined else 'See action type' }}
+            </td>
+          </tr>
+          {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+
+      {% if quick_wins|length > 10 %}
+      <div style="text-align: center; margin-top: 20px;">
+        <button id="toggle-quick-wins-btn" style="
+          padding: 12px 24px;
+          background-color: #007bff;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: background-color 0.2s;
+        ">
+          <span id="toggle-icon">▼</span> Show {{ quick_wins|length - 10 }} more opportunities
+        </button>
+      </div>
+      {% endif %}
+
+      <div style="margin-top: 30px; padding: 15px; background-color: #e8f5e9; border-left: 4px solid #4caf50;">
+        <h3 style="margin-top: 0;">How to use Quick Wins</h3>
+        <ul style="margin-bottom: 0;">
+          <li><strong>Priority</strong>: Files are ranked by ROI (Return on Investment = Impact/Effort)</li>
+          <li><strong>Impact</strong>: Higher scores indicate files that will benefit most from refactoring</li>
+          <li><strong>Effort</strong>: Lower scores mean easier refactoring (smaller files, less complex)</li>
+          <li><strong>ROI</strong>: Focus on files with highest ROI for maximum value with minimum effort</li>
+          <li><strong>Action</strong>: Recommended type of refactoring based on the file's characteristics</li>
+        </ul>
+      </div>
+    {% else %}
+      <div style="padding: 20px; background-color: #e8f5e9; border-left: 4px solid #4caf50;">
+        <p><strong>Great job!</strong> No significant improvement opportunities found.</p>
+        <p>All files appear to be in good shape with manageable complexity and reasonable churn rates.</p>
+      </div>
+    {% endif %}
+  </div>
+
+  {# Tab Content: Code Review #}
+  {% if review_data %}
+  <div id="tab-review" class="tab-content">
+    <h2>Code Review Strategy</h2>
+    <p>Intelligent code review recommendations based on complexity, churn, and ownership metrics.</p>
+
+    {% if review_data.branch_filter %}
+    <div style="padding: 15px; background-color: #e3f2fd; border-left: 4px solid #2196f3; margin-bottom: 20px;">
+      <p style="margin: 0;"><strong>🔍 FILTERED VIEW:</strong> Showing only changed files in current branch</p>
+      <p style="margin: 5px 0 0 0; font-size: 0.9em;">📊 Comparing against: <code>{{ review_data.base_branch }}</code></p>
+    </div>
+    {% endif %}
+
+    {# Executive Summary #}
+    <div style="background-color: #f5f5f5; padding: 20px; border-radius: 5px; margin-bottom: 30px;">
+      <h3 style="margin-top: 0;">📊 Executive Summary</h3>
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 10px;"><strong>Total files analyzed</strong></td>
+          <td style="padding: 10px;">{{ review_data.total_files }}</td>
+        </tr>
+        <tr style="background-color: #ffebee;">
+          <td style="padding: 10px;"><strong>Critical risk files 🔴</strong></td>
+          <td style="padding: 10px;">{{ review_data.risk_counts.critical }} (require immediate attention)</td>
+        </tr>
+        <tr style="background-color: #fff3e0;">
+          <td style="padding: 10px;"><strong>High risk files 🟡</strong></td>
+          <td style="padding: 10px;">{{ review_data.risk_counts.high }} (require senior review)</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px;"><strong>Estimated total review time</strong></td>
+          <td style="padding: 10px;">{{ (review_data.total_time_minutes // 60)|int }}h {{ review_data.total_time_minutes % 60 }}m</td>
+        </tr>
+      </table>
+    </div>
+
+    {# Group recommendations by priority #}
+    {% set priority_labels = {1: '🔴 CRITICAL', 2: '🟠 HIGH', 3: '🟡 MEDIUM', 4: '🟢 LOW', 5: '⚪ MINIMAL'} %}
+    {% set priority_colors = {1: '#ffebee', 2: '#fff3e0', 3: '#fffde7', 4: '#e8f5e9', 5: '#f5f5f5'} %}
+
+    {% for priority in [1, 2, 3, 4, 5] %}
+      {% set priority_recs = review_data.recommendations | selectattr('priority', 'equalto', priority) | list %}
+      {% if priority_recs | length > 0 %}
+      <div style="margin-bottom: 30px;">
+        <h3>{{ priority_labels[priority] }} Priority Files (Priority {{ priority }})</h3>
+
+        {% for rec in priority_recs %}
+        <div style="border: 1px solid #ddd; border-radius: 5px; padding: 20px; margin-bottom: 20px; background-color: {{ priority_colors[priority] }};">
+          <h4 style="margin-top: 0;">📄 <code>{{ rec.file_path }}</code></h4>
+
+          <table style="width: 100%; margin-bottom: 15px; border-collapse: collapse;">
+            <tr>
+              <td style="padding: 5px;"><strong>Risk Level</strong></td>
+              <td style="padding: 5px;">{{ rec.risk_level | upper }}</td>
+              <td style="padding: 5px;"><strong>Reviewers Needed</strong></td>
+              <td style="padding: 5px;">{{ rec.reviewers_needed }}</td>
+            </tr>
+            <tr>
+              <td style="padding: 5px;"><strong>Estimated Time</strong></td>
+              <td style="padding: 5px;">{{ rec.estimated_time_minutes }} minutes</td>
+              <td style="padding: 5px;"><strong>Priority</strong></td>
+              <td style="padding: 5px;">{{ rec.priority }}/5</td>
+            </tr>
+          </table>
+
+          <div style="margin-bottom: 15px;">
+            <strong>🎯 Focus Areas:</strong>
+            <ul style="margin: 5px 0; padding-left: 20px;">
+              {% for area in rec.focus_areas %}
+              <li>{{ area }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <div style="margin-bottom: 15px;">
+            <strong>✓ Review Checklist:</strong>
+            <ul style="margin: 5px 0; padding-left: 20px; list-style-type: none;">
+              {% for item in rec.checklist_items %}
+              <li>☐ {{ item }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          {% if rec.template %}
+          <details style="margin-top: 15px;">
+            <summary style="cursor: pointer; font-weight: bold; padding: 5px;">📋 Review Template</summary>
+            <pre style="background-color: white; padding: 15px; border-radius: 5px; margin-top: 10px; overflow-x: auto; white-space: pre-wrap; font-size: 0.85em;">{{ rec.template }}</pre>
+          </details>
+          {% endif %}
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
+      </div>
+      {% endif %}
+    {% endfor %}
+
+    {# Resource Allocation Guidance #}
+    <div style="background-color: #e3f2fd; padding: 20px; border-radius: 5px; margin-top: 30px;">
+      <h3 style="margin-top: 0;">👥 Resource Allocation Guidance</h3>
+
+      <h4>⏱️ Recommended Review Time Distribution</h4>
+      {% set critical_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'critical') | sum(attribute='estimated_time_minutes')) %}
+      {% set high_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'high') | sum(attribute='estimated_time_minutes')) %}
+      {% set medium_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'medium') | sum(attribute='estimated_time_minutes')) %}
+      {% set low_time = (review_data.recommendations | selectattr('risk_level', 'equalto', 'low') | sum(attribute='estimated_time_minutes')) %}
+      {% set total = critical_time + high_time + medium_time + low_time %}
+
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+        <tr>
+          <th style="text-align: left; padding: 10px; background-color: #fff;">Category</th>
+          <th style="text-align: right; padding: 10px; background-color: #fff;">Time</th>
+          <th style="text-align: right; padding: 10px; background-color: #fff;">Percentage</th>
+        </tr>
+        <tr>
+          <td style="padding: 10px;">Critical files 🔴</td>
+          <td style="padding: 10px; text-align: right;">{{ (critical_time // 60)|int }}h {{ critical_time % 60 }}m</td>
+          <td style="padding: 10px; text-align: right;">{{ ((critical_time / total * 100) | round(1)) if total > 0 else 0 }}%</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px;">High priority 🟡</td>
+          <td style="padding: 10px; text-align: right;">{{ (high_time // 60)|int }}h {{ high_time % 60 }}m</td>
+          <td style="padding: 10px; text-align: right;">{{ ((high_time / total * 100) | round(1)) if total > 0 else 0 }}%</td>
+        </tr>
+        <tr>
+          <td style="padding: 10px;">Medium/Low 🟢</td>
+          <td style="padding: 10px; text-align: right;">{{ ((medium_time + low_time) // 60)|int }}h {{ (medium_time + low_time) % 60 }}m</td>
+          <td style="padding: 10px; text-align: right;">{{ (((medium_time + low_time) / total * 100) | round(1)) if total > 0 else 0 }}%</td>
+        </tr>
+      </table>
+
+      <h4>👤 Reviewer Assignment Strategy</h4>
+      <ul>
+        <li><strong>Critical files 🔴:</strong> Senior architect + 2 experienced developers</li>
+        <li><strong>High priority 🟡:</strong> Senior developer + peer reviewer</li>
+        <li><strong>Medium/Low 🟢:</strong> Standard peer review</li>
+      </ul>
+    </div>
   </div>
   {% endif %}
 {% endblock %}
 
 {% block scripts %}
+<style>
+  /* Tab styles */
+  .tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+  }
+  .tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background-color: #f2f2f2;
+    cursor: pointer;
+    border-radius: 5px 5px 0 0;
+    font-size: 14px;
+    transition: background-color 0.2s;
+  }
+  .tab-btn:hover {
+    background-color: #e0e0e0;
+  }
+  .tab-btn.active {
+    background-color: #007bff;
+    color: white;
+  }
+  .tab-content {
+    display: none;
+  }
+  .tab-content.active {
+    display: block;
+  }
+  .overview-stats {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 10px;
+  }
+  .overview-stats p {
+    margin: 10px 0;
+  }
+
+  /* Quick Wins toggle button */
+  #toggle-quick-wins-btn:hover {
+    background-color: #0056b3;
+  }
+  #toggle-quick-wins-btn:active {
+    transform: scale(0.98);
+  }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const tabName = button.getAttribute('data-tab');
+
+                // Hide all tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+
+                // Deactivate all tab buttons
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+
+                // Show selected tab content
+                document.getElementById('tab-' + tabName).classList.add('active');
+                button.classList.add('active');
+            });
+        });
+
+        // Tree functionality
         document.querySelectorAll('.tree-item.is-folder .toggle').forEach(toggle => {
             const parentItem = toggle.closest('.tree-item');
             if (parentItem) {
@@ -80,17 +591,52 @@
 
         const allFolders = document.querySelectorAll('.tree-item.is-folder');
 
-        document.getElementById('expand-all-btn').addEventListener('click', () => {
-            allFolders.forEach(folder => {
-                folder.classList.add('is-open');
-            });
-        });
+        const expandBtn = document.getElementById('expand-all-btn');
+        const collapseBtn = document.getElementById('collapse-all-btn');
 
-        document.getElementById('collapse-all-btn').addEventListener('click', () => {
-            allFolders.forEach(folder => {
-                folder.classList.remove('is-open');
+        if (expandBtn) {
+            expandBtn.addEventListener('click', () => {
+                allFolders.forEach(folder => {
+                    folder.classList.add('is-open');
+                });
             });
-        });
+        }
+
+        if (collapseBtn) {
+            collapseBtn.addEventListener('click', () => {
+                allFolders.forEach(folder => {
+                    folder.classList.remove('is-open');
+                });
+            });
+        }
+
+        // Quick Wins toggle functionality
+        const toggleQuickWinsBtn = document.getElementById('toggle-quick-wins-btn');
+        if (toggleQuickWinsBtn) {
+            let isExpanded = false;
+            toggleQuickWinsBtn.addEventListener('click', () => {
+                const extraRows = document.querySelectorAll('.quick-wins-extra-row');
+                const toggleIcon = document.getElementById('toggle-icon');
+
+                if (isExpanded) {
+                    // Collapse - hide extra rows
+                    extraRows.forEach(row => {
+                        row.style.display = 'none';
+                    });
+                    toggleIcon.textContent = '▼';
+                    toggleQuickWinsBtn.innerHTML = '<span id="toggle-icon">▼</span> Show ' + extraRows.length + ' more opportunities';
+                    isExpanded = false;
+                } else {
+                    // Expand - show extra rows
+                    extraRows.forEach(row => {
+                        row.style.display = 'table-row';
+                    });
+                    toggleIcon.textContent = '▲';
+                    toggleQuickWinsBtn.innerHTML = '<span id="toggle-icon">▲</span> Hide extra opportunities';
+                    isExpanded = true;
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

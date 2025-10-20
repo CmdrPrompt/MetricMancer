@@ -21,4 +21,14 @@ class JavaScriptComplexityParser(ComplexityParser):
         r'\bswitch\b', r'\bcase\b', r'\bcatch\b', r'\bthrow\b',
         r'\breturn\b', r'&&', r'\|\|'
     ]
-    FUNCTION_PATTERN = r'function\s+([a-zA-Z_]\w*)\s*\(.*?\)\s*\{'
+    # Matches JavaScript function definitions including:
+    # - 'async function' (async keyword)
+    # - 'function name()' (standard functions)
+    # Pattern breakdown:
+    # - '(?:async\s+)?' optionally matches async keyword
+    # - 'function\s+' matches function keyword
+    # - '([a-zA-Z_]\w*)' captures function name
+    # - '\s*\(' matches opening parenthesis
+    # - '[^)]*' matches parameters (stops at ))
+    # - '\)\s*\{' matches closing parenthesis and opening brace
+    FUNCTION_PATTERN = r'(?:async\s+)?function\s+([a-zA-Z_]\w*)\s*\([^)]*\)\s*\{'

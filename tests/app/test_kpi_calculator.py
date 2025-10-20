@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import Mock, patch, MagicMock
 from pathlib import Path
 
-from src.app.kpi_calculator import (
+from src.app.kpi.kpi_calculator import (
     KPICalculator,
     ComplexityKPIStrategy,
     ChurnKPIStrategy,
@@ -258,13 +258,14 @@ class TestKPICalculator(unittest.TestCase):
     def test_initialization(self):
         """Should initialize with default strategies."""
         self.assertIn('complexity', self.calculator.strategies)
+        self.assertIn('cognitive_complexity', self.calculator.strategies)
         self.assertIn('churn', self.calculator.strategies)
         self.assertIn('hotspot', self.calculator.strategies)
         self.assertIn('ownership', self.calculator.strategies)
         self.assertIn('shared_ownership', self.calculator.strategies)
 
-        # Should initialize timing
-        self.assertEqual(len(self.calculator.timing), 5)
+        # Should initialize timing (6 strategies now including cognitive_complexity)
+        self.assertEqual(len(self.calculator.timing), 6)
         self.assertTrue(all(v == 0.0 for v in self.calculator.timing.values()))
 
     def test_register_strategy(self):
@@ -277,11 +278,11 @@ class TestKPICalculator(unittest.TestCase):
         self.assertEqual(self.calculator.strategies['custom_kpi'], mock_strategy)
         self.assertIn('custom_kpi', self.calculator.timing)
 
-    @patch('src.app.kpi_calculator.ComplexityKPIStrategy')
-    @patch('src.app.kpi_calculator.ChurnKPIStrategy')
-    @patch('src.app.kpi_calculator.HotspotKPIStrategy')
-    @patch('src.app.kpi_calculator.OwnershipKPIStrategy')
-    @patch('src.app.kpi_calculator.SharedOwnershipKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.ComplexityKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.ChurnKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.HotspotKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.OwnershipKPIStrategy')
+    @patch('src.app.kpi.kpi_calculator.SharedOwnershipKPIStrategy')
     def test_calculate_all_orchestration(
         self,
         mock_shared_strategy,
@@ -332,9 +333,10 @@ class TestKPICalculator(unittest.TestCase):
             functions_data=functions_data
         )
 
-        # Verify all KPIs calculated
-        self.assertEqual(len(result), 5)
+        # Verify all KPIs calculated (including cognitive_complexity added in Phase 2)
+        self.assertEqual(len(result), 6)
         self.assertIn('complexity', result)
+        self.assertIn('cognitive_complexity', result)
         self.assertIn('churn', result)
         self.assertIn('hotspot', result)
         self.assertIn('Code Ownership', result)
@@ -369,11 +371,12 @@ class TestKPICalculator(unittest.TestCase):
         """Should track timing for each KPI calculation."""
         # Mock perf_counter to return sequential values
         mock_perf_counter.side_effect = [
-            0.0, 0.1,  # complexity: 0.1s
-            0.1, 0.3,  # churn: 0.2s
-            0.3, 0.35,  # hotspot: 0.05s
-            0.35, 0.5,  # ownership: 0.15s
-            0.5, 0.6   # shared: 0.1s
+            0.0, 0.1,   # complexity: 0.1s
+            0.1, 0.25,  # cognitive_complexity: 0.15s
+            0.25, 0.45, # churn: 0.2s
+            0.45, 0.5,  # hotspot: 0.05s
+            0.5, 0.65,  # ownership: 0.15s
+            0.65, 0.75  # shared: 0.1s
         ]
 
         file_info = {'path': 'test.py', 'ext': 'py'}
@@ -390,6 +393,7 @@ class TestKPICalculator(unittest.TestCase):
 
         # Verify timing was tracked (approximately)
         self.assertAlmostEqual(self.calculator.timing['complexity'], 0.1, places=2)
+        self.assertAlmostEqual(self.calculator.timing['cognitive_complexity'], 0.15, places=2)
         self.assertAlmostEqual(self.calculator.timing['churn'], 0.2, places=2)
         self.assertAlmostEqual(self.calculator.timing['hotspot'], 0.05, places=2)
         self.assertAlmostEqual(self.calculator.timing['ownership'], 0.15, places=2)

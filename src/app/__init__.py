@@ -5,7 +5,7 @@ This module provides backward compatibility exports for the restructured codebas
 All imports that previously worked from src.app.* will continue to work.
 
 New structure (2024-10-16):
-- core/: Analysis engine (Analyzer, FileProcessor)
+- core/: Analysis engine (Analyzer)
 - scanning/: File system scanning (Scanner)
 - hierarchy/: Data modeling (HierarchyBuilder, DataConverter)
 - kpi/: KPI operations (KPICalculator, KPIAggregator, FileAnalyzer)
@@ -17,7 +17,6 @@ Backward compatibility: All old imports still work via these exports.
 
 # Core modules
 from src.app.core.analyzer import Analyzer, AggregatedSharedOwnershipKPI
-from src.app.core.file_processor import FileProcessor
 
 # Scanning
 from src.app.scanning.scanner import Scanner
@@ -46,7 +45,6 @@ __all__ = [
     # Core
     'Analyzer',
     'AggregatedSharedOwnershipKPI',
-    'FileProcessor',
     # Scanning
     'Scanner',
     # Hierarchy

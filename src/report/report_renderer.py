@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Dict
 
 from jinja2 import Environment, FileSystemLoader
 from src.kpis.model import RepoInfo, ScanDir, File
@@ -86,6 +86,7 @@ class ReportRenderer:
             repo_info: The analyzed repository data model (RepoInfo).
             problem_file_threshold: Optional threshold for flagging problematic files.
             report_links: Optional links to include in the report.
+            **kwargs: Additional context variables (e.g., review_data)
 
         Returns:
             Rendered HTML as a string.
@@ -100,6 +101,9 @@ class ReportRenderer:
         if problem_file_threshold is not None:
             problem_files = filter_problem_files(all_files, problem_file_threshold)
 
+        # Calculate quick wins data
+        quick_wins_data = self._calculate_quick_wins(all_files)
+
         return template.render(
             repo_info=repo_info,
             problem_files=problem_files,
@@ -107,6 +111,21 @@ class ReportRenderer:
             threshold_high=self.threshold_high,
             problem_file_threshold=problem_file_threshold,
             report_links=report_links,
+            quick_wins=quick_wins_data,
             # Pass the grade function to the template so it can be used there
-            grade=self.env.globals.get('grade')
+            grade=self.env.globals.get('grade'),
+            **kwargs  # Pass through additional context (e.g., review_data)
         )
+
+    def _calculate_quick_wins(self, files: List[File]) -> List[Dict]:
+        """
+        Calculate quick wins with impact and effort scores.
+        Uses the same logic as CLIQuickWinsFormat.
+
+        Returns list of dicts sorted by ROI (impact/effort ratio).
+        """
+        from src.report.cli.cli_quick_wins_format import CLIQuickWinsFormat
+
+        # Create a temporary instance to reuse the calculation logic
+        qw_format = CLIQuickWinsFormat()
+        return qw_format._calculate_quick_wins(files)

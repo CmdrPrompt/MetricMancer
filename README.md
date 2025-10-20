@@ -8,6 +8,7 @@ For detailed requirements, architecture, and design, see the [Software Specifica
 
 - **Multi-language support:** Analyze codebases in Python, JavaScript, TypeScript, Java, C#, C, C++, Go, Ada, IDL, JSON, YAML, Shell scripts, and more (via pluggable parsers).
 - **Cyclomatic complexity:** Calculates logical complexity for each function/method in code files.
+- **Cognitive complexity:** **[New in v3.2.0]** Measures code understandability based on SonarSource algorithm - accounts for nesting depth and control flow to identify truly hard-to-understand code. Currently supports **Python only** (multi-language support planned via tree-sitter).
 - **Structural complexity:** Measures nesting depth, object count, and configuration patterns in JSON/YAML files.
 - **IDL complexity:** Analyzes interface definitions with structural metrics (interfaces, operations, inheritance, data structures).
 - **Shell script complexity:** Analyzes control flow, loops, and functions in shell scripts.
@@ -264,6 +265,7 @@ For migration guidance, see [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md).
 
 **Implemented:**
 - Cyclomatic Complexity (per function/method)
+- **Cognitive Complexity (per function/method)** - **[New in v3.2.0]** Human-centric complexity metric (Python only, multi-language support planned)
 - Code Churn (per file)
 - Hotspot Score (complexity × churn)
 - Code Ownership (per file)
@@ -281,6 +283,83 @@ For migration guidance, see [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md).
 - Logical Coupling
 
 See [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for full KPI definitions and up-to-date implementation status.
+
+### Understanding Cognitive Complexity
+
+**[New in v3.2.0]** Cognitive Complexity is a human-centric metric that measures how difficult code is to understand, complementing Cyclomatic Complexity's path-counting approach.
+
+> **Language Support**: Currently **Python only**. Multi-language support (JavaScript, TypeScript, Java, C#, Go, etc.) is planned using tree-sitter parsers. See related issue for multi-language implementation roadmap.
+
+#### Why Cognitive Complexity?
+
+**The Problem with Cyclomatic Complexity Alone:**
+
+Cyclomatic Complexity counts execution paths but doesn't capture how hard code is to understand:
+
+```python
+# LOW Cognitive Complexity (3), HIGH Cyclomatic (4)
+def process_flat(type):
+    if type == "A": return handle_a()  # +1
+    if type == "B": return handle_b()  # +1
+    if type == "C": return handle_c()  # +1
+    return default()
+# Easy to understand despite multiple paths
+
+# HIGH Cognitive Complexity (6), SAME Cyclomatic (4)
+def process_nested(data):
+    if data:                    # +1
+        if data.valid:          # +2 (1 + 1 nesting penalty)
+            if data.processed:  # +3 (1 + 2 nesting penalty)
+                return result
+# Much harder to understand due to nesting
+```
+
+#### Key Algorithm Features (SonarSource Specification):
+
+1. **Basic structures** (+1): `if`, `else`, `for`, `while`, `except`, ternary operators
+2. **Nesting penalty**: Each nesting level adds +1 to the increment
+3. **Boolean sequences** (+1): Sequences of `and`/`or` count once, not per operator
+4. **Recursion** (+1): Recursive calls add complexity
+
+#### Recommended Thresholds:
+
+| Score | Risk Level | Indicator | Recommendation |
+|-------|------------|-----------|----------------|
+| 0-5   | ✅ Low     | Green     | Excellent maintainability |
+| 6-10  | 🟡 Medium  | Yellow    | Good, monitor for growth |
+| 11-15 | 🟠 High    | Orange    | Consider refactoring |
+| 16-25 | 🔴 Critical| Red       | Refactor soon |
+| 25+   | 💀 Severe  | Dark Red  | Refactor immediately |
+
+#### When to Use Which Metric:
+
+- **Cyclomatic Complexity**: Test coverage planning (number of test cases needed)
+- **Cognitive Complexity**: Refactoring prioritization (understandability issues)
+- **Both together**: Complete picture of code health
+
+#### Viewing Cognitive Complexity:
+
+Cognitive Complexity appears in all report formats:
+
+- **CLI Summary**: Shows alongside Cyclomatic Complexity
+- **HTML Reports**: Interactive tables with sortable columns
+- **JSON Export**: `cognitive_complexity` field for all functions
+- **Quick Wins**: Prioritizes high cognitive complexity for refactoring
+
+**Example CLI output:**
+```
+📊 COMPLEXITY ANALYSIS
+
+Critical Files (Cognitive Complexity > 15):
+1. src/analysis/code_review_advisor.py
+   Cyclomatic:  210  ⚠️  (Many execution paths)
+   Cognitive:    47  🔴 (Hard to understand)
+   Recommendation: Reduce nesting, extract methods
+```
+
+**Learn more:**
+- [SonarSource Cognitive Complexity White Paper](https://www.sonarsource.com/docs/CognitiveComplexity.pdf)
+- Adam Tornhill - "Software Design X-Rays" (Chapter 4)
 
 ## Testing
 
