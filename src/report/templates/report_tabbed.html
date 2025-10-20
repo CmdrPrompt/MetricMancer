@@ -70,9 +70,64 @@
 
   {# Tab Content: Quick Wins #}
   <div id="tab-quickwins" class="tab-content">
-    <h2>Quick Wins</h2>
-    <p>Quick wins analysis will be displayed here.</p>
-    <p><em>Integration coming soon...</em></p>
+    <h2>Quick Wins - Highest Impact, Lowest Effort</h2>
+    {% if quick_wins and quick_wins|length > 0 %}
+      <div class="quick-wins-summary">
+        <p><strong>Total Opportunities:</strong> {{ quick_wins|length }}</p>
+        <p><strong>Best ROI:</strong> {{ quick_wins[0].file_path }} (Impact: {{ quick_wins[0].impact }}/10, Effort: {{ quick_wins[0].effort }}/10)</p>
+        <p class="tip">💡 Start with items 1-3 for maximum return on investment</p>
+      </div>
+
+      <div class="quick-wins-list">
+        {% for win in quick_wins[:10] %}
+        <div class="quick-win-item">
+          <div class="quick-win-header">
+            <h3>{{ loop.index }}. {{ win.action_type }}: {{ win.file_path }}</h3>
+          </div>
+          <div class="quick-win-metrics">
+            <div class="metric-row">
+              <span class="metric-label">Impact:</span>
+              <div class="metric-bar-container">
+                <div class="metric-bar impact-bar" style="width: {{ (win.impact / 10 * 100)|int }}%"></div>
+              </div>
+              <span class="metric-value">
+                {% if win.impact >= 7 %}High{% elif win.impact >= 5 %}Medium{% else %}Low{% endif %} ({{ win.impact }}/10)
+              </span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Effort:</span>
+              <div class="metric-bar-container">
+                <div class="metric-bar effort-bar" style="width: {{ (win.effort / 10 * 100)|int }}%"></div>
+              </div>
+              <span class="metric-value">
+                {% if win.effort >= 7 %}High{% elif win.effort >= 4 %}Medium{% else %}Low{% endif %} ({{ win.effort }}/10)
+              </span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Time:</span>
+              <span class="metric-text">{{ win.time_estimate }}</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Reason:</span>
+              <span class="metric-text">{{ win.reason }}</span>
+            </div>
+            <div class="metric-row">
+              <span class="metric-label">Action:</span>
+              <span class="metric-text">{{ win.action_desc }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% if quick_wins|length > 10 %}
+        <p class="more-opportunities">💡 {{ quick_wins|length - 10 }} more opportunities available. Download JSON report for full list.</p>
+        {% endif %}
+      </div>
+    {% else %}
+      <div class="no-quick-wins">
+        <p>✅ No significant improvement opportunities found!</p>
+        <p>Your codebase is in good shape.</p>
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
 
@@ -116,6 +171,110 @@
   }
   .overview-stats p {
     margin: 10px 0;
+  }
+
+  /* Quick Wins styles */
+  .quick-wins-summary {
+    background-color: #f0f8ff;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #007bff;
+  }
+  .quick-wins-summary p {
+    margin: 8px 0;
+  }
+  .quick-wins-summary .tip {
+    color: #0066cc;
+    font-style: italic;
+    margin-top: 12px;
+  }
+  .quick-wins-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .quick-win-item {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+  }
+  .quick-win-item:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+  }
+  .quick-win-header h3 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+  }
+  .quick-win-metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .metric-row {
+    display: grid;
+    grid-template-columns: 100px 1fr auto;
+    gap: 15px;
+    align-items: center;
+  }
+  .metric-label {
+    font-weight: 600;
+    color: #555;
+    font-size: 14px;
+  }
+  .metric-bar-container {
+    height: 24px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+  .metric-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+  .impact-bar {
+    background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%);
+  }
+  .effort-bar {
+    background: linear-gradient(90deg, #28a745 0%, #ffc107 50%, #dc3545 100%);
+  }
+  .metric-value {
+    min-width: 120px;
+    font-size: 14px;
+    color: #666;
+  }
+  .metric-text {
+    grid-column: 2 / 4;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .more-opportunities {
+    text-align: center;
+    color: #0066cc;
+    font-style: italic;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f0f8ff;
+    border-radius: 8px;
+  }
+  .no-quick-wins {
+    text-align: center;
+    padding: 40px 20px;
+    background-color: #f0fff4;
+    border-radius: 8px;
+    border: 2px solid #28a745;
+  }
+  .no-quick-wins p {
+    margin: 10px 0;
+    font-size: 16px;
   }
 </style>
 

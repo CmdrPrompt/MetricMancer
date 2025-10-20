@@ -43,7 +43,7 @@ install:
 	@echo "✅ Installation complete!"
 	@echo ""
 	@echo "Installed dependencies:"
-	@source .venv/bin/activate && pip list | grep -E "(jinja2|pytest|pydriller|tqdm|PyYAML|autopep8|flake8|pip-licenses|coverage)"
+	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff)"
 
 format:
 	@echo "🎨 Auto-formatting Python code with autopep8..."
@@ -160,7 +160,7 @@ analyze-full:
 		--output-formats html,json,summary \
 		--report-folder output/self-analysis \
 		--report-filename metricmancer_analysis.html \
-		--churn-period 90 \
+		--churn-period 10 \
 		--threshold-high 15 \
 		--include-review-tab
 	@echo ""
