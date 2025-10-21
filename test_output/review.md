@@ -17,9 +17,9 @@
 
 ### 👤 Reviewer Assignment Strategy
 
-- **Critical files** 🔴: Senior architect + 2 experienced developers
-- **High priority** 🟡: Senior developer + peer reviewer
-- **Medium/Low** 🟢: Standard peer review
+- **3 reviewers** (Critical risk/complexity >50): Senior architect + 2 experienced developers
+- **2 reviewers** (High risk/complexity >20): Senior developer + peer reviewer
+- **1 reviewer** (Low-medium risk): Standard peer review
 
 ## 💡 Best Practices
 

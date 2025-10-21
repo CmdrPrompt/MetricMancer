@@ -120,7 +120,7 @@ analyze-review:
 		--threshold-high 15
 	@echo ""
 	@echo "✅ Code review recommendations generated!"
-	@echo "   View: output/self-analysis/code_review_recommendations.md"
+	@echo "   View: output/self-analysis/review_strategy.md"
 
 analyze-review-branch:
 	@echo "🔍 Running code review analysis on CHANGED files only..."
