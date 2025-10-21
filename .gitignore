@@ -44,3 +44,4 @@ output/*
 !output/.gitkeep
 metricmancer_output/
 quick-wins-report.txt
+test_output
