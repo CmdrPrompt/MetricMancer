@@ -421,14 +421,16 @@
             <tr>
               <td style="padding: 5px;"><strong>Risk Level</strong></td>
               <td style="padding: 5px;">{{ rec.risk_level | upper }}</td>
+              <td style="padding: 5px;"><strong>Priority</strong></td>
+              <td style="padding: 5px;">{{ rec.priority }}/5</td>
+            </tr>
+            <tr>
               <td style="padding: 5px;"><strong>Reviewers Needed</strong></td>
-              <td style="padding: 5px;">{{ rec.reviewers_needed }}</td>
+              <td colspan="3" style="padding: 5px;">{{ rec.reviewers_needed }} — <em>{{ rec.reviewer_rationale }}</em></td>
             </tr>
             <tr>
               <td style="padding: 5px;"><strong>Estimated Time</strong></td>
-              <td style="padding: 5px;">{{ rec.estimated_time_minutes }} minutes</td>
-              <td style="padding: 5px;"><strong>Priority</strong></td>
-              <td style="padding: 5px;">{{ rec.priority }}/5</td>
+              <td colspan="3" style="padding: 5px;">{{ rec.estimated_time_minutes }} minutes</td>
             </tr>
           </table>
 
@@ -498,9 +500,9 @@
 
       <h4>👤 Reviewer Assignment Strategy</h4>
       <ul>
-        <li><strong>Critical files 🔴:</strong> Senior architect + 2 experienced developers</li>
-        <li><strong>High priority 🟡:</strong> Senior developer + peer reviewer</li>
-        <li><strong>Medium/Low 🟢:</strong> Standard peer review</li>
+        <li><strong>3 reviewers</strong> (Critical risk/complexity &gt;50): Senior architect + 2 experienced developers</li>
+        <li><strong>2 reviewers</strong> (High risk/complexity &gt;20): Senior developer + peer reviewer</li>
+        <li><strong>1 reviewer</strong> (Low-medium risk): Standard peer review</li>
       </ul>
     </div>
   </div>
