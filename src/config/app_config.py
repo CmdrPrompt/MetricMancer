@@ -8,6 +8,8 @@ application settings and reduce coupling in main.py.
 from dataclasses import dataclass, field
 from typing import List, Optional
 
+from src.config.config_validator import ConfigValidator
+
 
 @dataclass
 class AppConfig:
@@ -94,15 +96,110 @@ class AppConfig:
         - output_formats always takes precedence
         """
 
-        # If output_formats is provided (not default), use it
-        if self.output_formats != ['summary']:
-            # Update singular to match first item in plural
-            if self.output_formats:
-                object.__setattr__(self, 'output_format', self.output_formats[0])
-        # If output_format differs from default but output_formats is default
-        elif self.output_format != 'summary':
-            # Convert singular to list
+        # Normalize plural and singular representations with minimal nesting
+        if self.output_formats and self.output_formats != ['summary']:
+            object.__setattr__(self, 'output_format', self.output_formats[0])
+            return
+
+        # If no meaningful plural provided, promote singular to plural when needed
+        if self.output_format and self.output_format != 'summary':
             object.__setattr__(self, 'output_formats', [self.output_format])
+
+    @staticmethod
+    def _parse_output_formats_from_args(args) -> tuple:
+        """
+        Parse output formats from CLI arguments.
+
+        Returns:
+            tuple: (output_formats_value, using_output_formats_flag, output_format_value)
+        """
+        using_output_formats_flag = False
+        output_formats_value = None
+
+        # Prefer explicit plural parameter when provided
+        if getattr(args, 'output_formats', None):
+            using_output_formats_flag = True
+            raw = args.output_formats
+            if isinstance(raw, str):
+                output_formats_value = [f.strip() for f in raw.split(',') if f.strip()]
+            elif isinstance(raw, list):
+                output_formats_value = [f for f in raw if f]
+
+        # Fallback to singular --output-format
+        if not output_formats_value and getattr(args, 'output_format', None):
+            output_formats_value = [args.output_format]
+
+        output_format_value = getattr(args, 'output_format', 'summary')
+        if output_formats_value:
+            output_format_value = output_formats_value[0]
+
+        return output_formats_value, using_output_formats_flag, output_format_value
+
+    @staticmethod
+    def _extract_threshold_settings(args) -> dict:
+        """Extract threshold-related settings from CLI args."""
+        return {
+            'threshold_low': args.threshold_low,
+            'threshold_high': args.threshold_high,
+            'problem_file_threshold': args.problem_file_threshold,
+        }
+
+    @staticmethod
+    def _extract_output_settings(args, output_formats_value, output_format_value, using_output_formats_flag) -> dict:
+        """Extract output-related settings from CLI args."""
+        return {
+            'output_format': output_format_value,
+            'output_formats': output_formats_value if output_formats_value else ['summary'],
+            'using_output_formats_flag': using_output_formats_flag,
+            'output_file': None,  # Will be set later if needed
+            'report_folder': getattr(args, 'report_folder', None) or 'output',
+            'level': args.level,
+            'hierarchical': args.hierarchical,
+        }
+
+    @staticmethod
+    def _extract_hotspot_settings(args) -> dict:
+        """Extract hotspot-related settings from CLI args."""
+        return {
+            'list_hotspots': getattr(args, 'list_hotspots', False),
+            'hotspot_threshold': getattr(args, 'hotspot_threshold', 50),
+            'hotspot_output': getattr(args, 'hotspot_output', None),
+        }
+
+    @staticmethod
+    def _extract_review_settings(args) -> dict:
+        """Extract review strategy settings from CLI args."""
+        return {
+            'review_strategy': getattr(args, 'review_strategy', False),
+            'review_output': getattr(args, 'review_output', 'review_strategy.md'),
+            'review_branch_only': getattr(args, 'review_branch_only', False),
+            'review_base_branch': getattr(args, 'review_base_branch', 'main'),
+            'include_review_tab': getattr(args, 'include_review_tab', False),
+        }
+
+    @staticmethod
+    def _extract_churn_settings(args) -> dict:
+        """Extract code churn settings from CLI args."""
+        return {
+            'churn_period': getattr(args, 'churn_period', 30),
+        }
+
+    @staticmethod
+    def _extract_delta_settings(args) -> dict:
+        """Extract delta review settings from CLI args."""
+        return {
+            'delta_review': getattr(args, 'delta_review', False),
+            'delta_base_branch': getattr(args, 'delta_base_branch', 'main'),
+            'delta_target_branch': getattr(args, 'delta_target_branch', None),
+            'delta_output': getattr(args, 'delta_output', 'delta_review.md'),
+        }
+
+    @staticmethod
+    def _extract_debug_settings(args) -> dict:
+        """Extract debug settings from CLI args."""
+        return {
+            'debug': getattr(args, 'debug', False),
+        }
 
     @classmethod
     def from_cli_args(cls, args):
@@ -124,68 +221,29 @@ class AppConfig:
             >>> config = AppConfig.from_cli_args(args)
         """
 
-        # Determine paths
-        output_formats_value = None
-        using_output_formats_flag = False
-        if hasattr(args, 'output_formats') and args.output_formats:
-            # New plural parameter provided
-            using_output_formats_flag = True
-            if isinstance(args.output_formats, str):
-                # Parse comma-separated string
-                output_formats_value = [f.strip() for f in args.output_formats.split(',')]
-            elif isinstance(args.output_formats, list):
-                output_formats_value = args.output_formats
-        elif hasattr(args, 'output_format') and args.output_format:
-            # Fallback to singular for backward compatibility
-            output_formats_value = [args.output_format]
+        # Parse and extract settings using helpers
+        output_formats_value, using_output_formats_flag, output_format_value = cls._parse_output_formats_from_args(args)
 
-        # Get singular format for backward compatibility
-        output_format_value = getattr(args, 'output_format', 'summary')
-        if output_formats_value and isinstance(output_formats_value, list) and output_formats_value:
-            output_format_value = output_formats_value[0]
+        threshold_settings = cls._extract_threshold_settings(args)
+        output_settings = cls._extract_output_settings(args, output_formats_value, output_format_value, using_output_formats_flag)
+        hotspot_settings = cls._extract_hotspot_settings(args)
+        review_settings = cls._extract_review_settings(args)
+        churn_settings = cls._extract_churn_settings(args)
+        delta_settings = cls._extract_delta_settings(args)
+        debug_settings = cls._extract_debug_settings(args)
 
-        return cls(
-            # Required
-            directories=args.directories,
+        config_kwargs = {
+            'directories': args.directories,
+            **threshold_settings,
+            **output_settings,
+            **hotspot_settings,
+            **review_settings,
+            **churn_settings,
+            **delta_settings,
+            **debug_settings,
+        }
 
-            # Thresholds
-            threshold_low=args.threshold_low,
-            threshold_high=args.threshold_high,
-            problem_file_threshold=args.problem_file_threshold,
-
-            # Output settings
-            output_format=output_format_value,
-            output_formats=output_formats_value if output_formats_value else ['summary'],
-            using_output_formats_flag=using_output_formats_flag,
-            output_file=None,  # Will be set later if needed
-            report_folder=getattr(args, 'report_folder', None) or 'output',
-            level=args.level,
-            hierarchical=args.hierarchical,
-
-            # Hotspot settings
-            list_hotspots=getattr(args, 'list_hotspots', False),
-            hotspot_threshold=getattr(args, 'hotspot_threshold', 50),
-            hotspot_output=getattr(args, 'hotspot_output', None),
-
-            # Review strategy settings
-            review_strategy=getattr(args, 'review_strategy', False),
-            review_output=getattr(args, 'review_output', 'review_strategy.md'),
-            review_branch_only=getattr(args, 'review_branch_only', False),
-            review_base_branch=getattr(args, 'review_base_branch', 'main'),
-            include_review_tab=getattr(args, 'include_review_tab', False),
-
-            # Code churn settings
-            churn_period=getattr(args, 'churn_period', 30),
-
-            # Delta review settings
-            delta_review=getattr(args, 'delta_review', False),
-            delta_base_branch=getattr(args, 'delta_base_branch', 'main'),
-            delta_target_branch=getattr(args, 'delta_target_branch', None),
-            delta_output=getattr(args, 'delta_output', 'delta_review.md'),
-
-            # Debug
-            debug=getattr(args, 'debug', False)
-        )
+        return cls(**config_kwargs)
 
     def validate(self) -> None:
         """
@@ -198,50 +256,10 @@ class AppConfig:
             >>> config = AppConfig(directories=['src'])
             >>> config.validate()  # Raises if invalid
         """
-        if not self.directories:
-            raise ValueError("At least one directory must be specified")
+        # Delegate to ConfigValidator to keep AppConfig focused on data
+        ConfigValidator(self).validate()
 
-        if self.threshold_low >= self.threshold_high:
-            raise ValueError(
-                f"threshold_low ({self.threshold_low}) must be less than "
-                f"threshold_high ({self.threshold_high})"
-            )
-
-        if self.threshold_low < 0 or self.threshold_high < 0:
-            raise ValueError("Thresholds must be non-negative")
-
-        if self.hotspot_threshold < 0:
-            raise ValueError("Hotspot threshold must be non-negative")
-
-        valid_formats = [
-            'summary', 'quick-wins', 'human', 'human-tree', 'tree',
-            'html', 'json', 'machine',
-            'review-strategy', 'review-strategy-branch'
-        ]
-
-        # Validate output_formats list (NEW: multi-format support)
-        if not self.output_formats:
-            raise ValueError("At least one output format must be specified")
-
-        for fmt in self.output_formats:
-            if fmt not in valid_formats:
-                raise ValueError(
-                    f"Invalid output format '{fmt}'. "
-                    f"Must be one of: {', '.join(valid_formats)}"
-                )
-
-        # Validate singular output_format for backward compatibility
-        if self.output_format not in valid_formats:
-            raise ValueError(
-                f"Invalid output format '{self.output_format}'. "
-                f"Must be one of: {', '.join(valid_formats)}"
-            )
-
-        valid_levels = ['file', 'function']
-        if self.level not in valid_levels:
-            raise ValueError(
-                f"Invalid level '{self.level}'. Must be one of: {', '.join(valid_levels)}"
-            )
+    # Validation logic moved to src.config.config_validator.ConfigValidator
 
     def __repr__(self) -> str:
         """Return detailed string representation of configuration."""

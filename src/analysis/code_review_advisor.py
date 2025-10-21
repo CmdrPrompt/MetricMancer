@@ -15,6 +15,7 @@ class ReviewRecommendation:
     risk_level: str  # "critical", "high", "medium", "low"
     priority: int  # 1-5, where 1 is highest
     reviewers_needed: int
+    reviewer_rationale: str  # Brief explanation of reviewer count and type
     focus_areas: List[str]
     checklist_items: List[str]
     template: str
@@ -52,7 +53,7 @@ class CodeReviewAdvisor:
 
         # Generate recommendations
         priority = self._calculate_priority(risk_level, category)
-        reviewers_needed = self._determine_reviewer_count(risk_level, complexity)
+        reviewers_needed, reviewer_rationale = self._determine_reviewer_count(risk_level, complexity)
         focus_areas = self._generate_focus_areas(complexity, churn, category, ownership_type)
         checklist = self._generate_checklist(complexity, churn, ownership_type)
         template = self._generate_template(risk_level, complexity, churn, ownership_type, file_path)
@@ -63,6 +64,7 @@ class CodeReviewAdvisor:
             risk_level=risk_level,
             priority=priority,
             reviewers_needed=reviewers_needed,
+            reviewer_rationale=reviewer_rationale,
             focus_areas=focus_areas,
             checklist_items=checklist,
             template=template,
@@ -144,14 +146,19 @@ class CodeReviewAdvisor:
         }
         return priority_map.get(risk_level, 5)
 
-    def _determine_reviewer_count(self, risk_level: str, complexity: int) -> int:
-        """Determine how many reviewers are needed."""
+    def _determine_reviewer_count(self, risk_level: str, complexity: int) -> Tuple[int, str]:
+        """
+        Determine how many reviewers are needed and provide rationale.
+
+        Returns:
+            Tuple of (reviewer_count, rationale_string)
+        """
         if risk_level == "critical" or complexity > 50:
-            return 3  # Senior architect + 2 reviewers
+            return (3, "Senior architect + 2 reviewers (critical risk/high complexity)")
         elif risk_level == "high" or complexity > 20:
-            return 2
+            return (2, "Senior developer + peer reviewer (elevated risk)")
         else:
-            return 1
+            return (1, "Standard peer review (low-medium risk)")
 
     def _generate_focus_areas(self, complexity: int, churn: float,
                               category: str, ownership_type: str) -> List[str]:
@@ -531,7 +538,7 @@ def _format_md_priority_section(recommendations: List[ReviewRecommendation],
         output.append("| Metric | Value |")
         output.append("|--------|-------|")
         output.append(f"| **Risk Level** | {rec.risk_level.upper()} |")
-        output.append(f"| **Reviewers Needed** | {rec.reviewers_needed} |")
+        output.append(f"| **Reviewers Needed** | {rec.reviewers_needed} ({rec.reviewer_rationale}) |")
         output.append(f"| **Estimated Time** | {rec.estimated_time_minutes} minutes |")
         output.append("")
 
@@ -582,9 +589,9 @@ def _format_md_resource_allocation(recommendations: List[ReviewRecommendation]) 
 
     output.append("### 👤 Reviewer Assignment Strategy")
     output.append("")
-    output.append("- **Critical files** 🔴: Senior architect + 2 experienced developers")
-    output.append("- **High priority** 🟡: Senior developer + peer reviewer")
-    output.append("- **Medium/Low** 🟢: Standard peer review")
+    output.append("- **3 reviewers** (Critical risk/complexity >50): Senior architect + 2 experienced developers")
+    output.append("- **2 reviewers** (High risk/complexity >20): Senior developer + peer reviewer")
+    output.append("- **1 reviewer** (Low-medium risk): Standard peer review")
     output.append("")
     
     return output
@@ -726,7 +733,7 @@ def _format_txt_priority_section(recommendations: List[ReviewRecommendation],
     for rec in priority_recs[:10]:  # Show top 10 per priority
         output.append(f"File: {rec.file_path}")
         output.append(f"   Risk Level: {rec.risk_level.upper()}")
-        output.append(f"   Reviewers Needed: {rec.reviewers_needed}")
+        output.append(f"   Reviewers Needed: {rec.reviewers_needed} ({rec.reviewer_rationale})")
         output.append(f"   Estimated Time: {rec.estimated_time_minutes} minutes")
         output.append(f"   Focus Areas: {', '.join(rec.focus_areas)}")
         output.append("")
@@ -764,9 +771,9 @@ def _format_txt_resource_allocation(recommendations: List[ReviewRecommendation])
 
     output.append("")
     output.append("Reviewer Assignment Strategy:")
-    output.append("   - Critical files: Senior architect + 2 experienced developers")
-    output.append("   - High priority: Senior developer + peer reviewer")
-    output.append("   - Medium/Low: Standard peer review")
+    output.append("   - 3 reviewers (Critical risk/complexity >50): Senior architect + 2 experienced developers")
+    output.append("   - 2 reviewers (High risk/complexity >20): Senior developer + peer reviewer")
+    output.append("   - 1 reviewer (Low-medium risk): Standard peer review")
     output.append("")
     return output
 

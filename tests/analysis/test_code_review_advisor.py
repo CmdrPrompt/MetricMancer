@@ -29,6 +29,7 @@ class TestCodeReviewAdvisor(unittest.TestCase):
         self.assertEqual(rec.risk_level, "critical")
         self.assertEqual(rec.priority, 1)
         self.assertEqual(rec.reviewers_needed, 3)
+        self.assertIn("Senior architect", rec.reviewer_rationale)
         self.assertIn("Complexity Management", rec.focus_areas)
         self.assertIn("Architectural Impact", rec.focus_areas)
         self.assertGreater(rec.estimated_time_minutes, 60)
@@ -45,6 +46,7 @@ class TestCodeReviewAdvisor(unittest.TestCase):
         self.assertEqual(rec.risk_level, "high")
         self.assertEqual(rec.priority, 2)
         self.assertGreaterEqual(rec.reviewers_needed, 2)
+        self.assertIn("Senior developer", rec.reviewer_rationale)
         self.assertIn("Root Cause Analysis", rec.focus_areas)
 
     def test_analyze_stable_complexity(self):
@@ -71,6 +73,7 @@ class TestCodeReviewAdvisor(unittest.TestCase):
         self.assertEqual(rec.risk_level, "low")
         self.assertEqual(rec.priority, 4)
         self.assertEqual(rec.reviewers_needed, 1)
+        self.assertIn("Standard peer review", rec.reviewer_rationale)
 
     def test_analyze_with_single_ownership(self):
         """Test analysis with single owner ownership pattern."""
@@ -172,6 +175,44 @@ class TestCodeReviewAdvisor(unittest.TestCase):
             low_risk_rec.estimated_time_minutes,
             high_risk_rec.estimated_time_minutes
         )
+
+    def test_reviewer_rationale_critical(self):
+        """Test reviewer rationale for critical risk files."""
+        rec = self.advisor.analyze_file(
+            file_path="critical.py",
+            complexity=60,
+            churn=5.0,
+            hotspot=300
+        )
+
+        self.assertEqual(rec.reviewers_needed, 3)
+        self.assertIn("Senior architect", rec.reviewer_rationale)
+        self.assertIn("2 reviewers", rec.reviewer_rationale)
+
+    def test_reviewer_rationale_high_risk(self):
+        """Test reviewer rationale for high risk files."""
+        rec = self.advisor.analyze_file(
+            file_path="high.py",
+            complexity=25,
+            churn=5.0,
+            hotspot=125
+        )
+
+        self.assertEqual(rec.reviewers_needed, 2)
+        self.assertIn("Senior developer", rec.reviewer_rationale)
+        self.assertIn("peer reviewer", rec.reviewer_rationale)
+
+    def test_reviewer_rationale_low_risk(self):
+        """Test reviewer rationale for low risk files."""
+        rec = self.advisor.analyze_file(
+            file_path="low.py",
+            complexity=5,
+            churn=2.0,
+            hotspot=10
+        )
+
+        self.assertEqual(rec.reviewers_needed, 1)
+        self.assertIn("Standard peer review", rec.reviewer_rationale)
 
 
 class TestGenerateReviewReport(unittest.TestCase):

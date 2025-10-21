@@ -305,10 +305,45 @@ class MetricMancerApp:
             if 'files' not in all_data:
                 all_data = repo_data
             else:
-                # Merge files and directories
+                # Merge files (shallow update is fine)
                 all_data['files'].update(repo_data.get('files', {}))
-                all_data['scan_dirs'].update(repo_data.get('scan_dirs', {}))
+                # Deep merge scan_dirs to avoid overwriting shared directories
+                self._deep_merge_scan_dirs(all_data['scan_dirs'], repo_data.get('scan_dirs', {}))
         return all_data
+
+    def _deep_merge_scan_dirs(self, target, source):
+        """
+        Recursively merge scan_dirs dictionaries.
+
+        When multiple scan directories (e.g., src/, tests/) contain the same subdirectory
+        (e.g., analysis/), we need to merge them instead of overwriting.
+
+        Args:
+            target: Target dictionary to merge into
+            source: Source dictionary to merge from
+        """
+        for key, value in source.items():
+            if key in target and isinstance(target[key], dict) and isinstance(value, dict):
+                # Both have this directory - merge recursively
+                if 'files' in value:
+                    # Merge files from this directory level
+                    if 'files' not in target[key]:
+                        target[key]['files'] = {}
+                    target[key]['files'].update(value['files'])
+
+                if 'scan_dirs' in value:
+                    # Recursively merge subdirectories
+                    if 'scan_dirs' not in target[key]:
+                        target[key]['scan_dirs'] = {}
+                    self._deep_merge_scan_dirs(target[key]['scan_dirs'], value['scan_dirs'])
+
+                # Merge other keys (kpis, etc.)
+                for other_key in value:
+                    if other_key not in ['files', 'scan_dirs']:
+                        target[key][other_key] = value[other_key]
+            else:
+                # Key doesn't exist in target or not both dicts - simple assignment
+                target[key] = value
 
     def _get_changed_files_for_review(self, review_branch_only):
         """

@@ -78,18 +78,30 @@ class TestAnalyzer(unittest.TestCase):
             summary = self.analyzer.analyze(self.scanner_files)
 
             # --- Assertions ---
-            self.assertEqual(len(summary), 2)  # Two repos found
-            self.assertIn(str(self.repo1_path), summary)
-            self.assertIn(str(self.repo2_path), summary)
+            # With the new logic, all files from the same git repo are grouped together
+            # Since both repo1 and repo2 are within the same git repo in the test environment,
+            # they should be combined into a single RepoInfo object
+            self.assertEqual(len(summary), 1)  # One combined repo found
+            
+            # The repo root should be the git root (test directory or workspace)
+            repo_keys = list(summary.keys())
+            combined_repo_info = summary[repo_keys[0]]
+            self.assertIsInstance(combined_repo_info, RepoInfo)
 
-            # --- Verify Repo 1 ---
-            repo1_info = summary[str(self.repo1_path)]
-            self.assertIsInstance(repo1_info, RepoInfo)
-            self.assertEqual(repo1_info.repo_name, "repo1")
-
-            # Check directory structure: repo1 -> src
-            self.assertIn("src", repo1_info.scan_dirs)
-            src_dir = repo1_info.scan_dirs["src"]
+            # Check that both repo1 and repo2 structures are present
+            # The structure is: RepoInfo -> test_analyzer_temp_dir -> repo1/repo2
+            temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
+            self.assertIn(temp_dir_name, combined_repo_info.scan_dirs)
+            temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
+            self.assertIsInstance(temp_dir, ScanDir)
+            
+            # Repo1 structure: temp_dir -> repo1 -> src -> files
+            self.assertIn("repo1", temp_dir.scan_dirs)
+            repo1_dir = temp_dir.scan_dirs["repo1"]
+            self.assertIsInstance(repo1_dir, ScanDir)
+            
+            self.assertIn("src", repo1_dir.scan_dirs)
+            src_dir = repo1_dir.scan_dirs["src"]
             self.assertIsInstance(src_dir, ScanDir)
             self.assertEqual(src_dir.dir_name, "src")
 
@@ -119,15 +131,13 @@ class TestAnalyzer(unittest.TestCase):
             self.assertEqual(utils_py_file.kpis["churn"].value, 5)
             self.assertEqual(utils_py_file.kpis["hotspot"].value, 75)  # 15 * 5
 
-            # --- Verify Repo 2 ---
-            repo2_info = summary[str(self.repo2_path)]
-            self.assertIsInstance(repo2_info, RepoInfo)
-            self.assertEqual(repo2_info.repo_name, "repo2")
-
-            # Repo 2 has a file in the root, so it should be in the RepoInfo's `files` dict.
-            self.assertEqual(len(repo2_info.scan_dirs), 0)
-            self.assertIn("app.java", repo2_info.files)
-            app_java_file = repo2_info.files["app.java"]
+            # Repo2 structure: temp_dir -> repo2 -> app.java file
+            self.assertIn("repo2", temp_dir.scan_dirs)
+            repo2_dir = temp_dir.scan_dirs["repo2"]
+            self.assertIsInstance(repo2_dir, ScanDir)
+            
+            self.assertIn("app.java", repo2_dir.files)
+            app_java_file = repo2_dir.files["app.java"]
             self.assertIsInstance(app_java_file, File)
             self.assertEqual(app_java_file.kpis["complexity"].value, 15)
             self.assertEqual(app_java_file.kpis["churn"].value, 20)
@@ -159,10 +169,18 @@ class TestAnalyzer(unittest.TestCase):
                 patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
-            # Repo1 exists
-            repo1_info = summary[str(self.repo1_path)]
-            # README.md is unsupported and must not be present under repo root files
-            self.assertNotIn("README.md", repo1_info.files)
+            # With the new logic, all files from the same git repo are grouped together
+            self.assertEqual(len(summary), 1)  # One combined repo found
+            repo_keys = list(summary.keys())
+            combined_repo_info = summary[repo_keys[0]]
+            
+            # Navigate to repo1: RepoInfo -> test_analyzer_temp_dir -> repo1
+            temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
+            temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
+            repo1_dir = temp_dir.scan_dirs["repo1"]
+            
+            # README.md is unsupported and must not be present under repo1 root files
+            self.assertNotIn("README.md", repo1_dir.files)
             # Logga alla debug_print-anrop för felsökning
             print("DEBUG_PRINT CALLS:")
             for call in mock_debug_print.call_args_list:
@@ -201,10 +219,19 @@ class TestAnalyzer(unittest.TestCase):
                 patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
-        repo1_info = summary[str(self.repo1_path)]
-        # The file should not exist under the directory where Python files were placed
-        container = repo1_info.scan_dirs.get("src", repo1_info)
-        self.assertNotIn("blocked_missing.py", container.files)
+        # With the new logic, all files from the same git repo are grouped together
+        self.assertEqual(len(summary), 1)  # One combined repo found
+        repo_keys = list(summary.keys())
+        combined_repo_info = summary[repo_keys[0]]
+        
+        # Navigate to repo1 -> src: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src
+        temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
+        temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
+        repo1_dir = temp_dir.scan_dirs["repo1"]
+        src_dir = repo1_dir.scan_dirs["src"]
+        
+        # The file should not exist under the src directory
+        self.assertNotIn("blocked_missing.py", src_dir.files)
         # A warning should have been printed
         self.assertTrue(any(
             "Unable to read" in str(call.args[0]) and str(blocked_missing_path) in str(call.args[0])
@@ -234,8 +261,19 @@ class TestAnalyzer(unittest.TestCase):
         with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data):
             summary = self.analyzer.analyze(files)
 
-        repo1_info = summary[str(self.repo1_path)]
-        src_dir = repo1_info.scan_dirs["src"]
+        # With the new logic, all files from the same git repo are grouped together
+        self.assertEqual(len(summary), 1)  # One combined repo found
+        repo_keys = list(summary.keys())
+        combined_repo_info = summary[repo_keys[0]]
+        
+        # The structure is: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src -> pkg -> module -> utils -> helper.py
+        temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
+        self.assertIn(temp_dir_name, combined_repo_info.scan_dirs)
+        temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
+        
+        # Navigate to repo1 -> src -> pkg -> module -> utils
+        repo1_dir = temp_dir.scan_dirs["repo1"]
+        src_dir = repo1_dir.scan_dirs["src"]
         self.assertIn("pkg", src_dir.scan_dirs)
         pkg_dir = src_dir.scan_dirs["pkg"]
         self.assertIn("module", pkg_dir.scan_dirs)
@@ -244,8 +282,9 @@ class TestAnalyzer(unittest.TestCase):
         utils_dir = module_dir.scan_dirs["utils"]
         self.assertIn("helper.py", utils_dir.files)
         helper_file = utils_dir.files["helper.py"]
-        # file_path should be relative to repo root
-        self.assertEqual(helper_file.file_path.replace("\\", "/"), "src/pkg/module/utils/helper.py")
+        # file_path should be relative to repo root (which is now test_analyzer_temp_dir)
+        expected_path = f"{self.test_dir.name}/repo1/src/pkg/module/utils/helper.py"
+        self.assertEqual(helper_file.file_path.replace("\\", "/"), expected_path)
 
     @patch('src.utilities.git_cache.GitDataCache.get_churn_data')
     def test_hotspot_kpi_includes_calculation_values(self, mock_git_cache_churn):
@@ -271,8 +310,16 @@ class TestAnalyzer(unittest.TestCase):
         with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data):
             summary = self.analyzer.analyze(self.scanner_files)
 
-        repo1_info = summary[str(self.repo1_path)]
-        src_dir = repo1_info.scan_dirs["src"]
+        # With the new logic, all files from the same git repo are grouped together
+        self.assertEqual(len(summary), 1)  # One combined repo found
+        repo_keys = list(summary.keys())
+        combined_repo_info = summary[repo_keys[0]]
+        
+        # Navigate to the main.py file: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src -> main.py
+        temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
+        temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
+        repo1_dir = temp_dir.scan_dirs["repo1"]
+        src_dir = repo1_dir.scan_dirs["src"]
         main_file = src_dir.files["main.py"]
         # Complexity sum = 9
         self.assertEqual(main_file.kpis["complexity"].value, 9)
@@ -294,8 +341,16 @@ class TestAnalyzer(unittest.TestCase):
                 patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
             summary = self.analyzer.analyze(self.scanner_files)
 
-        repo1_info = summary[str(self.repo1_path)]
-        src_dir = repo1_info.scan_dirs["src"]
+        # With the new logic, all files from the same git repo are grouped together
+        self.assertEqual(len(summary), 1)  # One combined repo found
+        repo_keys = list(summary.keys())
+        combined_repo_info = summary[repo_keys[0]]
+        
+        # Navigate to the main.py file: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src -> main.py
+        temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
+        temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
+        repo1_dir = temp_dir.scan_dirs["repo1"]
+        src_dir = repo1_dir.scan_dirs["src"]
         main_file = src_dir.files["main.py"]
         self.assertEqual(main_file.kpis["complexity"].value, 0)
         self.assertEqual(main_file.kpis["complexity"].calculation_values["function_count"], 0)

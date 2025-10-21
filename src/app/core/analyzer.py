@@ -204,13 +204,35 @@ class Analyzer:
         self.file_analyzer = None  # Initialized per-repo with KPICalculator
 
     def _group_files_by_repo(self, files):
-        """Groups files by their repository root directory."""
+        """
+        Groups files by their git repository root directory.
+
+        When multiple scan directories (e.g., src/, tests/) are analyzed in the same
+        git repository, all files should be grouped together under the git root,
+        not separated by scan directory.
+
+        Returns:
+            Tuple of (files_by_root, scan_dirs_by_root) where:
+            - files_by_root: Dict[git_root_path, List[file_info]]
+            - scan_dirs_by_root: Dict[git_root_path, Set[scan_dir_paths]]
+        """
+        from src.utilities.git_helpers import find_git_repo_root
+
         files_by_root = defaultdict(list)
         scan_dirs_by_root = defaultdict(set)
+
         for file in files:
-            repo_root = file.get('root', '')
+            scan_root = file.get('root', '')
+
+            # Find the git repository root for this file
+            git_root = find_git_repo_root(scan_root)
+
+            # Use git root if found, otherwise fall back to scan root
+            repo_root = git_root if git_root else scan_root
+
             files_by_root[repo_root].append(file)
-            scan_dirs_by_root[repo_root].add(repo_root)
+            scan_dirs_by_root[repo_root].add(scan_root)
+
         return files_by_root, scan_dirs_by_root
 
     def _analyze_repo(self, repo_root, files_in_repo, scan_dirs):
