@@ -5,7 +5,7 @@ Shared helpers for file list operations in report generation.
 
 from typing import Any, Dict, List, Union
 from src.report.file_info import FileInfo
-from src.report.grading import grade
+from .grading import grade
 
 
 def sort_files(files: List[Union[Dict[str, Any], FileInfo]]) -> List[FileInfo]:

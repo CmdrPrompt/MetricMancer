@@ -125,6 +125,9 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         Calculate impact score (0-10) based on KPIs.
         Higher score = more impact if improved.
 
+        Cognitive complexity is weighted higher than cyclomatic complexity because
+        it better reflects actual understandability and maintenance difficulty.
+
         Args:
             complexity: Cyclomatic complexity
             churn: Code churn (commits)
@@ -145,25 +148,28 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         elif hotspot > 0:
             score += 1
 
-        # Complexity contributes (0-3 points)
-        if complexity > 50:
+        # Cognitive complexity contributes more (0-4 points) - PRIORITIZED
+        # High cognitive = hard to understand, more bugs, higher maintenance burden
+        if cognitive_complexity > 25:
+            score += 4
+        elif cognitive_complexity > 15:
             score += 3
-        elif complexity > 20:
+        elif cognitive_complexity > 10:
             score += 2
-        elif complexity > 10:
+        elif cognitive_complexity > 5:
+            score += 1
+
+        # Cyclomatic complexity contributes (0-2 points)
+        # Lower weight than cognitive since it doesn't account for nesting
+        if complexity > 50:
+            score += 2
+        elif complexity > 20:
             score += 1
 
         # Churn contributes (0-2 points)
         if churn > 15:
             score += 2
         elif churn > 10:
-            score += 1
-
-        # Cognitive complexity contributes (0-2 points)
-        # High cognitive = hard to understand, more bugs, higher impact
-        if cognitive_complexity > 25:
-            score += 2
-        elif cognitive_complexity > 15:
             score += 1
 
         return min(score, 10)  # Cap at 10
@@ -343,6 +349,17 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
 
         # Time estimate
         print(f"   Time:    {win['time_estimate']}")
+
+        # Metrics - show both complexity metrics if available
+        metrics_parts = []
+        if win['complexity'] > 0:
+            metrics_parts.append(f"Complexity: {win['complexity']}")
+        if win['cognitive_complexity'] > 0:
+            metrics_parts.append(f"Cognitive: {win['cognitive_complexity']}")
+        if win['churn'] > 0:
+            metrics_parts.append(f"Churn: {win['churn']}")
+        if metrics_parts:
+            print(f"   Metrics: {', '.join(metrics_parts)}")
 
         # Reason
         print(f"   Reason:  {win['reason']}")

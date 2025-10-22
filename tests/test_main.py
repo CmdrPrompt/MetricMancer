@@ -18,6 +18,7 @@ from unittest.mock import patch, MagicMock
 
 # Import the module under test
 import src.main
+import src.utilities.debug
 from src.main import main
 
 
@@ -49,27 +50,26 @@ class TestMainCriticalFunctionality:
         mock_args.output_format = 'html'
         mock_args.threshold_low = 10
         mock_args.threshold_high = 20
-        mock_args.problem_file_threshold = 5
-        mock_args.level = 'file'
-        mock_args.hierarchical = False
         mock_args.debug = True
+        mock_parse_args.return_value.parse_args.return_value = mock_args
 
-        mock_parser = MagicMock()
-        mock_parser.parse_args.return_value = mock_args
-        mock_parse_args.return_value = mock_parser
+        # Setup mock config
+        mock_config = MagicMock()
+        mock_config.output_formats = ['html']
 
         # Setup mock app
         mock_app_instance = MagicMock()
         mock_app_class.return_value = mock_app_instance
 
-        # Execute
-        with patch('src.main.get_output_filename', return_value='test_output.html'), \
-                patch('src.main.AppConfig'), \
-                patch('src.main.ReportGeneratorFactory'):
+        with patch('src.main.AppConfig.from_cli_args', return_value=mock_config):
+            # Execute
             main()
 
-            # Verify debug mode was enabled
-            assert src.utilities.debug.DEBUG is True
+        # Verify debug mode was enabled
+        assert src.utilities.debug.DEBUG == True
+        # Verify app was created and run
+        mock_app_class.assert_called_once_with(config=mock_config)
+        mock_app_instance.run.assert_called_once()
 
     @patch('builtins.print')
     @patch('sys.stdout')
@@ -84,8 +84,7 @@ class TestMainCriticalFunctionality:
         with patch('src.main.parse_args') as mock_parse_args, \
                 patch('src.main.MetricMancerApp') as mock_app_class, \
                 patch('sys.argv', ['metricmancer', '/test/path']), \
-                patch('src.main.AppConfig'), \
-                patch('src.main.ReportGeneratorFactory'):
+                patch('src.main.AppConfig'):
 
             # Setup minimal mock args
             mock_args = MagicMock()
@@ -99,13 +98,12 @@ class TestMainCriticalFunctionality:
             mock_app_instance = MagicMock()
             mock_app_class.return_value = mock_app_instance
 
-            with patch('src.main.get_output_filename', return_value='test.html'):
-                # Execute
-                main()
+            # Execute
+            main()
 
-                # Verify UTF-8 encoding was configured
-                mock_stdout.reconfigure.assert_called_once_with(encoding='utf-8')
-                mock_stderr.reconfigure.assert_called_once_with(encoding='utf-8')
+            # Verify UTF-8 encoding was configured
+            mock_stdout.reconfigure.assert_called_once_with(encoding='utf-8')
+            mock_stderr.reconfigure.assert_called_once_with(encoding='utf-8')
 
 
 class TestMainErrorHandling:
@@ -141,9 +139,7 @@ class TestMainErrorHandling:
         mock_app_class.side_effect = Exception("App creation failed")
 
         # Execute and verify exception is propagated
-        with patch('src.main.get_output_filename', return_value='test.html'), \
-                patch('src.main.AppConfig'), \
-                patch('src.main.ReportGeneratorFactory'):
+        with patch('src.main.AppConfig.from_cli_args', return_value=MagicMock()):
             with pytest.raises(Exception, match="App creation failed"):
                 main()
 

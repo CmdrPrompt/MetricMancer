@@ -135,10 +135,11 @@ class TestLegacyTestMigrationCompatibility(unittest.TestCase):
         config = AppConfig(directories=['dir'])
         new_app = MetricMancerApp(config=config, report_generator_cls=None)
 
-        # In multi-format mode (None means factory-per-format), both should be None
-        # The actual generator is selected in run() based on output format
-        self.assertIsNone(legacy_app.report_generator_cls)
-        self.assertIsNone(new_app.report_generator_cls)
+        # In single-format mode with default 'summary', both should use CLIReportGenerator
+        # The actual generator is determined automatically based on output format
+        from src.report.cli.cli_report_generator import CLIReportGenerator
+        self.assertEqual(legacy_app.report_generator_cls, CLIReportGenerator)
+        self.assertEqual(new_app.report_generator_cls, CLIReportGenerator)
 
 
 class TestLegacyTestBehaviorEquivalence(unittest.TestCase):
