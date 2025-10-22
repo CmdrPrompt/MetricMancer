@@ -10,6 +10,7 @@ from typing import Optional
 from .calculator_base import CognitiveComplexityCalculatorBase
 from .calculator_python import PythonCognitiveComplexityCalculator
 from .calculator_java import JavaCognitiveComplexityCalculator
+from .calculator_go import GoCognitiveComplexityCalculator
 
 
 class CognitiveComplexityCalculatorFactory:
@@ -24,10 +25,10 @@ class CognitiveComplexityCalculatorFactory:
     CALCULATORS = {
         '.py': PythonCognitiveComplexityCalculator,
         '.java': JavaCognitiveComplexityCalculator,
+        '.go': GoCognitiveComplexityCalculator,
         # Future additions:
-        # '.adb': AdaCognitiveComplexityCalculator,
-        # '.ads': AdaCognitiveComplexityCalculator,
-        # '.go': GoCognitiveComplexityCalculator,
+        # '.adb': AdaCognitiveComplexityCalculator,  # Requires custom tree-sitter build
+        # '.ads': AdaCognitiveComplexityCalculator,  # Requires custom tree-sitter build
         # '.js': JavaScriptCognitiveComplexityCalculator,
         # '.jsx': JavaScriptCognitiveComplexityCalculator,
         # '.ts': TypeScriptCognitiveComplexityCalculator,
