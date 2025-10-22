@@ -51,6 +51,29 @@ class ReportDataAnalyzer:
 
         return exceeds_average_threshold or has_problem_files or has_hotspot_risks
 
+    def _calculate_root_metrics(self, root_info) -> Dict[str, Any]:
+        """
+        Calculate metrics for a single root directory.
+
+        Args:
+            root_info: RootInfo object containing root data
+
+        Returns:
+            Dict with average_complexity, problem_files, hotspot_risk_files
+        """
+        problem_files = []
+        if self.problem_file_threshold is not None:
+            problem_files = filter_problem_files(
+                root_info.files, self.problem_file_threshold)
+        
+        hotspot_risk_files = filter_hotspot_risk_files(root_info.files)
+
+        return {
+            'average_complexity': root_info.average,
+            'problem_files': problem_files,
+            'hotspot_risk_files': hotspot_risk_files
+        }
+
     def _create_root_summary(self, root_path: str, average_complexity: float, problem_files: List, hotspot_risk_files: List, files: List, repo_root: str = '') -> Dict[str, Any]:
         """
         Create a summary dictionary for a problematic root.
@@ -91,14 +114,13 @@ class ReportDataAnalyzer:
 
         for repo_data in structured_data:
             for root_info in repo_data.get('roots', []):
-                problem_files = filter_problem_files(
-                    root_info.files, self.problem_file_threshold) if self.problem_file_threshold is not None else []
-                hotspot_risk_files = filter_hotspot_risk_files(root_info.files)
+                # Calculate metrics for this root
+                metrics = self._calculate_root_metrics(root_info)
 
                 # Check if root is problematic using extracted logic
-                if self._is_root_problematic(root_info.average, problem_files, hotspot_risk_files):
+                if self._is_root_problematic(metrics['average_complexity'], metrics['problem_files'], metrics['hotspot_risk_files']):
                     summary.append(self._create_root_summary(
-                        root_info.path, root_info.average, problem_files, hotspot_risk_files,
+                        root_info.path, metrics['average_complexity'], metrics['problem_files'], metrics['hotspot_risk_files'],
                         root_info.files, getattr(root_info, 'repo_root', '')
                     ))
         return summary
