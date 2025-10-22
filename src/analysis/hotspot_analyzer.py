@@ -6,6 +6,80 @@ Based on "Your Code as a Crime Scene" methodology by Adam Tornhill.
 from typing import List, Tuple, Dict, Any
 
 
+def _is_valid_hotspot(filedata: Dict[str, Any], threshold: int) -> bool:
+    """
+    Check if file data represents a valid hotspot.
+    
+    Args:
+        filedata: File data dictionary
+        threshold: Minimum hotspot score threshold
+        
+    Returns:
+        True if file is a valid hotspot
+    """
+    return ('kpis' in filedata and 
+            'hotspot' in filedata['kpis'] and 
+            filedata['kpis']['hotspot'] >= threshold)
+
+
+def _create_hotspot_tuple(file_path: str, filedata: Dict[str, Any]) -> Tuple[str, int, int, float]:
+    """
+    Create standardized hotspot tuple from file data.
+    
+    Args:
+        file_path: Path to the file
+        filedata: File data dictionary
+        
+    Returns:
+        Tuple: (file_path, hotspot_score, complexity, churn)
+    """
+    hotspot = filedata['kpis']['hotspot']
+    complexity = filedata['kpis'].get('complexity', 0)
+    churn = filedata['kpis'].get('churn', 0)
+    return (file_path, hotspot, complexity, churn)
+
+
+def _extract_file_hotspots(data: Dict[str, Any], path: str, threshold: int) -> List[Tuple[str, int, int, float]]:
+    """
+    Extract hotspots from files in current directory.
+    
+    Args:
+        data: Directory data dictionary
+        path: Current path prefix
+        threshold: Minimum hotspot score threshold
+        
+    Returns:
+        List of hotspot tuples from files in current directory
+    """
+    hotspots = []
+    if 'files' in data:
+        for filename, filedata in data['files'].items():
+            file_path = f"{path}/{filename}" if path else filename
+            if _is_valid_hotspot(filedata, threshold):
+                hotspots.append(_create_hotspot_tuple(file_path, filedata))
+    return hotspots
+
+
+def _extract_directory_hotspots(data: Dict[str, Any], path: str, threshold: int) -> List[Tuple[str, int, int, float]]:
+    """
+    Extract hotspots from subdirectories recursively.
+    
+    Args:
+        data: Directory data dictionary
+        path: Current path prefix
+        threshold: Minimum hotspot score threshold
+        
+    Returns:
+        List of hotspot tuples from all subdirectories
+    """
+    hotspots = []
+    if 'scan_dirs' in data:
+        for dirname, dirdata in data['scan_dirs'].items():
+            dir_path = f"{path}/{dirname}" if path else dirname
+            hotspots.extend(extract_hotspots_from_data(dirdata, threshold, dir_path))
+    return hotspots
+
+
 def extract_hotspots_from_data(data: Dict[str, Any], threshold: int = 50,
                                path: str = '') -> List[Tuple[str, int, int, float]]:
     """
@@ -19,26 +93,12 @@ def extract_hotspots_from_data(data: Dict[str, Any], threshold: int = 50,
     Returns:
         List of tuples: (file_path, hotspot_score, complexity, churn)
     """
+    if not isinstance(data, dict):
+        return []
+    
     hotspots = []
-
-    if isinstance(data, dict):
-        # Process files in current directory
-        if 'files' in data:
-            for filename, filedata in data['files'].items():
-                file_path = f"{path}/{filename}" if path else filename
-                if 'kpis' in filedata and 'hotspot' in filedata['kpis']:
-                    hotspot = filedata['kpis']['hotspot']
-                    if hotspot >= threshold:
-                        complexity = filedata['kpis'].get('complexity', 0)
-                        churn = filedata['kpis'].get('churn', 0)
-                        hotspots.append((file_path, hotspot, complexity, churn))
-
-        # Process subdirectories recursively
-        if 'scan_dirs' in data:
-            for dirname, dirdata in data['scan_dirs'].items():
-                dir_path = f"{path}/{dirname}" if path else dirname
-                hotspots.extend(extract_hotspots_from_data(dirdata, threshold, dir_path))
-
+    hotspots.extend(_extract_file_hotspots(data, path, threshold))
+    hotspots.extend(_extract_directory_hotspots(data, path, threshold))
     return hotspots
 
 

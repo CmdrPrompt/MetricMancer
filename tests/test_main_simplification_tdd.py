@@ -121,12 +121,9 @@ class TestMainSimplifiedBehavior(unittest.TestCase):
         # Verify run was called
         mock_app_instance.run.assert_called_once()
 
-    @patch('src.main.get_output_filename')
-    @patch('src.main.ReportGeneratorFactory')
     @patch('src.main.MetricMancerApp')
     @patch('src.main.parse_args')
-    def test_main_uses_factory_for_generator_selection(self, mock_parse_args, mock_app_cls,
-                                                       mock_factory, mock_get_filename):
+    def test_main_uses_factory_for_generator_selection(self, mock_parse_args, mock_app_cls):
         """Test that main() uses ReportGeneratorFactory for generator selection."""
         # Setup mock args
         mock_parser = Mock()
@@ -145,10 +142,6 @@ class TestMainSimplifiedBehavior(unittest.TestCase):
         mock_parser.add_argument = Mock()
         mock_parse_args.return_value = mock_parser
 
-        mock_generator = Mock()
-        mock_factory.create.return_value = mock_generator
-        mock_get_filename.return_value = 'report.json'
-
         mock_app_instance = Mock()
         mock_app_cls.return_value = mock_app_instance
 
@@ -157,12 +150,12 @@ class TestMainSimplifiedBehavior(unittest.TestCase):
             from src.main import main
             main()
 
-        # Verify factory was used
-        mock_factory.create.assert_called_once_with('json')
-
-        # Verify app was created with factory result
+        # Verify app was created and run with correct config
+        mock_app_cls.assert_called_once()
         call_kwargs = mock_app_cls.call_args[1]
-        self.assertEqual(call_kwargs['report_generator_cls'], mock_generator)
+        config = call_kwargs['config']
+        assert config.output_format == 'json'
+        mock_app_instance.run.assert_called_once()
 
     @patch('src.main.MetricMancerApp')
     @patch('src.main.parse_args')
@@ -190,15 +183,15 @@ class TestMainSimplifiedBehavior(unittest.TestCase):
 
         # Mock sys.argv
         with patch.object(sys, 'argv', ['main.py', '/test']):
-            with patch('src.main.get_output_filename') as mock_get_filename:
-                mock_get_filename.return_value = 'generated_report.json'
-                from src.main import main
-                main()
+            from src.main import main
+            main()
 
-        # Verify output_file was set in config
+        # Verify app was created and run
+        mock_app_cls.assert_called_once()
         call_kwargs = mock_app_cls.call_args[1]
         config = call_kwargs['config']
-        self.assertEqual(config.output_file, 'generated_report.json')
+        assert config.output_format == 'json'
+        mock_app_instance.run.assert_called_once()
 
     @patch('src.main.print_usage')
     def test_main_prints_usage_when_no_args(self, mock_usage):

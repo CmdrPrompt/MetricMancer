@@ -2,28 +2,23 @@
 
 {% block title %}{{ repo_info.repo_name }} - MetricMancer Report{% endblock %}
 
-{%- macro render_tree(directory, prefix="") -%}
+{%- macro render_tree(directory) -%}
   {#- Combine and sort directories and files into a single list -#}
   {%- set items = (directory.scan_dirs.values()|sort(attribute='dir_name')) + (directory.files.values()|sort(attribute='name')) -%}
 
   {%- for item in items -%}
-    {%- set is_last = loop.last -%}
-    {%- set connector = "└── " if is_last else "├── " -%}
-    {%- set new_prefix = prefix + ("    " if is_last else "│   ") -%}
-
     {%- if item.dir_name is defined -%} {# It's a directory (ScanDir) #}
       <div class="tree-item is-folder">
         <div class="tree-line">
-          <span class="prefix">{{ prefix }}{{ connector }}</span>
           <span class="toggle">▶</span>
           <span class="name">{{ item.dir_name }}/</span>
           <span class="kpis">[Avg C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Avg Cog: {{ item.kpis.cognitive_complexity.value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.cognitive_complexity.value is not none else '?' }}, Avg Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Avg Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span>
-        </div><div class="nested">{{- render_tree(item, new_prefix) -}}</div>
+        </div><div class="nested">{{- render_tree(item) -}}</div>
       </div>
     {%- else -%} {# It's a file #}
       <div class="tree-item is-file">
       <!-- DEBUG: file={{ item.name }}, kpi_keys={{ item.kpis.keys()|list }}, cog_exists={{ 'cognitive_complexity' in item.kpis }}, cog={{ item.kpis.get('cognitive_complexity') }} -->
-      <div class="tree-line"><span class="prefix">{{ prefix }}{{ connector }}</span><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Cog: {{ item.kpis.get('cognitive_complexity').value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.get('cognitive_complexity').value is not none else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span></div>
+      <div class="tree-line"><span class="name">{{ item.name }}</span> <span class="kpis">[C: {{ item.kpis.complexity.value | round(1) if item.kpis.get('complexity') else '?' }}, Cog: {{ item.kpis.get('cognitive_complexity').value | round(1) if item.kpis.get('cognitive_complexity') and item.kpis.get('cognitive_complexity').value is not none else '?' }}, Churn: {{ item.kpis.churn.value if item.kpis.get('churn') else '?' }}, Hotspot: {{ item.kpis.hotspot.value | round(1) if item.kpis.get('hotspot') else '?' }}]</span></div>
       </div>
     {%- endif -%}
   {%- endfor -%}
@@ -138,9 +133,16 @@
         <button id="expand-all-btn">Expand All</button>
         <button id="collapse-all-btn">Collapse All</button>
       </div>
-      <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
+      <p>Click on folders (▶) to expand/collapse.</p>
       <div class="tree">
-        {{ render_tree(repo_info) }}
+        <div class="tree-item is-folder is-open">
+          <div class="tree-line">
+            <span class="toggle">▶</span>
+            <span class="name">{{ repo_info.dir_name }}/</span>
+            <span class="kpis">[Avg C: {{ repo_info.kpis.complexity.value | round(1) if repo_info.kpis.get('complexity') else '?' }}, Avg Cog: {{ repo_info.kpis.cognitive_complexity.value | round(1) if repo_info.kpis.get('cognitive_complexity') and repo_info.kpis.cognitive_complexity.value is not none else '?' }}, Avg Churn: {{ repo_info.kpis.churn.value if repo_info.kpis.get('churn') else '?' }}, Avg Hotspot: {{ repo_info.kpis.hotspot.value | round(1) if repo_info.kpis.get('hotspot') else '?' }}]</span>
+          </div>
+          <div class="nested">{{ render_tree(repo_info) }}</div>
+        </div>
       </div>
     </div>
   </div>
@@ -262,6 +264,7 @@
             <th style="padding: 10px; text-align: center;">Impact</th>
             <th style="padding: 10px; text-align: center;">Effort</th>
             <th style="padding: 10px; text-align: center;">Time</th>
+            <th style="padding: 10px; text-align: left;">Metrics</th>
             <th style="padding: 10px; text-align: left;">Reason</th>
             <th style="padding: 10px; text-align: left;">Action</th>
           </tr>
@@ -289,6 +292,11 @@
             </td>
             <td style="padding: 10px; text-align: center;">
               {{ qw.time_estimate if qw.time_estimate is defined else 'N/A' }}
+            </td>
+            <td style="padding: 10px; font-size: 12px;">
+              {% if qw.complexity > 0 %}C: {{ qw.complexity }}{% endif %}
+              {% if qw.cognitive_complexity > 0 %}{% if qw.complexity > 0 %}, {% endif %}Cog: {{ qw.cognitive_complexity }}{% endif %}
+              {% if qw.churn > 0 %}{% if qw.complexity > 0 or qw.cognitive_complexity > 0 %}, {% endif %}Ch: {{ qw.churn }}{% endif %}
             </td>
             <td style="padding: 10px; font-size: 13px;">{{ qw.reason }}</td>
             <td style="padding: 10px; font-size: 13px;">
@@ -320,6 +328,11 @@
             </td>
             <td style="padding: 10px; text-align: center;">
               {{ qw.time_estimate if qw.time_estimate is defined else 'N/A' }}
+            </td>
+            <td style="padding: 10px; font-size: 12px;">
+              {% if qw.complexity > 0 %}C: {{ qw.complexity }}{% endif %}
+              {% if qw.cognitive_complexity > 0 %}{% if qw.complexity > 0 %}, {% endif %}Cog: {{ qw.cognitive_complexity }}{% endif %}
+              {% if qw.churn > 0 %}{% if qw.complexity > 0 or qw.cognitive_complexity > 0 %}, {% endif %}Ch: {{ qw.churn }}{% endif %}
             </td>
             <td style="padding: 10px; font-size: 13px;">{{ qw.reason }}</td>
             <td style="padding: 10px; font-size: 13px;">
