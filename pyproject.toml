@@ -19,7 +19,9 @@ dependencies = [
   "autopep8",
   "flake8",
   "pip-licenses",
-  "unidiff>=0.7.5"
+  "unidiff>=0.7.5",
+  "tree-sitter==0.21.3",
+  "tree-sitter-languages==1.10.2"
 ]
 
 [project.urls]
