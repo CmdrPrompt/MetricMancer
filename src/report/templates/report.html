@@ -262,6 +262,7 @@
             <th style="padding: 10px; text-align: center;">Impact</th>
             <th style="padding: 10px; text-align: center;">Effort</th>
             <th style="padding: 10px; text-align: center;">Time</th>
+            <th style="padding: 10px; text-align: left;">Metrics</th>
             <th style="padding: 10px; text-align: left;">Reason</th>
             <th style="padding: 10px; text-align: left;">Action</th>
           </tr>
@@ -289,6 +290,11 @@
             </td>
             <td style="padding: 10px; text-align: center;">
               {{ qw.time_estimate if qw.time_estimate is defined else 'N/A' }}
+            </td>
+            <td style="padding: 10px; font-size: 12px;">
+              {% if qw.complexity > 0 %}C: {{ qw.complexity }}{% endif %}
+              {% if qw.cognitive_complexity > 0 %}{% if qw.complexity > 0 %}, {% endif %}Cog: {{ qw.cognitive_complexity }}{% endif %}
+              {% if qw.churn > 0 %}{% if qw.complexity > 0 or qw.cognitive_complexity > 0 %}, {% endif %}Ch: {{ qw.churn }}{% endif %}
             </td>
             <td style="padding: 10px; font-size: 13px;">{{ qw.reason }}</td>
             <td style="padding: 10px; font-size: 13px;">
@@ -320,6 +326,11 @@
             </td>
             <td style="padding: 10px; text-align: center;">
               {{ qw.time_estimate if qw.time_estimate is defined else 'N/A' }}
+            </td>
+            <td style="padding: 10px; font-size: 12px;">
+              {% if qw.complexity > 0 %}C: {{ qw.complexity }}{% endif %}
+              {% if qw.cognitive_complexity > 0 %}{% if qw.complexity > 0 %}, {% endif %}Cog: {{ qw.cognitive_complexity }}{% endif %}
+              {% if qw.churn > 0 %}{% if qw.complexity > 0 or qw.cognitive_complexity > 0 %}, {% endif %}Ch: {{ qw.churn }}{% endif %}
             </td>
             <td style="padding: 10px; font-size: 13px;">{{ qw.reason }}</td>
             <td style="padding: 10px; font-size: 13px;">

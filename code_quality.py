@@ -162,11 +162,11 @@ def analyze_review_branch():
 def analyze_full():
     """Run complete analysis on MetricMancer itself."""
     print("\n🚀 Running complete analysis on MetricMancer codebase...")
-    print("   (Generates all reports: HTML, JSON, CLI)")
+    print("   (Generates all reports: HTML, JSON, CLI, Quick-wins, Code Review)")
     return run_command(
         "source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ "
-        "--output-formats html,json,summary --report-folder output/self-analysis "
-        "--churn-period 90 --threshold-high 15",
+        "--output-formats html,json,summary,quick-wins --report-folder output/self-analysis "
+        "--churn-period 90 --threshold-high 15 --include-review-tab",
         "Complete analysis"
     )
 

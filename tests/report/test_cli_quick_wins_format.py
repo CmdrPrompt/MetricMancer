@@ -142,8 +142,8 @@ class TestCalculateImpact(unittest.TestCase):
             churn=2,
             hotspot=10
         )
-        # hotspot=10 -> 1 point, complexity=60 -> 3 points, churn=2 -> 0 points = 4
-        self.assertEqual(impact, 4)
+        # hotspot=10 -> 1 point, complexity=60 -> 2 points, churn=2 -> 0 points = 3
+        self.assertEqual(impact, 3)
 
     def test_impact_high_churn(self):
         """Test impact with high churn."""
@@ -162,8 +162,8 @@ class TestCalculateImpact(unittest.TestCase):
             churn=20,
             hotspot=600
         )
-        # hotspot=600 -> 5, complexity=60 -> 3, churn=20 -> 2 = 10
-        self.assertEqual(impact, 10)
+        # hotspot=600 -> 5, complexity=60 -> 2, churn=20 -> 2 = 9
+        self.assertEqual(impact, 9)
 
     def test_impact_low_scores(self):
         """Test impact with all low scores."""
@@ -177,29 +177,29 @@ class TestCalculateImpact(unittest.TestCase):
 
     def test_impact_medium_hotspot(self):
         """Test impact with medium hotspot scores."""
-        # Test boundaries: complexity=50 adds 2 points to each
+        # Test boundaries: complexity=50 adds 2 points
         self.assertEqual(
             self.formatter._calculate_impact(50, 0, 51),
-            4  # hotspot 51 -> 2 points, complexity 50 -> 2 points
+            3  # hotspot 51 -> 2 points, complexity 50 -> 1 point
         )
         self.assertEqual(
             self.formatter._calculate_impact(50, 0, 151),
-            5  # hotspot 151 -> 3 points, complexity 50 -> 2 points
+            4  # hotspot 151 -> 3 points, complexity 50 -> 1 point
         )
         self.assertEqual(
             self.formatter._calculate_impact(50, 0, 301),
-            6  # hotspot 301 -> 4 points, complexity 50 -> 2 points
+            5  # hotspot 301 -> 4 points, complexity 50 -> 1 point
         )
 
     def test_impact_medium_complexity(self):
         """Test impact with medium complexity scores."""
         self.assertEqual(
             self.formatter._calculate_impact(11, 0, 0),
-            1  # complexity 11 -> 1 point
+            0  # complexity 11-20 -> 0 points
         )
         self.assertEqual(
             self.formatter._calculate_impact(25, 0, 0),
-            2  # complexity 25 -> 2 points
+            1  # complexity 21-50 -> 1 point
         )
 
 
@@ -552,7 +552,11 @@ class TestPrintMethods(unittest.TestCase):
             'action_type': "Refactor",
             'action_desc': "Break down function",
             'reason': "High complexity",
-            'time_estimate': "2-4 hours"
+            'time_estimate': "2-4 hours",
+            'complexity': 25,
+            'cognitive_complexity': 15,
+            'churn': 10,
+            'hotspot': 250
         }
         self.formatter._print_quick_win(1, win)
         output = mock_stdout.getvalue()
