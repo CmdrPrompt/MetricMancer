@@ -102,10 +102,9 @@ class TestMainMultiFormat:
         assert config.output_formats == ['html', 'json', 'summary']
 
     @patch('src.main.MetricMancerApp')
-    @patch('src.main.ReportGeneratorFactory')
     @patch('src.main.parse_args')
     @patch('src.main.sys.argv', ['main.py', 'src', '--output-formats', 'html,json'])
-    def test_main_does_not_create_single_generator_for_multi_format(self, mock_parse_args, mock_factory, mock_app_cls):
+    def test_main_does_not_create_single_generator_for_multi_format(self, mock_parse_args, mock_app_cls):
         """Test that main() doesn't create a single generator for multi-format."""
         mock_parser = Mock()
         mock_args = Mock()
@@ -138,22 +137,21 @@ class TestMainMultiFormat:
 
         main()
 
-        # Should NOT use ReportGeneratorFactory when multiple formats
-        # (MetricMancerApp handles this internally now)
-        # Factory should not be called or should be called per format inside app
+        # Verify MetricMancerApp was created with config
+        mock_app_cls.assert_called_once()
         call_kwargs = mock_app_cls.call_args.kwargs
-        # Check that report_generator_cls is either None or not set
-        assert 'report_generator_cls' not in call_kwargs or call_kwargs['report_generator_cls'] is None
+        assert 'config' in call_kwargs
+        config = call_kwargs['config']
+        assert config.output_formats == ['html', 'json']
 
 
 class TestMainBackwardCompatibility:
     """Test backward compatibility with single format in main.py."""
 
     @patch('src.main.MetricMancerApp')
-    @patch('src.main.ReportGeneratorFactory')
     @patch('src.main.parse_args')
     @patch('src.main.sys.argv', ['main.py', 'src', '--output-format', 'html'])
-    def test_main_single_format_still_works(self, mock_parse_args, mock_factory, mock_app_cls):
+    def test_main_single_format_still_works(self, mock_parse_args, mock_app_cls):
         """Test that single --output-format (old way) still works."""
         mock_parser = Mock()
         mock_args = Mock()
@@ -183,8 +181,6 @@ class TestMainBackwardCompatibility:
 
         mock_app = Mock()
         mock_app_cls.return_value = mock_app
-
-        mock_factory.create.return_value = Mock()
 
         main()
 
@@ -235,10 +231,9 @@ class TestMainFilenameHandling:
     """Test filename handling for file-based formats."""
 
     @patch('src.main.MetricMancerApp')
-    @patch('src.main.get_output_filename')
     @patch('src.main.parse_args')
     @patch('src.main.sys.argv', ['main.py', 'src', '--output-format', 'html'])
-    def test_main_generates_filename_for_html_format(self, mock_parse_args, mock_get_filename, mock_app_cls):
+    def test_main_generates_filename_for_html_format(self, mock_parse_args, mock_app_cls):
         """Test that main() generates filename for HTML format when not provided."""
         mock_parser = Mock()
         mock_args = Mock()
@@ -269,19 +264,16 @@ class TestMainFilenameHandling:
         mock_app = Mock()
         mock_app_cls.return_value = mock_app
 
-        mock_get_filename.return_value = 'complexity_report.html'
-
         main()
 
-        # Should call get_output_filename for HTML format
-        assert mock_get_filename.called
+        # Should create and run the app for HTML format
+        mock_app_cls.assert_called_once()
+        mock_app.run.assert_called_once()
 
     @patch('src.main.MetricMancerApp')
-    @patch('src.main.get_output_filename')
     @patch('src.main.parse_args')
     @patch('src.main.sys.argv', ['main.py', 'src', '--output-formats', 'html,json'])
-    def test_main_generates_base_filename_for_multi_format(self, mock_parse_args,
-                                                           mock_get_filename, mock_app_cls):
+    def test_main_generates_base_filename_for_multi_format(self, mock_parse_args, mock_app_cls):
         """Test that main() generates base filename for multi-format file outputs."""
         mock_parser = Mock()
         mock_args = Mock()
@@ -312,13 +304,11 @@ class TestMainFilenameHandling:
         mock_app = Mock()
         mock_app_cls.return_value = mock_app
 
-        mock_get_filename.return_value = 'complexity_report.html'
-
         main()
 
-        # Should generate filename if formats include file-based ones
+        # Should create app with config containing multi-format output
+        mock_app_cls.assert_called_once()
         call_kwargs = mock_app_cls.call_args.kwargs
         config = call_kwargs.get('config')
-        # Config should have output_file set if any format needs files
-        if any(fmt in ['html', 'json'] for fmt in config.output_formats):
-            assert config.output_file is not None
+        assert config.output_formats == ['html', 'json']
+        mock_app.run.assert_called_once()

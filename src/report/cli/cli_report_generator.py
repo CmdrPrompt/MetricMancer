@@ -57,6 +57,8 @@ class CLIReportGenerator(ReportInterface):
                 with open(output_file, 'w', encoding='utf-8') as f:
                     f.write(content)
                 print(f"[OK] Report generated: {output_file}", file=old_stdout)
+                # Also print the content to stdout for CLI visibility
+                print(content, end='', file=old_stdout)
             finally:
                 sys.stdout = old_stdout
         else:
