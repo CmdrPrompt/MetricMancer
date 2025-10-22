@@ -138,9 +138,16 @@
         <button id="expand-all-btn">Expand All</button>
         <button id="collapse-all-btn">Collapse All</button>
       </div>
-      <p>Klicka på mapparna (▶) för att expandera/kollapsa.</p>
+      <p>Click on folders (▶) to expand/collapse.</p>
       <div class="tree">
-        {{ render_tree(repo_info) }}
+        <div class="tree-item is-folder is-open">
+          <div class="tree-line">
+            <span class="toggle">▶</span>
+            <span class="name">{{ repo_info.dir_name }}/</span>
+            <span class="kpis">[Avg C: {{ repo_info.kpis.complexity.value | round(1) if repo_info.kpis.get('complexity') else '?' }}, Avg Cog: {{ repo_info.kpis.cognitive_complexity.value | round(1) if repo_info.kpis.get('cognitive_complexity') and repo_info.kpis.cognitive_complexity.value is not none else '?' }}, Avg Churn: {{ repo_info.kpis.churn.value if repo_info.kpis.get('churn') else '?' }}, Avg Hotspot: {{ repo_info.kpis.hotspot.value | round(1) if repo_info.kpis.get('hotspot') else '?' }}]</span>
+          </div>
+          <div class="nested">{{ render_tree(repo_info, "") }}</div>
+        </div>
       </div>
     </div>
   </div>
