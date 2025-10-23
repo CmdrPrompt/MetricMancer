@@ -24,10 +24,12 @@ def initialize_timing():
     return {
         'cache_prebuild': 0.0,
         'complexity': 0.0,
-        'filechurn': 0.0,
+        'cognitive_complexity': 0.0,
+        'kpi_aggregation': 0.0,
+        'churn': 0.0,
         'hotspot': 0.0,
         'ownership': 0.0,
-        'sharedownership': 0.0
+        'shared_ownership': 0.0
     }
 
 
@@ -269,8 +271,11 @@ class Analyzer:
             if file_obj:
                 self.hierarchy_builder.add_file_to_hierarchy(repo_info, file_obj)
 
+        # Measure KPI aggregation time
+        t_aggregation_start = time.perf_counter()
         # Aggregate KPIs for the directory hierarchy
         self._aggregate_scan_dir_kpis(repo_info)
+        self.timing['kpi_aggregation'] += time.perf_counter() - t_aggregation_start
         return repo_info
 
     def _process_file(self, file_info, repo_root_path, complexity_analyzer):
@@ -289,6 +294,14 @@ class Analyzer:
 
         # Delegate to FileAnalyzer - clean interface, returns File object
         file_obj = self.file_analyzer.analyze_file(file_info, repo_root_path)
+
+        # Accumulate timing from KPICalculator to analyzer timing
+        kpi_timing = self.file_analyzer.kpi_calculator.get_timing_report()
+        for key, value in kpi_timing.items():
+            self.timing[key] += value
+
+        # Reset KPICalculator timing for next file
+        self.file_analyzer.kpi_calculator.reset_timing()
 
         return file_obj
 

@@ -28,9 +28,6 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         self._print_quick_wins(quick_wins)
         self._print_summary(quick_wins)
 
-        elapsed = time.time() - start_time
-        self._print_footer(elapsed)
-
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
         """Recursively collects all File objects from a ScanDir tree.
 
@@ -403,8 +400,9 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
 
     def _print_footer(self, elapsed: float):
         """Print footer with timing info."""
-        print(f"⏱️  Analysis Time: {elapsed:.2f}s")
-        print()
+        # Note: Analysis timing is now shown in the global TIME SUMMARY
+        # This footer is kept for potential future use but doesn't show timing
+        pass
 
     def _get_file_path(self, file_obj: File) -> str:
         """Get the relative file path for display."""

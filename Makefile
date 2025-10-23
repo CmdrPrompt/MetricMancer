@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test coverage licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
+.PHONY: help install format lint test coverage licenses serve check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -17,6 +17,7 @@ help:
 	@echo "  make test                 - Run all tests with pytest"
 	@echo "  make coverage             - Run tests with coverage report (HTML + terminal)"
 	@echo "  make licenses             - Check license compliance"
+	@echo "  make serve                - Start Python HTTP server for testing web pages"
 	@echo "  make check                - Run lint + test + licenses (CI workflow)"
 	@echo "  make clean                - Clean temporary files"
 	@echo ""
@@ -72,6 +73,15 @@ licenses:
 	@echo "📋 Checking license compliance..."
 	@source .venv/bin/activate && python check_licenses.py
 	@echo "✅ License check complete!"
+
+serve:
+	@echo "🌐 Starting Python HTTP server for testing generated web pages..."
+	@echo "   Server will be available at: http://localhost:8080"
+	@echo "   Serving files from: $(shell pwd)"
+	@echo "   Press Ctrl+C to stop the server"
+	@echo ""
+	@source .venv/bin/activate && python -m http.server 8080
+	@echo "✅ Server stopped!"
 
 check: lint test licenses
 	@echo "✅ All checks passed!"

@@ -35,9 +35,6 @@ class CLISummaryFormat(ReportFormatStrategy):
         self._print_recommendations(critical_files, emerging_files, high_complexity_files, all_files)
         self._print_detailed_reports(repo_info)
 
-        elapsed = time.time() - start_time
-        self._print_footer(elapsed)
-
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
         """Recursively collects all git-tracked File objects from a ScanDir tree."""
 
@@ -268,8 +265,9 @@ class CLISummaryFormat(ReportFormatStrategy):
 
     def _print_footer(self, elapsed: float):
         """Print footer with timing info."""
-        print(f"⏱️  Analysis Time: {elapsed:.2f}s")
-        print()
+        # Note: Analysis timing is now shown in the global TIME SUMMARY
+        # This footer is kept for potential future use but doesn't show timing
+        pass
 
     def _get_file_path(self, file_obj: File) -> str:
         """Get the relative file path for display."""

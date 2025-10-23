@@ -435,12 +435,11 @@ class TestPrintMethods(TestCLISummaryFormat):
         self.assertIn('--output-format human-tree', output)
 
     def test_print_footer(self):
-        """Test footer printing with timing."""
+        """Test footer printing - now empty as timing is shown in global TIME SUMMARY."""
         output = self._capture_print_output(self.formatter._print_footer, 1.234)
 
-        self.assertIn('⏱️', output)
-        self.assertIn('Analysis Time:', output)
-        self.assertIn('1.23s', output)
+        # Footer is now empty - timing shown in global TIME SUMMARY instead
+        self.assertEqual(output.strip(), "")
 
 
 class TestGetFilePath(TestCLISummaryFormat):
@@ -493,7 +492,7 @@ class TestPrintReportIntegration(TestCLISummaryFormat):
         self.assertIn('📈 HEALTH METRICS', output)
         self.assertIn('💡 RECOMMENDATIONS', output)
         self.assertIn('📁 DETAILED REPORTS', output)
-        self.assertIn('⏱️  Analysis Time:', output)
+        # Note: Timing info is now shown in global TIME SUMMARY, not in report footer
 
     def test_print_report_empty_repo(self):
         """Test report generation with empty repository."""
