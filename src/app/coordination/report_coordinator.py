@@ -194,6 +194,7 @@ class ReportCoordinator:
             output_format=output_format,
             report_links=links_for_this,
             save_cli_to_file=save_cli_to_file,
+            report_folder=self.report_folder,
             # Pass review tab settings for HTML reports
             include_review_tab=self.app_config.include_review_tab,
             review_branch_only=self.app_config.review_branch_only,

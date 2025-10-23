@@ -147,11 +147,35 @@ class AppConfig:
     @staticmethod
     def _extract_output_settings(args, output_formats_value, output_format_value, using_output_formats_flag) -> dict:
         """Extract output-related settings from CLI args."""
+        # Handle output filename logic (similar to report_helpers.get_output_filename)
+        import os
+        import datetime
+        
+        # Set file type depending on report format
+        ext = '.html'
+        if output_format_value == 'json':
+            ext = '.json'
+        output_file = f'complexity_report{ext}'
+
+        if getattr(args, 'report_filename', None):
+            output_file = args.report_filename
+            if getattr(args, 'with_date', False):
+                date_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+                base, ext = os.path.splitext(output_file)
+                output_file = f"{base}_{date_str}{ext}"
+        elif getattr(args, 'auto_report_filename', False):
+            date_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+            dir_str = "_".join([
+                os.path.basename(os.path.normpath(d))
+                for d in getattr(args, 'directories', ['src'])
+            ])
+            output_file = f"complexity_report_{dir_str}_{date_str}.html"
+        
         return {
             'output_format': output_format_value,
             'output_formats': output_formats_value if output_formats_value else ['summary'],
             'using_output_formats_flag': using_output_formats_flag,
-            'output_file': None,  # Will be set later if needed
+            'output_file': output_file,
             'report_folder': getattr(args, 'report_folder', None) or 'output',
             'level': args.level,
             'hierarchical': args.hierarchical,

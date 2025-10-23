@@ -33,7 +33,7 @@ class CLISummaryFormat(ReportFormatStrategy):
         self._print_high_priority(emerging_files, high_complexity_files, high_churn_files)
         self._print_health_metrics(stats)
         self._print_recommendations(critical_files, emerging_files, high_complexity_files, all_files)
-        self._print_detailed_reports(repo_info)
+        self._print_detailed_reports(repo_info, **kwargs)
 
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
         """Recursively collects all git-tracked File objects from a ScanDir tree."""
@@ -254,10 +254,20 @@ class CLISummaryFormat(ReportFormatStrategy):
             print("   ✅ No critical issues detected - code is in good shape!")
         print()
 
-    def _print_detailed_reports(self, repo_info: RepoInfo):
+    def _print_detailed_reports(self, repo_info: RepoInfo, **kwargs):
         """Print links to detailed reports."""
         print("📁 DETAILED REPORTS")
-        print("   HTML Report:    output/complexity_report.html")
+        
+        # Only show HTML report if we're actually generating an HTML file
+        output_format = kwargs.get('output_format')
+        if output_format == 'html':
+            html_output_file = kwargs.get('output_file', 'output/complexity_report.html')
+            if html_output_file and not html_output_file.startswith('output/'):
+                # If it's a custom filename, assume it's in the report folder
+                report_folder = kwargs.get('report_folder', 'output')
+                html_output_file = f"{report_folder}/{html_output_file}"
+            print(f"   HTML Report:    {html_output_file}")
+        
         print("   Hotspot Report: Run with --list-hotspots")
         print("   Review Strategy: Run with --review-strategy")
         print("   File Tree:      Run with --output-format human-tree")
