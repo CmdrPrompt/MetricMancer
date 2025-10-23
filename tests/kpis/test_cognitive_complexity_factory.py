@@ -10,7 +10,6 @@ TDD RED-GREEN-REFACTOR:
 3. REFACTOR - Ensure clean code
 """
 
-import warnings
 import pytest
 
 # Suppress FutureWarning from tree_sitter Language(path, name) deprecation

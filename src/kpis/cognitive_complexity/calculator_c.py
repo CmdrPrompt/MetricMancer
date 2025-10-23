@@ -138,10 +138,8 @@ class CCognitiveComplexityCalculator(CognitiveComplexityCalculatorBase):
             # In tree-sitter C, else is part of if_statement's children as 'else_clause'
             if node.type == 'if_statement':
                 # Check for else clause
-                has_else = False
                 for i, child in enumerate(node.children):
                     if child.type == 'else_clause':
-                        has_else = True
                         # else keyword adds +1 + nesting
                         complexity += 1 + nesting_level
 

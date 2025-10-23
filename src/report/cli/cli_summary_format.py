@@ -6,7 +6,6 @@ Provides actionable insights prioritized by importance instead of file tree.
 from src.report.report_format_strategy import ReportFormatStrategy
 from src.kpis.model import RepoInfo, ScanDir, File
 from typing import List, Tuple, Dict
-import time
 
 
 class CLISummaryFormat(ReportFormatStrategy):
@@ -17,7 +16,6 @@ class CLISummaryFormat(ReportFormatStrategy):
         Prints an executive summary dashboard to the console.
         Focuses on actionable insights and critical issues.
         """
-        start_time = time.time()
 
         # Collect all files and calculate statistics
         all_files = self._collect_all_files(repo_info)

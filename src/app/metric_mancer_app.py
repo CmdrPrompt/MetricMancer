@@ -111,7 +111,6 @@ class MetricMancerApp:
             generator_cls = ReportGeneratorFactory.create(self.app_config.output_format)
             if generator_cls is None:
                 # Factory returns None for 'html' - use default ReportGenerator
-                from src.report.report_generator import ReportGenerator
                 generator_cls = ReportGenerator
             return generator_cls
 
