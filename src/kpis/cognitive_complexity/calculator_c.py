@@ -89,7 +89,6 @@ class CCognitiveComplexityCalculator(CognitiveComplexityCalculatorBase):
 
         if node.type == 'function_definition':
             functions.append(node)
-
         for child in node.children:
             functions.extend(self._find_functions(child))
 
