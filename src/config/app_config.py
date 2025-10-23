@@ -150,7 +150,7 @@ class AppConfig:
         # Handle output filename logic (similar to report_helpers.get_output_filename)
         import os
         import datetime
-        
+
         # Set file type depending on report format
         ext = '.html'
         if output_format_value == 'json':
@@ -172,7 +172,7 @@ class AppConfig:
                 for d in getattr(args, 'directories', ['src'])
             ])
             output_file = f"complexity_report_{dir_str}_{date_str}.html"
-        
+
         return {
             'output_format': output_format_value,
             'output_formats': output_formats_value if output_formats_value else ['summary'],
@@ -251,7 +251,8 @@ class AppConfig:
         output_formats_value, using_output_formats_flag, output_format_value = cls._parse_output_formats_from_args(args)
 
         threshold_settings = cls._extract_threshold_settings(args)
-        output_settings = cls._extract_output_settings(args, output_formats_value, output_format_value, using_output_formats_flag)
+        output_settings = cls._extract_output_settings(
+            args, output_formats_value, output_format_value, using_output_formats_flag)
         hotspot_settings = cls._extract_hotspot_settings(args)
         review_settings = cls._extract_review_settings(args)
         churn_settings = cls._extract_churn_settings(args)

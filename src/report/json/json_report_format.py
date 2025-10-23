@@ -40,7 +40,8 @@ class JSONReportFormat(ReportFormatStrategy):
         kpi = kpis.get(key)
         return kpi.value if kpi and hasattr(kpi, 'value') else None
 
-    def _extract_package_kpis(self, scan_dir: ScanDir, repo_name: Optional[str] = None, timestamp: Optional[str] = None, component: Optional[str] = None, team: Optional[str] = None) -> dict:
+    def _extract_package_kpis(self, scan_dir: ScanDir, repo_name: Optional[str] = None, timestamp: Optional[str]
+                              = None, component: Optional[str] = None, team: Optional[str] = None) -> dict:
         """
         Extracts package-level KPIs from a ScanDir and returns a dictionary item.
         """
@@ -49,7 +50,7 @@ class JSONReportFormat(ReportFormatStrategy):
         package_churn = self._kpi_value(scan_dir.kpis, 'churn')
         package_hotspot = self._kpi_value(scan_dir.kpis, 'hotspot')
         package_shared_ownership = self._kpi_value(scan_dir.kpis, 'Shared Ownership')
-        
+
         # Aggregate all unique owners from files and subdirs
         owners_set = set()
         for file in scan_dir.files.values():
@@ -61,7 +62,7 @@ class JSONReportFormat(ReportFormatStrategy):
             if subdir_co_val and isinstance(subdir_co_val, dict):
                 owners_set.update(subdir_co_val.keys())
         package_code_ownership = list(owners_set)
-        
+
         return {
             "filename": scan_dir.scan_dir_path,
             "package": scan_dir.scan_dir_path,
@@ -74,7 +75,8 @@ class JSONReportFormat(ReportFormatStrategy):
             "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
         }
 
-    def _extract_file_kpis(self, file_obj: File, repo_name: Optional[str] = None, timestamp: Optional[str] = None, component: Optional[str] = None, team: Optional[str] = None) -> dict:
+    def _extract_file_kpis(self, file_obj: File, repo_name: Optional[str] = None, timestamp: Optional[str]
+                           = None, component: Optional[str] = None, team: Optional[str] = None) -> dict:
         """
         Extracts file-level KPIs from a File object and returns a dictionary item.
         """
@@ -84,7 +86,7 @@ class JSONReportFormat(ReportFormatStrategy):
         file_complexity = self._kpi_value(file_obj.kpis, 'complexity')
         file_cognitive_complexity = self._kpi_value(file_obj.kpis, 'cognitive_complexity')
         file_hotspot = self._kpi_value(file_obj.kpis, 'hotspot')
-        
+
         return {
             "filename": file_obj.file_path,
             "cyclomatic_complexity": file_complexity,
@@ -96,7 +98,8 @@ class JSONReportFormat(ReportFormatStrategy):
             "repo_name": repo_name, "component": component, "team": team, "timestamp": timestamp
         }
 
-    def _extract_function_kpis(self, func_obj, file_obj: File, file_churn: Any, repo_name: Optional[str] = None, timestamp: Optional[str] = None, component: Optional[str] = None, team: Optional[str] = None) -> dict:
+    def _extract_function_kpis(self, func_obj, file_obj: File, file_churn: Any,
+                               repo_name: Optional[str] = None, timestamp: Optional[str] = None, component: Optional[str] = None, team: Optional[str] = None) -> dict:
         """
         Extracts function-level KPIs from a Function object and returns a dictionary item.
         """
@@ -104,7 +107,7 @@ class JSONReportFormat(ReportFormatStrategy):
         func_cognitive_complexity = self._kpi_value(func_obj.kpis, 'cognitive_complexity')
         func_code_ownership_value = self._kpi_value(func_obj.kpis, 'Code Ownership')
         func_shared_ownership_value = self._kpi_value(func_obj.kpis, 'Shared Ownership')
-        
+
         return {
             "filename": file_obj.file_path,
             "function_name": func_obj.name,
@@ -148,7 +151,15 @@ class JSONReportFormat(ReportFormatStrategy):
 
             if level == "function":
                 for func_obj in file_obj.functions:
-                    items.append(self._extract_function_kpis(func_obj, file_obj, file_churn, repo_name, timestamp, component, team))
+                    items.append(
+                        self._extract_function_kpis(
+                            func_obj,
+                            file_obj,
+                            file_churn,
+                            repo_name,
+                            timestamp,
+                            component,
+                            team))
             else:  # level == "file"
                 items.append(self._extract_file_kpis(file_obj, repo_name, timestamp, component, team))
 

@@ -208,7 +208,7 @@ class CLISummaryFormat(ReportFormatStrategy):
 
         print("📈 HEALTH METRICS")
         print(f"   Code Quality:          {quality_grade} ({quality_score}/100)")
-        print(f"   Test Coverage:         Unknown (run with --coverage)")
+        print("   Test Coverage:         Unknown (run with --coverage)")
         print(f"   Tech Debt Score:       {tech_debt}")
         print()
 
@@ -257,7 +257,7 @@ class CLISummaryFormat(ReportFormatStrategy):
     def _print_detailed_reports(self, repo_info: RepoInfo, **kwargs):
         """Print links to detailed reports."""
         print("📁 DETAILED REPORTS")
-        
+
         # Only show HTML report if we're actually generating an HTML file
         output_format = kwargs.get('output_format')
         if output_format == 'html':
@@ -267,7 +267,7 @@ class CLISummaryFormat(ReportFormatStrategy):
                 report_folder = kwargs.get('report_folder', 'output')
                 html_output_file = f"{report_folder}/{html_output_file}"
             print(f"   HTML Report:    {html_output_file}")
-        
+
         print("   Hotspot Report: Run with --list-hotspots")
         print("   Review Strategy: Run with --review-strategy")
         print("   File Tree:      Run with --output-format human-tree")

@@ -7,9 +7,7 @@ Following TDD (RED-GREEN-REFACTOR):
 - REFACTOR: Clean up implementation
 """
 
-import pytest
 from datetime import datetime
-from typing import Optional
 
 
 class TestChangeType:

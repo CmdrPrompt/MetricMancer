@@ -10,8 +10,6 @@ TDD RED-GREEN-REFACTOR:
 3. REFACTOR - Ensure clean code
 """
 
-import pytest
-
 
 class TestCognitiveComplexityKPIIntegration:
     """Test CognitiveComplexityKPI integration with factory."""

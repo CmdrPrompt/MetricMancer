@@ -1,7 +1,6 @@
 import unittest
 from unittest.mock import Mock
 
-from src.kpis.model import RepoInfo, ScanDir, File
 from src.report.report_data import ReportData, ReportDataBuilder
 
 

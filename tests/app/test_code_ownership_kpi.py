@@ -23,21 +23,26 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
         # Mock git blame output
         mock_check_output.return_value = "author Thomas\n" * 10
 
-        repo_root = "."
         file_path = "some_file.py"
-        # Skapa dummy-fil så att os.path.exists returnerar True
+        # Create dummy file so that os.path.exists returns True
         with open(file_path, "w") as f:
             f.write("# dummy\n")
 
         try:
-            # Skapa två KPI-instans för samma fil
-            kpi1 = CodeOwnershipKPI(file_path, repo_root)
-            kpi2 = CodeOwnershipKPI(file_path, repo_root)
+            # Create CodeOwnershipKPI instance - this should trigger git calls
+            kpi = CodeOwnershipKPI(file_path=file_path, repo_root=".")
 
-            # Kontrollera att git-anropet sker en gång (cache används)
-            self.assertEqual(mock_check_output.call_count, 1, "Cache should be used, but git called twice.")
+            # Check that git blame was called once (cache should be used)
+            self.assertEqual(mock_check_output.call_count, 1, "Git blame should be called once for cache.")
+
+            # Create another instance for the same file - should use cache
+            kpi2 = CodeOwnershipKPI(file_path=file_path, repo_root=".")
+
+            # Git blame should still only be called once (cache hit)
+            self.assertEqual(mock_check_output.call_count, 1, "Cache should prevent second git call.")
+
         finally:
-            # Städa upp testfilen
+            # Clean up test file
             os.remove(file_path)
 
 

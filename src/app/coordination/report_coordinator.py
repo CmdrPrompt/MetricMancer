@@ -95,7 +95,8 @@ class ReportCoordinator:
         if simple_ext:
             return base, simple_ext
 
-        if output_format in ['summary', 'quick-wins', 'human-tree'] and (is_multi_format or self.app_config.using_output_formats_flag):
+        if output_format in ['summary', 'quick-wins',
+                             'human-tree'] and (is_multi_format or self.app_config.using_output_formats_flag):
             ext = '.md'
             cli_base = self.get_cli_format_details(output_format)
             if cli_base:

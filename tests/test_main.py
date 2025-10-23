@@ -66,7 +66,7 @@ class TestMainCriticalFunctionality:
             main()
 
         # Verify debug mode was enabled
-        assert src.utilities.debug.DEBUG == True
+        assert src.utilities.debug.DEBUG
         # Verify app was created and run
         mock_app_class.assert_called_once_with(config=mock_config)
         mock_app_instance.run.assert_called_once()

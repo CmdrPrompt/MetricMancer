@@ -6,7 +6,6 @@ Prioritizes improvements by impact vs. effort for maximum ROI.
 from src.report.report_format_strategy import ReportFormatStrategy
 from src.kpis.model import RepoInfo, ScanDir, File
 from typing import List, Tuple, Dict
-import time
 
 
 class CLIQuickWinsFormat(ReportFormatStrategy):
@@ -17,7 +16,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         Prints quick win suggestions prioritized by impact vs. effort.
         Helps teams focus on high-value, low-effort improvements.
         """
-        start_time = time.time()
+        # start_time = time.time()
 
         # Collect all files and calculate quick wins
         all_files = self._collect_all_files(repo_info)
@@ -226,7 +225,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         if cognitive_complexity > 25:
             return (
                 'Reduce Nesting',
-                f'Reduce nesting depth and extract helper methods',
+                'Reduce nesting depth and extract helper methods',
                 f'Very high cognitive complexity (Cog:{cognitive_complexity}) - hard to understand'
             )
 
@@ -236,7 +235,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
             if num_authors == 1 and complexity > 30:
                 return (
                     'Document',
-                    f'Add comprehensive documentation and comments',
+                    'Add comprehensive documentation and comments',
                     f'Single owner (100%), high complexity (C:{complexity})'
                 )
 
@@ -244,7 +243,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         if complexity > 15 and churn > 10:
             return (
                 'Refactor',
-                f'Break down into smaller functions (<10 complexity each)',
+                'Break down into smaller functions (<10 complexity each)',
                 f'Critical hotspot (C:{complexity}, Churn:{churn})'
             )
 
@@ -252,7 +251,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         if complexity > 20:
             return (
                 'Refactor',
-                f'Extract functions to reduce complexity',
+                'Extract functions to reduce complexity',
                 f'High complexity (C:{complexity})'
             )
 
@@ -260,7 +259,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         if cognitive_complexity > 15:
             return (
                 'Simplify',
-                f'Reduce nesting and simplify boolean conditions',
+                'Reduce nesting and simplify boolean conditions',
                 f'Moderate cognitive complexity (Cog:{cognitive_complexity})'
             )
 
@@ -268,7 +267,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         if churn > 10:
             return (
                 'Add Tests',
-                f'Start with happy path tests, then edge cases',
+                'Start with happy path tests, then edge cases',
                 f'High churn (Churn:{churn}) - likely lacks test coverage'
             )
 
@@ -278,14 +277,14 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
             if num_authors > 3:
                 return (
                     'Review Ownership',
-                    f'Establish clear ownership and responsibility',
+                    'Establish clear ownership and responsibility',
                     f'Fragmented ownership ({num_authors} significant authors)'
                 )
 
         # Default = general improvement
         return (
             'Improve',
-            f'General code quality improvements',
+            'General code quality improvements',
             f'Moderate metrics (C:{complexity}, Churn:{churn})'
         )
 
@@ -326,7 +325,7 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
 
         if len(quick_wins) > display_count:
             print(f"\n💡 {len(quick_wins) - display_count} more opportunities available")
-            print(f"   Run with --output-format json for full list")
+            print("   Run with --output-format json for full list")
 
     def _print_quick_win(self, index: int, win: Dict):
         """Print a single quick win suggestion."""
@@ -336,7 +335,9 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         # Impact bar
         impact_bar = self._create_bar(win['impact'], 10, '█')
         print(
-            f"   Impact:  {impact_bar} {'High' if win['impact'] >= 7 else 'Medium' if win['impact'] >= 5 else 'Low'} ({win['impact']}/10)"
+            f"   Impact:  {impact_bar} {
+                'High' if win['impact'] >= 7 else 'Medium' if win['impact'] >= 5 else 'Low'} ({
+                win['impact']}/10)"
         )
 
         # Effort bar
@@ -390,7 +391,6 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
 
         # ROI insights
         if quick_wins:
-            top_roi = quick_wins[0]['roi']
             print(f"\n   Best ROI:  {quick_wins[0]['file_path']}")
             print(f"              (Impact: {quick_wins[0]['impact']}/10, Effort: {quick_wins[0]['effort']}/10)")
 

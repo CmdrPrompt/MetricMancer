@@ -8,14 +8,8 @@ from src.app.kpi.kpi_aggregator import KPIAggregator
 from src.app.kpi.file_analyzer import FileAnalyzer
 from src.app.kpi.kpi_calculator import KPICalculator
 from src.kpis.base_kpi import BaseKPI
-from src.kpis.codeownership import CodeOwnershipKPI
-from src.kpis.codechurn import ChurnKPI
-from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
-from src.kpis.hotspot import HotspotKPI
-from src.kpis.model import RepoInfo, ScanDir, File, Function
-from src.kpis.sharedcodeownership.shared_code_ownership import (
-    SharedOwnershipKPI
-)
+from src.kpis.complexity import ComplexityAnalyzer
+from src.kpis.model import RepoInfo
 from src.utilities.debug import debug_print
 
 

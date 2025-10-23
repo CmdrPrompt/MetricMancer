@@ -70,7 +70,7 @@ class HTMLReportFormat(ReportFormatStrategy):
         recommendations = []
         for file_obj in filtered_files:
             complexity, churn, hotspot, ownership_data, shared_ownership_data = self._extract_file_kpi_data(file_obj)
-            
+
             rec = advisor.analyze_file(
                 file_obj.file_path,
                 complexity,
@@ -96,7 +96,8 @@ class HTMLReportFormat(ReportFormatStrategy):
             'base_branch': review_base_branch if review_branch_only else None
         }
 
-    def _filter_files_for_review(self, all_files, repo_info: RepoInfo, review_branch_only=False, review_base_branch='main'):
+    def _filter_files_for_review(self, all_files, repo_info: RepoInfo,
+                                 review_branch_only=False, review_base_branch='main'):
         """
         Filter files for review based on branch changes if requested.
 
@@ -132,10 +133,10 @@ class HTMLReportFormat(ReportFormatStrategy):
         """
         complexity_kpi = file_obj.kpis.get('complexity')
         complexity = complexity_kpi.value if complexity_kpi else 0
-        
+
         churn_kpi = file_obj.kpis.get('churn')
         churn = churn_kpi.value if churn_kpi else 0
-        
+
         hotspot_kpi = file_obj.kpis.get('hotspot')
         hotspot = hotspot_kpi.value if hotspot_kpi else 0
 
@@ -144,7 +145,8 @@ class HTMLReportFormat(ReportFormatStrategy):
         ownership_data = ownership_kpi.value if ownership_kpi and hasattr(ownership_kpi, 'value') else None
 
         shared_ownership_kpi = file_obj.kpis.get('Shared Code Ownership')
-        shared_ownership_data = shared_ownership_kpi.value if shared_ownership_kpi and hasattr(shared_ownership_kpi, 'value') else None
+        shared_ownership_data = shared_ownership_kpi.value if shared_ownership_kpi and hasattr(
+            shared_ownership_kpi, 'value') else None
 
         return complexity, churn, hotspot, ownership_data, shared_ownership_data
 

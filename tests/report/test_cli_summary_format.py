@@ -3,7 +3,7 @@ Tests for CLISummaryFormat - Executive Summary Dashboard formatter.
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 from io import StringIO
 import sys
 

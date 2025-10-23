@@ -10,8 +10,6 @@ TDD Approach:
 3. REFACTOR: Ensure all existing tests still pass
 """
 
-import pytest
-
 
 class TestCoreModuleImports:
     """Test imports from src.app.core/"""

@@ -148,7 +148,8 @@ class TypeScriptCognitiveComplexityCalculator(CognitiveComplexityCalculatorBase)
 
             # Stop traversal if we encounter a nested function
             # Nested functions should be analyzed separately
-            if node != body and node.type in ('function_declaration', 'function', 'arrow_function', 'method_definition'):
+            if node != body and node.type in ('function_declaration', 'function',
+                                              'arrow_function', 'method_definition'):
                 return
 
             # Check if this node increments complexity

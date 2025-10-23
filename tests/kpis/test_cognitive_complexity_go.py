@@ -10,8 +10,6 @@ TDD RED-GREEN-REFACTOR:
 3. REFACTOR - Ensure clean code
 """
 
-import pytest
-
 
 class TestGoCalculatorBasicStructures:
     """Test basic control structures in Go."""

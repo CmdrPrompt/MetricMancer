@@ -6,7 +6,6 @@ Following TDD (RED-GREEN-REFACTOR):
 - Format should be markdown with clear sections
 """
 
-import pytest
 from datetime import datetime
 from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
 

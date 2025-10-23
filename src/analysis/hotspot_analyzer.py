@@ -9,27 +9,27 @@ from typing import List, Tuple, Dict, Any
 def _is_valid_hotspot(filedata: Dict[str, Any], threshold: int) -> bool:
     """
     Check if file data represents a valid hotspot.
-    
+
     Args:
         filedata: File data dictionary
         threshold: Minimum hotspot score threshold
-        
+
     Returns:
         True if file is a valid hotspot
     """
-    return ('kpis' in filedata and 
-            'hotspot' in filedata['kpis'] and 
+    return ('kpis' in filedata and
+            'hotspot' in filedata['kpis'] and
             filedata['kpis']['hotspot'] >= threshold)
 
 
 def _create_hotspot_tuple(file_path: str, filedata: Dict[str, Any]) -> Tuple[str, int, int, float]:
     """
     Create standardized hotspot tuple from file data.
-    
+
     Args:
         file_path: Path to the file
         filedata: File data dictionary
-        
+
     Returns:
         Tuple: (file_path, hotspot_score, complexity, churn)
     """
@@ -42,12 +42,12 @@ def _create_hotspot_tuple(file_path: str, filedata: Dict[str, Any]) -> Tuple[str
 def _extract_file_hotspots(data: Dict[str, Any], path: str, threshold: int) -> List[Tuple[str, int, int, float]]:
     """
     Extract hotspots from files in current directory.
-    
+
     Args:
         data: Directory data dictionary
         path: Current path prefix
         threshold: Minimum hotspot score threshold
-        
+
     Returns:
         List of hotspot tuples from files in current directory
     """
@@ -63,12 +63,12 @@ def _extract_file_hotspots(data: Dict[str, Any], path: str, threshold: int) -> L
 def _extract_directory_hotspots(data: Dict[str, Any], path: str, threshold: int) -> List[Tuple[str, int, int, float]]:
     """
     Extract hotspots from subdirectories recursively.
-    
+
     Args:
         data: Directory data dictionary
         path: Current path prefix
         threshold: Minimum hotspot score threshold
-        
+
     Returns:
         List of hotspot tuples from all subdirectories
     """
@@ -95,7 +95,7 @@ def extract_hotspots_from_data(data: Dict[str, Any], threshold: int = 50,
     """
     if not isinstance(data, dict):
         return []
-    
+
     hotspots = []
     hotspots.extend(_extract_file_hotspots(data, path, threshold))
     hotspots.extend(_extract_directory_hotspots(data, path, threshold))
@@ -316,9 +316,11 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
     output.append("\n### Recommended Actions by Category\n")
     output.append("| Category | Actions |")
     output.append("|----------|---------|")
-    output.append("| 🔴 Critical Hotspots | Refactor into smaller functions, add comprehensive tests, consider architectural redesign, assign senior dev ownership |")
+    output.append("| 🔴 Critical Hotspots | Refactor into smaller functions, add comprehensive tests, " +
+                  "consider architectural redesign, assign senior dev ownership |")
     output.append(
-        "| 🟡 Emerging Hotspots | Monitor closely, preventive refactoring, strengthen testing, code reviews by experienced team members |")
+        "| 🟡 Emerging Hotspots | Monitor closely, preventive refactoring, strengthen testing, " +
+        "code reviews by experienced team members |")
     output.append("| 🟢 Stable Complexity | Document thoroughly, add integration tests, consider if refactoring adds value |")
     output.append("| ✅ Active Simple Code | Good pattern - ensure it stays simple |")
 
@@ -372,11 +374,11 @@ def print_hotspots_summary(hotspots: List[Tuple[str, int, int, float]]) -> None:
     critical_count = len([h for h in hotspots if h[2] > 15 and h[3] > 10])  # complexity > 15, churn > 10
     total_count = len(hotspots)
 
-    print(f"\nHOTSPOT SUMMARY:")
+    print("\nHOTSPOT SUMMARY:")
     print(f"   Total hotspots found: {total_count}")
     print(f"   Critical hotspots: {critical_count}")
 
     if critical_count > 0:
-        print(f"   {critical_count} files need immediate attention!")
+        print("   Files need immediate attention!")
     else:
-        print(f"   No critical hotspots found.")
+        print("   No critical hotspots found.")

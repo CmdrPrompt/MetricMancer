@@ -72,37 +72,35 @@ class MetricMancerApp:
     def _ensure_output_file_for_file_formats(self):
         """
         Ensure output_file is set when any format requires a file.
-        
+
         Follows Configuration Object Pattern: This logic was moved from main.py
         to keep main.py focused on orchestration only.
         """
         file_based_formats = {'html', 'json', 'machine'}
         needs_file = any(fmt in file_based_formats for fmt in self.app_config.output_formats)
-        
+
         if needs_file and not self.app_config.output_file:
             # Generate default output filename for file-based formats
-            from src.report.report_helpers import get_output_filename
-            # We need to reconstruct args-like object for get_output_filename
             # For now, use a simple default
             self.app_config.output_file = "complexity_report.html"
 
     def _determine_report_generator_cls(self, report_generator_cls):
         """
         Determine which report generator class to use.
-        
+
         Follows Factory Pattern: Logic moved from main.py to keep main.py simple.
         Uses ReportGeneratorFactory for single-format, None for multi-format.
-        
+
         Args:
             report_generator_cls: Explicitly provided generator class (for testing)
-            
+
         Returns:
             Report generator class or None for multi-format mode
         """
         if report_generator_cls is not None:
             # Explicitly provided (for testing/backward compatibility)
             return report_generator_cls
-            
+
         # Configuration Object Pattern: Use config to determine mode
         if len(self.app_config.output_formats) > 1:
             # Multi-format: ReportCoordinator handles generator selection
@@ -118,13 +116,13 @@ class MetricMancerApp:
             return generator_cls
 
     def _initialize_config(self, config, directories, threshold_low, threshold_high,
-                          problem_file_threshold, output_file, level, hierarchical,
-                          output_format, report_folder, list_hotspots, hotspot_threshold,
-                          hotspot_output, review_strategy, review_output, review_branch_only,
-                          review_base_branch, churn_period) -> AppConfig:
+                           problem_file_threshold, output_file, level, hierarchical,
+                           output_format, report_folder, list_hotspots, hotspot_threshold,
+                           hotspot_output, review_strategy, review_output, review_branch_only,
+                           review_base_branch, churn_period) -> AppConfig:
         """
         Initialize configuration using Configuration Object Pattern.
-        
+
         Returns:
             AppConfig: Validated configuration object
         """
@@ -132,7 +130,7 @@ class MetricMancerApp:
             # Validate config
             config.validate()
             return config
-        
+
         # Legacy mode: create config from individual parameters
         if directories is None:
             raise TypeError("MetricMancerApp() missing required argument: 'directories' or 'config'")
@@ -161,7 +159,7 @@ class MetricMancerApp:
     def _expose_config_attributes(self):
         """
         Expose config values as instance attributes for backward compatibility.
-        
+
         Following the Configuration Object Pattern while maintaining
         legacy API compatibility during transition period.
         """
@@ -399,7 +397,7 @@ class MetricMancerApp:
     def _get_changed_files_for_review(self, review_branch_only):
         """
         Get list of changed files if branch-only mode is enabled.
-        
+
         Returns:
             Tuple[Optional[List[str]], Optional[str]]: (filter_files, current_branch)
         """
@@ -411,22 +409,22 @@ class MetricMancerApp:
         try:
             repo_path = self.directories[0]
             current_branch = get_current_branch(repo_path)
-            
+
             if not current_branch:
                 return None, None
 
             print(f"\n🔍 Filtering review strategy to changed files in branch: {current_branch}")
             print(f"   Comparing against base branch: {self.review_base_branch}")
-            
+
             filter_files = get_changed_files_in_branch(repo_path, self.review_base_branch)
-            
+
             if filter_files:
                 print(f"   Found {len(filter_files)} changed files")
             else:
                 print("   ⚠️  No changed files found, showing all files")
-            
+
             return filter_files, current_branch
-            
+
         except Exception as e:
             print(f"   ⚠️  Could not determine changed files: {e}")
             debug_print(f"[DEBUG] Error getting changed files: {e}")
@@ -440,7 +438,7 @@ class MetricMancerApp:
         try:
             os.makedirs(self.report_folder, exist_ok=True)
             output_path = normalize_output_path(self.report_folder, output_filename)
-            
+
             generate_review_report(
                 all_data,
                 output_file=output_path,
@@ -448,9 +446,9 @@ class MetricMancerApp:
                 branch_name=current_branch,
                 base_branch=self.review_base_branch if review_branch_only else None
             )
-            
+
             print("\n✅ Code review strategy report generated successfully!")
-            
+
         except Exception as e:
             print(f"\n❌ Error generating review strategy report: {e}")
             debug_print(f"[DEBUG] Full traceback: {e}")

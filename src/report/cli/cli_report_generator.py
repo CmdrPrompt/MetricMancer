@@ -1,5 +1,4 @@
 import os
-from collections import Counter
 
 from src.report.cli.cli_csv_report_format import CLICSVReportFormat
 from src.report.cli.cli_report_format import CLIReportFormat

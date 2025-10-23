@@ -5,7 +5,6 @@ Tests that cognitive complexity is properly integrated into the KPI calculation 
 Following TDD approach: RED → GREEN → REFACTOR
 """
 import unittest
-from unittest.mock import Mock, patch
 from pathlib import Path
 
 from src.app.kpi.kpi_calculator import KPICalculator
@@ -32,7 +31,7 @@ class TestKPICalculatorCognitiveComplexity(unittest.TestCase):
     def test_cognitive_complexity_strategy_calculates(self):
         """Test that cognitive complexity strategy can calculate."""
         strategy = self.calculator.strategies['cognitive_complexity']
-        
+
         python_code = '''
 def simple_function(x):
     if x > 0:
@@ -40,26 +39,26 @@ def simple_function(x):
     else:
         return 0
 '''
-        
+
         file_info = {
             'path': '/fake/path/test.py',
             'ext': '.py'
         }
         repo_root = Path('/fake/path')
-        
+
         kpi = strategy.calculate(
             file_info=file_info,
             repo_root=repo_root,
             content=python_code
         )
-        
+
         # Assert it returns a KPI object
         from src.kpis.cognitive_complexity import CognitiveComplexityKPI
         self.assertIsInstance(kpi, CognitiveComplexityKPI)
-        
+
         # Assert it has the correct name
         self.assertEqual(kpi.name, 'cognitive_complexity')
-        
+
         # Assert it calculated a value
         self.assertIsNotNone(kpi.value)
         self.assertEqual(kpi.value, 2)  # if + else = 2
@@ -67,7 +66,7 @@ def simple_function(x):
     def test_cognitive_complexity_for_non_python_returns_empty(self):
         """Test that cognitive complexity returns empty KPI for non-Python files."""
         strategy = self.calculator.strategies['cognitive_complexity']
-        
+
         javascript_code = '''
 function test() {
     if (x > 0) {
@@ -75,26 +74,26 @@ function test() {
     }
 }
 '''
-        
+
         file_info = {
             'path': '/fake/path/test.js',
             'ext': '.js'
         }
         repo_root = Path('/fake/path')
-        
+
         kpi = strategy.calculate(
             file_info=file_info,
             repo_root=repo_root,
             content=javascript_code
         )
-        
+
         # Should return empty KPI for non-Python
         self.assertIsNone(kpi.value)
 
     def test_cognitive_complexity_with_nesting(self):
         """Test cognitive complexity calculation with nesting."""
         strategy = self.calculator.strategies['cognitive_complexity']
-        
+
         python_code = '''
 def nested_complexity(x, y):
     if x > 0:              # +1
@@ -102,27 +101,27 @@ def nested_complexity(x, y):
             return x + y
     return 0
 '''
-        
+
         file_info = {
             'path': '/fake/path/test.py',
             'ext': '.py'
         }
         repo_root = Path('/fake/path')
-        
+
         kpi = strategy.calculate(
             file_info=file_info,
             repo_root=repo_root,
             content=python_code
         )
-        
+
         # Check cognitive complexity value
         self.assertIsNotNone(kpi.value)
         self.assertEqual(kpi.value, 3)  # 1 + 2 for nesting
-        
+
         # Check calculation values (per-function data)
         self.assertIn('nested_complexity', kpi.calculation_values)
         self.assertEqual(
-            kpi.calculation_values['nested_complexity'], 
+            kpi.calculation_values['nested_complexity'],
             3
         )
 

@@ -13,7 +13,7 @@ Tests verify:
 4. JavaScript tab switching works
 """
 import unittest
-from unittest.mock import MagicMock, Mock
+from unittest.mock import Mock
 from src.report.report_renderer import ReportRenderer
 from src.kpis.model import RepoInfo, File
 
@@ -66,30 +66,30 @@ class TestHTMLTabbedStructureRED(unittest.TestCase):
 
         # Assert: Should contain tab navigation
         self.assertIn('tab-btn', html,
-                     "HTML should contain tab buttons")
+                      "HTML should contain tab buttons")
         self.assertIn('data-tab=', html,
-                     "Tab buttons should have data-tab attributes")
+                      "Tab buttons should have data-tab attributes")
 
     def test_html_contains_overview_tab(self):
         """Should include Overview tab button."""
         repo_info = create_test_repo_info(repo_name='test')
         html = self.renderer.render(repo_info=repo_info)
         self.assertIn('overview', html.lower(),
-                     "Should have Overview tab")
+                      "Should have Overview tab")
 
     def test_html_contains_tree_tab(self):
         """Should include File Tree tab button."""
         repo_info = create_test_repo_info(repo_name='test')
         html = self.renderer.render(repo_info=repo_info)
         self.assertIn('tree', html.lower(),
-                     "Should have File Tree tab")
+                      "Should have File Tree tab")
 
     def test_html_contains_quickwins_tab(self):
         """Should include Quick Wins tab button."""
         repo_info = create_test_repo_info(repo_name='test')
         html = self.renderer.render(repo_info=repo_info)
         self.assertIn('quick', html.lower(),
-                     "Should have Quick Wins tab")
+                      "Should have Quick Wins tab")
 
 
 class TestHTMLCognitiveComplexityInTreeRED(unittest.TestCase):
@@ -133,9 +133,9 @@ class TestHTMLCognitiveComplexityInTreeRED(unittest.TestCase):
 
         # Assert: Should show Cog:5 in the tree
         self.assertIn('Cog:', html,
-                     "File tree should show cognitive complexity with 'Cog:' label")
+                      "File tree should show cognitive complexity with 'Cog:' label")
         self.assertIn('C:', html,
-                     "Should still show cyclomatic complexity")
+                      "Should still show cyclomatic complexity")
 
 
 class TestHTMLTabContentStructureRED(unittest.TestCase):
@@ -166,9 +166,9 @@ class TestHTMLTabContentStructureRED(unittest.TestCase):
 
         # Should have tab content divs
         self.assertIn('tab-content', html,
-                     "Should have tab-content divs")
+                      "Should have tab-content divs")
         self.assertIn('id="tab-', html,
-                     "Tab content divs should have IDs like 'tab-overview'")
+                      "Tab content divs should have IDs like 'tab-overview'")
 
     def test_overview_tab_content_has_summary_stats(self):
         """
@@ -187,7 +187,7 @@ class TestHTMLTabContentStructureRED(unittest.TestCase):
 
         # Should show average cognitive complexity in overview
         self.assertIn('Cognitive', html,
-                     "Overview should mention Cognitive Complexity")
+                      "Overview should mention Cognitive Complexity")
 
 
 if __name__ == '__main__':

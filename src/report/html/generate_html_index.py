@@ -1,7 +1,6 @@
 from src.report.html.report_renderer import ReportRenderer
 from src.kpis.model import RepoInfo, ScanDir, File
 from typing import List
-import os
 
 
 def generate_html_index(repos, report_files, output_file='index.html'):

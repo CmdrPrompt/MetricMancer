@@ -94,7 +94,6 @@ class TestCodeChurnTimeBased(unittest.TestCase):
         mock_isdir.return_value = True
 
         now = datetime.now()
-        three_months_ago = now - timedelta(days=90)
 
         mock_commits = []
 

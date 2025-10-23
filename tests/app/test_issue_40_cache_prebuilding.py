@@ -4,7 +4,7 @@ import os
 import shutil
 import subprocess
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 from src.app import Analyzer
 from src.utilities.git_cache import get_git_cache
@@ -116,10 +116,12 @@ class TestIssue40CachePreBuilding(unittest.TestCase):
                 # (once during pre-build, once during KPI calculation for each file)
                 max_expected_calls = len(self.test_files) * 2
                 self.assertLessEqual(len(ownership_calls), max_expected_calls,
-                                     f"Pre-building should limit ownership calls to {max_expected_calls} or fewer, got {len(ownership_calls)}")
+                                     f"Pre-building should limit ownership calls to "
+                                     f"{max_expected_calls} or fewer, got {len(ownership_calls)}")
 
                 self.assertLessEqual(len(churn_calls), max_expected_calls,
-                                     f"Pre-building should limit churn calls to {max_expected_calls} or fewer, got {len(churn_calls)}")
+                                     f"Pre-building should limit churn calls to "
+                                     f"{max_expected_calls} or fewer, got {len(churn_calls)}")
 
                 # Verify cache contains data for all files
                 for file_path in self.test_files:
@@ -141,8 +143,6 @@ class TestIssue40CachePreBuilding(unittest.TestCase):
 
         This test verifies the performance benefit of Issue #40 implementation.
         """
-        cache = get_git_cache()
-
         # Mock scanner files
         mock_files = []
         for file_path in self.test_files:
@@ -182,7 +182,8 @@ class TestIssue40CachePreBuilding(unittest.TestCase):
             expected_max_calls = 1 + (len(self.test_files) * 2)  # ls-files + (blame + log) per file
 
             self.assertLessEqual(git_call_count, expected_max_calls + 2,  # Allow some tolerance
-                                 f"Pre-building should be efficient. Got {git_call_count}, expected around {expected_max_calls}")
+                                 f"Pre-building should be efficient. Got {git_call_count}, "
+                                 f"expected around {expected_max_calls}")
 
             # The key benefit is that all data is ready in cache for subsequent KPI calculations
             self.assertIsNotNone(result, "Analysis should complete successfully")
@@ -212,7 +213,7 @@ class TestIssue40CachePreBuilding(unittest.TestCase):
             ]
 
             # Run analysis with pre-building
-            result = self.analyzer._analyze_repo(self.repo_dir, mock_files, [self.repo_dir])
+            self.analyzer._analyze_repo(self.repo_dir, mock_files, [self.repo_dir])
 
             # Check cache statistics
             stats = cache.get_cache_stats()

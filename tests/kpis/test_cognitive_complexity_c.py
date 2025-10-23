@@ -10,8 +10,6 @@ TDD RED-GREEN-REFACTOR:
 3. REFACTOR - Ensure clean code
 """
 
-import pytest
-
 
 class TestCCalculatorBasicStructures:
     """Test basic control structures in C."""

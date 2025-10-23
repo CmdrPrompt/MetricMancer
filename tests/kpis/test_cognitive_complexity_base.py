@@ -11,7 +11,6 @@ TDD RED-GREEN-REFACTOR:
 """
 
 import pytest
-from abc import ABC
 
 
 class TestCognitiveComplexityCalculatorBase:

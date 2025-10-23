@@ -1,6 +1,4 @@
-import pytest
 from src.kpis.model import ScanDir, File
-from src.kpis.base_kpi import BaseKPI
 from src.app import AggregatedSharedOwnershipKPI
 
 
