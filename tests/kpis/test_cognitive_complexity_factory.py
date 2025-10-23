@@ -10,6 +10,14 @@ TDD RED-GREEN-REFACTOR:
 3. REFACTOR - Ensure clean code
 """
 
+import warnings
+import pytest
+
+# Suppress FutureWarning from tree_sitter Language(path, name) deprecation
+pytestmark = pytest.mark.filterwarnings(
+    r"ignore:Language\(path, name\) is deprecated. Use Language\(ptr, name\) instead\.:FutureWarning"
+)
+
 
 class TestCalculatorFactory:
     """Test the Calculator Factory."""
