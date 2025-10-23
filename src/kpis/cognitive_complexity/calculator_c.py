@@ -129,15 +129,19 @@ class CCognitiveComplexityCalculator(CognitiveComplexityCalculatorBase):
             # Check if this node increments complexity
             if node.type in self.INCREMENTS:
                 increment = self.INCREMENTS[node.type]
-                complexity += increment + nesting_level
+                # Goto statements don't get nesting bonus according to cognitive complexity rules
+                if node.type == 'goto_statement':
+                    complexity += increment
+                else:
+                    complexity += increment + nesting_level
 
             # Handle else clause separately (always adds +1 + nesting)
-            # In tree-sitter C, else is part of if_statement's children
+            # In tree-sitter C, else is part of if_statement's children as 'else_clause'
             if node.type == 'if_statement':
                 # Check for else clause
                 has_else = False
                 for i, child in enumerate(node.children):
-                    if child.type == 'else':
+                    if child.type == 'else_clause':
                         has_else = True
                         # else keyword adds +1 + nesting
                         complexity += 1 + nesting_level
