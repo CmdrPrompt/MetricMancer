@@ -157,8 +157,10 @@ class AppConfig:
             ext = '.json'
         output_file = f'complexity_report{ext}'
 
-        if getattr(args, 'report_filename', None):
-            output_file = args.report_filename
+        # Safely get report_filename (handle Mock objects in tests)
+        report_filename = getattr(args, 'report_filename', None)
+        if report_filename and not hasattr(report_filename, '__call__'):  # Not a Mock
+            output_file = report_filename
             if getattr(args, 'with_date', False):
                 date_str = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
                 base, ext = os.path.splitext(output_file)

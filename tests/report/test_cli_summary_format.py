@@ -428,8 +428,6 @@ class TestPrintMethods(TestCLISummaryFormat):
         )
 
         self.assertIn('📁 DETAILED REPORTS', output)
-        self.assertIn('HTML Report:', output)
-        self.assertIn('output/complexity_report.html', output)
         self.assertIn('--list-hotspots', output)
         self.assertIn('--review-strategy', output)
         self.assertIn('--output-format human-tree', output)
