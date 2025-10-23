@@ -93,6 +93,8 @@ clean:
 	@find . -type f -name "*.pyo" -delete
 	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 	@rm -rf .pytest_cache build dist htmlcov coverage_html .coverage coverage.xml
+	# Remove all files in output/ except .gitkeep
+	@if [ -d output ]; then find output -mindepth 1 -not -name ".gitkeep" -delete; fi
 	@echo "✅ Cleanup complete!"
 
 # Self-analysis targets - run MetricMancer on itself for code quality insights
