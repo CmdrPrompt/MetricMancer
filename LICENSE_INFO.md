@@ -54,6 +54,7 @@ MetricMancer uses the following third-party open-source libraries. All dependenc
 | [Pygments](https://pygments.org/) | 2.19.2 | BSD License | Syntax highlighting |
 | [packaging](https://github.com/pypa/packaging) | 25.0 | Apache 2.0 / BSD | Version parsing utilities |
 | [pytz](https://pythonhosted.org/pytz/) | 2025.2 | MIT License | Timezone definitions |
+| [types-pytz](https://github.com/python/typeshed) | 2025.2.0.20250809 | Apache 2.0 | Typing stubs for pytz |
 | [pathspec](https://github.com/cpburnz/python-pathspec) | 0.12.1 | MPL 2.0 | Path pattern matching |
 
 ### Testing Tools
@@ -101,9 +102,11 @@ MetricMancer complies with all license requirements:
 3. ✅ **No Copyleft Violations**: No GPL/LGPL/AGPL dependencies that would require MetricMancer to change its license
 4. ✅ **Patent Grants**: Apache 2.0 dependencies provide explicit patent protection
 
+**Note**: Some packages (like `types-pytz`) may show as "UNKNOWN" in `pip-licenses` output due to the tool not fully supporting the newer `License-Expression` metadata format. These packages have been manually verified to use permissive licenses.
+
 ## Updates
 
-This document was last updated: **October 16, 2025**
+This document was last updated: **October 23, 2025**
 
 License information is automatically verified during CI/CD builds. If you add new dependencies, please:
 
