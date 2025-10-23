@@ -11,6 +11,8 @@ from .calculator_base import CognitiveComplexityCalculatorBase
 from .calculator_python import PythonCognitiveComplexityCalculator
 from .calculator_java import JavaCognitiveComplexityCalculator
 from .calculator_go import GoCognitiveComplexityCalculator
+from .calculator_javascript import JavaScriptCognitiveComplexityCalculator
+from .calculator_typescript import TypeScriptCognitiveComplexityCalculator
 
 
 class CognitiveComplexityCalculatorFactory:
@@ -26,13 +28,13 @@ class CognitiveComplexityCalculatorFactory:
         '.py': PythonCognitiveComplexityCalculator,
         '.java': JavaCognitiveComplexityCalculator,
         '.go': GoCognitiveComplexityCalculator,
+        '.js': JavaScriptCognitiveComplexityCalculator,
+        '.jsx': JavaScriptCognitiveComplexityCalculator,
+        '.ts': TypeScriptCognitiveComplexityCalculator,
+        '.tsx': TypeScriptCognitiveComplexityCalculator,
         # Future additions:
         # '.adb': AdaCognitiveComplexityCalculator,  # Requires custom tree-sitter build
         # '.ads': AdaCognitiveComplexityCalculator,  # Requires custom tree-sitter build
-        # '.js': JavaScriptCognitiveComplexityCalculator,
-        # '.jsx': JavaScriptCognitiveComplexityCalculator,
-        # '.ts': TypeScriptCognitiveComplexityCalculator,
-        # '.tsx': TypeScriptCognitiveComplexityCalculator,
         # ... etc
     }
 

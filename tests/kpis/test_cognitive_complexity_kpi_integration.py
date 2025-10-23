@@ -43,7 +43,7 @@ def simple_function(x):
         )
 
         code = '''
-// JavaScript code (not supported yet)
+# Some unsupported language code
 function test() {
     if (true) {
         return 1;
@@ -51,7 +51,7 @@ function test() {
 }
 '''
         kpi = CognitiveComplexityKPI()
-        result = kpi.calculate('test.js', code)
+        result = kpi.calculate('test.xyz', code)  # .xyz is not supported
 
         # Should return None for unsupported language
         assert result.value is None
