@@ -25,6 +25,8 @@ MetricMancer uses the following third-party open-source libraries. All dependenc
 | [PyDriller](https://github.com/ishepard/pydriller) | 2.9 | Apache 2.0 | Git repository mining for churn analysis |
 | [tqdm](https://github.com/tqdm/tqdm) | 4.67.1 | MIT / MPL 2.0 | Progress bars for CLI |
 | [lizard](https://github.com/terryyin/lizard) | 1.17.31 | MIT License | Cyclomatic complexity calculation |
+| [tree-sitter](https://tree-sitter.github.io/) | 0.21.3 | MIT License | Multi-language parsing for cognitive complexity |
+| [tree-sitter-languages](https://github.com/grantjenks/py-tree-sitter-languages) | 1.10.2 | Apache 2.0 | Pre-compiled tree-sitter language grammars |
 
 ### Testing & Development
 
@@ -106,7 +108,7 @@ MetricMancer complies with all license requirements:
 
 ## Updates
 
-This document was last updated: **October 23, 2025**
+This document was last updated: **October 28, 2025**
 
 License information is automatically verified during CI/CD builds. If you add new dependencies, please:
 
