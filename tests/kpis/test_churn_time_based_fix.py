@@ -263,8 +263,10 @@ class TestCodeChurnTimeBased(unittest.TestCase):
         # This should be a reasonable hotspot score: 15 * 2.0 = 30
         # Current implementation would give: 15 * 6 = 90 (too high!)
         expected_hotspot = 30.0
-        self.assertEqual(hotspot_score, expected_hotspot,
-                         f"Hotspot should be reasonable: {complexity} complexity * {churn_per_month} churn/month = {expected_hotspot}")
+        self.assertEqual(
+            hotspot_score, expected_hotspot,
+            f"Hotspot should be reasonable: {complexity} complexity * "
+            f"{churn_per_month} churn/month = {expected_hotspot}")
 
         # Verify it falls in reasonable range for Crime Scene methodology
         self.assertLessEqual(hotspot_score, 75,

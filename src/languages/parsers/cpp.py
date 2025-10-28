@@ -36,4 +36,7 @@ class CppComplexityParser(ComplexityParser):
     # - '\)' matches closing parenthesis
     # - '(?:\s+(?:const|override|final|noexcept))*' optionally matches trailing qualifiers
     # - '\s*\{' matches opening brace
-    FUNCTION_PATTERN = r'(?:template<[^>]+>\s+)?(?:\b\w+\s+)+(?:\w+::)*([a-zA-Z_]\w*)\s*\([^)]*\)(?:\s+(?:const|override|final|noexcept))*\s*\{'
+    FUNCTION_PATTERN = (
+        r'(?:template<[^>]+>\s+)?(?:\b\w+\s+)+(?:\w+::)*([a-zA-Z_]\w*)\s*'
+        r'\([^)]*\)(?:\s+(?:const|override|final|noexcept))*\s*\{'
+    )

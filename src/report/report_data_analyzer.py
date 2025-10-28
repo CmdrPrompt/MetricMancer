@@ -12,7 +12,8 @@ class ReportDataAnalyzer:
     """
 
     def __init__(self, repo_info, threshold: float = 20.0,
-                 problem_file_threshold: Union[float, None] = None, threshold_low: float = 10.0, threshold_high: float = 20.0):
+                 problem_file_threshold: Union[float, None] = None,
+                 threshold_low: float = 10.0, threshold_high: float = 20.0):
         """
         Initialize the ReportDataAnalyzer.
         Args:
@@ -118,9 +119,11 @@ class ReportDataAnalyzer:
 
                 # Check if root is problematic using extracted logic
                 if self._is_root_problematic(metrics['average_complexity'],
-                                             metrics['problem_files'], metrics['hotspot_risk_files']):
+                                             metrics['problem_files'],
+                                             metrics['hotspot_risk_files']):
                     summary.append(self._create_root_summary(
-                        root_info.path, metrics['average_complexity'], metrics['problem_files'], metrics['hotspot_risk_files'],
+                        root_info.path, metrics['average_complexity'],
+                        metrics['problem_files'], metrics['hotspot_risk_files'],
                         root_info.files, getattr(root_info, 'repo_root', '')
                     ))
         return summary

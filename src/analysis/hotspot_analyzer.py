@@ -321,7 +321,8 @@ def _format_hotspots_markdown(hotspots: List[Tuple[str, int, int, float]],
     output.append(
         "| 🟡 Emerging Hotspots | Monitor closely, preventive refactoring, strengthen testing, " +
         "code reviews by experienced team members |")
-    output.append("| 🟢 Stable Complexity | Document thoroughly, add integration tests, consider if refactoring adds value |")
+    output.append("| 🟢 Stable Complexity | Document thoroughly, add integration tests, "
+                  "consider if refactoring adds value |")
     output.append("| ✅ Active Simple Code | Good pattern - ensure it stays simple |")
 
     # Full table

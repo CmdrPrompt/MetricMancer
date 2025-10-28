@@ -99,7 +99,10 @@ class JSONReportFormat(ReportFormatStrategy):
         }
 
     def _extract_function_kpis(self, func_obj, file_obj: File, file_churn: Any,
-                               repo_name: Optional[str] = None, timestamp: Optional[str] = None, component: Optional[str] = None, team: Optional[str] = None) -> dict:
+                               repo_name: Optional[str] = None,
+                               timestamp: Optional[str] = None,
+                               component: Optional[str] = None,
+                               team: Optional[str] = None) -> dict:
         """
         Extracts function-level KPIs from a Function object and returns a dictionary item.
         """

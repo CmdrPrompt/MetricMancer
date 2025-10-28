@@ -164,11 +164,14 @@ class TestAnalyzer(unittest.TestCase):
             {'name': 'f1', 'complexity': 5},
             {'name': 'f2', 'complexity': 4},
         ]
-        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data), \
+        with patch.object(ComplexityAnalyzer, 'analyze_functions',
+                          return_value=mock_functions_data), \
                 patch.object(ChurnKPI, 'calculate',
-                             side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
+                             side_effect=lambda file_path, **kwargs: ChurnKPI(
+                                 value=mock_churn_data.get(file_path, 0))), \
                 patch.object(HotspotKPI, 'calculate',
-                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
+                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(
+                                 value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
             # With the new logic, all files from the same git repo are grouped together
@@ -217,11 +220,14 @@ class TestAnalyzer(unittest.TestCase):
             {'name': 'f1', 'complexity': 2},
         ]
 
-        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data), \
+        with patch.object(ComplexityAnalyzer, 'analyze_functions',
+                          return_value=mock_functions_data), \
                 patch.object(ChurnKPI, 'calculate',
-                             side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
+                             side_effect=lambda file_path, **kwargs: ChurnKPI(
+                                 value=mock_churn_data.get(file_path, 0))), \
                 patch.object(HotspotKPI, 'calculate',
-                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
+                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(
+                                 value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
         # With the new logic, all files from the same git repo are grouped together
@@ -338,9 +344,11 @@ class TestAnalyzer(unittest.TestCase):
 
         with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=[]), \
                 patch.object(ChurnKPI, 'calculate',
-                             side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
+                             side_effect=lambda file_path, **kwargs: ChurnKPI(
+                                 value=mock_churn_data.get(file_path, 0))), \
                 patch.object(HotspotKPI, 'calculate',
-                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
+                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(
+                                 value=complexity * churn)):
             summary = self.analyzer.analyze(self.scanner_files)
 
         # With the new logic, all files from the same git repo are grouped together

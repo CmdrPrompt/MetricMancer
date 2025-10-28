@@ -35,4 +35,8 @@ class JavaComplexityParser(ComplexityParser):
     # - '\)' matches closing parenthesis
     # - '(?:\s+throws\s+[^{]+)?' optionally matches throws clause
     # - '\s*\{' matches opening brace
-    FUNCTION_PATTERN = r'(?:(?:public|private|protected|static|final)\s+)*(?:\w+(?:<[^>]+>)?)+\s+([a-zA-Z_]\w*)\s*\([^)]*\)(?:\s+throws\s+[^{]+)?\s*\{'
+    FUNCTION_PATTERN = (
+        r'(?:(?:public|private|protected|static|final)\s+)*'
+        r'(?:\w+(?:<[^>]+>)?)+\s+([a-zA-Z_]\w*)\s*\([^)]*\)'
+        r'(?:\s+throws\s+[^{]+)?\s*\{'
+    )

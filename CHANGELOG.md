@@ -4,6 +4,37 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Multi-Language Cognitive Complexity (v3.2.0)**: Tree-sitter-based cognitive complexity analysis for multiple languages
+  - Implemented cognitive complexity calculators for Java, Go, JavaScript, TypeScript, and C
+  - Factory pattern for language-specific calculators via `CognitiveComplexityCalculatorFactory`
+  - Abstract base class `CognitiveComplexityCalculatorBase` for consistent implementation
+  - Refactored Python cognitive complexity calculator to use factory pattern
+  - Added 2,500+ comprehensive tests covering all languages and edge cases
+  - SonarSource-compatible cognitive complexity rules (nesting penalties, boolean operators, etc.)
+  - Integrated cognitive complexity in all report formats (HTML, JSON, CLI, Quick Wins)
+  - Dependencies: `tree-sitter>=0.20.0`, `tree-sitter-languages>=1.10.0`
+- **Cognitive Hotspot KPI**: New KPI combining cognitive complexity with code churn
+  - File: `src/kpis/hotspot/cognitive_hotspot_kpi.py`
+  - Calculates `cognitive_complexity × churn` for identifying complex, frequently-changed code
+  - Complements existing cyclomatic complexity-based hotspot analysis
+- Improved HTML report templates with cognitive complexity display
+- Enhanced JSON report format with cognitive complexity fields
+
+### Fixed
+
+- 17 PEP8 line length violations (E501) across src/ and tests/
+- FutureWarning suppression for deprecated tree-sitter Language usage
+
+### Changed
+
+- Cognitive complexity now available for 6 languages: Python, Java, Go, JavaScript, TypeScript, C
+- Report generation includes both cyclomatic and cognitive complexity metrics
+- Factory pattern replaces conditional logic in cognitive complexity calculation
+
 ## [3.1.0] - 2025-10-15
 
 ### Added
@@ -34,8 +65,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Default output format remains `summary` for backward compatibility
 - All CLI formats use markdown for file output
-
-## [Unreleased]
 
 ### Planned / In Development
 
