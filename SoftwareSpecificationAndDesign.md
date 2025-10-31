@@ -1,8 +1,8 @@
 # Requirements and Design
 
-**Document Version:** 3.0.0 (Updated: 2025-10-14)  
-**MetricMancer Version:** 3.0.0  
-**Status:** Release - Configuration Object Pattern refactoring
+**Document Version:** 3.2.0 (Updated: 2025-10-31)
+**MetricMancer Version:** 3.2.0
+**Status:** Release - Multi-Language Cognitive Complexity
 
 ---
 
@@ -34,6 +34,23 @@ This document provides requirements and design specifications. For additional te
 ### 1.2 Document Changelog
 
 This section tracks major changes to this **document** (not the software). For complete software release history, see **[CHANGELOG.md](CHANGELOG.md)**.
+
+#### Version 3.2.0 (2025-10-31) - Multi-Language Cognitive Complexity
+
+**Status:** Released
+
+**Document Changes:**
+
+- Updated document version and MetricMancer version to 3.2.0
+- Added cognitive complexity feature documentation across all sections
+- Updated implementation status with cognitive complexity support for 6 languages
+- Added Cognitive Hotspot KPI to implementation summary
+- Updated dependency requirements (tree-sitter migration from tree-sitter-languages to tree-sitter-language-pack)
+- Updated test metrics (135 cognitive complexity tests, 839 total tests)
+
+**Key Features:** Cognitive complexity analysis for Python, Java, Go, JavaScript, TypeScript, C using tree-sitter parsers. Cognitive Hotspot KPI combining cognitive complexity with churn. Integrated in all report formats.
+**Key Metrics:** 135 cognitive complexity tests, 839 total tests passing, 6 languages supported
+**Related:** Branch docs/enhance-tree-sitter-implementation-plan
 
 #### Version 3.1.0 (2025-10-14) - Multi-Format Generation
 **Status:** Released
