@@ -13,10 +13,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Factory pattern for language-specific calculators via `CognitiveComplexityCalculatorFactory`
   - Abstract base class `CognitiveComplexityCalculatorBase` for consistent implementation
   - Refactored Python cognitive complexity calculator to use factory pattern
-  - Added 2,500+ comprehensive tests covering all languages and edge cases
+  - Added 135 comprehensive tests covering all languages and edge cases (total test suite: 839 tests)
   - SonarSource-compatible cognitive complexity rules (nesting penalties, boolean operators, etc.)
   - Integrated cognitive complexity in all report formats (HTML, JSON, CLI, Quick Wins)
-  - Dependencies: `tree-sitter>=0.20.0`, `tree-sitter-languages>=1.10.0`
+  - Dependencies: `tree-sitter>=0.25.0`, `tree-sitter-language-pack>=0.10.0` (migrated from `tree-sitter-languages`)
 - **Cognitive Hotspot KPI**: New KPI combining cognitive complexity with code churn
   - File: `src/kpis/hotspot/cognitive_hotspot_kpi.py`
   - Calculates `cognitive_complexity × churn` for identifying complex, frequently-changed code
@@ -34,6 +34,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Cognitive complexity now available for 6 languages: Python, Java, Go, JavaScript, TypeScript, C
 - Report generation includes both cyclomatic and cognitive complexity metrics
 - Factory pattern replaces conditional logic in cognitive complexity calculation
+- **BREAKING**: Migrated from `tree-sitter-languages` to `tree-sitter-language-pack` for better maintainability and official support
+  - Users building from source should run `pip install -r requirements.txt` to update dependencies
+  - No user-facing functionality changes, but dependency update required for fresh installations
 
 ## [3.1.0] - 2025-10-15
 
