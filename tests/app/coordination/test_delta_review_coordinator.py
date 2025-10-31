@@ -3,7 +3,6 @@ Tests for DeltaReviewCoordinator module.
 
 Following TDD approach (RED-GREEN-REFACTOR).
 """
-import pytest
 import os
 import tempfile
 from datetime import datetime

@@ -7,10 +7,8 @@ Following TDD (RED-GREEN-REFACTOR):
 """
 
 import pytest
-import os
 import tempfile
 import subprocess
-from datetime import datetime
 from pathlib import Path
 
 

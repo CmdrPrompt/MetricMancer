@@ -15,8 +15,7 @@ Test Coverage Goals:
 - Integration with Phase 1-3 components verified
 """
 
-import pytest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 from src.app import KPIAggregator
 from src.kpis.complexity import ComplexityKPI
 from src.kpis.codechurn import ChurnKPI
@@ -269,7 +268,7 @@ class TestAggregateDirectory:
         dir_obj.children = []
         dir_obj.kpis = {}
 
-        result = aggregator.aggregate_directory(dir_obj)
+        aggregator.aggregate_directory(dir_obj)
 
         # Should update kpis dict
         assert 'complexity' in dir_obj.kpis

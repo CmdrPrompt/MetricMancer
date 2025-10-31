@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Union
 from .file_info import FileInfo
 from src.kpis.model import ScanDir
 from .root_info import RootInfo
-from .file_helpers import sort_files, average_complexity, average_grade
+from .file_helpers import sort_files, average_grade
 from .report_helpers import grade
 
 
@@ -28,16 +28,16 @@ class ReportDataCollector:
     def _create_file_info_dict(self, file_obj) -> Dict[str, Any]:
         """
         Extract file information from a file object and create a dictionary.
-        
+
         Args:
             file_obj: File object from the data model.
-            
+
         Returns:
             Dictionary with file path, complexity, churn, functions count, and repo root.
         """
         complexity = file_obj.kpis.get('complexity')
         churn = file_obj.kpis.get('churn')
-        
+
         return {
             'path': file_obj.file_path,
             'complexity': complexity.value if complexity else 0,
@@ -63,7 +63,7 @@ class ReportDataCollector:
     def _assign_grades_to_files(self, files: List[FileInfo]) -> None:
         """
         Assign grade to files if not already set.
-        
+
         Args:
             files: List of FileInfo objects to assign grades to.
         """
@@ -78,10 +78,10 @@ class ReportDataCollector:
     def _calculate_complexity_stats(self, files: List[FileInfo]) -> Dict[str, float]:
         """
         Calculate min and max complexity statistics from files.
-        
+
         Args:
             files: List of FileInfo objects.
-            
+
         Returns:
             Dictionary with 'min' and 'max' complexity values.
         """
@@ -102,15 +102,15 @@ class ReportDataCollector:
             RootInfo object summarizing the directory.
         """
         files = sort_files(files)
-        
+
         # Assign grades to files if not already set
         self._assign_grades_to_files(files)
-        
+
         # Calculate statistics
         avg_grade = average_grade(files, self.threshold_low, self.threshold_high)
         complexity_stats = self._calculate_complexity_stats(files)
         repo_root = getattr(files[0], 'repo_root', '') if files else ''
-        
+
         return RootInfo(
             path=root,  # 'root' is the scanned directory
             average=avg_grade['value'] if isinstance(avg_grade, dict) else avg_grade,

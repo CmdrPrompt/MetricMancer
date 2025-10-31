@@ -5,7 +5,7 @@ Tests the Strategy pattern implementation for KPI calculation,
 ensuring proper separation of concerns and extensibility.
 """
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import Mock, patch
 from pathlib import Path
 
 from src.app.kpi.kpi_calculator import (
@@ -16,7 +16,6 @@ from src.app.kpi.kpi_calculator import (
     OwnershipKPIStrategy,
     SharedOwnershipKPIStrategy
 )
-from src.kpis.base_kpi import BaseKPI
 
 
 class TestComplexityKPIStrategy(unittest.TestCase):
@@ -108,7 +107,7 @@ class TestChurnKPIStrategy(unittest.TestCase):
         file_info = {'path': '/repo/test.py', 'ext': 'py'}
         repo_root = Path('/repo')
 
-        result = self.strategy.calculate(
+        self.strategy.calculate(
             file_info=file_info,
             repo_root=repo_root
         )
@@ -373,7 +372,7 @@ class TestKPICalculator(unittest.TestCase):
         mock_perf_counter.side_effect = [
             0.0, 0.1,   # complexity: 0.1s
             0.1, 0.25,  # cognitive_complexity: 0.15s
-            0.25, 0.45, # churn: 0.2s
+            0.25, 0.45,  # churn: 0.2s
             0.45, 0.5,  # hotspot: 0.05s
             0.5, 0.65,  # ownership: 0.15s
             0.65, 0.75  # shared: 0.1s

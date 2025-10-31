@@ -56,7 +56,7 @@ class TestQuickWinsCognitiveComplexityImpactRED(unittest.TestCase):
         # Without cognitive: ~3 points (hotspot:100=2, complexity:15=1)
         # With cognitive:30: ~5 points (hotspot:100=2, complexity:15=1, cognitive:30=2)
         self.assertGreaterEqual(impact, 5,
-                               "High cognitive complexity should increase impact score")
+                                "High cognitive complexity should increase impact score")
 
     def test_low_cognitive_vs_high_cyclomatic(self):
         """
@@ -84,7 +84,7 @@ class TestQuickWinsCognitiveComplexityImpactRED(unittest.TestCase):
         # Assert: Moderate impact (not as critical as high cognitive)
         # Should be around 3-4 points, not 5+
         self.assertLess(impact, 5,
-                       "Low cognitive complexity should moderate the impact score")
+                        "Low cognitive complexity should moderate the impact score")
 
 
 class TestQuickWinsCognitiveComplexityActionsRED(unittest.TestCase):
@@ -134,11 +134,11 @@ class TestQuickWinsCognitiveComplexityActionsRED(unittest.TestCase):
 
         # Assert: Should recommend reducing nesting
         self.assertEqual(action_type, 'Reduce Nesting',
-                        "High cognitive complexity should trigger 'Reduce Nesting' action")
+                         "High cognitive complexity should trigger 'Reduce Nesting' action")
         self.assertIn('nesting', action_desc.lower(),
-                     "Action description should mention nesting")
+                      "Action description should mention nesting")
         self.assertIn('cognitive', reason.lower(),
-                     "Reason should mention cognitive complexity")
+                      "Reason should mention cognitive complexity")
 
     def test_high_cognitive_includes_value_in_reason(self):
         """
@@ -169,9 +169,9 @@ class TestQuickWinsCognitiveComplexityActionsRED(unittest.TestCase):
 
         # Assert: Reason should include cognitive complexity value
         self.assertIn('28', reason,
-                     "Reason should include cognitive complexity value")
+                      "Reason should include cognitive complexity value")
         self.assertIn('Cog', reason,
-                     "Reason should use 'Cog' abbreviation for cognitive complexity")
+                      "Reason should use 'Cog' abbreviation for cognitive complexity")
 
 
 class TestQuickWinsDataIncludesCognitiveRED(unittest.TestCase):
@@ -230,9 +230,9 @@ class TestQuickWinsDataIncludesCognitiveRED(unittest.TestCase):
 
         first_win = quick_wins[0]
         self.assertIn('cognitive_complexity', first_win,
-                     "Quick win dict should include 'cognitive_complexity' key")
+                      "Quick win dict should include 'cognitive_complexity' key")
         self.assertEqual(first_win['cognitive_complexity'], 22,
-                        "Cognitive complexity value should match KPI value")
+                         "Cognitive complexity value should match KPI value")
 
 
 if __name__ == '__main__':

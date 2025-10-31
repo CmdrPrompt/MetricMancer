@@ -16,7 +16,8 @@ class CodeChurnAnalyzer:
     providing realistic hotspot values for maintainability analysis.
     """
 
-    def __init__(self, repo_scan_pairs: List[tuple], time_period_months: int = 6, time_period_days: Optional[int] = None):
+    def __init__(self, repo_scan_pairs: List[tuple], time_period_months: int = 6,
+                 time_period_days: Optional[int] = None):
         """
         Initialize CodeChurnAnalyzer with time-based configuration.
 

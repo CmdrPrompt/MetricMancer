@@ -41,5 +41,9 @@
     },
     "terminal.integrated.env.windows": {
         "PYTHONPATH": "${workspaceFolder}/src;${workspaceFolder}/tests;${workspaceFolder}"
+    },
+    "[python]": {
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "editor.formatOnSave": true
     }
 }

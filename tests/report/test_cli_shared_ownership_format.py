@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 from src.report.cli.cli_report_format import CLIReportFormat
-from src.kpis.model import RepoInfo, ScanDir, File
+from src.kpis.model import File
 
 
 class TestCLISharedOwnershipFormat(unittest.TestCase):

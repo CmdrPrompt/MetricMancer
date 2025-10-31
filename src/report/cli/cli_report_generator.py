@@ -1,5 +1,4 @@
 import os
-from collections import Counter
 
 from src.report.cli.cli_csv_report_format import CLICSVReportFormat
 from src.report.cli.cli_report_format import CLIReportFormat
@@ -44,7 +43,7 @@ class CLIReportGenerator(ReportInterface):
 
             try:
                 for repo_info in self.repo_infos:
-                    format_strategy.print_report(repo_info, debug_print, level=level)
+                    format_strategy.print_report(repo_info, debug_print, level=level, output_file=output_file, **kwargs)
 
                 # Write captured output to file
                 content = captured_output.getvalue()
@@ -64,4 +63,4 @@ class CLIReportGenerator(ReportInterface):
         else:
             # Normal stdout printing (backward compatible)
             for repo_info in self.repo_infos:
-                format_strategy.print_report(repo_info, debug_print, level=level)
+                format_strategy.print_report(repo_info, debug_print, level=level, output_file=output_file, **kwargs)

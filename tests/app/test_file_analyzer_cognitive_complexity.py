@@ -8,7 +8,6 @@ Verifies that cognitive complexity flows through the entire pipeline:
 4. Function objects include per-function cognitive_complexity
 """
 import unittest
-from unittest.mock import Mock, patch
 from pathlib import Path
 import tempfile
 import os
@@ -114,7 +113,7 @@ def nested_function(x, y):
             # Verify we have 2 functions
             self.assertIsNotNone(file_obj)
             self.assertEqual(len(file_obj.functions), 2,
-                           f"Expected 2 functions, got {len(file_obj.functions)}")
+                             f"Expected 2 functions, got {len(file_obj.functions)}")
 
             # Verify at least one function has cognitive_complexity
             functions_with_cog = [
@@ -122,7 +121,7 @@ def nested_function(x, y):
                 if 'cognitive_complexity' in f.kpis
             ]
             self.assertGreater(len(functions_with_cog), 0,
-                             "At least one function should have cognitive_complexity")
+                               "At least one function should have cognitive_complexity")
 
         finally:
             os.unlink(temp_path)

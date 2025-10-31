@@ -3,8 +3,6 @@ import subprocess
 import sys
 import tempfile
 from pathlib import Path
-from unittest.mock import patch
-import argparse
 
 
 class TestMainSharedOwnership(unittest.TestCase):

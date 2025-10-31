@@ -1,7 +1,6 @@
 from src.report.html.report_renderer import ReportRenderer
 from src.kpis.model import RepoInfo, ScanDir, File
 from typing import List
-import os
 
 
 def generate_html_index(repos, report_files, output_file='index.html'):
@@ -29,7 +28,8 @@ def generate_html_index(repos, report_files, output_file='index.html'):
             'report_file': rf['href']
         }
 
-        complexities = [f.kpis['complexity'].value for f in all_files if 'complexity' in f.kpis and f.kpis['complexity']]
+        complexities = [f.kpis['complexity'].value for f in all_files
+                        if 'complexity' in f.kpis and f.kpis['complexity']]
         churns = [f.kpis['churn'].value for f in all_files if 'churn' in f.kpis and f.kpis['churn']]
         hotspots = [f.kpis['hotspot'].value for f in all_files if 'hotspot' in f.kpis and f.kpis['hotspot']]
 

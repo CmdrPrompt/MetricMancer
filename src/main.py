@@ -1,14 +1,4 @@
 import sys
-
-import src.utilities.debug
-from src.app.metric_mancer_app import MetricMancerApp
-from src.config.app_config import AppConfig
-from src.utilities.cli_helpers import parse_args, print_usage
-from src.utilities.debug import debug_print
-
-
-import sys
-
 import src.utilities.debug
 from src.app.metric_mancer_app import MetricMancerApp
 from src.config.app_config import AppConfig

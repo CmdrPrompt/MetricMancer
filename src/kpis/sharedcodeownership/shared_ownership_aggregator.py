@@ -1,6 +1,6 @@
 """SharedOwnership aggregation for packages and repositories."""
 
-from typing import Dict, List, Optional, Any, Mapping, Union
+from typing import Dict, List, Optional, Any, Mapping
 from dataclasses import field
 from dataclasses import dataclass
 from ..base_kpi import BaseKPI

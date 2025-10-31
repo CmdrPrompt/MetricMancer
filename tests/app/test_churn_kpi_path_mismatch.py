@@ -21,7 +21,9 @@ class TestChurnKPIPathMismatch(unittest.TestCase):
         churn_kpi = ChurnKPI().calculate(file_path=rel_path, churn_data=churn_data)
         self.assertEqual(
             churn_kpi.value, 5,
-            "ChurnKPI should return correct churn even if file_path is relative and churn_data uses absolute paths. This test should FAIL if implementation is not robust."
+            "ChurnKPI should return correct churn even if file_path is relative "
+            "and churn_data uses absolute paths. This test should FAIL if "
+            "implementation is not robust."
         )
 
     def test_churn_lookup_with_absolute_path(self):

@@ -6,7 +6,6 @@ Provides actionable insights prioritized by importance instead of file tree.
 from src.report.report_format_strategy import ReportFormatStrategy
 from src.kpis.model import RepoInfo, ScanDir, File
 from typing import List, Tuple, Dict
-import time
 
 
 class CLISummaryFormat(ReportFormatStrategy):
@@ -17,7 +16,6 @@ class CLISummaryFormat(ReportFormatStrategy):
         Prints an executive summary dashboard to the console.
         Focuses on actionable insights and critical issues.
         """
-        start_time = time.time()
 
         # Collect all files and calculate statistics
         all_files = self._collect_all_files(repo_info)
@@ -33,10 +31,7 @@ class CLISummaryFormat(ReportFormatStrategy):
         self._print_high_priority(emerging_files, high_complexity_files, high_churn_files)
         self._print_health_metrics(stats)
         self._print_recommendations(critical_files, emerging_files, high_complexity_files, all_files)
-        self._print_detailed_reports(repo_info)
-
-        elapsed = time.time() - start_time
-        self._print_footer(elapsed)
+        self._print_detailed_reports(repo_info, **kwargs)
 
     def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
         """Recursively collects all git-tracked File objects from a ScanDir tree."""
@@ -211,7 +206,7 @@ class CLISummaryFormat(ReportFormatStrategy):
 
         print("📈 HEALTH METRICS")
         print(f"   Code Quality:          {quality_grade} ({quality_score}/100)")
-        print(f"   Test Coverage:         Unknown (run with --coverage)")
+        print("   Test Coverage:         Unknown (run with --coverage)")
         print(f"   Tech Debt Score:       {tech_debt}")
         print()
 
@@ -257,10 +252,20 @@ class CLISummaryFormat(ReportFormatStrategy):
             print("   ✅ No critical issues detected - code is in good shape!")
         print()
 
-    def _print_detailed_reports(self, repo_info: RepoInfo):
+    def _print_detailed_reports(self, repo_info: RepoInfo, **kwargs):
         """Print links to detailed reports."""
         print("📁 DETAILED REPORTS")
-        print("   HTML Report:    output/complexity_report.html")
+
+        # Only show HTML report if we're actually generating an HTML file
+        output_format = kwargs.get('output_format')
+        if output_format == 'html':
+            html_output_file = kwargs.get('output_file', 'output/complexity_report.html')
+            if html_output_file and not html_output_file.startswith('output/'):
+                # If it's a custom filename, assume it's in the report folder
+                report_folder = kwargs.get('report_folder', 'output')
+                html_output_file = f"{report_folder}/{html_output_file}"
+            print(f"   HTML Report:    {html_output_file}")
+
         print("   Hotspot Report: Run with --list-hotspots")
         print("   Review Strategy: Run with --review-strategy")
         print("   File Tree:      Run with --output-format human-tree")
@@ -268,8 +273,9 @@ class CLISummaryFormat(ReportFormatStrategy):
 
     def _print_footer(self, elapsed: float):
         """Print footer with timing info."""
-        print(f"⏱️  Analysis Time: {elapsed:.2f}s")
-        print()
+        # Note: Analysis timing is now shown in the global TIME SUMMARY
+        # This footer is kept for potential future use but doesn't show timing
+        pass
 
     def _get_file_path(self, file_obj: File) -> str:
         """Get the relative file path for display."""

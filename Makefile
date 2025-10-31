@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test coverage licenses check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
+.PHONY: help install format lint test coverage licenses serve check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -17,6 +17,7 @@ help:
 	@echo "  make test                 - Run all tests with pytest"
 	@echo "  make coverage             - Run tests with coverage report (HTML + terminal)"
 	@echo "  make licenses             - Check license compliance"
+	@echo "  make serve                - Start Python HTTP server for testing web pages"
 	@echo "  make check                - Run lint + test + licenses (CI workflow)"
 	@echo "  make clean                - Clean temporary files"
 	@echo ""
@@ -40,10 +41,14 @@ install:
 	@source .venv/bin/activate && python -m pip install --upgrade pip
 	@echo "   Installing package in editable mode with all dependencies..."
 	@source .venv/bin/activate && pip install -e .
+	@echo ""
+	@echo "   Verifying dependency integrity..."
+	@source .venv/bin/activate && pip check
+	@echo ""
 	@echo "✅ Installation complete!"
 	@echo ""
-	@echo "Installed dependencies:"
-	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff)"
+	@echo "📋 Critical packages installed:"
+	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff|tree-sitter|language-pack)"
 
 format:
 	@echo "🎨 Auto-formatting Python code with autopep8..."
@@ -73,6 +78,15 @@ licenses:
 	@source .venv/bin/activate && python check_licenses.py
 	@echo "✅ License check complete!"
 
+serve:
+	@echo "🌐 Starting Python HTTP server for testing generated web pages..."
+	@echo "   Server will be available at: http://localhost:8080"
+	@echo "   Serving files from: $(shell pwd)"
+	@echo "   Press Ctrl+C to stop the server"
+	@echo ""
+	@source .venv/bin/activate && python -m http.server 8080
+	@echo "✅ Server stopped!"
+
 check: lint test licenses
 	@echo "✅ All checks passed!"
 
@@ -83,6 +97,8 @@ clean:
 	@find . -type f -name "*.pyo" -delete
 	@find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true
 	@rm -rf .pytest_cache build dist htmlcov coverage_html .coverage coverage.xml
+	# Remove all files in output/ except .gitkeep
+	@if [ -d output ]; then find output -mindepth 1 -not -name ".gitkeep" -delete; fi
 	@echo "✅ Cleanup complete!"
 
 # Self-analysis targets - run MetricMancer on itself for code quality insights

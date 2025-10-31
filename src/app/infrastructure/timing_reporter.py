@@ -95,14 +95,18 @@ class TimingReporter:
               f"{self.safe_format(analyzer_timing.get('cache_prebuild', 0))} seconds")
         print(f"  Complexity analysis:    "
               f"{self.safe_format(analyzer_timing.get('complexity', 0))} seconds")
+        print(f"  Cognitive complexity:   "
+              f"{self.safe_format(analyzer_timing.get('cognitive_complexity', 0))} seconds")
+        print(f"  KPI aggregation:        "
+              f"{self.safe_format(analyzer_timing.get('kpi_aggregation', 0))} seconds")
         print(f"  ChurnKPI (per file):    "
-              f"{self.safe_format(analyzer_timing.get('filechurn', 0))} seconds")
+              f"{self.safe_format(analyzer_timing.get('churn', 0))} seconds")
         print(f"  HotspotKPI:             "
               f"{self.safe_format(analyzer_timing.get('hotspot', 0))} seconds")
         print(f"  CodeOwnershipKPI:       "
               f"{self.safe_format(analyzer_timing.get('ownership', 0))} seconds")
         print(f"  SharedOwnershipKPI:     "
-              f"{self.safe_format(analyzer_timing.get('sharedownership', 0))} seconds")
+              f"{self.safe_format(analyzer_timing.get('shared_ownership', 0))} seconds")
 
     def print_summary(self, analyzer_timing: Optional[Dict] = None):
         """

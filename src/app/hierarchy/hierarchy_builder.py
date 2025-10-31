@@ -25,7 +25,7 @@ Example:
 """
 
 from pathlib import Path
-from typing import List, Union, Tuple
+from typing import List, Tuple
 
 from src.kpis.model import RepoInfo, ScanDir, File
 

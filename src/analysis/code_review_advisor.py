@@ -94,11 +94,11 @@ class CodeReviewAdvisor:
         """Determine ownership type from shared ownership data."""
         num_significant = shared_ownership_data.get('num_significant_authors', 0)
         authors = shared_ownership_data.get('authors', [])
-        
+
         # Filter out placeholders
         real_authors = [a for a in authors if a != 'Not Committed Yet' and a.strip()]
         num_real = len(real_authors)
-        
+
         # Determine ownership based on author counts
         if num_significant <= 1 and num_real <= 1:
             return "single_owner"
@@ -108,15 +108,15 @@ class CodeReviewAdvisor:
             return "shared"
         else:
             return "balanced"
-    
+
     def _get_ownership_from_code_data(self, ownership_data: Dict[str, float]) -> str:
         """Determine ownership type from code ownership data."""
         if not ownership_data:
             return "unknown"
-        
+
         max_ownership = max(ownership_data.values())
         num_authors = len(ownership_data)
-        
+
         if max_ownership >= 70:
             return "single_owner"
         elif max_ownership < 30 and num_authors >= 4:
@@ -132,7 +132,7 @@ class CodeReviewAdvisor:
         # Use Shared Ownership data if available (more accurate)
         if shared_ownership_data and 'num_significant_authors' in shared_ownership_data:
             return self._get_ownership_from_shared_data(shared_ownership_data)
-        
+
         # Fallback to Code Ownership data
         return self._get_ownership_from_code_data(ownership_data)
 
@@ -164,19 +164,19 @@ class CodeReviewAdvisor:
                               category: str, ownership_type: str) -> List[str]:
         """Generate specific focus areas for review."""
         focus_areas = []
-        
+
         # Define focus areas based on different aspects
-        complexity_areas = ["Complexity Management", "Code Simplification Opportunities", 
-                           "Error Handling Patterns"]
-        churn_areas = ["Root Cause Analysis", "Pattern Consistency", 
+        complexity_areas = ["Complexity Management", "Code Simplification Opportunities",
+                            "Error Handling Patterns"]
+        churn_areas = ["Root Cause Analysis", "Pattern Consistency",
                        "Technical Debt Assessment"]
-        critical_areas = ["Architectural Impact", "Performance Implications", 
-                         "Test Coverage Adequacy"]
+        critical_areas = ["Architectural Impact", "Performance Implications",
+                          "Test Coverage Adequacy"]
         ownership_areas = {
             "single_owner": ["Knowledge Transfer", "Documentation Quality"],
             "fragmented": ["API Consistency", "Coordination Overhead"]
         }
-        
+
         # Add focus areas based on conditions
         if complexity > 15:
             focus_areas.extend(complexity_areas)
@@ -186,7 +186,7 @@ class CodeReviewAdvisor:
             focus_areas.extend(critical_areas)
         if ownership_type in ownership_areas:
             focus_areas.extend(ownership_areas[ownership_type])
-        
+
         return focus_areas
 
     def _generate_checklist(self, complexity: int, churn: float,
@@ -201,7 +201,7 @@ class CodeReviewAdvisor:
             "Would this benefit from simplification?",
             "Are there clear unit tests for complex paths?"
         ]
-        
+
         churn_items = [
             "Does this change follow established patterns in the file?",
             "Is this change addressing root cause or symptoms?",
@@ -210,7 +210,7 @@ class CodeReviewAdvisor:
             "Is the change scope appropriate?",
             "Do we need architectural discussion before proceeding?"
         ]
-        
+
         ownership_items = {
             "single_owner": [
                 "Is documentation clear enough for new contributors?",
@@ -226,13 +226,13 @@ class CodeReviewAdvisor:
                 "Do other teams need to be notified?"
             ]
         }
-        
+
         default_items = [
             "Does this change maintain code quality standards?",
             "Are tests adequate?",
             "Is documentation updated if needed?"
         ]
-        
+
         # Build checklist
         checklist = []
         if complexity > 15:
@@ -243,11 +243,11 @@ class CodeReviewAdvisor:
             checklist.extend(ownership_items[ownership_type])
         if not checklist:
             checklist.extend(default_items)
-        
+
         return checklist
 
-    def _get_template_header(self, risk_level: str, file_path: str, 
-                            complexity: int, churn: float) -> List[str]:
+    def _get_template_header(self, risk_level: str, file_path: str,
+                             complexity: int, churn: float) -> List[str]:
         """Generate template header based on risk level."""
         headers = {
             "critical": [
@@ -262,7 +262,7 @@ class CodeReviewAdvisor:
             ]
         }
         return headers.get(risk_level, [])
-    
+
     def _get_template_ownership_context(self, ownership_type: str) -> List[str]:
         """Generate ownership context section."""
         ownership_contexts = {
@@ -280,12 +280,12 @@ class CodeReviewAdvisor:
             ]
         }
         return ownership_contexts.get(ownership_type, [])
-    
-    def _get_template_focus_items(self, complexity: int, churn: float, 
+
+    def _get_template_focus_items(self, complexity: int, churn: float,
                                   risk_level: str) -> List[str]:
         """Generate focus items for review."""
         items = ["Review Focus:"]
-        
+
         if complexity > 15:
             items.extend([
                 "   □ Complexity: Can logic be simplified or extracted?",
@@ -301,9 +301,9 @@ class CodeReviewAdvisor:
                 "   □ Architecture: Discuss impact before merge",
                 "   □ Performance: Consider performance implications"
             ])
-        
+
         return items
-    
+
     def _get_template_actions(self, risk_level: str) -> List[str]:
         """Generate required actions based on risk level."""
         actions = {
@@ -325,14 +325,14 @@ class CodeReviewAdvisor:
                            ownership_type: str, file_path: str) -> str:
         """Generate a review comment template."""
         template_parts = []
-        
+
         # Add sections
         template_parts.extend(self._get_template_header(risk_level, file_path, complexity, churn))
         template_parts.extend(self._get_template_ownership_context(ownership_type))
         template_parts.extend(self._get_template_focus_items(complexity, churn, risk_level))
         template_parts.append("")
         template_parts.extend(self._get_template_actions(risk_level))
-        
+
         return "\n".join(template_parts)
 
     def _estimate_review_time(self, complexity: int, churn: float, risk_level: str) -> int:
@@ -341,25 +341,25 @@ class CodeReviewAdvisor:
         complexity_time = {50: 60, 20: 30, 10: 15}
         churn_time = {15: 20, 10: 10}
         risk_time = {"critical": 30, "high": 15}
-        
+
         # Calculate total time
         base_time = 15
-        
+
         # Add complexity time (first matching threshold)
         for threshold, time in sorted(complexity_time.items(), reverse=True):
             if complexity > threshold:
                 base_time += time
                 break
-        
+
         # Add churn time (first matching threshold)
         for threshold, time in sorted(churn_time.items(), reverse=True):
             if churn > threshold:
                 base_time += time
                 break
-        
+
         # Add risk time
         base_time += risk_time.get(risk_level, 0)
-        
+
         return base_time
 
 
@@ -478,7 +478,7 @@ def _extract_files_from_data(data: Dict[str, Any], path: str = '') -> List[Dict[
 
 
 def _format_md_header(is_filtered: bool, branch_name: Optional[str],
-                     base_branch: Optional[str]) -> List[str]:
+                      base_branch: Optional[str]) -> List[str]:
     """Format markdown report header."""
     output = []
     output.append("# 📋 Code Review Strategy Report")
@@ -493,7 +493,7 @@ def _format_md_header(is_filtered: bool, branch_name: Optional[str],
         if base_branch:
             output.append(f"> 📊 **Comparing against**: `{base_branch}`")
         output.append("")
-    
+
     return output
 
 
@@ -514,7 +514,7 @@ def _format_md_summary(recommendations: List[ReviewRecommendation]) -> List[str]
     output.append(f"| **High risk files** 🟡 | {len(high_files)} (require senior review) |")
     output.append(f"| **Estimated total review time** | {total_time // 60}h {total_time % 60}m |")
     output.append("")
-    
+
     return output
 
 
@@ -523,7 +523,7 @@ def _format_md_priority_section(recommendations: List[ReviewRecommendation],
     """Format a single priority section in markdown."""
     output = []
     priority_recs = [r for r in recommendations if r.priority == priority]
-    
+
     if not priority_recs:
         return output
 
@@ -561,7 +561,7 @@ def _format_md_priority_section(recommendations: List[ReviewRecommendation],
     if len(priority_recs) > 10:
         output.append(f"*... and {len(priority_recs) - 10} more files at this priority level*")
         output.append("")
-    
+
     return output
 
 
@@ -593,7 +593,7 @@ def _format_md_resource_allocation(recommendations: List[ReviewRecommendation]) 
     output.append("- **2 reviewers** (High risk/complexity >20): Senior developer + peer reviewer")
     output.append("- **1 reviewer** (Low-medium risk): Standard peer review")
     output.append("")
-    
+
     return output
 
 
@@ -633,7 +633,7 @@ def _format_md_best_practices() -> List[str]:
     output.append("---")
     output.append("")
     output.append("*Report generated by MetricMancer, based on 'Your Code as a Crime Scene' methodology*")
-    
+
     return output
 
 
@@ -646,7 +646,7 @@ def _format_review_report_markdown(recommendations: List[ReviewRecommendation],
 
     # Header
     output.extend(_format_md_header(is_filtered, branch_name, base_branch))
-    
+
     # Executive Summary
     output.extend(_format_md_summary(recommendations))
 
@@ -674,7 +674,7 @@ def _format_review_report_markdown(recommendations: List[ReviewRecommendation],
 
     # Resource allocation
     output.extend(_format_md_resource_allocation(recommendations))
-    
+
     # Best practices
     output.extend(_format_md_best_practices())
 
@@ -682,7 +682,7 @@ def _format_review_report_markdown(recommendations: List[ReviewRecommendation],
 
 
 def _format_txt_header(is_filtered: bool, branch_name: Optional[str],
-                      base_branch: Optional[str]) -> List[str]:
+                       base_branch: Optional[str]) -> List[str]:
     """Format text report header."""
     output = []
     output.append("=" * 100)
@@ -722,7 +722,7 @@ def _format_txt_priority_section(recommendations: List[ReviewRecommendation],
     """Format a single priority section in text format."""
     output = []
     priority_recs = [r for r in recommendations if r.priority == priority]
-    
+
     if not priority_recs:
         return output
 
@@ -737,7 +737,7 @@ def _format_txt_priority_section(recommendations: List[ReviewRecommendation],
         output.append(f"   Estimated Time: {rec.estimated_time_minutes} minutes")
         output.append(f"   Focus Areas: {', '.join(rec.focus_areas)}")
         output.append("")
-        output.append(f"   Review Checklist:")
+        output.append("   Review Checklist:")
 
         # Always show all checklist items (simpler and more useful)
         for item in rec.checklist_items:
@@ -747,7 +747,7 @@ def _format_txt_priority_section(recommendations: List[ReviewRecommendation],
     if len(priority_recs) > 10:
         output.append(f"   ... and {len(priority_recs) - 10} more files at this priority level")
         output.append("")
-    
+
     return output
 
 

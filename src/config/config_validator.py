@@ -3,7 +3,6 @@
 This module centralizes validation logic to keep AppConfig focused on
 configuration data and construction.
 """
-from typing import Iterable
 
 
 VALID_OUTPUT_FORMATS = {

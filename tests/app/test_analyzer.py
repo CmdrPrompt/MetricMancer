@@ -1,12 +1,11 @@
-import os
 import shutil
 import unittest
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 from src.app import Analyzer
 from src.kpis.codechurn import ChurnKPI
-from src.kpis.complexity import ComplexityAnalyzer, ComplexityKPI
+from src.kpis.complexity import ComplexityAnalyzer
 from src.kpis.hotspot import HotspotKPI
 from src.kpis.model import RepoInfo, ScanDir, File
 from src.languages.config import Config
@@ -71,10 +70,11 @@ class TestAnalyzer(unittest.TestCase):
 
         # Mock KPI objects to return fixed values
         with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data), \
-                patch.object(ChurnKPI, 'calculate', side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))) as mock_churn_calc, \
-                patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)) as mock_hotspot_calc:
-
-            # --- Run the analysis ---
+            patch.object(ChurnKPI, 'calculate',
+                         side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
+            patch.object(HotspotKPI, 'calculate',
+                         # --- Run the analysis ---
+                         side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
             summary = self.analyzer.analyze(self.scanner_files)
 
             # --- Assertions ---
@@ -82,7 +82,7 @@ class TestAnalyzer(unittest.TestCase):
             # Since both repo1 and repo2 are within the same git repo in the test environment,
             # they should be combined into a single RepoInfo object
             self.assertEqual(len(summary), 1)  # One combined repo found
-            
+
             # The repo root should be the git root (test directory or workspace)
             repo_keys = list(summary.keys())
             combined_repo_info = summary[repo_keys[0]]
@@ -94,12 +94,12 @@ class TestAnalyzer(unittest.TestCase):
             self.assertIn(temp_dir_name, combined_repo_info.scan_dirs)
             temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
             self.assertIsInstance(temp_dir, ScanDir)
-            
+
             # Repo1 structure: temp_dir -> repo1 -> src -> files
             self.assertIn("repo1", temp_dir.scan_dirs)
             repo1_dir = temp_dir.scan_dirs["repo1"]
             self.assertIsInstance(repo1_dir, ScanDir)
-            
+
             self.assertIn("src", repo1_dir.scan_dirs)
             src_dir = repo1_dir.scan_dirs["src"]
             self.assertIsInstance(src_dir, ScanDir)
@@ -135,7 +135,7 @@ class TestAnalyzer(unittest.TestCase):
             self.assertIn("repo2", temp_dir.scan_dirs)
             repo2_dir = temp_dir.scan_dirs["repo2"]
             self.assertIsInstance(repo2_dir, ScanDir)
-            
+
             self.assertIn("app.java", repo2_dir.files)
             app_java_file = repo2_dir.files["app.java"]
             self.assertIsInstance(app_java_file, File)
@@ -164,21 +164,26 @@ class TestAnalyzer(unittest.TestCase):
             {'name': 'f1', 'complexity': 5},
             {'name': 'f2', 'complexity': 4},
         ]
-        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data), \
-                patch.object(ChurnKPI, 'calculate', side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
-                patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
+        with patch.object(ComplexityAnalyzer, 'analyze_functions',
+                          return_value=mock_functions_data), \
+                patch.object(ChurnKPI, 'calculate',
+                             side_effect=lambda file_path, **kwargs: ChurnKPI(
+                                 value=mock_churn_data.get(file_path, 0))), \
+                patch.object(HotspotKPI, 'calculate',
+                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(
+                                 value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
             # With the new logic, all files from the same git repo are grouped together
             self.assertEqual(len(summary), 1)  # One combined repo found
             repo_keys = list(summary.keys())
             combined_repo_info = summary[repo_keys[0]]
-            
+
             # Navigate to repo1: RepoInfo -> test_analyzer_temp_dir -> repo1
             temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
             temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
             repo1_dir = temp_dir.scan_dirs["repo1"]
-            
+
             # README.md is unsupported and must not be present under repo1 root files
             self.assertNotIn("README.md", repo1_dir.files)
             # Logga alla debug_print-anrop för felsökning
@@ -190,7 +195,8 @@ class TestAnalyzer(unittest.TestCase):
             self.assertTrue(any(
                 expected_substr in str(call.args[0]) and "README.md" in str(call.args[0])
                 for call in mock_debug_print.call_args_list
-            ), f"Expected debug_print call containing '{expected_substr}' and the file name. Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
+            ), f"Expected debug_print call containing '{expected_substr}' and the file name. "
+                f"Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
 
     @patch('src.app.kpi.file_analyzer.debug_print')  # FileAnalyzer handles file processing
     def test_unreadable_file_is_skipped_and_warned(self, mock_debug_print):
@@ -214,29 +220,35 @@ class TestAnalyzer(unittest.TestCase):
             {'name': 'f1', 'complexity': 2},
         ]
 
-        with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=mock_functions_data), \
-                patch.object(ChurnKPI, 'calculate', side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
-                patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
+        with patch.object(ComplexityAnalyzer, 'analyze_functions',
+                          return_value=mock_functions_data), \
+                patch.object(ChurnKPI, 'calculate',
+                             side_effect=lambda file_path, **kwargs: ChurnKPI(
+                                 value=mock_churn_data.get(file_path, 0))), \
+                patch.object(HotspotKPI, 'calculate',
+                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(
+                                 value=complexity * churn)):
             summary = self.analyzer.analyze(files)
 
         # With the new logic, all files from the same git repo are grouped together
         self.assertEqual(len(summary), 1)  # One combined repo found
         repo_keys = list(summary.keys())
         combined_repo_info = summary[repo_keys[0]]
-        
+
         # Navigate to repo1 -> src: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src
         temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
         temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
         repo1_dir = temp_dir.scan_dirs["repo1"]
         src_dir = repo1_dir.scan_dirs["src"]
-        
+
         # The file should not exist under the src directory
         self.assertNotIn("blocked_missing.py", src_dir.files)
         # A warning should have been printed
         self.assertTrue(any(
             "Unable to read" in str(call.args[0]) and str(blocked_missing_path) in str(call.args[0])
             for call in mock_debug_print.call_args_list
-        ), f"Expected a debug_print call containing 'Unable to read' and the missing path. Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
+        ), f"Expected a debug_print call containing 'Unable to read' and the missing path. "
+            f"Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
 
     def test_builds_nested_scandir_hierarchy(self):
         """Analyzer should create nested ScanDir objects for deep paths."""
@@ -248,12 +260,6 @@ class TestAnalyzer(unittest.TestCase):
             {'path': str(nested_path), 'root': str(self.repo1_path), 'ext': '.py'},
         ]
 
-        # Mock churn data
-        mock_churn_data = {
-            str(self.main_py_path): 1,
-            str(self.utils_py_path): 2,
-            str(nested_path): 3,
-        }
         mock_functions_data = [
             {'name': 'a', 'complexity': 6},
             {'name': 'b', 'complexity': 3},
@@ -265,12 +271,12 @@ class TestAnalyzer(unittest.TestCase):
         self.assertEqual(len(summary), 1)  # One combined repo found
         repo_keys = list(summary.keys())
         combined_repo_info = summary[repo_keys[0]]
-        
+
         # The structure is: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src -> pkg -> module -> utils -> helper.py
         temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
         self.assertIn(temp_dir_name, combined_repo_info.scan_dirs)
         temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
-        
+
         # Navigate to repo1 -> src -> pkg -> module -> utils
         repo1_dir = temp_dir.scan_dirs["repo1"]
         src_dir = repo1_dir.scan_dirs["src"]
@@ -314,7 +320,7 @@ class TestAnalyzer(unittest.TestCase):
         self.assertEqual(len(summary), 1)  # One combined repo found
         repo_keys = list(summary.keys())
         combined_repo_info = summary[repo_keys[0]]
-        
+
         # Navigate to the main.py file: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src -> main.py
         temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
         temp_dir = combined_repo_info.scan_dirs[temp_dir_name]
@@ -337,15 +343,19 @@ class TestAnalyzer(unittest.TestCase):
         }
 
         with patch.object(ComplexityAnalyzer, 'analyze_functions', return_value=[]), \
-                patch.object(ChurnKPI, 'calculate', side_effect=lambda file_path, **kwargs: ChurnKPI(value=mock_churn_data.get(file_path, 0))), \
-                patch.object(HotspotKPI, 'calculate', side_effect=lambda complexity, churn, **kwargs: HotspotKPI(value=complexity * churn)):
+                patch.object(ChurnKPI, 'calculate',
+                             side_effect=lambda file_path, **kwargs: ChurnKPI(
+                                 value=mock_churn_data.get(file_path, 0))), \
+                patch.object(HotspotKPI, 'calculate',
+                             side_effect=lambda complexity, churn, **kwargs: HotspotKPI(
+                                 value=complexity * churn)):
             summary = self.analyzer.analyze(self.scanner_files)
 
         # With the new logic, all files from the same git repo are grouped together
         self.assertEqual(len(summary), 1)  # One combined repo found
         repo_keys = list(summary.keys())
         combined_repo_info = summary[repo_keys[0]]
-        
+
         # Navigate to the main.py file: RepoInfo -> test_analyzer_temp_dir -> repo1 -> src -> main.py
         temp_dir_name = self.test_dir.name  # "test_analyzer_temp_dir"
         temp_dir = combined_repo_info.scan_dirs[temp_dir_name]

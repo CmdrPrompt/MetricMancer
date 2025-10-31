@@ -1,8 +1,7 @@
 import unittest
-from unittest.mock import Mock, MagicMock
+from unittest.mock import Mock
 
 from src.report.report_data_analyzer import ReportDataAnalyzer
-from src.report.root_info import RootInfo
 from src.report.file_info import FileInfo
 
 
