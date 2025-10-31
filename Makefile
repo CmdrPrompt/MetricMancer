@@ -41,10 +41,14 @@ install:
 	@source .venv/bin/activate && python -m pip install --upgrade pip
 	@echo "   Installing package in editable mode with all dependencies..."
 	@source .venv/bin/activate && pip install -e .
+	@echo ""
+	@echo "   Verifying dependency integrity..."
+	@source .venv/bin/activate && pip check
+	@echo ""
 	@echo "✅ Installation complete!"
 	@echo ""
-	@echo "Installed dependencies:"
-	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff)"
+	@echo "📋 Critical packages installed:"
+	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff|tree-sitter|language-pack)"
 
 format:
 	@echo "🎨 Auto-formatting Python code with autopep8..."

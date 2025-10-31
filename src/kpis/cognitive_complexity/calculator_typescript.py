@@ -10,7 +10,7 @@ https://www.sonarsource.com/docs/CognitiveComplexity.pdf
 
 from typing import Dict, List
 from tree_sitter import Node
-from tree_sitter_languages import get_parser
+from tree_sitter_language_pack import get_parser
 from .calculator_base import CognitiveComplexityCalculatorBase
 
 
