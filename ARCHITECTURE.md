@@ -605,7 +605,7 @@ def main():
 - ✅ Extensible: Easy to add new patterns
 - ❌ Language-specific: Requires per-language implementation
 
-*Trade-off*: Initial implementation supports Python only. Multi-language support planned using tree-sitter parsers (universal AST across languages).
+*Trade-off*: Initial Python implementation used AST. Now expanded to 6 languages (Python, Java, Go, JavaScript, TypeScript, C) using tree-sitter parsers for universal AST support across languages.
 
 **Decision: Strategy Pattern vs. Direct Integration**
 
@@ -677,18 +677,18 @@ def calculate_cognitive_complexity(node, nesting=0):
 3. **Architecture Validation**: Zero core modifications proves Open/Closed Principle works
 4. **Data Model Flexibility**: `Dict[str, BaseKPI]` seamlessly supported new metric
 
-#### Future: Multi-Language Support
+#### Multi-Language Support (v3.2.0)
 
-**Current**: Python only (AST-based)
-**Planned**: JavaScript, TypeScript, Java, C#, Go using tree-sitter
+**Current**: 6 languages supported (Python, Java, Go, JavaScript, TypeScript, C)
+**Implementation**: Tree-sitter parsers with factory pattern for language-specific calculators
 
 **Architecture Impact**:
-- Strategy pattern remains unchanged
-- Add language detection logic in strategy
-- Implement tree-sitter parsers per language
-- Reuse core algorithm with different AST traversal
+- Strategy pattern remained unchanged ✅
+- Language detection via `CognitiveComplexityCalculatorFactory` ✅
+- Tree-sitter parsers implemented per language ✅
+- Core algorithm reused with different AST traversal ✅
 
-See related GitHub issue for multi-language implementation roadmap.
+**Future**: Additional languages (C#, Ruby, PHP, etc.) can be added using same factory pattern.
 
 ### Adding New Languages
 
