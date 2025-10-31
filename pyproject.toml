@@ -1,7 +1,7 @@
 [project]
 name = "metricmancer"
-version = "3.1.0"
-description = "Multi-language software analytics tool for code quality, maintainability, and technical risk. Calculates cyclomatic complexity, code churn, hotspots, and more. Generates CLI, HTML, and JSON reports."
+version = "3.2.0"
+description = "Multi-language software analytics tool for code quality, maintainability, and technical risk. Calculates cyclomatic and cognitive complexity, code churn, hotspots, and more. Generates CLI, HTML, and JSON reports."
 authors = [
   { name = "Thomas Lindqvist", email = "fixaren54_eon@icloud.com" }
 ]
@@ -19,7 +19,9 @@ dependencies = [
   "autopep8",
   "flake8",
   "pip-licenses",
-  "unidiff>=0.7.5"
+  "unidiff>=0.7.5",
+  "tree-sitter>=0.25.0",
+  "tree-sitter-language-pack>=0.10.0"
 ]
 
 [project.urls]

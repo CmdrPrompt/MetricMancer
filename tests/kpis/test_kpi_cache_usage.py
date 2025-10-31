@@ -171,11 +171,6 @@ class TestCachePerformanceExpectations(unittest.TestCase):
             mock_run.return_value.stdout = "src/test.py\n"
             mock_check_output.return_value = "author Alice\nauthor Bob\n"
 
-            # Create multiple KPI instances for same file
-            kpi1 = CodeOwnershipKPI("src/test.py", "/test/repo")
-            kpi2 = CodeOwnershipKPI("src/test.py", "/test/repo")
-            kpi3 = CodeOwnershipKPI("src/test.py", "/test/repo")
-
             # Expectation: git commands should be called fewer times than KPI instances
             # Due to caching, subsequent calls should use cached data
             total_git_calls = mock_run.call_count + mock_check_output.call_count

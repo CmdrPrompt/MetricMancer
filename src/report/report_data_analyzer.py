@@ -2,9 +2,7 @@ from typing import Any, Dict, List, Union
 
 from .grading import grade
 from .file_helpers import filter_hotspot_risk_files, filter_problem_files
-from .file_info import FileInfo
 from .report_data_collector import ReportDataCollector
-from .root_info import RootInfo
 
 
 class ReportDataAnalyzer:
@@ -14,7 +12,8 @@ class ReportDataAnalyzer:
     """
 
     def __init__(self, repo_info, threshold: float = 20.0,
-                 problem_file_threshold: Union[float, None] = None, threshold_low: float = 10.0, threshold_high: float = 20.0):
+                 problem_file_threshold: Union[float, None] = None,
+                 threshold_low: float = 10.0, threshold_high: float = 20.0):
         """
         Initialize the ReportDataAnalyzer.
         Args:
@@ -65,7 +64,7 @@ class ReportDataAnalyzer:
         if self.problem_file_threshold is not None:
             problem_files = filter_problem_files(
                 root_info.files, self.problem_file_threshold)
-        
+
         hotspot_risk_files = filter_hotspot_risk_files(root_info.files)
 
         return {
@@ -74,7 +73,8 @@ class ReportDataAnalyzer:
             'hotspot_risk_files': hotspot_risk_files
         }
 
-    def _create_root_summary(self, root_path: str, average_complexity: float, problem_files: List, hotspot_risk_files: List, files: List, repo_root: str = '') -> Dict[str, Any]:
+    def _create_root_summary(self, root_path: str, average_complexity: float, problem_files: List,
+                             hotspot_risk_files: List, files: List, repo_root: str = '') -> Dict[str, Any]:
         """
         Create a summary dictionary for a problematic root.
 
@@ -118,9 +118,12 @@ class ReportDataAnalyzer:
                 metrics = self._calculate_root_metrics(root_info)
 
                 # Check if root is problematic using extracted logic
-                if self._is_root_problematic(metrics['average_complexity'], metrics['problem_files'], metrics['hotspot_risk_files']):
+                if self._is_root_problematic(metrics['average_complexity'],
+                                             metrics['problem_files'],
+                                             metrics['hotspot_risk_files']):
                     summary.append(self._create_root_summary(
-                        root_info.path, metrics['average_complexity'], metrics['problem_files'], metrics['hotspot_risk_files'],
+                        root_info.path, metrics['average_complexity'],
+                        metrics['problem_files'], metrics['hotspot_risk_files'],
                         root_info.files, getattr(root_info, 'repo_root', '')
                     ))
         return summary

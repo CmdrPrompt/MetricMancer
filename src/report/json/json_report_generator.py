@@ -1,9 +1,7 @@
 import json
 
-from src.kpis.model import RepoInfo
 from src.report.json.json_report_format import JSONReportFormat
 from src.report.report_interface import ReportInterface
-from src.utilities.debug import debug_print
 
 
 class JSONReportGenerator(ReportInterface):

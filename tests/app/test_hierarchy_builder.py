@@ -6,11 +6,8 @@ RepoInfo/ScanDir tree structures by placing File objects in the correct
 directory nodes based on their file paths.
 """
 
-import pytest
-from pathlib import Path
-
 from src.app import HierarchyBuilder
-from src.kpis.model import RepoInfo, ScanDir, File
+from src.kpis.model import RepoInfo, File
 from src.kpis.complexity import ComplexityKPI
 
 

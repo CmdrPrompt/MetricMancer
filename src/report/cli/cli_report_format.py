@@ -181,8 +181,10 @@ class CLIReportFormat(ReportFormatStrategy):
                 shared_str = " Shared: N/A"
 
         # Always append ownership_str and shared_str directly after Hotspot, trimmed
-        return f"[C:{c_val}, Cog:{cog_val}, Churn:{ch_val}, Hotspot:{h_val}]" + (ownership_str if ownership_str else "") + (
-            " " if ownership_str and shared_str else "") + (shared_str if shared_str else "")
+        return (f"[C:{c_val}, Cog:{cog_val}, Churn:{ch_val}, Hotspot:{h_val}]" +
+                (ownership_str if ownership_str else "") +
+                (" " if ownership_str and shared_str else "") +
+                (shared_str if shared_str else ""))
 
     def _print_functions(self, functions: List[Function], prefix: str, is_file_last: bool):
         """Prints the functions for a given file, including cognitive complexity if available."""

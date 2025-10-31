@@ -5,14 +5,13 @@ Tests the file-level analysis component that orchestrates
 reading files, parsing functions, and calculating KPIs.
 """
 import unittest
-from unittest.mock import Mock, patch, MagicMock, mock_open
+from unittest.mock import Mock, patch
 from pathlib import Path
 import tempfile
 import os
 
 from src.app import FileAnalyzer
 from src.kpis.model import File, Function
-from src.kpis.complexity import ComplexityKPI
 
 
 class TestFileAnalyzerInitialization(unittest.TestCase):

@@ -305,11 +305,11 @@ def parse_args():
     Returns an ArgumentParser for the CLI arguments.
     """
     parser = argparse.ArgumentParser(description="Analyze cyclomatic complexity")
-    
+
     _add_basic_args(parser)
     _add_output_args(parser)
     _add_hotspot_args(parser)
     _add_review_args(parser)
     _add_delta_args(parser)
-    
+
     return parser

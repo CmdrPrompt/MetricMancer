@@ -1,5 +1,4 @@
 import os
-import re
 import shutil
 import unittest
 from pathlib import Path
@@ -133,7 +132,8 @@ class TestScanner(unittest.TestCase):
             for call in mock_debug_print.call_args_list
         )
         self.assertTrue(warning_found,
-                        f"Expected a warning about non-existent directory. Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
+                        f"Expected a warning about non-existent directory. "
+                        f"Actual calls: {[str(call.args[0]) for call in mock_debug_print.call_args_list]}")
 
     @patch('src.utilities.debug.debug_print')
     def test_scan_returns_empty_list_for_no_supported_files(self, mock_debug_print):

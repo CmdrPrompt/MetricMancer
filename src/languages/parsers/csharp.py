@@ -35,4 +35,8 @@ class CSharpComplexityParser(ComplexityParser):
     # - '\)' matches closing parenthesis
     # - '(?:\s+where\s+[^{]+)?' optionally matches generic constraints
     # - '\s*\{' matches opening brace
-    FUNCTION_PATTERN = r'(?:(?:public|private|protected|static|async|virtual|override)\s+)*(?:\w+(?:<[^>]+>)?)+\s+([a-zA-Z_]\w*)\s*\([^)]*\)(?:\s+where\s+[^{]+)?\s*\{'
+    FUNCTION_PATTERN = (
+        r'(?:(?:public|private|protected|static|async|virtual|override)\s+)*'
+        r'(?:\w+(?:<[^>]+>)?)+\s+([a-zA-Z_]\w*)\s*\([^)]*\)'
+        r'(?:\s+where\s+[^{]+)?\s*\{'
+    )

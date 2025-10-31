@@ -6,10 +6,24 @@
   - [ ] `tree-sitter>=0.20.0`
   - [ ] `tree-sitter-languages>=1.10.0`
 - [ ] Create abstract base class `CognitiveComplexityCalculatorBase`
+  - [ ] Define `calculate_for_file(content: str) -> Dict[str, int]` interface
+  - [ ] Define `get_language_name() -> str` method
 - [ ] Refactor existing Python calculator to extend base class
-- [ ] Create `tree_sitter_helper.py` utility module
-- [ ] Update `CognitiveComplexityKPI.calculate()` to detect language
+  - [ ] Rename to `PythonCognitiveComplexityCalculator`
+  - [ ] Implement new interface while keeping existing AST logic
+- [ ] **Create `calculator_factory.py` (Factory Pattern)**
+  - [ ] Map file extensions to calculator classes
+  - [ ] Implement `create(file_path)` method
+  - [ ] Implement `is_supported(file_path)` method
+  - [ ] Implement `get_supported_extensions()` method
+- [ ] Update `CognitiveComplexityKPI.calculate()` to use factory
+  - [ ] Replace if/elif chain with factory pattern
+  - [ ] Add error handling for parsing failures
+  - [ ] Add logging for unsupported languages
 - [ ] Add unit tests for base infrastructure
+  - [ ] Test factory creates correct calculators
+  - [ ] Test factory returns None for unsupported languages
+  - [ ] Test calculator base class interface
 
 ## Phase 2: Java Support 🎯 (PRIORITY 1 - MOST IMPORTANT)
 
@@ -35,20 +49,31 @@
 
 ## Phase 3: Ada Support 🎯 (PRIORITY 2)
 
+**Tree-sitter Parser:** Use [briot/tree-sitter-ada](https://github.com/briot/tree-sitter-ada)
+- Last updated: 2024-05-23
+- ABI version: 14 (latest)
+- Note: Grammar adapted from Emacs ada-mode by Stephen Leak
+
+- [ ] Research Ada tree-sitter node types
+  - [ ] Install and test briot/tree-sitter-ada parser
+  - [ ] Document Ada AST structure for control flow
 - [ ] Implement `AdaCognitiveComplexityCalculator`
-  - [ ] Map Ada control structures
+  - [ ] Map Ada control structures to node types
   - [ ] Handle if/elsif/else statements
   - [ ] Handle loops (loop, while, for)
-  - [ ] Handle case statements
-  - [ ] Handle exception handlers
-  - [ ] Handle tasks and protected objects
-  - [ ] Handle packages and generics
+  - [ ] Handle case statements (case/when)
+  - [ ] Handle exception handlers (exception/when)
+  - [ ] Handle tasks and protected objects (optional)
+  - [ ] Handle packages and generics (optional)
   - [ ] Handle nesting increments
 - [ ] Create Ada test suite
-  - [ ] Simple control flow tests
-  - [ ] Real-world Ada code tests
-  - [ ] Ada-specific constructs (tasks, etc.)
+  - [ ] Simple control flow tests (25+ tests)
+  - [ ] Nested control flow tests
+  - [ ] Real-world Ada code tests (.adb and .ads files)
+  - [ ] Ada-specific constructs (tasks, protected, etc.)
 - [ ] Update documentation
+  - [ ] Add Ada examples to IMPLEMENTATION_GUIDE.md
+  - [ ] Document Ada-specific complexity rules
 
 ## Phase 4: Go Support 🎯 (PRIORITY 3)
 
@@ -122,13 +147,30 @@
 ## Integration & Polish ✨
 
 - [ ] Update HTML report templates to show cognitive complexity for all languages
+  - [ ] Verify `Cog: ?` is replaced with actual values
+  - [ ] Test with multi-language project
 - [ ] Update JSON report format
+  - [ ] Verify `cognitive_complexity` field populated for all languages
+  - [ ] Test JSON schema compatibility
 - [ ] Update CLI help text with language support matrix
 - [ ] Update README.md with complete language support table
 - [ ] Update CLAUDE.md with tree-sitter dependency notes
-- [ ] Regression testing (ensure all 670+ tests still pass)
-- [ ] Performance testing on large multi-language codebases
+  - [ ] Document tree-sitter installation
+  - [ ] Document briot/tree-sitter-ada for Ada support
+- [ ] **Regression testing (ensure all 675+ tests still pass)**
+  - [ ] Run full pytest suite
+  - [ ] Verify no breaking changes to existing functionality
+  - [ ] Test Python cognitive complexity unchanged (baseline comparison)
+- [ ] **Performance testing on large multi-language codebases**
+  - [ ] Create benchmark script (see IMPLEMENTATION_GUIDE.md)
+  - [ ] Test parse times for different file sizes
+  - [ ] Test memory usage
+  - [ ] Compare tree-sitter vs AST performance (Python)
 - [ ] Add example reports for each language to documentation
+- [ ] **Factory pattern testing**
+  - [ ] Test factory with all supported extensions
+  - [ ] Test factory error handling
+  - [ ] Test calculator registry extensibility
 
 ## Acceptance Testing 🎭
 

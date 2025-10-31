@@ -25,9 +25,9 @@ class TestDeepMergeScanDirs(unittest.TestCase):
                 'scan_dirs': {}
             }
         }
-        
+
         self.app._deep_merge_scan_dirs(target, source)
-        
+
         self.assertIn('analysis', target)
         self.assertEqual(list(target['analysis']['files'].keys()), ['file1.py'])
 
@@ -45,9 +45,9 @@ class TestDeepMergeScanDirs(unittest.TestCase):
                 'scan_dirs': {}
             }
         }
-        
+
         self.app._deep_merge_scan_dirs(target, source)
-        
+
         self.assertIn('app', target)
         self.assertIn('analysis', target)
         self.assertEqual(list(target['app']['files'].keys()), ['app1.py'])
@@ -67,9 +67,9 @@ class TestDeepMergeScanDirs(unittest.TestCase):
                 'scan_dirs': {}
             }
         }
-        
+
         self.app._deep_merge_scan_dirs(target, source)
-        
+
         self.assertIn('analysis', target)
         # Both files should be present after merge
         self.assertIn('code_review_advisor.py', target['analysis']['files'])
@@ -100,9 +100,9 @@ class TestDeepMergeScanDirs(unittest.TestCase):
                 }
             }
         }
-        
+
         self.app._deep_merge_scan_dirs(target, source)
-        
+
         # Check nested structure is merged
         self.assertIn('delta', target['analysis']['scan_dirs'])
         delta_files = target['analysis']['scan_dirs']['delta']['files']

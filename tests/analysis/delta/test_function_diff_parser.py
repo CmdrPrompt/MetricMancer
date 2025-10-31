@@ -6,7 +6,6 @@ Following TDD (RED-GREEN-REFACTOR):
 - Implementation follows tests
 """
 
-import pytest
 from textwrap import dedent
 
 
@@ -134,7 +133,6 @@ class TestMapLinesToFunctions:
         """).strip()
 
         parser = FunctionDiffParser()
-        changed_lines = {3}  # Line 3 changed
 
         # For this test, we need a method that can parse and map
         functions = parser.extract_functions_from_source(source_code, 'python')

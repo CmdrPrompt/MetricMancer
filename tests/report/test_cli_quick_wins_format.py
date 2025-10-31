@@ -1,6 +1,5 @@
 """Tests for CLIQuickWinsFormat class."""
 import io
-import sys
 import unittest
 from unittest.mock import MagicMock, patch
 

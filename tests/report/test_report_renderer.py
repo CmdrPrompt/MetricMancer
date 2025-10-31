@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 from src.report.report_renderer import ReportRenderer
-from src.kpis.model import RepoInfo, ScanDir, File
+from src.kpis.model import ScanDir, File
 
 
 class TestReportRenderer(unittest.TestCase):

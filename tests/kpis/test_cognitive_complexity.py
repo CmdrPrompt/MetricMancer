@@ -11,7 +11,6 @@ Test-Driven Development (TDD) approach:
 """
 
 import ast
-import pytest
 
 
 class TestCognitiveComplexityBasicStructures:
@@ -28,11 +27,11 @@ def simple_if(x):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 1, "Single if should have complexity 1"
 
     def test_if_else_statement(self):
@@ -47,11 +46,11 @@ def if_else(x):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 2, "If-else should have complexity 2"
 
     def test_elif_chain(self):
@@ -70,11 +69,11 @@ def elif_chain(x):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 4, "If-elif-elif-else should have complexity 4"
 
     def test_for_loop(self):
@@ -89,11 +88,11 @@ def for_loop(items):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 1, "For loop should have complexity 1"
 
     def test_while_loop(self):
@@ -108,11 +107,11 @@ def while_loop(n):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 1, "While loop should have complexity 1"
 
 
@@ -132,11 +131,11 @@ def nested_ifs(x, y, z):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 6, "Nested ifs (3 levels) should have complexity 1+2+3=6"
 
     def test_if_in_loop(self):
@@ -152,11 +151,11 @@ def if_in_loop(items):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 3, "For + nested if should have complexity 1+2=3"
 
     def test_loop_in_loop(self):
@@ -172,11 +171,11 @@ def nested_loops(matrix):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 3, "Nested loops should have complexity 1+2=3"
 
 
@@ -194,11 +193,11 @@ def single_and(a, b):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 2, "If with 'and' should have complexity 2"
 
     def test_multiple_and_operators_count_once(self):
@@ -212,11 +211,11 @@ def multiple_and(a, b, c, d):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 2, "If with multiple 'and' should have complexity 2"
 
     def test_mixed_and_or_operators(self):
@@ -230,11 +229,11 @@ def mixed_operators(a, b, c, d):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         # Note: Implementation detail - this might be 2 or 4 depending on interpretation
         # SonarSource spec says each operator sequence adds +1
         assert result >= 2, "If with mixed operators should have complexity >= 2"
@@ -252,11 +251,11 @@ def simple_ternary(x):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 1, "Ternary operator should have complexity 1"
 
     def test_nested_ternary(self):
@@ -268,11 +267,11 @@ def nested_ternary(x, y):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 3, "Nested ternary should have complexity 1+2=3"
 
 
@@ -291,11 +290,11 @@ def try_except():
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 1, "Try-except should have complexity 1"
 
     def test_multiple_except_blocks(self):
@@ -314,11 +313,11 @@ def multiple_except():
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 3, "Multiple except blocks should have complexity 3"
 
 
@@ -336,11 +335,11 @@ def factorial(n):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 2, "Recursive function should have complexity 2 (if + recursion)"
 
 
@@ -356,11 +355,11 @@ def empty_function():
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 0, "Empty function should have complexity 0"
 
     def test_function_with_only_assignments(self):
@@ -375,11 +374,11 @@ def only_assignments():
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 0, "Function without control structures should have complexity 0"
 
     def test_flat_vs_nested_comparison(self):
@@ -402,14 +401,14 @@ def nested_structure(data):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         flat_tree = ast.parse(flat_code)
         nested_tree = ast.parse(nested_code)
         calculator = CognitiveComplexityCalculator()
-        
+
         flat_complexity = calculator.calculate_for_function(flat_tree.body[0])
         nested_complexity = calculator.calculate_for_function(nested_tree.body[0])
-        
+
         assert flat_complexity == 3, "Flat structure should have complexity 3"
         assert nested_complexity == 6, "Nested structure should have complexity 6"
         assert nested_complexity > flat_complexity, "Nested should be more complex than flat"
@@ -423,7 +422,7 @@ class TestCognitiveComplexityRealWorldExample:
         code = '''
 def generate_template_old(risk_level, ownership_type, complexity, churn):
     result = []
-    
+
     if risk_level == "critical":        # +1
         result.append("CRITICAL")
         if ownership_type == "single":  # +2 (1 + 1 nesting)
@@ -432,20 +431,20 @@ def generate_template_old(risk_level, ownership_type, complexity, churn):
         result.append("HIGH")
         if ownership_type == "single":  # +2 (1 + 1 nesting)
             result.append("single owner")
-    
+
     if complexity > 15:                 # +1
         result.append("complex")
-    
+
     return result
 '''
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         # Expected: 1 (if) + 2 (nested if) + 1 (elif) + 2 (nested if) + 1 (if) = 7
         assert result >= 6, "Old style should have high cognitive complexity"
 
@@ -462,9 +461,9 @@ def generate_template_new(risk_level, ownership_type, complexity, churn):
         from src.kpis.cognitive_complexity.cognitive_complexity_kpi import (
             CognitiveComplexityCalculator
         )
-        
+
         tree = ast.parse(code)
         calculator = CognitiveComplexityCalculator()
         result = calculator.calculate_for_function(tree.body[0])
-        
+
         assert result == 0, "New style with helper methods should have complexity 0"

@@ -14,6 +14,7 @@ from src.kpis.base_kpi import BaseKPI
 
 class DummyKPI(BaseKPI):
     """Test helper KPI class."""
+
     def __init__(self, name, value):
         super().__init__(name=name, value=value)
         self._value = value
@@ -63,9 +64,9 @@ class TestJSONReportCognitiveComplexity(unittest.TestCase):
 
         file_data = file_items[0]
         self.assertIn("cognitive_complexity", file_data,
-                     "File-level JSON should include cognitive_complexity field")
+                      "File-level JSON should include cognitive_complexity field")
         self.assertEqual(file_data["cognitive_complexity"], 8,
-                        "Cognitive complexity value should be 8")
+                         "Cognitive complexity value should be 8")
 
     def test_flat_function_level_includes_cognitive_complexity(self):
         """Should include cognitive_complexity in flat function-level JSON output."""
@@ -109,14 +110,14 @@ class TestJSONReportCognitiveComplexity(unittest.TestCase):
 
         # Assert
         func_items = [item for item in loaded
-                     if item.get("function_name") == "calculate"]
+                      if item.get("function_name") == "calculate"]
         self.assertEqual(len(func_items), 1, "Should have exactly one function entry")
 
         func_data = func_items[0]
         self.assertIn("cognitive_complexity", func_data,
-                     "Function-level JSON should include cognitive_complexity field")
+                      "Function-level JSON should include cognitive_complexity field")
         self.assertEqual(func_data["cognitive_complexity"], 3,
-                        "Cognitive complexity value should be 3")
+                         "Cognitive complexity value should be 3")
 
     def test_package_level_includes_cognitive_complexity(self):
         """Should include cognitive_complexity in package/directory-level JSON output."""
@@ -163,14 +164,14 @@ class TestJSONReportCognitiveComplexity(unittest.TestCase):
 
         # Assert
         package_items = [item for item in loaded
-                        if item.get("package") == "src"]
+                         if item.get("package") == "src"]
         self.assertGreaterEqual(len(package_items), 1, "Should have at least one package entry")
 
         package_data = package_items[0]
         self.assertIn("cognitive_complexity", package_data,
-                     "Package-level JSON should include cognitive_complexity field")
+                      "Package-level JSON should include cognitive_complexity field")
         self.assertEqual(package_data["cognitive_complexity"], 8,
-                        "Package cognitive complexity should be 8")
+                         "Package cognitive complexity should be 8")
 
     def test_hierarchical_mode_includes_cognitive_complexity(self):
         """Should include cognitive_complexity in hierarchical JSON output."""
@@ -208,9 +209,9 @@ class TestJSONReportCognitiveComplexity(unittest.TestCase):
         file_data = files["example.py"]
         self.assertIn("kpis", file_data, "File should have kpis")
         self.assertIn("cognitive_complexity", file_data["kpis"],
-                     "File KPIs should include cognitive_complexity")
+                      "File KPIs should include cognitive_complexity")
         self.assertEqual(file_data["kpis"]["cognitive_complexity"], 8,
-                        "Cognitive complexity value should be 8")
+                         "Cognitive complexity value should be 8")
 
     def test_missing_cognitive_complexity_returns_none(self):
         """Should return None when cognitive_complexity KPI is missing."""
@@ -247,9 +248,9 @@ class TestJSONReportCognitiveComplexity(unittest.TestCase):
 
         file_data = file_items[0]
         self.assertIn("cognitive_complexity", file_data,
-                     "Should include cognitive_complexity field even when missing")
+                      "Should include cognitive_complexity field even when missing")
         self.assertIsNone(file_data["cognitive_complexity"],
-                         "Missing cognitive_complexity should be None")
+                          "Missing cognitive_complexity should be None")
 
 
 if __name__ == '__main__':

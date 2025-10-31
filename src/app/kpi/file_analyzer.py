@@ -11,6 +11,7 @@ from typing import Dict, List, Optional
 
 from src.kpis.model import File, Function
 from src.kpis.complexity import ComplexityKPI
+from src.kpis.base_kpi import BaseKPI
 from src.utilities.debug import debug_print
 from src.app.kpi.kpi_calculator import KPICalculator
 
@@ -102,7 +103,6 @@ class FileAnalyzer:
             content, lang_config
         )
 
-
         # Step 6: Calculate all file-level KPIs
         file_kpis = self.kpi_calculator.calculate_all(
             file_info=file_info,
@@ -161,7 +161,7 @@ class FileAnalyzer:
     def _create_function_objects(
         self,
         functions_data: List[Dict],
-        file_kpis: Dict[str, 'BaseKPI'] = None
+        file_kpis: Optional[Dict[str, BaseKPI]] = None
     ) -> List[Function]:
         """
         Create Function objects with complexity and cognitive_complexity KPIs.
@@ -184,7 +184,6 @@ class FileAnalyzer:
             cog_kpi = file_kpis['cognitive_complexity']
             if hasattr(cog_kpi, 'calculation_values'):
                 cog_values = cog_kpi.calculation_values or {}
-
 
         for func_data in functions_data:
             # Create complexity KPI for this function

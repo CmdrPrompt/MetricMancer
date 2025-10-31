@@ -114,7 +114,7 @@ class DeltaReviewCoordinator:
             len(delta_diff.deleted_functions)
         )
 
-        print(f"\n📊 Summary:")
+        print("\n📊 Summary:")
         print(f"  - Functions changed: {total_functions}")
         print(f"  - Complexity delta: {delta_diff.total_complexity_delta:+d}")
         print(f"  - Estimated review time: {delta_diff.total_review_time_minutes} minutes")
