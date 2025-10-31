@@ -8,7 +8,7 @@ MetricMancer is a software analytics tool that analyzes code repositories to ext
 
 **Key Features:**
 - Multi-language support (Python, JavaScript, TypeScript, Java, C#, C++, Go, Shell, Ada, IDL, JSON, YAML)
-- Cyclomatic Complexity and **Cognitive Complexity** (Python only - human-centric understandability metric)
+- Cyclomatic Complexity and **Cognitive Complexity** (6 languages - human-centric understandability metric)
 - Multiple report formats (CLI summary/tree, HTML, JSON, CSV)
 - Multi-format generation in single run (50-70% faster than separate runs)
 - Hotspot analysis (complexity × churn)
@@ -152,7 +152,7 @@ src/
 │   └── hierarchy_builder.py # Data model construction
 ├── kpis/                    # KPI calculators (complexity, churn, hotspots, ownership)
 │   ├── complexity/          # Cyclomatic complexity (multi-language)
-│   ├── cognitive_complexity/ # Cognitive complexity (Python only, tree-sitter planned)
+│   ├── cognitive_complexity/ # Cognitive complexity (6 languages via tree-sitter)
 │   ├── codechurn/
 │   ├── hotspot/
 │   ├── codeownership/
@@ -344,7 +344,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - `src/app/metric_mancer_app.py` - Main application class
 - `src/report/report_generator_factory.py` - Generator factory
 - `src/kpis/complexity/analyzer.py` - Cyclomatic complexity (supports 10+ languages)
-- **`src/kpis/cognitive_complexity/cognitive_complexity_kpi.py`** - **[New v3.2.0]** Cognitive complexity (Python only, tree-sitter planned)
+- **`src/kpis/cognitive_complexity/calculator_factory.py`** - **[New v3.2.0]** Cognitive complexity factory (6 languages via tree-sitter)
 - `src/kpis/codechurn/code_churn.py` - Churn analysis (needs time-based fix)
 - `src/analysis/code_review_advisor.py` - Code review recommendations
 
@@ -390,9 +390,10 @@ Tasks defined in `.vscode/tasks.json`:
 **Overview**: Human-centric metric measuring code understandability (nesting-aware), complementing Cyclomatic Complexity.
 
 **Current State**:
-- ✅ **Python support**: Fully implemented with AST-based analysis
-- ❌ **Multi-language**: Not yet supported (see issue for tree-sitter implementation)
-- ✅ **TDD**: 51 tests covering all edge cases
+- ✅ **Multi-language support**: 6 languages (Python, Java, Go, JavaScript, TypeScript, C)
+- ✅ **Tree-sitter implementation**: Universal parser across all supported languages
+- ✅ **Factory pattern**: `CognitiveComplexityCalculatorFactory` for language-specific calculators
+- ✅ **TDD**: 135 tests covering all languages and edge cases
 - ✅ **Integrated**: CLI, HTML, JSON reports + Quick Wins
 
 **Key Concepts**:
@@ -424,12 +425,13 @@ if a:           # +1
 - 25+: 💀 Refactor immediately
 
 **Files**:
-- Calculator: `src/kpis/cognitive_complexity/cognitive_complexity_kpi.py`
+- Factory: `src/kpis/cognitive_complexity/calculator_factory.py`
+- Base: `src/kpis/cognitive_complexity/calculator_base.py`
+- Calculators: `calculator_python.py`, `calculator_java.py`, `calculator_go.py`, `calculator_javascript.py`, `calculator_typescript.py`, `calculator_c.py`
 - Strategy: `src/app/kpi/kpi_calculator.py` (CognitiveComplexityKPIStrategy)
-- Tests: `tests/kpis/test_cognitive_complexity.py` (21 tests)
-- Integration: `tests/app/test_kpi_calculator_cognitive_complexity.py` (5 tests)
+- Tests: 135 tests across 9 test files covering all languages
 
-**Future Work**: Multi-language support using tree-sitter (see related GitHub issue)
+**Future Work**: Additional languages (C#, Ruby, PHP, etc.) using same factory pattern
 
 ## Common Pitfalls
 
