@@ -8,7 +8,7 @@ For detailed requirements, architecture, and design, see the [Software Specifica
 
 - **Multi-language support:** Analyze codebases in Python, JavaScript, TypeScript, Java, C#, C, C++, Go, Ada, IDL, JSON, YAML, Shell scripts, and more (via pluggable parsers).
 - **Cyclomatic complexity:** Calculates logical complexity for each function/method in code files.
-- **Cognitive complexity:** **[New in v3.2.0]** Measures code understandability based on SonarSource algorithm - accounts for nesting depth and control flow to identify truly hard-to-understand code. Currently supports **Python only** (multi-language support planned via tree-sitter).
+- **Cognitive complexity:** **[New in v3.2.0]** Measures code understandability based on SonarSource algorithm - accounts for nesting depth and control flow to identify truly hard-to-understand code. Supports **6 languages**: Python, Java, Go, JavaScript, TypeScript, and C (implemented via tree-sitter).
 - **Structural complexity:** Measures nesting depth, object count, and configuration patterns in JSON/YAML files.
 - **IDL complexity:** Analyzes interface definitions with structural metrics (interfaces, operations, inheritance, data structures).
 - **Shell script complexity:** Analyzes control flow, loops, and functions in shell scripts.
@@ -288,7 +288,7 @@ See [SoftwareSpecificationAndDesign.md](./SoftwareSpecificationAndDesign.md) for
 
 **[New in v3.2.0]** Cognitive Complexity is a human-centric metric that measures how difficult code is to understand, complementing Cyclomatic Complexity's path-counting approach.
 
-> **Language Support**: Currently **Python only**. Multi-language support (JavaScript, TypeScript, Java, C#, Go, etc.) is planned using tree-sitter parsers. See related issue for multi-language implementation roadmap.
+> **Language Support**: Supports **6 languages** (Python, Java, Go, JavaScript, TypeScript, C) using tree-sitter parsers for accurate syntax analysis.
 
 #### Why Cognitive Complexity?
 
@@ -363,7 +363,7 @@ Critical Files (Cognitive Complexity > 15):
 
 ## Testing
 
-MetricMancer has comprehensive test coverage with 142 tests covering all functionality.
+MetricMancer has comprehensive test coverage with 839 tests covering all functionality.
 
 ### Running Tests
 
