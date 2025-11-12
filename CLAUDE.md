@@ -15,6 +15,40 @@ MetricMancer is a software analytics tool that analyzes code repositories to ext
 - Code ownership and shared ownership metrics
 - Code review strategy recommendations
 
+## Setup and Installation
+
+**IMPORTANT:** MetricMancer uses `pyproject.toml` as the single source of truth for dependencies (PEP 621 standard).
+
+### Quick Start
+
+```bash
+# Create virtual environment
+python3.10 -m venv .venv
+source .venv/bin/activate
+
+# Install all dependencies (automated, handles tree-sitter migration)
+make install
+
+# Verify installation
+python -m pytest tests/ -v  # Should show: 839 passed
+```
+
+**For detailed setup instructions, see [docs/SETUP.md](docs/SETUP.md)**
+
+### Critical Dependencies (v3.2.0+)
+
+⚠️ **Tree-Sitter Migration**: As of v3.2.0, we use `tree-sitter-language-pack` (NOT `tree-sitter-languages`)
+
+```toml
+# Runtime dependencies
+tree-sitter>=0.25.0
+tree-sitter-language-pack>=0.10.0  # NEW - replaces tree-sitter-languages
+```
+
+**If you see import errors**, run: `make install` (auto-fixes conflicting packages)
+
+See [docs/DEPENDENCY_MANAGEMENT.md](docs/DEPENDENCY_MANAGEMENT.md) for quick reference.
+
 ## Common Development Commands
 
 ### Testing
