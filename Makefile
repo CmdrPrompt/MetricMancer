@@ -34,13 +34,22 @@ install:
 	@echo "📦 Installing MetricMancer dependencies..."
 	@if [ ! -d ".venv" ]; then \
 		echo "❌ Error: Virtual environment .venv not found!"; \
-		echo "   Create it first with: python -m venv .venv"; \
+		echo "   Create it first with: python3.10 -m venv .venv"; \
 		exit 1; \
 	fi
 	@echo "   Upgrading pip..."
 	@source .venv/bin/activate && python -m pip install --upgrade pip
-	@echo "   Installing package in editable mode with all dependencies..."
+	@echo "   Installing runtime dependencies..."
 	@source .venv/bin/activate && pip install -e .
+	@echo "   Installing development dependencies..."
+	@source .venv/bin/activate && pip install -e ".[dev]"
+	@echo ""
+	@echo "   🔍 Checking for conflicting tree-sitter packages..."
+	@if source .venv/bin/activate && pip list | grep -q "tree-sitter-languages"; then \
+		echo "   ⚠️  Found old 'tree-sitter-languages' package - removing..."; \
+		source .venv/bin/activate && pip uninstall -y tree-sitter-languages; \
+		echo "   ✅ Old package removed"; \
+	fi
 	@echo ""
 	@echo "   Verifying dependency integrity..."
 	@source .venv/bin/activate && pip check
@@ -48,7 +57,10 @@ install:
 	@echo "✅ Installation complete!"
 	@echo ""
 	@echo "📋 Critical packages installed:"
-	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff|tree-sitter|language-pack)"
+	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff|tree-sitter)"
+	@echo ""
+	@echo "🌳 Tree-sitter verification:"
+	@source .venv/bin/activate && pip show tree-sitter tree-sitter-language-pack | grep -E "(Name|Version)" || echo "   ⚠️  Tree-sitter packages not found!"
 
 format:
 	@echo "🎨 Auto-formatting Python code with autopep8..."

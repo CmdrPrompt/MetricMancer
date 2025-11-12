@@ -25,15 +25,20 @@ coverage_html/
 complexity_report*.html
 kpi_report*.html
 labs
-.venv/* 
-venv
+
+# Python virtual environments (all variants)
+.venv/
+.venv-*/
+venv/
+venv-*/
+
 labs/*
 dummy.html
 *report*.json
 some_file.py
 issue--*.md
 issue-fix--*.md
-​​git_log.txt
+git_log.txt
 hotspots.txt
 review_strategy.txt
 coverage.xml

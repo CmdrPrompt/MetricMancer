@@ -9,19 +9,27 @@ license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-  "jinja2",
-  "pytest",
-  "pytest-cov",
-  "coverage",
-  "pydriller",
-  "tqdm",
-  "PyYAML",
-  "autopep8",
-  "flake8",
-  "pip-licenses",
+  "jinja2>=3.1.0",
+  "pydriller>=2.0",
+  "tqdm>=4.65.0",
+  "PyYAML>=6.0",
+  "pip-licenses>=4.0",
   "unidiff>=0.7.5",
   "tree-sitter>=0.25.0",
   "tree-sitter-language-pack>=0.10.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0.0",
+  "pytest-cov>=4.0.0",
+  "coverage>=7.0.0",
+  "autopep8>=2.0.0",
+  "flake8>=6.0.0"
+]
+build = [
+  "build>=1.0.0",
+  "twine>=4.0.0"
 ]
 
 [project.urls]
