@@ -2,59 +2,69 @@
 
 ## 🎯 Overview
 
-**Issue Type:** Feature Enhancement  
-**Priority:** High  
-**Estimated Effort:** 2-3 weeks  
-**Target Version:** 3.2.0  
+**Issue Type:** Feature Enhancement\
+**Priority:** High\
+**Estimated Effort:** 2-3 weeks\
+**Target Version:** 3.2.0\
 **Alignment:** Adam Tornhill's "Your Code as a Crime Scene" methodology
 
 ### Summary
 
-Implement function-level delta analysis to provide precise review time estimates for code changes. Instead of analyzing entire files, focus on **only the functions that changed** between commits or branches, dramatically improving review efficiency and accuracy.
+Implement function-level delta analysis to provide precise review time estimates for code changes. Instead of analyzing
+entire files, focus on **only the functions that changed** between commits or branches, dramatically improving review
+efficiency and accuracy.
 
 ## 🔥 Problem Statement
 
 ### Current Limitations
 
 1. **File-Level Granularity:** Current `--review-strategy-branch` analyzes entire files
+
    - Example: If 1 function changes in a 50-function file, we estimate reviewing all 50 functions
    - Result: Review time estimates are 60-80% inflated
 
 2. **No Complexity Delta Tracking:** Can't see if changes increase or decrease complexity
+
    - Critical for identifying **complexity growth** (crime scene red flag)
    - Missing **refactoring impact** visibility
 
 3. **Noisy Output:** Critical changes buried in lists of unchanged code
+
    - Reviewers waste time reading unchanged functions
    - Hard to prioritize high-risk changes
 
 4. **No Historical Context:** Can't track complexity trends over time
+
    - Missing **temporal patterns** (core Crime Scene concept)
    - Can't identify **knowledge erosion** (ownership changes)
 
 ### User Impact
 
 **Before Delta Analysis:**
+
 ```
 Branch: feature/new-api
 Files Changed: 59
 Estimated Review Time: 36h 25m
 Critical Files: 12
 ```
-❌ Too broad - most code unchanged  
-❌ Overwhelming for reviewers  
-❌ Inaccurate time estimates  
+
+❌ Too broad - most code unchanged\
+❌ Overwhelming for reviewers\
+❌ Inaccurate time estimates
 
 **After Delta Analysis:**
+
 ```
 Branch: feature/new-api
 Functions Changed: 23 (of 847 total)
 Estimated Review Time: 4h 15m (88% reduction)
 Critical Changes: 5 functions with complexity increase
 ```
-✅ Laser-focused on changes  
-✅ Accurate estimates  
-✅ Clear prioritization  
+
+✅ Laser-focused on changes\
+✅ Accurate estimates\
+✅ Clear prioritization
 
 ## 🎨 Proposed Solution
 
@@ -379,6 +389,7 @@ class AppConfig:
 **Goal:** Implement basic function-level diff parsing and complexity delta calculation.
 
 **Tasks:**
+
 1. ✅ Create `DeltaDiff` and `FunctionChange` data models
 2. ✅ Implement `FunctionDiffParser.parse_git_diff()`
 3. ✅ Implement `FunctionDiffParser.map_lines_to_functions()`
@@ -387,11 +398,13 @@ class AppConfig:
 6. ✅ Integration test: compare known commits with expected function changes
 
 **Dependencies:**
+
 - `unidiff` library for parsing git diffs
 - `gitpython` for git operations (already used)
 - Existing `ComplexityAnalyzer` for calculating function complexity
 
 **Acceptance Criteria:**
+
 - [ ] Can parse git diff and identify changed files
 - [ ] Can map changed lines to specific functions
 - [ ] Can calculate complexity delta for modified functions
@@ -403,6 +416,7 @@ class AppConfig:
 **Goal:** Integrate delta analysis into existing review strategy workflow.
 
 **Tasks:**
+
 1. ✅ Implement `DeltaAnalyzer.analyze_branch_delta()`
 2. ✅ Implement `DeltaAnalyzer.analyze_commit_range()`
 3. ✅ Implement `DeltaAnalyzer.analyze_working_tree()`
@@ -413,6 +427,7 @@ class AppConfig:
 8. ✅ Performance optimization (cache AST parsing)
 
 **Acceptance Criteria:**
+
 - [ ] `--delta-review` generates function-level review strategy
 - [ ] Output shows complexity delta for each function
 - [ ] Review time estimates are function-based, not file-based
@@ -424,6 +439,7 @@ class AppConfig:
 **Goal:** Add advanced delta features and historical tracking.
 
 **Tasks:**
+
 1. ✅ Implement churn tracking (how many times function was modified)
 2. ✅ Implement ownership change detection (author changes)
 3. ✅ Add hotspot scoring (complexity × churn)
@@ -434,6 +450,7 @@ class AppConfig:
 8. ✅ Documentation and examples
 
 **Acceptance Criteria:**
+
 - [ ] Can track complexity trends over time
 - [ ] Can identify knowledge erosion (ownership changes)
 - [ ] Refactorings are highlighted separately
@@ -446,6 +463,7 @@ class AppConfig:
 ### Unit Tests (50+ tests)
 
 1. **FunctionDiffParser Tests:**
+
    - Parse simple git diff (single file, single function)
    - Parse complex diff (multiple files, multiple functions)
    - Handle edge cases (empty diffs, binary files, syntax errors)
@@ -455,6 +473,7 @@ class AppConfig:
    - Handle renamed functions (heuristic matching)
 
 2. **DeltaAnalyzer Tests:**
+
    - Analyze branch delta
    - Analyze commit range
    - Analyze working tree
@@ -463,6 +482,7 @@ class AppConfig:
    - Handle cherry-picks
 
 3. **DeltaReviewStrategyFormat Tests:**
+
    - Format overview section
    - Format critical changes section
    - Format complexity trends
@@ -472,12 +492,14 @@ class AppConfig:
 ### Integration Tests (20+ tests)
 
 1. **Real Git Repository Tests:**
+
    - Create test repo with known changes
    - Verify function changes detected correctly
    - Verify complexity deltas match manual calculation
    - Test with multiple languages (Python, JavaScript)
 
 2. **Performance Tests:**
+
    - Benchmark with large repositories (1000+ files)
    - Benchmark with large diffs (500+ changed functions)
    - Verify caching improves performance
@@ -495,15 +517,18 @@ class AppConfig:
 ### Quantitative
 
 1. **Review Time Accuracy:**
+
    - Baseline (file-level): ±40% accuracy
    - Target (function-level): ±15% accuracy
    - Measure: Compare estimates with actual review times from team
 
 2. **Scope Reduction:**
+
    - Target: 60-80% reduction in lines/functions to review
    - Measure: Compare full file analysis vs delta analysis
 
 3. **Performance:**
+
    - Target: < 5 seconds for typical branch (50 files)
    - Target: < 10 seconds with historical comparison
    - Measure: Benchmark with real repositories
@@ -511,34 +536,36 @@ class AppConfig:
 ### Qualitative
 
 1. **User Feedback:**
+
    - Survey: "Delta review is more actionable than file review" (>80% agree)
    - Survey: "Time estimates are accurate" (>70% agree)
 
 2. **Adoption:**
+
    - Target: 50%+ of teams use `--delta-review` over `--review-strategy`
    - Measure: Telemetry (if enabled) or surveys
 
 ## 🚀 Crime Scene Methodology Alignment
 
-| Principle | How Delta Analysis Implements It |
-|-----------|----------------------------------|
-| **Focus on Hotspots** | Only analyze changed functions, not entire codebase |
-| **Temporal Patterns** | Track when functions change, by whom, and how often (churn) |
-| **Change Coupling** | Foundation for detecting functions that change together |
-| **Knowledge Loss** | Detect ownership changes in critical functions |
-| **Complexity Growth** | Show complexity delta (increases = red flags) |
-| **Prioritize by Risk** | Hotspot score = complexity × churn (highest risk first) |
-| **Actionable Insights** | Function-level precision for targeted refactoring |
+| Principle               | How Delta Analysis Implements It                            |
+| ----------------------- | ----------------------------------------------------------- |
+| **Focus on Hotspots**   | Only analyze changed functions, not entire codebase         |
+| **Temporal Patterns**   | Track when functions change, by whom, and how often (churn) |
+| **Change Coupling**     | Foundation for detecting functions that change together     |
+| **Knowledge Loss**      | Detect ownership changes in critical functions              |
+| **Complexity Growth**   | Show complexity delta (increases = red flags)               |
+| **Prioritize by Risk**  | Hotspot score = complexity × churn (highest risk first)     |
+| **Actionable Insights** | Function-level precision for targeted refactoring           |
 
 **Direct Book Quotes:**
 
-> "The files that change most frequently are where the bugs hide."  
+> "The files that change most frequently are where the bugs hide."\
 > → Delta analysis focuses on **changed functions** (most frequent changes)
 
-> "Hotspots are the intersection of complexity and change frequency."  
+> "Hotspots are the intersection of complexity and change frequency."\
 > → Hotspot score = **complexity × churn**
 
-> "Track who wrote the code to identify knowledge islands."  
+> "Track who wrote the code to identify knowledge islands."\
 > → Ownership change detection in **delta analysis**
 
 ## 📚 Dependencies
@@ -570,18 +597,22 @@ dependencies = [
 ## 📖 Documentation Updates
 
 1. **README.md:**
+
    - Add delta analysis section
    - Show before/after comparison
    - Add usage examples
 
 2. **ARCHITECTURE.md:**
+
    - Document delta analysis architecture
    - Show data flow diagrams
 
 3. **CHANGELOG.md:**
+
    - Add v3.2.0 section with delta analysis feature
 
 4. **New: docs/delta-analysis-guide.md:**
+
    - Comprehensive guide to delta analysis
    - Best practices for code review
    - Interpretation of hotspot scores
@@ -615,9 +646,12 @@ dependencies = [
 
 ## 📝 Notes
 
-- **Priority Justification:** This is the #1 priority because it directly implements Tornhill's core "crime scene" methodology - focusing on where changes happen, not the entire codebase.
-- **Effort Estimate:** 2-3 weeks is realistic given existing infrastructure (git, AST parsing, complexity calculation already implemented).
-- **Value Proposition:** 60-80% reduction in review scope + more accurate estimates = massive productivity gain for engineering teams.
+- **Priority Justification:** This is the #1 priority because it directly implements Tornhill's core "crime scene"
+  methodology - focusing on where changes happen, not the entire codebase.
+- **Effort Estimate:** 2-3 weeks is realistic given existing infrastructure (git, AST parsing, complexity calculation
+  already implemented).
+- **Value Proposition:** 60-80% reduction in review scope + more accurate estimates = massive productivity gain for
+  engineering teams.
 
 ## 🔗 Related Issues
 
@@ -625,9 +659,9 @@ dependencies = [
 - Future: #XX - Historical trend analysis (builds on delta analysis)
 - Future: #XX - CI/CD integration (use delta analysis in pipelines)
 
----
+______________________________________________________________________
 
-**Created:** 2025-10-15  
-**Status:** 📋 Planned for v3.2.0  
-**Estimated Effort:** 2-3 weeks  
+**Created:** 2025-10-15\
+**Status:** 📋 Planned for v3.2.0\
+**Estimated Effort:** 2-3 weeks\
 **Crime Scene Alignment:** ⭐⭐⭐⭐⭐ (15/15)

@@ -3,7 +3,10 @@
 ## 🎯 Delta-Based Review Time Estimation
 
 ### Problem
-Currently, the review strategy estimates time based on the **entire file's complexity**, even when only a small portion of the file has changed. This can lead to:
+
+Currently, the review strategy estimates time based on the **entire file's complexity**, even when only a small portion
+of the file has changed. This can lead to:
+
 - Over-estimation of review time for large files with small changes
 - Under-prioritization of small files with complex changes
 - Less accurate resource planning
@@ -181,6 +184,7 @@ File: app/analyzer.py
 ### Implementation Priority
 
 This feature would be particularly valuable for:
+
 - Large, mature codebases
 - Files with high overall complexity
 - Teams practicing incremental refactoring
@@ -189,18 +193,19 @@ This feature would be particularly valuable for:
 ### Language Support Matrix
 
 | **Language/File Type** | **Complexity Analysis** | **Delta Analysis** | **Review Strategy** |
-|------------------------|-------------------------|-------------------|---------------------|
-| Python | ✅ Full | ✅ Function-level | ✅ Complete |
-| JavaScript/TypeScript | ✅ Full | ✅ Function-level | ✅ Complete |
-| Java | ✅ Full | ✅ Method-level | ✅ Complete |
-| C#/C/C++ | ✅ Full | ✅ Function-level | ✅ Complete |
-| Go | ✅ Full | ✅ Function-level | ✅ Complete |
-| Ada | ✅ Full | ✅ Procedure-level | ✅ Complete |
-| Markdown/Docs | ❌ N/A | ⚠️ Line-based | ✅ Churn-based |
-| JSON/YAML/Config | ❌ N/A | ⚠️ Structure-based | ✅ Impact-based |
-| Other text files | ❌ N/A | ⚠️ Line-based | ✅ Churn-based |
+| ---------------------- | ----------------------- | ------------------ | ------------------- |
+| Python                 | ✅ Full                 | ✅ Function-level  | ✅ Complete         |
+| JavaScript/TypeScript  | ✅ Full                 | ✅ Function-level  | ✅ Complete         |
+| Java                   | ✅ Full                 | ✅ Method-level    | ✅ Complete         |
+| C#/C/C++               | ✅ Full                 | ✅ Function-level  | ✅ Complete         |
+| Go                     | ✅ Full                 | ✅ Function-level  | ✅ Complete         |
+| Ada                    | ✅ Full                 | ✅ Procedure-level | ✅ Complete         |
+| Markdown/Docs          | ❌ N/A                  | ⚠️ Line-based      | ✅ Churn-based      |
+| JSON/YAML/Config       | ❌ N/A                  | ⚠️ Structure-based | ✅ Impact-based     |
+| Other text files       | ❌ N/A                  | ⚠️ Line-based      | ✅ Churn-based      |
 
 **Legend:**
+
 - ✅ Full support
 - ⚠️ Partial support (alternative metrics used)
 - ❌ Not applicable (but review strategy still works via churn/ownership)
@@ -221,7 +226,7 @@ This feature would be particularly valuable for:
   - Changed line count only
   - Structural changes (e.g., added sections in docs)
   - Configuration impact (e.g., dependency changes in package.json)
-- **Edge cases**: 
+- **Edge cases**:
   - New functions (no baseline to compare)
   - Deleted functions (should count as reviewed)
   - Moved functions (detect refactoring)
@@ -231,6 +236,7 @@ This feature would be particularly valuable for:
 ### Configuration
 
 Add to CLI:
+
 ```bash
 # Enable delta-based complexity analysis
 python -m src.main src --review-strategy --review-branch-only --delta-complexity
@@ -243,19 +249,20 @@ python -m src.main src --review-strategy --review-branch-only --show-both
 
 See `tests/utilities/test_delta_complexity.py` for examples and edge cases.
 
----
+______________________________________________________________________
 
-**Status**: 📋 Planned for v2.0  
-**Effort**: Medium (2-3 days implementation + testing)  
+**Status**: 📋 Planned for v2.0\
+**Effort**: Medium (2-3 days implementation + testing)\
 **Value**: High (significantly improves review time accuracy)
 
----
+______________________________________________________________________
 
 ## 💻 Enhanced Terminal Output Formats
 
 ### Current State
 
 The default terminal output shows a file tree with KPIs for each file:
+
 ```
 . src [Avg. C:16.9, Min C:0, Max C:172, Avg. Churn:5.6]
 │   ├── analyzer.py [C:90, Churn:20, Hotspot:1800] Owners: ...
@@ -312,6 +319,7 @@ Replace the file tree with an actionable summary that gives developers immediate
 ```
 
 **Benefits:**
+
 - ✅ Actionable from first glance
 - ✅ Shows critical problems first
 - ✅ Guides developer toward next steps
@@ -319,6 +327,7 @@ Replace the file tree with an actionable summary that gives developers immediate
 - ✅ Prioritizes information by importance
 
 **Implementation:**
+
 - Create new `CLISummaryFormatter` class in `src/report/cli/`
 - Make it default for `--output-format human`
 - Keep current tree view as `--output-format human-tree` or with `--verbose` flag
@@ -353,12 +362,14 @@ Total files analyzed: 71  |  Critical: 6  |  High: 9  |  Medium: 12
 ```
 
 **Benefits:**
+
 - Clear visual hierarchy with emojis
 - Table format is easy to scan
 - Shows top 10 by default (configurable with `--top N`)
 - Immediate focus on high-risk areas
 
 **Implementation:**
+
 - Add as `--output-format risks` or `--top-risks N`
 - Could be default for CI/CD pipelines
 - Sortable by different columns with flags
@@ -388,12 +399,14 @@ Show how metrics change over time:
 ```
 
 **Benefits:**
+
 - Shows progress over time
 - Helps teams see if interventions are working
 - Provides motivation when trends improve
 - Early warning system for deteriorating code
 
 **Implementation:**
+
 - Store historical metrics in `.metricmancer/history/` folder
 - Add `--compare <date>` or `--compare <commit>` flags
 - Generate JSON snapshots automatically
@@ -438,12 +451,14 @@ Prioritize improvements by impact and effort:
 ```
 
 **Benefits:**
+
 - Prioritizes refactoring work
 - Shows expected time investment
 - Balances impact vs. effort
 - Helps with sprint planning
 
 **Implementation:**
+
 - Calculate impact based on hotspot score, churn, ownership
 - Estimate effort based on complexity and file size
 - Add `--quick-wins N` flag to show top N opportunities
@@ -475,12 +490,14 @@ Files: 71 | Critical: 6 🔴 | High: 9 🟡 | Medium: 12 🟢 | Low: 44 ⚪
 ```
 
 **Benefits:**
+
 - Quick overview by default
 - Clear next steps for more detail
 - Doesn't overwhelm with information
 - Progressive disclosure of complexity
 
 **Implementation:**
+
 - Make this the default `--output-format human`
 - Add flags to show more/less detail
 - Interactive mode: prompt "Show details? [y/N]"
@@ -529,21 +546,17 @@ Changes:
 ### Implementation Priority
 
 **Phase 1 (High Priority) - v2.0:**
+
 1. ✅ Executive Summary Dashboard as new default
 2. ✅ `--summary` / `--detailed` flags
 3. ✅ Keep current tree as `--output-format human-tree`
 4. ✅ Top Risks Table (`--top-risks N`)
 
-**Phase 2 (Medium Priority) - v2.1:**
-5. ⏳ Quick Win Suggestions (`--quick-wins`)
-6. ⏳ CI/CD optimized format (`--output-format ci`)
-7. ⏳ Hybrid format with expandable details
-8. ⏳ Color support with colorama (see below)
+**Phase 2 (Medium Priority) - v2.1:** 5. ⏳ Quick Win Suggestions (`--quick-wins`) 6. ⏳ CI/CD optimized format
+(`--output-format ci`) 7. ⏳ Hybrid format with expandable details 8. ⏳ Color support with colorama (see below)
 
-**Phase 3 (Future) - v3.0:**
-9. 📋 Trend Analysis (requires history storage)
-10. 📋 Diff Mode (branch comparison)
-11. 📋 Interactive terminal UI (with prompts)
+**Phase 3 (Future) - v3.0:** 9. 📋 Trend Analysis (requires history storage) 10. 📋 Diff Mode (branch comparison) 11. 📋
+Interactive terminal UI (with prompts)
 
 ### Configuration
 
@@ -580,6 +593,7 @@ python -m src.main src --output-format tree  # classic view
 ### Color Support Enhancement
 
 #### Current State
+
 Terminal output currently uses emojis and Unicode box-drawing characters for visual hierarchy, but no ANSI color codes.
 
 #### Proposed: Add Colorama Integration
@@ -613,6 +627,7 @@ def print_colored_summary():
 ```
 
 **Color Scheme:**
+
 - 🔴 **Critical/Errors**: `Fore.RED` + `Style.BRIGHT`
 - 🟡 **Warnings/High Priority**: `Fore.YELLOW` + `Style.BRIGHT`
 - 🟢 **Success/Good**: `Fore.GREEN`
@@ -621,6 +636,7 @@ def print_colored_summary():
 - 📊 **Headers**: `Style.BRIGHT`
 
 **Benefits:**
+
 - ✅ Improved visual hierarchy
 - ✅ Faster scanning (color attracts attention)
 - ✅ Cross-platform support (Windows, Linux, macOS)
@@ -692,6 +708,7 @@ class CLISummaryFormat(ReportFormatStrategy):
 **Configuration:**
 
 Add to CLI arguments:
+
 ```bash
 # Force enable colors
 python -m src.main src --color
@@ -704,6 +721,7 @@ python -m src.main src
 ```
 
 Add to `.metricmancer.yml`:
+
 ```yaml
 output:
   color: auto  # auto, always, never
@@ -711,6 +729,7 @@ output:
 ```
 
 **Accessibility Considerations:**
+
 1. **Never rely on color alone** - always use emojis + text
 2. **High contrast mode** - option for color-blind users
 3. **Respect NO_COLOR environment variable** (standard: https://no-color.org/)
@@ -718,6 +737,7 @@ output:
 5. **Test with screen readers** - ensure color codes don't interfere
 
 **Dependencies:**
+
 ```toml
 # pyproject.toml
 [project]
@@ -727,6 +747,7 @@ dependencies = [
 ```
 
 **Testing:**
+
 ```python
 def test_color_output_with_tty():
     """Test colored output when TTY is available."""
@@ -748,6 +769,7 @@ def test_no_color_env_variable():
 ```
 
 **Performance:**
+
 - Colorama has minimal overhead (~1ms initialization)
 - No performance impact on actual analysis
 - Colors only applied during output formatting
@@ -755,43 +777,47 @@ def test_no_color_env_variable():
 **Example Output:**
 
 Without colors (current):
+
 ```
 🔥 CRITICAL ISSUES (Immediate Attention Required)
    Critical Hotspots:     7 files
 ```
 
 With colors (proposed):
+
 ```
 🔥 CRITICAL ISSUES (Immediate Attention Required)  [in bright RED]
    Critical Hotspots:     7 files                   [in RED]
 ```
 
 **Fallback Behavior:**
+
 - If colorama not installed: gracefully disable colors
 - If terminal doesn't support colors: use plain text
 - If output is piped: automatically disable colors
 - If NO_COLOR env set: respect user preference
 
----
+______________________________________________________________________
 
-**Status**: ⏳ Planned for v2.1  
-**Effort**: Low (1-2 days)  
-**Value**: Medium (improves UX, not critical)  
-**Dependencies**: colorama library  
+**Status**: ⏳ Planned for v2.1\
+**Effort**: Low (1-2 days)\
+**Value**: Medium (improves UX, not critical)\
+**Dependencies**: colorama library\
 **Backward Compatibility**: ✅ Fully compatible (colors are optional enhancement)
 
 ### User Research Needed
 
 Before finalizing the default, consider:
+
 1. **User surveys**: What do developers find most useful?
 2. **Use case analysis**: Terminal vs CI/CD vs dashboard integration
 3. **A/B testing**: Measure which format leads to more action
 4. **Accessibility**: Ensure emoji/unicode can be disabled for screen readers
 5. **Color preferences**: Survey users about color scheme preferences
 
----
+______________________________________________________________________
 
-**Status**: ✅ Implemented in v2.0 (Phase 1)  
-**Effort**: Medium-High (1 week for Phase 1)  
-**Value**: Very High (improves developer experience significantly)  
+**Status**: ✅ Implemented in v2.0 (Phase 1)\
+**Effort**: Medium-High (1 week for Phase 1)\
+**Value**: Very High (improves developer experience significantly)\
 **Dependencies**: None (can implement incrementally)

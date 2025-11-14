@@ -35,6 +35,7 @@ venv-*/
 labs/*
 dummy.html
 *report*.json
+*report*.txt
 some_file.py
 issue--*.md
 issue-fix--*.md

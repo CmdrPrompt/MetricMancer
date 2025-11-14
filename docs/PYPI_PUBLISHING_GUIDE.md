@@ -3,26 +3,29 @@
 This document provides a comprehensive guide for publishing MetricMancer to the Python Package Index (PyPI).
 
 ## Table of Contents
-1. [What is PyPI?](#what-is-pypi)
-2. [Prerequisites](#prerequisites)
-3. [Pre-Publishing Checklist](#pre-publishing-checklist)
-4. [Required Code Changes](#required-code-changes)
-5. [PyPI Account Setup](#pypi-account-setup)
-6. [Building the Package](#building-the-package)
-7. [Testing on TestPyPI](#testing-on-testpypi)
-8. [Publishing to PyPI](#publishing-to-pypi)
-9. [Post-Publishing](#post-publishing)
+
+01. [What is PyPI?](#what-is-pypi)
+02. [Prerequisites](#prerequisites)
+03. [Pre-Publishing Checklist](#pre-publishing-checklist)
+04. [Required Code Changes](#required-code-changes)
+05. [PyPI Account Setup](#pypi-account-setup)
+06. [Building the Package](#building-the-package)
+07. [Testing on TestPyPI](#testing-on-testpypi)
+08. [Publishing to PyPI](#publishing-to-pypi)
+09. [Post-Publishing](#post-publishing)
 10. [Troubleshooting](#troubleshooting)
 
----
+______________________________________________________________________
 
 ## What is PyPI?
 
-**PyPI (Python Package Index)** is the official package repository for Python, similar to npm for JavaScript or Maven for Java.
+**PyPI (Python Package Index)** is the official package repository for Python, similar to npm for JavaScript or Maven
+for Java.
 
 ### Benefits of Publishing to PyPI
 
 **For Users:**
+
 - ✅ Simple installation: `pip install metricmancer` instead of cloning the repo
 - ✅ Automatic dependency management
 - ✅ Version pinning: `pip install metricmancer==3.2.0`
@@ -30,6 +33,7 @@ This document provides a comprehensive guide for publishing MetricMancer to the 
 - ✅ Works with all standard Python tooling (poetry, pipenv, etc.)
 
 **For the Project:**
+
 - ✅ Increased visibility and discoverability
 - ✅ Professional image and credibility
 - ✅ ~500,000+ packages, millions of daily downloads
@@ -39,6 +43,7 @@ This document provides a comprehensive guide for publishing MetricMancer to the 
 ### Comparison
 
 **Without PyPI (current):**
+
 ```bash
 git clone https://github.com/CmdrPrompt/MetricMancer
 cd MetricMancer
@@ -47,16 +52,18 @@ python -m src.main src/ --output-format html
 ```
 
 **With PyPI:**
+
 ```bash
 pip install metricmancer
 metricmancer src/ --output-format html
 ```
 
----
+______________________________________________________________________
 
 ## Prerequisites
 
 ### 1. Software Requirements
+
 ```bash
 # Install build tools
 pip install --upgrade build twine
@@ -67,20 +74,24 @@ twine --version
 ```
 
 ### 2. PyPI Accounts
+
 - **TestPyPI**: https://test.pypi.org/account/register/ (for testing)
 - **PyPI**: https://pypi.org/account/register/ (production)
 
 **Note**: Both require separate account registrations.
 
 ### 3. Two-Factor Authentication (2FA)
+
 - PyPI **requires** 2FA for all accounts (since 2023)
 - Use authenticator app (Google Authenticator, Authy, etc.)
 - Set up during account creation
 
 ### 4. API Tokens
+
 API tokens are more secure than passwords for automated uploads.
 
 **Create tokens:**
+
 1. Log in to PyPI/TestPyPI
 2. Go to Account Settings → API Tokens
 3. Click "Add API token"
@@ -88,6 +99,7 @@ API tokens are more secure than passwords for automated uploads.
 5. Copy token immediately (won't be shown again)
 
 **Store tokens securely:**
+
 ```bash
 # Create ~/.pypirc (Linux/Mac)
 cat > ~/.pypirc << EOF
@@ -110,7 +122,7 @@ EOF
 chmod 600 ~/.pypirc
 ```
 
----
+______________________________________________________________________
 
 ## Pre-Publishing Checklist
 
@@ -125,7 +137,7 @@ Before making code changes, verify these items:
 - [ ] All changes are committed to git
 - [ ] Working on main branch (or release branch merged to main)
 
----
+______________________________________________________________________
 
 ## Required Code Changes
 
@@ -145,6 +157,7 @@ This allows users to run `metricmancer` directly instead of `python -m src.main`
 ### 2. Refactor src/main.py to Support Entry Point
 
 **Current structure:**
+
 ```python
 # src/main.py
 if __name__ == "__main__":
@@ -152,6 +165,7 @@ if __name__ == "__main__":
 ```
 
 **Required structure:**
+
 ```python
 # src/main.py
 
@@ -174,6 +188,7 @@ if __name__ == "__main__":
 **File**: `pyproject.toml`
 
 **Current** (lines 11-25):
+
 ```toml
 dependencies = [
   "jinja2",
@@ -193,6 +208,7 @@ dependencies = [
 ```
 
 **Updated**:
+
 ```toml
 dependencies = [
   "jinja2",
@@ -218,6 +234,7 @@ dev = [
 ```
 
 **Install dev dependencies:**
+
 ```bash
 # For development
 pip install -e ".[dev]"
@@ -281,6 +298,7 @@ __all__ = ["MetricMancerApp", "AppConfig", "__version__"]
 **File**: `pyproject.toml`
 
 **Current** (lines 36-40):
+
 ```toml
 [tool.setuptools]
 packages = ["src"]
@@ -290,6 +308,7 @@ packages = ["src"]
 ```
 
 **Updated**:
+
 ```toml
 [tool.setuptools]
 packages = { find = { where = ["."], include = ["src*"] } }
@@ -299,19 +318,21 @@ include-package-data = true
 "src.report.templates" = ["*.html"]
 ```
 
----
+______________________________________________________________________
 
 ## PyPI Account Setup
 
 ### 1. Create PyPI Account
 
 **TestPyPI** (for practice):
+
 1. Go to https://test.pypi.org/account/register/
 2. Fill in username, email, password
 3. Verify email
 4. Enable 2FA with authenticator app
 
 **PyPI** (production):
+
 1. Go to https://pypi.org/account/register/
 2. Fill in username, email, password (use same as TestPyPI for consistency)
 3. Verify email
@@ -320,6 +341,7 @@ include-package-data = true
 ### 2. Create API Tokens
 
 **TestPyPI Token:**
+
 1. Log in to https://test.pypi.org/
 2. Account Settings → API Tokens → Add API token
 3. Token name: "MetricMancer-Test"
@@ -327,6 +349,7 @@ include-package-data = true
 5. Copy token starting with `pypi-...`
 
 **PyPI Token:**
+
 1. Log in to https://pypi.org/
 2. Account Settings → API Tokens → Add API token
 3. Token name: "MetricMancer-Production"
@@ -359,7 +382,7 @@ chmod 600 ~/.pypirc
 
 **Security note**: Never commit `.pypirc` to git. Add to `.gitignore` if not already there.
 
----
+______________________________________________________________________
 
 ## Building the Package
 
@@ -410,11 +433,12 @@ twine check dist/*
 ```
 
 **Common errors and fixes:**
+
 - `long_description_content_type` missing: Add to pyproject.toml
 - Missing README: Ensure README.md exists
 - Invalid RST/Markdown: Validate README syntax
 
----
+______________________________________________________________________
 
 ## Testing on TestPyPI
 
@@ -479,24 +503,30 @@ rm -rf test-env test-project
 ### 5. Common TestPyPI Issues
 
 **Issue**: Dependencies not found
+
 ```
 ERROR: Could not find a version that satisfies the requirement pydriller
 ```
+
 **Fix**: Use `--extra-index-url https://pypi.org/simple` to fetch deps from main PyPI
 
 **Issue**: Entry point doesn't work
+
 ```
 metricmancer: command not found
 ```
+
 **Fix**: Verify `[project.scripts]` in pyproject.toml and `main()` function exists
 
 **Issue**: Templates not found
+
 ```
 jinja2.exceptions.TemplateNotFound: report.html
 ```
+
 **Fix**: Check MANIFEST.in includes templates and setuptools config has package_data
 
----
+______________________________________________________________________
 
 ## Publishing to PyPI
 
@@ -514,6 +544,7 @@ jinja2.exceptions.TemplateNotFound: report.html
 - [ ] Version number won't conflict with existing PyPI versions
 
 **Check existing versions:**
+
 ```bash
 pip index versions metricmancer
 # or visit https://pypi.org/project/metricmancer/#history
@@ -532,7 +563,9 @@ python -m twine upload dist/*
 # View at: https://pypi.org/project/metricmancer/3.2.0/
 ```
 
-**⚠️ WARNING**: You **CANNOT** delete or re-upload the same version. Once uploaded, version 3.2.0 is permanent. You can only:
+**⚠️ WARNING**: You **CANNOT** delete or re-upload the same version. Once uploaded, version 3.2.0 is permanent. You can
+only:
+
 - Mark version as "yanked" (discouraged for new installs but still available)
 - Upload a new version (e.g., 3.2.1)
 
@@ -562,7 +595,7 @@ deactivate
 rm -rf prod-test-env
 ```
 
----
+______________________________________________________________________
 
 ## Post-Publishing
 
@@ -570,21 +603,23 @@ rm -rf prod-test-env
 
 Add PyPI installation instructions to GitHub release:
 
-```markdown
+````markdown
 ## Installation
 
 ### Via PyPI (Recommended)
 ```bash
 pip install metricmancer==3.2.0
-```
+````
 
 ### Via GitHub
+
 ```bash
 git clone https://github.com/CmdrPrompt/MetricMancer
 cd MetricMancer
 pip install -r requirements.txt
 ```
-```
+
+````
 
 ### 2. Update README.md
 
@@ -595,23 +630,26 @@ Add PyPI badge and installation section:
 [![PyPI version](https://badge.fury.io/py/metricmancer.svg)](https://badge.fury.io/py/metricmancer)
 [![PyPI downloads](https://img.shields.io/pypi/dm/metricmancer.svg)](https://pypi.org/project/metricmancer/)
 [![Python versions](https://img.shields.io/pypi/pyversions/metricmancer.svg)](https://pypi.org/project/metricmancer/)
-```
+````
 
 **Installation section**:
-```markdown
+
+````markdown
 ## Installation
 
 ### From PyPI (Recommended)
 ```bash
 pip install metricmancer
-```
+````
 
 ### From Source
+
 ```bash
 git clone https://github.com/CmdrPrompt/MetricMancer
 cd MetricMancer
 pip install -e ".[dev]"
 ```
+
 ```
 
 ### 3. Announce the Release
@@ -625,18 +663,20 @@ Consider announcing on:
 
 **Template announcement:**
 ```
+
 MetricMancer 3.2.0 is now available on PyPI! 🎉
 
 Install with: pip install metricmancer
 
 New features:
+
 - Multi-language cognitive complexity (Python, Java, Go, JS, TS, C)
 - Tree-sitter-based analysis
 - Enhanced HTML/JSON reports
 
-https://pypi.org/project/metricmancer/
-https://github.com/CmdrPrompt/MetricMancer
-```
+https://pypi.org/project/metricmancer/ https://github.com/CmdrPrompt/MetricMancer
+
+````
 
 ### 4. Monitor Package Health
 
@@ -670,9 +710,10 @@ After first successful upload, create a more secure project-scoped token:
 **Error**: `ModuleNotFoundError: No module named 'build'`
 ```bash
 pip install --upgrade build
-```
+````
 
 **Error**: `error: Multiple top-level packages discovered`
+
 ```toml
 # Fix in pyproject.toml
 [tool.setuptools]
@@ -680,6 +721,7 @@ packages = { find = { where = ["."], include = ["src*"] } }
 ```
 
 **Error**: `FileNotFoundError: [Errno 2] No such file or directory: 'README.md'`
+
 ```bash
 # Ensure README.md exists in project root
 ls -la README.md
@@ -688,6 +730,7 @@ ls -la README.md
 ### Upload Issues
 
 **Error**: `403 Forbidden: Invalid or non-existent authentication information`
+
 ```bash
 # Check ~/.pypirc has correct token
 # Token should start with "pypi-"
@@ -695,6 +738,7 @@ cat ~/.pypirc
 ```
 
 **Error**: `400 Bad Request: File already exists`
+
 ```bash
 # Cannot re-upload same version
 # Increment version in pyproject.toml (e.g., 3.2.0 → 3.2.1)
@@ -703,6 +747,7 @@ cat ~/.pypirc
 ```
 
 **Error**: `400 Bad Request: The description failed to render`
+
 ```bash
 # Validate README.md Markdown
 # Use online validator: https://markdownlint.github.io/
@@ -712,6 +757,7 @@ cat ~/.pypirc
 ### Installation Issues
 
 **Error**: `metricmancer: command not found` (after pip install)
+
 ```bash
 # Check if entry point was created
 pip show -f metricmancer | grep metricmancer
@@ -721,6 +767,7 @@ pip show -f metricmancer | grep metricmancer
 ```
 
 **Error**: `No module named 'src'`
+
 ```python
 # Fix imports in code to use absolute imports
 # Wrong: from .config import AppConfig
@@ -728,6 +775,7 @@ pip show -f metricmancer | grep metricmancer
 ```
 
 **Error**: `jinja2.exceptions.TemplateNotFound: report.html`
+
 ```bash
 # Check MANIFEST.in includes templates
 # Verify wheel contains templates:
@@ -737,6 +785,7 @@ unzip -l dist/metricmancer-*.whl | grep templates
 ### Version Conflicts
 
 **Error**: `ERROR: ResolutionImpossible: for help visit https://pip.pypa.io/...`
+
 ```bash
 # Check dependency version conflicts
 pip install metricmancer --verbose
@@ -748,6 +797,7 @@ pip install metricmancer --use-deprecated=legacy-resolver
 ### PyPI Account Issues
 
 **Error**: `403 Forbidden: The credential associated with user 'X' isn't allowed to upload`
+
 ```bash
 # Ensure you're owner/maintainer of the package
 # For first upload, ensure package name isn't already taken
@@ -755,12 +805,13 @@ pip install metricmancer --use-deprecated=legacy-resolver
 ```
 
 **Error**: `Two-factor authentication required`
+
 ```bash
 # Enable 2FA in PyPI account settings
 # Use authenticator app (Google Authenticator, Authy, etc.)
 ```
 
----
+______________________________________________________________________
 
 ## Quick Reference: Complete Publishing Workflow
 
@@ -805,34 +856,38 @@ metricmancer --version
 # 10. Update README, create GitHub release, announce
 ```
 
----
+______________________________________________________________________
 
 ## Additional Resources
 
 **Official Documentation:**
+
 - PyPI User Guide: https://packaging.python.org/en/latest/guides/
 - setuptools Documentation: https://setuptools.pypa.io/en/latest/
 - PEP 621 (pyproject.toml): https://peps.python.org/pep-0621/
 - Twine Documentation: https://twine.readthedocs.io/
 
 **Tools:**
+
 - TestPyPI: https://test.pypi.org/
 - PyPI: https://pypi.org/
 - PyPI Stats: https://pypistats.org/
 - README Renderer: https://github.com/pypa/readme_renderer
 
 **Community:**
+
 - Python Packaging Discourse: https://discuss.python.org/c/packaging/14
 - PyPA GitHub: https://github.com/pypa/
 - Stack Overflow: Tag `python-packaging`
 
----
+______________________________________________________________________
 
 ## Appendix: Code Changes Summary
 
 ### File: pyproject.toml
 
 **Add:**
+
 ```toml
 [project.scripts]
 metricmancer = "src.main:main"
@@ -850,6 +905,7 @@ dev = [
 ```
 
 **Update:**
+
 ```toml
 dependencies = [
   "jinja2",
@@ -873,6 +929,7 @@ include-package-data = true
 ### File: src/main.py
 
 **Refactor:**
+
 ```python
 def main():
     """Main entry point for MetricMancer CLI."""
@@ -911,9 +968,6 @@ from src.config.app_config import AppConfig
 __all__ = ["MetricMancerApp", "AppConfig", "__version__"]
 ```
 
----
+______________________________________________________________________
 
-**Document Version**: 1.0
-**Last Updated**: 2025-10-31
-**Author**: Thomas Lindqvist
-**License**: MIT
+**Document Version**: 1.0 **Last Updated**: 2025-10-31 **Author**: Thomas Lindqvist **License**: MIT

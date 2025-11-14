@@ -300,7 +300,7 @@
             "type": "shell",
             "command": "python",
             "args": [
-                "clean_output.py"
+                "scripts/clean_output.py"
             ],
             "group": "build",
             "presentation": {
@@ -318,7 +318,7 @@
             "type": "shell",
             "command": "python",
             "args": [
-                "clean_output.py",
+                "scripts/clean_output.py",
                 "--dry-run"
             ],
             "group": "build",

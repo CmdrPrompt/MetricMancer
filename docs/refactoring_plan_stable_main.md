@@ -1,13 +1,17 @@
 # Refactoring Plan: Stabilize main.py
 
 ## Problem Statement
+
 `main.py` changes every time a new feature is added because it contains:
+
 - Hardcoded CLI argument to app configuration mapping
 - Report generator selection logic
 - Feature flag handling with multiple `getattr()` calls
 
 ## Goal
+
 Make `main.py` stable by:
+
 1. Extracting configuration into a dedicated class
 2. Using Factory pattern for report generator selection
 3. Making features pluggable/extensible
@@ -59,6 +63,7 @@ Make `main.py` stable by:
 ## Implementation Steps
 
 ### Phase 1: Create AppConfig class
+
 **File**: `src/config/app_config.py`
 
 ```python
@@ -130,6 +135,7 @@ class AppConfig:
 ```
 
 ### Phase 2: Create ReportGeneratorFactory
+
 **File**: `src/report/report_generator_factory.py`
 
 ```python
@@ -170,6 +176,7 @@ class ReportGeneratorFactory:
 ```
 
 ### Phase 3: Refactor MetricMancerApp
+
 **File**: `src/app/metric_mancer_app.py`
 
 ```python
@@ -209,6 +216,7 @@ class MetricMancerApp:
 ```
 
 ### Phase 4: Simplify main.py
+
 **File**: `src/main.py`
 
 ```python
@@ -264,20 +272,24 @@ if __name__ == "__main__":
 ## Benefits
 
 ### 1. Stability
+
 - **main.py becomes stable**: Only changes for major architectural updates
 - **New features don't require main.py changes**: Just add to AppConfig and cli_helpers
 
 ### 2. Testability
+
 - Easy to test with different configurations
 - Can create AppConfig directly in tests without CLI parsing
 - Mock configuration for unit tests
 
 ### 3. Maintainability
+
 - Clear separation of concerns
 - Configuration logic in one place
 - Easy to see all available options
 
 ### 4. Extensibility
+
 - New output formats: Add to factory
 - New features: Add to AppConfig
 - Feature plugins: Implement FeatureRunner pattern
@@ -285,21 +297,25 @@ if __name__ == "__main__":
 ## Migration Strategy
 
 ### Step 1: Create new files (non-breaking)
+
 1. Create `src/config/app_config.py`
 2. Create `src/report/report_generator_factory.py`
 3. Add tests for new components
 
 ### Step 2: Refactor MetricMancerApp (breaking change)
+
 1. Update MetricMancerApp to accept AppConfig
 2. Update all tests that instantiate MetricMancerApp
 3. Verify all tests pass
 
 ### Step 3: Simplify main.py
+
 1. Update main.py to use new architecture
 2. Run integration tests
 3. Verify CLI still works
 
 ### Step 4: Cleanup
+
 1. Remove unused code
 2. Update documentation
 3. Add examples of new pattern
@@ -369,20 +385,25 @@ app.run()
 ## Impact Analysis
 
 ### Files to Change
+
 1. **New files** (3):
+
    - `src/config/__init__.py`
    - `src/config/app_config.py`
    - `src/report/report_generator_factory.py`
 
 2. **Modified files** (3):
+
    - `src/main.py` - Simplified
    - `src/app/metric_mancer_app.py` - Accepts AppConfig
    - `src/utilities/cli_helpers.py` - No changes needed!
 
 3. **Test files** (many):
+
    - All tests that instantiate MetricMancerApp directly
 
 ### Estimated Effort
+
 - **Phase 1**: 2-3 hours (Create AppConfig)
 - **Phase 2**: 1 hour (Create Factory)
 - **Phase 3**: 2-3 hours (Refactor MetricMancerApp)
@@ -392,6 +413,7 @@ app.run()
 **Total**: ~8-11 hours
 
 ### Risk Assessment
+
 - **Low risk**: Non-breaking changes first
 - **Medium risk**: MetricMancerApp signature change affects tests
 - **Mitigation**: Comprehensive test suite already exists
@@ -401,6 +423,7 @@ app.run()
 Once this pattern is established, we can extend it:
 
 ### 1. Plugin System
+
 ```python
 class FeaturePlugin:
     def should_run(self, config: AppConfig) -> bool:
@@ -422,6 +445,7 @@ for plugin in plugins:
 ```
 
 ### 2. Configuration Files
+
 ```python
 # Load from YAML/JSON
 config = AppConfig.from_file('metricmancer.yaml')
@@ -435,6 +459,7 @@ config.merge_from_file('.metricmancer.yaml')
 ```
 
 ### 3. Profile Support
+
 ```yaml
 # .metricmancer.yaml
 profiles:
@@ -452,6 +477,7 @@ profiles:
 ## Conclusion
 
 This refactoring will:
+
 - ✅ Make `main.py` stable (rarely changes)
 - ✅ Improve testability
 - ✅ Reduce complexity in MetricMancerApp

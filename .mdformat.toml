@@ -1,0 +1,12 @@
+# mdformat configuration for MetricMancer
+# https://mdformat.readthedocs.io/
+
+# Wrap lines at 120 characters (matches Python line length)
+wrap = 120
+
+# Number ordered lists sequentially (1, 2, 3 instead of 1, 1, 1)
+number = true
+
+# Enable GitHub Flavored Markdown extensions
+[plugin.gfm]
+enabled = true

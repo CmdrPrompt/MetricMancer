@@ -1,19 +1,22 @@
 # MetricMancer Development Environment Setup
 
-This guide ensures correct dependency installation across all environments: local development, GitHub Codespaces, and CI/CD pipelines.
+This guide ensures correct dependency installation across all environments: local development, GitHub Codespaces, and
+CI/CD pipelines.
 
 ## Table of Contents
+
 1. [Quick Start](#quick-start)
 2. [Dependency Management](#dependency-management)
 3. [Environment-Specific Setup](#environment-specific-setup)
 4. [Troubleshooting](#troubleshooting)
 5. [Verification](#verification)
 
----
+______________________________________________________________________
 
 ## Quick Start
 
 ### Prerequisites
+
 - **Python 3.10+** (see `.python-version` in repo root)
 - **Git** installed and configured
 - **Virtual environment** recommended
@@ -32,7 +35,7 @@ make install
 python -m pytest tests/ -v
 ```
 
----
+______________________________________________________________________
 
 ## Dependency Management
 
@@ -41,6 +44,7 @@ MetricMancer uses **`pyproject.toml`** as the single source of truth for depende
 ### Dependency Categories
 
 #### 1. Runtime Dependencies (Core)
+
 Required for MetricMancer to run. Installed with `pip install metricmancer`:
 
 ```toml
@@ -58,11 +62,13 @@ dependencies = [
 ```
 
 **⚠️ IMPORTANT**: As of v3.2.0, we use `tree-sitter-language-pack` (NOT `tree-sitter-languages`).
+
 - Old package: `tree-sitter-languages` (deprecated, abandoned)
 - New package: `tree-sitter-language-pack` (maintained, official)
 - See [CHANGELOG.md](../CHANGELOG.md) line 38-39 for migration details
 
 #### 2. Development Dependencies (Optional)
+
 Testing, linting, formatting tools. Installed with `pip install -e ".[dev]"`:
 
 ```toml
@@ -77,6 +83,7 @@ dev = [
 ```
 
 #### 3. Build Dependencies (Optional)
+
 PyPI publishing tools. Installed with `pip install -e ".[build]"`:
 
 ```toml
@@ -89,6 +96,7 @@ build = [
 ### Why No `requirements.txt`?
 
 Modern Python projects use `pyproject.toml` (PEP 517/621):
+
 - ✅ Single source of truth
 - ✅ Separates runtime vs. dev dependencies
 - ✅ Works with all build tools (pip, poetry, pipenv)
@@ -96,11 +104,12 @@ Modern Python projects use `pyproject.toml` (PEP 517/621):
 - ✅ PyPI standard since 2021
 
 **For compatibility**, you can still generate one:
+
 ```bash
 pip freeze > requirements.txt  # If needed for legacy tools
 ```
 
----
+______________________________________________________________________
 
 ## Environment-Specific Setup
 
@@ -129,6 +138,7 @@ pip install -e ".[build]"      # + Build dependencies (optional)
 ```
 
 **Verify Installation:**
+
 ```bash
 # Check Python version
 python --version  # Should be 3.10+
@@ -145,6 +155,7 @@ python -m pytest tests/ -v
 Codespaces uses the GitHub-hosted environment with pre-installed Python.
 
 **Setup:**
+
 ```bash
 # Codespaces auto-activates Python, but verify version
 python --version  # Should be 3.10+
@@ -157,8 +168,8 @@ pip install --upgrade pip
 pip install -e ".[dev]"
 ```
 
-**Codespaces Auto-Setup (Future Enhancement):**
-Create `.devcontainer/devcontainer.json`:
+**Codespaces Auto-Setup (Future Enhancement):** Create `.devcontainer/devcontainer.json`:
+
 ```json
 {
   "name": "MetricMancer Dev",
@@ -180,11 +191,13 @@ Create `.devcontainer/devcontainer.json`:
 Current workflow: `.github/workflows/python-app.yml`
 
 **Key Points:**
+
 - ✅ Uses Python 3.10
 - ✅ Installs via `pip install -e .` (includes runtime deps from `pyproject.toml`)
 - ✅ Automatically includes `tree-sitter-language-pack>=0.10.0`
 
 **Current Configuration:**
+
 ```yaml
 - name: Set up Python
   uses: actions/setup-python@v5
@@ -198,6 +211,7 @@ Current workflow: `.github/workflows/python-app.yml`
 ```
 
 **Best Practice (Add Dev Dependencies for Testing):**
+
 ```yaml
 - name: Install dependencies
   run: |
@@ -218,17 +232,19 @@ metricmancer src/ --output-format html
 ```
 
 Users get:
+
 - ✅ All runtime dependencies automatically
 - ✅ No test/dev tools (smaller install)
 - ✅ CLI command `metricmancer` (no need for `python -m src.main`)
 
----
+______________________________________________________________________
 
 ## Troubleshooting
 
 ### Problem 1: Tree-Sitter Import Error
 
 **Symptom:**
+
 ```python
 ModuleNotFoundError: No module named 'tree_sitter_language_pack'
 ```
@@ -236,6 +252,7 @@ ModuleNotFoundError: No module named 'tree_sitter_language_pack'
 **Cause:** Old `tree-sitter-languages` package installed instead of `tree-sitter-language-pack`.
 
 **Solution:**
+
 ```bash
 source .venv/bin/activate
 pip uninstall tree-sitter-languages -y
@@ -248,6 +265,7 @@ python -m pytest tests/ -v  # Verify fix
 ### Problem 2: Tests Fail (121 failures)
 
 **Symptom:**
+
 ```
 ======================= 121 failed, 718 passed in 3.72s ========================
 ```
@@ -255,6 +273,7 @@ python -m pytest tests/ -v  # Verify fix
 **Cause:** Missing or incorrect tree-sitter dependencies.
 
 **Solution:**
+
 ```bash
 # Check installed versions
 pip list | grep tree-sitter
@@ -273,11 +292,13 @@ make install  # Automatically fixes dependencies
 ### Problem 3: Python Version Mismatch
 
 **Symptom:**
+
 ```
 ERROR: Package 'metricmancer' requires a different Python: 3.8.0 not in '>=3.10'
 ```
 
 **Solution:**
+
 ```bash
 # Check Python version
 python --version
@@ -291,11 +312,13 @@ make install
 ### Problem 4: Dependency Conflicts
 
 **Symptom:**
+
 ```
 ERROR: pip's dependency resolver does not currently take into account all the packages that are installed.
 ```
 
 **Solution:**
+
 ```bash
 # Clean virtual environment
 rm -rf .venv
@@ -313,6 +336,7 @@ pip check
 ### Problem 5: Makefile Commands Fail
 
 **Symptom:**
+
 ```bash
 make install
 # Error: /bin/sh: source: not found
@@ -321,6 +345,7 @@ make install
 **Cause:** Using `sh` instead of `bash`.
 
 **Solution:**
+
 ```bash
 # Verify Makefile uses bash (line 3)
 grep SHELL Makefile
@@ -330,17 +355,19 @@ grep SHELL Makefile
 .venv/bin/python -m pip install -e ".[dev]"
 ```
 
----
+______________________________________________________________________
 
 ## Verification
 
 ### Step 1: Check Python Version
+
 ```bash
 python --version
 # Expected: Python 3.10.x or higher
 ```
 
 ### Step 2: Check Tree-Sitter Packages
+
 ```bash
 pip show tree-sitter tree-sitter-language-pack
 # Expected output:
@@ -352,18 +379,21 @@ pip show tree-sitter tree-sitter-language-pack
 ```
 
 ### Step 3: Run All Tests
+
 ```bash
 python -m pytest tests/ -v --tb=short
 # Expected: 839 passed, 0 failed
 ```
 
 ### Step 4: Check PEP8 Compliance
+
 ```bash
 python -m flake8 src/ tests/
 # Expected: 0 errors
 ```
 
 ### Step 5: Run MetricMancer on Itself
+
 ```bash
 python -m src.main src/ --output-format summary
 # Expected: Generates report without errors
@@ -409,35 +439,38 @@ echo "✅ All verifications passed!"
 ```
 
 **Usage:**
+
 ```bash
 chmod +x verify_setup.sh
 ./verify_setup.sh
 ```
 
----
+______________________________________________________________________
 
 ## Summary: Installation Command Reference
 
-| Environment | Command | Installs |
-|-------------|---------|----------|
-| **Local Dev** | `make install` | Runtime + Dev deps |
-| **Codespaces** | `make install` | Runtime + Dev deps |
-| **CI/CD** | `pip install -e ".[dev]"` | Runtime + Dev deps |
-| **PyPI Users** | `pip install metricmancer` | Runtime only |
-| **Build Tools** | `pip install -e ".[build]"` | + Build deps |
+| Environment     | Command                     | Installs           |
+| --------------- | --------------------------- | ------------------ |
+| **Local Dev**   | `make install`              | Runtime + Dev deps |
+| **Codespaces**  | `make install`              | Runtime + Dev deps |
+| **CI/CD**       | `pip install -e ".[dev]"`   | Runtime + Dev deps |
+| **PyPI Users**  | `pip install metricmancer`  | Runtime only       |
+| **Build Tools** | `pip install -e ".[build]"` | + Build deps       |
 
 **Key Points:**
+
 - ✅ `pyproject.toml` is the single source of truth
 - ✅ Use `make install` for foolproof setup (auto-removes conflicts)
 - ✅ Always use `tree-sitter-language-pack` (NOT `tree-sitter-languages`)
 - ✅ Python 3.10+ required (see `.python-version`)
 - ✅ Virtual environments recommended
 
----
+______________________________________________________________________
 
 ## Next Steps
 
 After setup:
+
 1. Read [CONTRIBUTING.md](../CONTRIBUTING.md) for development workflow
 2. Read [ARCHITECTURE.md](../ARCHITECTURE.md) for code structure
 3. Run `make help` to see all available commands
