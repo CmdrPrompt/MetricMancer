@@ -2,7 +2,9 @@
 
 ## Overview
 
-MetricMancer provides comprehensive complexity analysis for IDL (Interface Definition Language) files. IDL is commonly used in middleware systems like CORBA, COM/DCOM, and other distributed computing frameworks to define interfaces between system components.
+MetricMancer provides comprehensive complexity analysis for IDL (Interface Definition Language) files. IDL is commonly
+used in middleware systems like CORBA, COM/DCOM, and other distributed computing frameworks to define interfaces between
+system components.
 
 ## Features
 
@@ -128,11 +130,12 @@ File: BankingService.idl
 - **Inheritance**: Single and multiple interface inheritance
 - **Operations**: Methods with parameters and return types
 - **Attributes**: State variables in interfaces
-- **Comments**: C-style single-line (//) and multi-line (/* */)
+- **Comments**: C-style single-line (//) and multi-line (/\* \*/)
 
 ### 📋 Common IDL Patterns
 
 **CORBA Style:**
+
 ```idl
 module CosNaming {
     interface NamingContext {
@@ -143,6 +146,7 @@ module CosNaming {
 ```
 
 **COM/DCOM Style:**
+
 ```idl
 interface IUnknown {
     HRESULT QueryInterface([in] REFIID riid, [out] void** ppv);
@@ -167,6 +171,7 @@ IDL files are classified using the same risk levels as code files:
 Based on complexity and churn, the system generates targeted review checklists:
 
 **High Complexity Interface:**
+
 - [ ] Verify interface compatibility and versioning strategy
 - [ ] Check for breaking changes in operation signatures
 - [ ] Review exception handling completeness
@@ -174,6 +179,7 @@ Based on complexity and churn, the system generates targeted review checklists:
 - [ ] Consider interface splitting for better maintainability
 
 **High Churn Interface:**
+
 - [ ] Document reason for frequent changes
 - [ ] Review change history for patterns
 - [ ] Consider interface stability and maturity
@@ -181,6 +187,7 @@ Based on complexity and churn, the system generates targeted review checklists:
 - [ ] Update documentation and examples
 
 **Inheritance Complexity:**
+
 - [ ] Review inheritance hierarchy depth
 - [ ] Check for diamond inheritance problems
 - [ ] Validate interface segregation principle
@@ -191,6 +198,7 @@ Based on complexity and churn, the system generates targeted review checklists:
 ### 1. Interface Evolution Analysis
 
 Track how interfaces change over time:
+
 ```bash
 python -m src.main idl/ --list-hotspots --hotspot-threshold 50
 ```
@@ -198,6 +206,7 @@ python -m src.main idl/ --list-hotspots --hotspot-threshold 50
 ### 2. Code Review Prioritization
 
 Focus reviews on high-risk interfaces:
+
 ```bash
 python -m src.main idl/ --review-strategy --review-branch-only
 ```
@@ -205,6 +214,7 @@ python -m src.main idl/ --review-strategy --review-branch-only
 ### 3. Maintenance Planning
 
 Identify complex interfaces that need refactoring:
+
 ```bash
 python -m src.main idl/ --output-format json --hierarchical
 ```
@@ -212,6 +222,7 @@ python -m src.main idl/ --output-format json --hierarchical
 ### 4. Team Onboarding
 
 Help new developers understand interface complexity:
+
 ```bash
 python -m src.main idl/ --output-format html
 ```
@@ -228,6 +239,7 @@ The IDL parser includes comprehensive test coverage:
 - Real-world CORBA example tests
 
 Run tests:
+
 ```bash
 pytest tests/languages/test_idl_parser.py -v
 ```
@@ -239,6 +251,7 @@ pytest tests/languages/test_idl_parser.py -v
 **Location**: `src/languages/parsers/idl.py`
 
 **Key Components**:
+
 - `IDLComplexityParser`: Main parser class
 - `compute_complexity()`: Calculates structural complexity
 - `count_functions()`: Counts operations in interfaces
@@ -299,7 +312,8 @@ pytest tests/languages/test_idl_parser.py -v
 ## Resources
 
 - **CORBA IDL Specification**: [OMG IDL Syntax and Semantics](https://www.omg.org/spec/IDL/)
-- **Microsoft IDL**: [MIDL Language Reference](https://docs.microsoft.com/en-us/windows/win32/midl/midl-language-reference)
+- **Microsoft IDL**:
+  [MIDL Language Reference](https://docs.microsoft.com/en-us/windows/win32/midl/midl-language-reference)
 - **Parser Documentation**: `src/languages/parsers/idl.py`
 - **Test Examples**: `tests/languages/test_idl_parser.py`
 
@@ -312,8 +326,8 @@ To extend IDL support:
 3. Document changes in this file
 4. Run full test suite: `pytest tests/ -v`
 
----
+______________________________________________________________________
 
-**Last Updated**: October 13, 2025  
-**MetricMancer Version**: 2.1.0 (Unreleased)  
+**Last Updated**: October 13, 2025\
+**MetricMancer Version**: 2.1.0 (Unreleased)\
 **Maintainer**: CmdrPrompt

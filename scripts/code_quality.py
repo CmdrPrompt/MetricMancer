@@ -44,8 +44,44 @@ def lint_code():
     """Check code with flake8."""
     return run_command(
         "source .venv/bin/activate && python -m flake8 src/ tests/",
-        "🔍 Linting code with flake8"
+        "🔍 Linting Python code with flake8"
     )
+
+
+def format_markdown():
+    """Auto-format Markdown files with mdformat."""
+    return run_command(
+        "source .venv/bin/activate && python -m mdformat *.md docs/*.md docs/**/*.md --wrap 120",
+        "📝 Auto-formatting Markdown files"
+    )
+
+
+def lint_markdown():
+    """Check Markdown files with mdformat."""
+    return run_command(
+        "source .venv/bin/activate && python -m mdformat --check *.md docs/*.md docs/**/*.md --wrap 120",
+        "🔍 Checking Markdown files"
+    )
+
+
+def check_markdown():
+    """Run Markdown formatting and linting."""
+    print("\n" + "="*50)
+    print("Running Markdown quality checks")
+    print("="*50)
+
+    format_ok = format_markdown()
+    lint_ok = lint_markdown()
+
+    print("\n" + "="*50)
+    if format_ok and lint_ok:
+        print("✅ All Markdown checks passed!")
+        print("="*50)
+        return True
+    else:
+        print("❌ Some Markdown checks failed!")
+        print("="*50)
+        return False
 
 
 def run_tests():
@@ -59,7 +95,7 @@ def run_tests():
 def check_licenses():
     """Check license compliance."""
     return run_command(
-        "source .venv/bin/activate && python check_licenses.py",
+        "source .venv/bin/activate && python scripts/check_licenses.py",
         "📋 Checking license compliance"
     )
 
@@ -180,8 +216,11 @@ MetricMancer Code Quality Tools
 Usage: python code_quality.py <command>
 
 Code Quality Commands:
-  format          - Auto-format code with autopep8
-  lint            - Check code with flake8
+  format          - Auto-format Python code with autopep8
+  lint            - Check Python code with flake8
+  format-md       - Auto-format Markdown files with mdformat
+  lint-md         - Check Markdown files with mdformat
+  check-md        - Run format-md + lint-md (Markdown workflow)
   test            - Run all tests with pytest
   licenses        - Check license compliance
   check           - Run lint + test + licenses (CI workflow)
@@ -200,6 +239,8 @@ General:
 Examples:
   python code_quality.py format
   python code_quality.py check
+  python code_quality.py format-md
+  python code_quality.py check-md
   python code_quality.py analyze-quick
     """)
 
@@ -215,6 +256,9 @@ def main():
     commands = {
         'format': format_code,
         'lint': lint_code,
+        'format-md': format_markdown,
+        'lint-md': lint_markdown,
+        'check-md': check_markdown,
         'test': run_tests,
         'licenses': check_licenses,
         'check': check_all,

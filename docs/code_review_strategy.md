@@ -1,6 +1,8 @@
 # Code Review Strategy Report
 
-MetricMancer can generate data-driven code review recommendations based on your codebase's complexity, churn, and ownership metrics. This feature helps teams optimize their code review process by focusing attention where it matters most.
+MetricMancer can generate data-driven code review recommendations based on your codebase's complexity, churn, and
+ownership metrics. This feature helps teams optimize their code review process by focusing attention where it matters
+most.
 
 ## How to Generate
 
@@ -26,6 +28,7 @@ python -m src.main src --review-strategy --list-hotspots --hotspot-output hotspo
 The code review strategy report contains:
 
 ### 1. Executive Summary
+
 - Total files analyzed
 - Critical risk files (requiring immediate attention)
 - High risk files (requiring senior review)
@@ -40,6 +43,7 @@ Files are categorized by priority:
 - **Priority 3 (Medium)**: Stable complexity or moderate risk
 
 For each file, you get:
+
 - Risk level assessment
 - Number of reviewers needed
 - Estimated review time
@@ -49,6 +53,7 @@ For each file, you get:
 ### 3. Review Templates
 
 Pre-written review comment templates for different risk levels, including:
+
 - 🔥 Critical hotspot alerts
 - 📚 Knowledge sharing opportunities (single ownership)
 - 🔄 High churn area warnings
@@ -72,24 +77,28 @@ Pre-written review comment templates for different risk levels, including:
 The advisor classifies files based on multiple factors:
 
 ### Critical Risk
+
 - **Critical Hotspots**: Complexity > 15 AND Churn > 10
 - **Very High Hotspot Score**: Score > 150
 - Requires: 3 reviewers (architect + 2 developers)
 - Focus: Architecture, performance, refactoring
 
 ### High Risk
+
 - **Emerging Hotspots**: Complexity 5-15 AND Churn > 10
 - **High Hotspot Score**: Score 75-150
 - Requires: 2 reviewers (senior + peer)
 - Focus: Pattern consistency, preventive refactoring
 
 ### Medium Risk
+
 - **Stable Complexity**: Complexity > 15 AND Churn ≤ 5
 - **Medium Hotspot Score**: Score 25-75
 - Requires: 1-2 reviewers
 - Focus: Documentation, integration tests
 
 ### Low Risk
+
 - **Low Hotspot Score**: Score < 25
 - Requires: 1 reviewer (standard process)
 - Focus: Code quality standards
@@ -100,48 +109,60 @@ The advisor also considers ownership patterns:
 
 - **Single Owner (>70%)**: Emphasizes knowledge transfer and documentation
 - **Balanced Ownership (40-70%)**: Standard review process
-- **Shared Ownership (<40%, 3+ authors)**: Focuses on API consistency
-- **Fragmented Ownership (<30%, 4+ authors)**: Highlights coordination needs
+- **Shared Ownership (\<40%, 3+ authors)**: Focuses on API consistency
+- **Fragmented Ownership (\<30%, 4+ authors)**: Highlights coordination needs
 
 ## Example Use Cases
 
 ### 1. Sprint Planning
+
 Use the report to allocate review resources at sprint start:
+
 ```bash
 python -m src.main src --review-strategy --review-output sprint_review_plan.md
 ```
 
 ### 2. Focus on Your Branch Changes
+
 Generate a focused review strategy for only the files you've changed:
+
 ```bash
 # When working on a feature branch
 python -m src.main src --review-strategy --review-branch-only --review-output my_branch_review.md
 ```
 
 **Benefits:**
+
 - Reduces review scope from 68 files → ~18 files (example)
 - Focuses on files you actually modified
 - Provides immediate, actionable feedback
 - Ideal for pre-PR self-review
 
 **Output comparison:**
+
 - Full repository: `Total files analyzed: 68, Critical: 12, High: 4, Est. time: 36h 25m`
 - Branch only: `Total files analyzed: 18, Critical: 7, High: 1, Est. time: 15h 5m`
 
 ### 3. Onboarding New Team Members
+
 Help new reviewers understand which files need extra attention:
+
 - Critical files: Pair with senior developers
 - High churn areas: Learn about common patterns
 - Single owner files: Knowledge transfer opportunities
 
 ### 4. Technical Debt Reduction
+
 Identify which files should be refactored first:
+
 - Sort by estimated review time
 - Focus on critical hotspots
 - Track improvements over time
 
 ### 5. Code Review Audits
+
 Ensure review depth matches risk level:
+
 - Compare actual vs. recommended reviewer count
 - Verify time spent on critical files
 - Check if checklists are being used
@@ -149,6 +170,7 @@ Ensure review depth matches risk level:
 ## Integration with Development Workflow
 
 ### Pre-Commit / Pre-PR
+
 ```bash
 # Check what needs extra attention in your changes
 python -m src.main src --review-strategy --review-branch-only
@@ -158,14 +180,17 @@ cat review_strategy.md
 ```
 
 ### Pull Request Template
+
 Include relevant checklist items from the report in your PR template.
 
 **Tip:** Run `--review-branch-only` before creating a PR to:
+
 - Self-review critical changes
 - Ensure all high-risk files have adequate tests
 - Add extra documentation for complex areas
 
 ### CI/CD Pipeline
+
 ```yaml
 # Example GitHub Actions step
 - name: Generate Review Strategy
@@ -179,6 +204,7 @@ Include relevant checklist items from the report in your PR template.
 ```
 
 ### Weekly Team Review
+
 1. Generate report at week start
 2. Discuss critical files in team meeting
 3. Assign senior reviewers to high-risk areas
@@ -199,18 +225,21 @@ The code review advisor leverages these KPIs:
 Based on "Your Code as a Crime Scene" by Adam Tornhill:
 
 ### Complexity
+
 - 1-5: Low (simple procedures)
 - 6-10: Moderate (well-structured)
 - 11-15: High (consider refactoring)
 - 16+: Very High (immediate attention)
 
 ### Churn (commits/month)
+
 - 0-2: Stable
 - 3-5: Active (normal)
 - 6-10: High activity (monitor)
 - 11+: Very high (investigate root causes)
 
 ### Hotspot Score
+
 - 0-25: Low risk
 - 26-75: Medium risk
 - 76-150: High risk
@@ -218,7 +247,8 @@ Based on "Your Code as a Crime Scene" by Adam Tornhill:
 
 ## Customization
 
-The thresholds and recommendations can be adjusted for your project's needs. See `src/analysis/code_review_advisor.py` for implementation details.
+The thresholds and recommendations can be adjusted for your project's needs. See `src/analysis/code_review_advisor.py`
+for implementation details.
 
 ## Related Features
 

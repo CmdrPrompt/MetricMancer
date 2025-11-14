@@ -1,29 +1,31 @@
 # Phase 3: Extract HierarchyBuilder - Implementation Plan
 
-**Date:** 2025-10-15  
-**Status:** 📋 PLANNING  
+**Date:** 2025-10-15\
+**Status:** 📋 PLANNING\
 **Prerequisites:** ✅ Phase 1 (KPICalculator) and Phase 2 (FileAnalyzer) merged to main
 
----
+______________________________________________________________________
 
 ## 🎯 Objective
 
 Extract directory hierarchy construction logic from `analyzer.py` into a dedicated `HierarchyBuilder` component that:
+
 - Builds RepoInfo/ScanDir tree structures
 - Manages parent-child directory relationships
 - Places analyzed files in the correct directory nodes
 - **Does NOT aggregate KPIs** (that's Phase 4)
 
----
+______________________________________________________________________
 
 ## 📦 What to Extract
 
 ### Current Code Location
 
-**File:** `src/app/analyzer.py`  
+**File:** `src/app/analyzer.py`\
 **Lines:** ~217-237 (hierarchy building section)
 
 **Current Implementation:**
+
 ```python
 # Find or create ScanDir objects in the hierarchy
 relative_dir_path = file_path.relative_to(repo_root_path).parent
@@ -59,11 +61,11 @@ else:
 
 ### NOT Included (Phase 4)
 
-❌ KPI aggregation (lines 243-290 remain in analyzer.py for Phase 4)  
-❌ Recursive directory traversal for KPIs  
+❌ KPI aggregation (lines 243-290 remain in analyzer.py for Phase 4)\
+❌ Recursive directory traversal for KPIs\
 ❌ Average/sum calculations
 
----
+______________________________________________________________________
 
 ## 🏗️ New Architecture
 
@@ -83,6 +85,7 @@ else:
 ### API Design
 
 **Primary Method:**
+
 ```python
 def build_hierarchy(
     self,
@@ -111,6 +114,7 @@ def build_hierarchy(
 ```
 
 **Helper Methods:**
+
 ```python
 def add_file_to_hierarchy(
     self,
@@ -140,16 +144,17 @@ def _parse_directory_path(
     """
 ```
 
----
+______________________________________________________________________
 
 ## 📝 Implementation Steps
 
 ### Step 1: Create `src/app/hierarchy_builder.py`
 
-**Lines:** ~80-100  
+**Lines:** ~80-100\
 **Complexity:** C:~15
 
 **Imports:**
+
 ```python
 from pathlib import Path
 from typing import List, Union, Tuple
@@ -159,6 +164,7 @@ from src.models.file import File
 ```
 
 **Class Structure:**
+
 ```python
 class HierarchyBuilder:
     """
@@ -262,7 +268,7 @@ class HierarchyBuilder:
 
 ### Step 2: Create `tests/app/test_hierarchy_builder.py`
 
-**Lines:** ~120-150  
+**Lines:** ~120-150\
 **Tests:** 15-18
 
 **Test Structure:**
@@ -535,11 +541,13 @@ class TestBuildHierarchy:
 **Changes:**
 
 1. **Add import:**
+
 ```python
 from src.app.hierarchy_builder import HierarchyBuilder
 ```
 
 2. **Initialize in `__init__`:**
+
 ```python
 def __init__(self, config):
     # ... existing code ...
@@ -549,6 +557,7 @@ def __init__(self, config):
 3. **Replace hierarchy building code (lines ~217-237):**
 
 **BEFORE:**
+
 ```python
 # Find or create ScanDir objects in the hierarchy
 relative_dir_path = file_path.relative_to(repo_root_path).parent
@@ -575,6 +584,7 @@ else:
 ```
 
 **AFTER:**
+
 ```python
 # Add file to hierarchy (delegates to HierarchyBuilder)
 self.hierarchy_builder.add_file_to_hierarchy(repo_info, file_obj)
@@ -597,65 +607,73 @@ pytest tests/ -q --tb=line
 ### Step 5: Update Documentation
 
 1. **Update `docs/refactoring/analyzer-refactoring-plan.md`:**
+
    - Mark Phase 3 as ✅ COMPLETE
-   
+
 2. **Create `docs/refactoring/phase3-complete.md`:**
+
    - Component summary
    - Test results
    - Complexity metrics
    - Next steps (Phase 4)
 
----
+______________________________________________________________________
 
 ## 📊 Expected Impact
 
 ### Complexity Reduction
 
-| Metric | Before | After Phase 3 | Change |
-|--------|--------|---------------|--------|
-| analyzer.py lines | 331 | ~290 | -41 lines (-12%) |
-| analyzer.py complexity | C:90 | ~60 | -30 (-33%) |
-| Total tests | 483 | ~498 | +15 tests |
-| Test time | 1.60s | ~1.65s | +50ms |
+| Metric                 | Before | After Phase 3 | Change           |
+| ---------------------- | ------ | ------------- | ---------------- |
+| analyzer.py lines      | 331    | ~290          | -41 lines (-12%) |
+| analyzer.py complexity | C:90   | ~60           | -30 (-33%)       |
+| Total tests            | 483    | ~498          | +15 tests        |
+| Test time              | 1.60s  | ~1.65s        | +50ms            |
 
 ### Code Quality Metrics
 
 **HierarchyBuilder:**
+
 - Lines: ~80-100
 - Complexity: C:~15
 - Responsibilities: 1 (hierarchy building)
 - Testability: ⭐⭐⭐⭐⭐ (fully isolated)
 
 **Analyzer (after Phase 3):**
+
 - Complexity: 90 → ~60 (-33%)
 - Responsibilities: 6 → 5 (-1)
 - Still needs: Phases 4-6
 
----
+______________________________________________________________________
 
 ## 🚀 Benefits
 
 ### Separation of Concerns
-✅ Hierarchy building logic is isolated  
-✅ Analyzer delegates structural concerns  
+
+✅ Hierarchy building logic is isolated\
+✅ Analyzer delegates structural concerns\
 ✅ Clear API: `build_hierarchy(repo_info, files)`
 
 ### Testability
-✅ Easy to test hierarchy creation  
-✅ No git dependencies in tests  
-✅ Fast unit tests (<50ms)
+
+✅ Easy to test hierarchy creation\
+✅ No git dependencies in tests\
+✅ Fast unit tests (\<50ms)
 
 ### Reusability
-✅ Can rebuild hierarchy from cached files  
-✅ Useful for incremental analysis  
+
+✅ Can rebuild hierarchy from cached files\
+✅ Useful for incremental analysis\
 ✅ Supports partial tree updates
 
 ### Maintainability
-✅ Single Responsibility (ScanDir tree building)  
-✅ Small, focused component (~100 lines)  
+
+✅ Single Responsibility (ScanDir tree building)\
+✅ Small, focused component (~100 lines)\
 ✅ Clear boundaries with other components
 
----
+______________________________________________________________________
 
 ## 🔄 Integration Flow (After Phase 3)
 
@@ -672,7 +690,7 @@ KPIAggregator.aggregate_kpis(repo_info)  ← Phase 4
 Analyzer (orchestrates all of the above)
 ```
 
----
+______________________________________________________________________
 
 ## ⚠️ Considerations
 
@@ -686,12 +704,12 @@ Analyzer (orchestrates all of the above)
 
 ### NOT in Scope
 
-❌ **KPI Aggregation** - That's Phase 4 (KPIAggregator)  
-❌ **File Analysis** - That's Phase 2 (FileAnalyzer)  
-❌ **Git Operations** - Handled by existing git_cache  
+❌ **KPI Aggregation** - That's Phase 4 (KPIAggregator)\
+❌ **File Analysis** - That's Phase 2 (FileAnalyzer)\
+❌ **Git Operations** - Handled by existing git_cache\
 ❌ **Sorting/Filtering** - Report generation concern
 
----
+______________________________________________________________________
 
 ## ✅ Definition of Done
 
@@ -705,27 +723,27 @@ Analyzer (orchestrates all of the above)
 - [x] Code review completed
 - [x] Merged to main
 
----
+______________________________________________________________________
 
 ## 🎯 Success Criteria
 
-✅ **Functionality:** All files placed in correct directory nodes  
-✅ **Tests:** 498/498 passing (100%)  
-✅ **Performance:** No regression (<1.7s test time)  
-✅ **Complexity:** analyzer.py C:90 → ~60 (-33%)  
-✅ **Architecture:** Clear separation from KPI aggregation  
+✅ **Functionality:** All files placed in correct directory nodes\
+✅ **Tests:** 498/498 passing (100%)\
+✅ **Performance:** No regression (\<1.7s test time)\
+✅ **Complexity:** analyzer.py C:90 → ~60 (-33%)\
+✅ **Architecture:** Clear separation from KPI aggregation
 
----
+______________________________________________________________________
 
 ## 📅 Next Phase: Phase 4 (KPIAggregator)
 
 After Phase 3 completion:
 
-**Phase 4 Goal:** Extract KPI aggregation logic  
-**Files:** `src/app/kpi_aggregator.py`, `tests/app/test_kpi_aggregator.py`  
-**Lines to extract:** analyzer.py lines 243-290 (~50 lines)  
-**Estimated impact:** analyzer.py 290 → ~200 lines, C:60 → ~40  
+**Phase 4 Goal:** Extract KPI aggregation logic\
+**Files:** `src/app/kpi_aggregator.py`, `tests/app/test_kpi_aggregator.py`\
+**Lines to extract:** analyzer.py lines 243-290 (~50 lines)\
+**Estimated impact:** analyzer.py 290 → ~200 lines, C:60 → ~40
 
----
+______________________________________________________________________
 
 **Ready to implement?** Let me know when you want to start! 🚀

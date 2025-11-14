@@ -1,6 +1,7 @@
 # Migration Guide: Configuration Object Pattern
 
-This guide helps you migrate existing code to use MetricMancer's new Configuration Object Pattern, introduced to reduce code churn and improve maintainability.
+This guide helps you migrate existing code to use MetricMancer's new Configuration Object Pattern, introduced to reduce
+code churn and improve maintainability.
 
 ## Table of Contents
 
@@ -16,6 +17,7 @@ This guide helps you migrate existing code to use MetricMancer's new Configurati
 ### Why Migrate?
 
 The Configuration Object Pattern was introduced to address:
+
 - **High churn in main.py**: Previously 23 commits/month
 - **Repetitive parameter passing**: 15+ parameters manually constructed
 - **Difficult testing**: Hard to mock individual settings
@@ -24,6 +26,7 @@ The Configuration Object Pattern was introduced to address:
 ### What Changed?
 
 **Before (Old Pattern):**
+
 ```python
 from src.app.metric_mancer_app import MetricMancerApp
 
@@ -45,6 +48,7 @@ app.run()
 ```
 
 **After (Configuration Object Pattern):**
+
 ```python
 from src.config.app_config import AppConfig
 from src.report.report_generator_factory import ReportGeneratorFactory
@@ -88,6 +92,7 @@ app = MetricMancerApp(
 ```
 
 However, we **strongly recommend** migrating to the new pattern for:
+
 - Better testability
 - Easier maintenance
 - Future-proof code
@@ -95,7 +100,8 @@ However, we **strongly recommend** migrating to the new pattern for:
 
 ### ⚠️ Deprecation Notice
 
-While the old pattern is currently supported, future versions may deprecate individual parameter passing. Migrate at your earliest convenience.
+While the old pattern is currently supported, future versions may deprecate individual parameter passing. Migrate at
+your earliest convenience.
 
 ## Migration Steps
 
@@ -110,6 +116,7 @@ from src.config.app_config import AppConfig
 ### Step 2: Create Configuration Object
 
 **Option A: Direct instantiation (for scripts/tests)**
+
 ```python
 config = AppConfig(
     directories=['src', 'tests'],
@@ -120,6 +127,7 @@ config = AppConfig(
 ```
 
 **Option B: From CLI args (for main.py style)**
+
 ```python
 import argparse
 
@@ -131,6 +139,7 @@ config = AppConfig.from_cli_args(args)
 ```
 
 **Option C: From dictionary (for config files)**
+
 ```python
 config_dict = {
     'directories': ['src', 'tests'],
@@ -146,6 +155,7 @@ config = AppConfig(**config_dict)
 Replace conditional generator selection with factory:
 
 **Before:**
+
 ```python
 if output_format == 'json':
     from src.report.json_report_generator import JSONReportGenerator
@@ -157,6 +167,7 @@ elif output_format == 'html':
 ```
 
 **After:**
+
 ```python
 from src.report.report_generator_factory import ReportGeneratorFactory
 
@@ -166,6 +177,7 @@ generator_cls = ReportGeneratorFactory.create(config.output_format)
 ### Step 4: Update App Instantiation
 
 **Before:**
+
 ```python
 app = MetricMancerApp(
     directories=dirs,
@@ -175,6 +187,7 @@ app = MetricMancerApp(
 ```
 
 **After:**
+
 ```python
 app = MetricMancerApp(
     config=config,
@@ -195,6 +208,7 @@ python -m pytest tests/ -v
 ### Scenario 1: Simple Script
 
 **Before:**
+
 ```python
 from src.app.metric_mancer_app import MetricMancerApp
 
@@ -207,6 +221,7 @@ app.run()
 ```
 
 **After:**
+
 ```python
 from src.config.app_config import AppConfig
 from src.report.report_generator_factory import ReportGeneratorFactory
@@ -225,6 +240,7 @@ app.run()
 ### Scenario 2: Testing
 
 **Before:**
+
 ```python
 def test_app_with_custom_thresholds():
     app = MetricMancerApp(
@@ -237,6 +253,7 @@ def test_app_with_custom_thresholds():
 ```
 
 **After:**
+
 ```python
 def test_app_with_custom_thresholds():
     config = AppConfig(
@@ -251,6 +268,7 @@ def test_app_with_custom_thresholds():
 ```
 
 **Better: Use config for easier mocking**
+
 ```python
 from unittest.mock import Mock
 
@@ -269,6 +287,7 @@ def test_app_with_mocked_config():
 ### Scenario 3: CI/CD Integration
 
 **Before:**
+
 ```python
 import os
 
@@ -284,6 +303,7 @@ app = MetricMancerApp(
 ```
 
 **After:**
+
 ```python
 import os
 
@@ -299,6 +319,7 @@ app = MetricMancerApp(config=config, report_generator_cls=generator_cls)
 ### Scenario 4: Dynamic Configuration
 
 **Before:**
+
 ```python
 def create_app_for_environment(env):
     if env == 'production':
@@ -317,6 +338,7 @@ def create_app_for_environment(env):
 ```
 
 **After:**
+
 ```python
 def create_app_for_environment(env):
     if env == 'production':
@@ -402,6 +424,7 @@ def test_full_migration():
 ### Q: Do I need to migrate immediately?
 
 **A:** No, the old pattern is fully supported. However, migrating now:
+
 - Makes your code future-proof
 - Improves testability
 - Aligns with best practices
@@ -413,7 +436,8 @@ def test_full_migration():
 
 ### Q: What if I have custom extensions?
 
-**A:** Custom KPIs, parsers, and report formats work with both patterns. The configuration object simply provides a cleaner way to pass settings.
+**A:** Custom KPIs, parsers, and report formats work with both patterns. The configuration object simply provides a
+cleaner way to pass settings.
 
 ### Q: Can I mix old and new patterns?
 
@@ -421,7 +445,8 @@ def test_full_migration():
 
 ### Q: How do I migrate tests?
 
-**A:** See [Scenario 2: Testing](#scenario-2-testing) above. The key is using `AppConfig` instead of individual parameters.
+**A:** See [Scenario 2: Testing](#scenario-2-testing) above. The key is using `AppConfig` instead of individual
+parameters.
 
 ### Q: What about configuration files (JSON/YAML)?
 
@@ -465,6 +490,7 @@ class ExtendedConfig(AppConfig):
 ### Q: Where can I find more examples?
 
 **A:** Check the test files:
+
 - `tests/test_main_simplification_tdd.py` - Main entry point examples
 - `tests/app/test_metric_mancer_app_with_config.py` - App instantiation
 - `tests/app/test_legacy_tests_migration_tdd.py` - Migration patterns
@@ -472,22 +498,24 @@ class ExtendedConfig(AppConfig):
 ### Q: What if I find a bug in the new pattern?
 
 **A:** Please report it on GitHub Issues. Include:
+
 - Minimal reproducible example
 - Expected vs. actual behavior
 - Your configuration setup
 
 ### Q: Will performance be affected?
 
-**A:** No. The Configuration Object Pattern has negligible performance overhead. Benefits far outweigh any minimal costs.
+**A:** No. The Configuration Object Pattern has negligible performance overhead. Benefits far outweigh any minimal
+costs.
 
 ## Support
 
 For questions or issues:
+
 - **GitHub Issues**: https://github.com/CmdrPrompt/MetricMancer/issues
 - **Documentation**: See `README.md` and `SoftwareSpecificationAndDesign.md`
 - **Examples**: Check `tests/` directory for comprehensive examples
 
----
+______________________________________________________________________
 
-**Last Updated:** 2025-10-14
-**Version:** 1.0.0 (Configuration Object Pattern introduction)
+**Last Updated:** 2025-10-14 **Version:** 1.0.0 (Configuration Object Pattern introduction)

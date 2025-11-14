@@ -6,12 +6,12 @@ MetricMancer uses **`pyproject.toml`** as the single source of truth for all dep
 
 ## Key Files
 
-| File | Purpose | When to Update |
-|------|---------|----------------|
-| **`pyproject.toml`** | ✅ PRIMARY - All dependencies | Add/update packages |
-| **`.python-version`** | Python version pinning | Change Python requirement |
-| **`.github/workflows/python-app.yml`** | CI/CD configuration | Change test setup |
-| **`Makefile`** | Development commands | Change install process |
+| File                                   | Purpose                       | When to Update            |
+| -------------------------------------- | ----------------------------- | ------------------------- |
+| **`pyproject.toml`**                   | ✅ PRIMARY - All dependencies | Add/update packages       |
+| **`.python-version`**                  | Python version pinning        | Change Python requirement |
+| **`.github/workflows/python-app.yml`** | CI/CD configuration           | Change test setup         |
+| **`Makefile`**                         | Development commands          | Change install process    |
 
 ❌ **NO `requirements.txt`** - Not needed with modern Python packaging
 
@@ -48,6 +48,7 @@ pip install metricmancer  # Runtime dependencies only
 ## Dependency Categories
 
 ### Runtime (Core)
+
 ```toml
 [project]
 dependencies = [
@@ -63,6 +64,7 @@ dependencies = [
 ```
 
 ### Development (Optional)
+
 ```toml
 [project.optional-dependencies]
 dev = [
@@ -75,6 +77,7 @@ dev = [
 ```
 
 ### Build (Optional)
+
 ```toml
 build = [
   "build>=1.0.0",
@@ -86,22 +89,25 @@ build = [
 
 **⚠️ BREAKING CHANGE in v3.2.0**
 
-| ❌ OLD (Deprecated) | ✅ NEW (Current) |
-|--------------------|------------------|
+| ❌ OLD (Deprecated)     | ✅ NEW (Current)            |
+| ----------------------- | --------------------------- |
 | `tree-sitter-languages` | `tree-sitter-language-pack` |
 
 **Why?**
+
 - Old package abandoned/unmaintained
 - New package officially supported
 - Better compatibility with tree-sitter 0.25+
 
 **Migration:**
+
 ```bash
 pip uninstall tree-sitter-languages -y
 pip install tree-sitter-language-pack>=0.10.0
 ```
 
 **Automatic Fix:**
+
 ```bash
 make install  # Detects and removes old package automatically
 ```
@@ -129,6 +135,7 @@ python -m pytest tests/ -v
 ### Error: `ModuleNotFoundError: No module named 'tree_sitter_language_pack'`
 
 **Solution:**
+
 ```bash
 make install  # Automatic fix
 # OR
@@ -167,6 +174,7 @@ dev = [
 ```
 
 **Then:**
+
 ```bash
 pip install -e ".[dev]"  # Reinstall with new dependency
 ```
@@ -174,21 +182,25 @@ pip install -e ".[dev]"  # Reinstall with new dependency
 ## Environment-Specific Notes
 
 ### Local Development
+
 - Use virtual environment: `python3.10 -m venv .venv`
 - Install: `make install`
 - Verify: `pip check`
 
 ### GitHub Codespaces
+
 - Python pre-installed (3.12+, compatible)
 - Run: `make install`
 - Auto-setup: Future enhancement with `.devcontainer/devcontainer.json`
 
 ### CI/CD (GitHub Actions)
+
 - Python 3.10 specified in workflow
 - Install command: `pip install -e ".[dev]"`
 - Runs all tests automatically
 
 ### Production (PyPI)
+
 - Users install: `pip install metricmancer`
 - Only runtime dependencies installed
 - No test/dev tools needed
@@ -210,8 +222,6 @@ pip install -e ".[dev]"  # Reinstall with new dependency
 - Development: [CONTRIBUTING.md](../CONTRIBUTING.md)
 - Changelog: [CHANGELOG.md](../CHANGELOG.md) (see v3.2.0 migration notes)
 
----
+______________________________________________________________________
 
-**Last Updated:** 2025-11-12 (v3.2.0)
-**Python Version:** 3.10+
-**Build System:** setuptools (PEP 517/621)
+**Last Updated:** 2025-11-12 (v3.2.0) **Python Version:** 3.10+ **Build System:** setuptools (PEP 517/621)

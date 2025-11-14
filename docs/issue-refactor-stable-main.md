@@ -2,9 +2,11 @@
 
 ## 🎯 Problem Statement
 
-`main.py` has high churn (23 commits/month) because it changes every time a new feature is added. The file currently contains:
+`main.py` has high churn (23 commits/month) because it changes every time a new feature is added. The file currently
+contains:
+
 - Hardcoded CLI argument to app configuration mapping
-- Report generator selection logic  
+- Report generator selection logic
 - Feature flag handling with multiple `getattr()` calls
 - 15+ parameters passed to `MetricMancerApp` constructor
 
@@ -13,6 +15,7 @@ This violates the Open/Closed Principle and makes the codebase harder to maintai
 ## 📊 Current Metrics
 
 From MetricMancer's own quick-wins analysis:
+
 ```
 1. Add Tests: main.py
    Impact:  ██████░░░░ Medium (6/10)
@@ -22,6 +25,7 @@ From MetricMancer's own quick-wins analysis:
 ```
 
 Current complexity:
+
 - **Cyclomatic Complexity**: 11
 - **Churn**: 23 commits/month
 - **Hotspot Score**: 253 (Critical)
@@ -53,6 +57,7 @@ main.py → AppConfig → MetricMancerApp → Business Logic
 ### Key Components
 
 #### 1. AppConfig Class (`src/config/app_config.py`)
+
 ```python
 @dataclass
 class AppConfig:
@@ -81,6 +86,7 @@ class AppConfig:
 ```
 
 #### 2. ReportGeneratorFactory (`src/report/report_generator_factory.py`)
+
 ```python
 class ReportGeneratorFactory:
     """Factory for creating report generators."""
@@ -97,6 +103,7 @@ class ReportGeneratorFactory:
 ```
 
 #### 3. Simplified main.py
+
 ```python
 def main():
     """Main entry point - stable and rarely needs changes."""
@@ -129,6 +136,7 @@ def main():
 ```
 
 #### 4. Refactored MetricMancerApp
+
 ```python
 class MetricMancerApp:
     def __init__(self, config: AppConfig):
@@ -162,6 +170,7 @@ class MetricMancerApp:
 ## 📋 Implementation Plan
 
 ### Phase 1: Create New Components (Non-Breaking)
+
 - [ ] Create `src/config/__init__.py`
 - [ ] Create `src/config/app_config.py` with full configuration dataclass
 - [ ] Create `src/report/report_generator_factory.py`
@@ -170,24 +179,28 @@ class MetricMancerApp:
 - [ ] **Estimated**: 2-3 hours
 
 ### Phase 2: Refactor MetricMancerApp (Breaking Change)
+
 - [ ] Update `MetricMancerApp.__init__()` to accept `AppConfig`
 - [ ] Remove individual parameter passing
 - [ ] Update internal methods to use `self.config`
 - [ ] **Estimated**: 2-3 hours
 
 ### Phase 3: Update Tests
+
 - [ ] Update all tests that instantiate `MetricMancerApp`
 - [ ] Add tests for new configuration-based flow
 - [ ] Verify all 334 tests still pass
 - [ ] **Estimated**: 2-3 hours
 
 ### Phase 4: Simplify main.py
+
 - [ ] Replace parameter construction with `AppConfig.from_cli_args()`
 - [ ] Remove hardcoded report generator selection
 - [ ] Add error handling for validation
 - [ ] **Estimated**: 1 hour
 
 ### Phase 5: Documentation and Cleanup
+
 - [ ] Update README with new pattern
 - [ ] Add configuration examples
 - [ ] Update architecture diagrams
@@ -199,18 +212,21 @@ class MetricMancerApp:
 ## ✅ Benefits
 
 ### Immediate Benefits
+
 1. **Stability**: main.py becomes stable, rarely needs changes
 2. **Testability**: Easy to create test configurations without CLI parsing
 3. **Readability**: Clear what configuration options exist
 4. **Type Safety**: Dataclass provides type hints and validation
 
 ### Long-Term Benefits
+
 1. **Extensibility**: New features just extend AppConfig
 2. **Configuration Files**: Easy to add YAML/JSON config support
 3. **Profiles**: Can add configuration profiles (quick, full, ci)
 4. **Plugin System**: Foundation for feature plugins
 
 ### Code Quality Impact
+
 - **Before**: Complexity: 11, Churn: 23, Hotspot: 253
 - **After** (estimated): Complexity: 5, Churn: 2-3, Hotspot: 10-15
 
@@ -234,16 +250,19 @@ def test_app_features_run_when_configured()
 ## 📚 References
 
 ### Design Patterns
+
 - **Configuration Object Pattern**: Encapsulate configuration in a single object
 - **Factory Pattern**: Encapsulate object creation logic
 - **Open/Closed Principle**: Open for extension, closed for modification
 
 ### Similar Implementations
+
 - Django Settings object
 - Flask Config object
 - pytest Config object
 
 ### MetricMancer Analysis
+
 - See `docs/refactoring_plan_stable_main.md` for detailed plan
 - See `output/review_strategy.md` for code review recommendations
 - Self-analysis identified main.py as top quick-win opportunity
@@ -251,22 +270,25 @@ def test_app_features_run_when_configured()
 ## ⚠️ Risks and Mitigation
 
 ### Risk 1: Breaking Changes
-**Impact**: High - Changes MetricMancerApp signature
-**Mitigation**: 
+
+**Impact**: High - Changes MetricMancerApp signature **Mitigation**:
+
 - Comprehensive test suite exists (334 tests)
 - Phase implementation allows validation at each step
 - Can maintain backward compatibility temporarily
 
 ### Risk 2: Migration Effort
-**Impact**: Medium - Many test files need updates
-**Mitigation**:
+
+**Impact**: Medium - Many test files need updates **Mitigation**:
+
 - Clear migration guide
 - Update tests incrementally
 - Run full test suite after each phase
 
 ### Risk 3: Learning Curve
-**Impact**: Low - New pattern for team
-**Mitigation**:
+
+**Impact**: Low - New pattern for team **Mitigation**:
+
 - Well-documented pattern
 - Examples in PR
 - Reference documentation
@@ -275,7 +297,7 @@ def test_app_features_run_when_configured()
 
 - [ ] All 334 existing tests pass
 - [ ] New tests achieve >90% coverage of new code
-- [ ] main.py complexity reduced to <10
+- [ ] main.py complexity reduced to \<10
 - [ ] Zero CLI behavior changes for end users
 - [ ] Documentation updated
 - [ ] Code review approved
@@ -298,6 +320,7 @@ def test_app_features_run_when_configured()
 ## 🔗 Pull Request Checklist
 
 When implementing, the PR should include:
+
 - [ ] All code changes
 - [ ] Unit tests for new components
 - [ ] Integration tests for refactored flow
@@ -306,9 +329,8 @@ When implementing, the PR should include:
 - [ ] Performance benchmarks (no regression)
 - [ ] Self-analysis showing improved metrics
 
----
+______________________________________________________________________
 
-**Labels**: `enhancement`, `refactoring`, `architecture`, `good-first-issue` (for Phase 1 only)
-**Priority**: Medium (improves maintainability but not urgent)
-**Effort**: Large (8-11 hours)
-**Impact**: High (reduces future maintenance significantly)
+**Labels**: `enhancement`, `refactoring`, `architecture`, `good-first-issue` (for Phase 1 only) **Priority**: Medium
+(improves maintainability but not urgent) **Effort**: Large (8-11 hours) **Impact**: High (reduces future maintenance
+significantly)
