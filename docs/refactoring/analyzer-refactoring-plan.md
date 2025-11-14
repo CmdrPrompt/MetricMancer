@@ -2,21 +2,23 @@
 
 ## 📊 Nulägesanalys
 
-**Fil:** `src/app/analyzer.py`  
-**Komplexitet:** 90 (CRITICAL)  
-**Churn:** 20 commits  
-**Hotspot Score:** 1800 (Complexity × Churn)  
-**Rader:** 331 lines  
+**Fil:** `src/app/analyzer.py`\
+**Komplexitet:** 90 (CRITICAL)\
+**Churn:** 20 commits\
+**Hotspot Score:** 1800 (Complexity × Churn)\
+**Rader:** 331 lines\
 **Klasser:** 2 (`AggregatedSharedOwnershipKPI`, `Analyzer`)
 
 ### 🔥 Identifierade Problem
 
 1. **Guds-objekt** (`Analyzer` class):
+
    - Gör för mycket: gruppering, repo-analys, fil-analys, KPI-beräkning, aggregering
    - 331 rader i en fil (borde vara max ~200 per modul)
    - Nested function `aggregate_scan_dir_kpis()` på 60+ rader
 
 2. **Ansvarsblandning** (SRP-brott):
+
    - Fil-gruppering efter repo
    - KPI-beräkning (complexity, churn, hotspot, ownership, shared ownership)
    - Timing/profiling
@@ -25,11 +27,13 @@
    - Rekursiv aggregering av KPIs
 
 3. **Tight coupling**:
+
    - Hårdkodade beroenden till 5 olika KPI-klasser
    - Direkt import av git cache
    - Svår att testa isolerat
 
 4. **Low cohesion**:
+
    - Timing-logik blandad med business logic
    - Aggregering nestad inne i analys-metoden
 
@@ -38,6 +42,7 @@
 ### Arkitektoniska Principer
 
 Följer **MetricMancer ARCHITECTURE.md**:
+
 - ✅ **Single Responsibility** - En klass, ett ansvar
 - ✅ **Open/Closed** - Lätt lägga till nya KPIs utan att ändra kärnkod
 - ✅ **Dependency Injection** - KPI-beräknare injiceras, inte hårdkodade
@@ -46,7 +51,7 @@ Följer **MetricMancer ARCHITECTURE.md**:
 
 ### Framgångskriterier
 
-- ✅ Reduce complexity from **90 → <40** (target: ~30 per modul)
+- ✅ Reduce complexity from **90 → \<40** (target: ~30 per modul)
 - ✅ Split into **4-5 specialized modules** (~60-80 lines each)
 - ✅ Enable **easy addition of new KPIs** without modifying core
 - ✅ Improve **testability** (mock KPI calculators)
@@ -70,6 +75,7 @@ src/app/
 ```
 
 **Total efter refaktorering:**
+
 - **430 lines** (vs 331) - ökar pga moduler/interfaces
 - **Max complexity: 25** per modul (vs 90 i en fil)
 - **Total complexity: ~110** (vs 90) - ökar men distribuerat
@@ -391,13 +397,14 @@ class KPICalculator:
 **Tests:** `tests/app/test_kpi_calculator.py` (~150 lines)
 
 **Acceptance Criteria:**
+
 - ✅ All existing KPIs calculated correctly
 - ✅ Easy to add new KPI strategies (register pattern)
 - ✅ Timing tracked per KPI
 - ✅ Mockable for testing
 - ✅ All existing tests pass
 
----
+______________________________________________________________________
 
 ### Phase 2: Extract File Analysis (Week 1, Day 3-4)
 
@@ -529,13 +536,14 @@ class FileAnalyzer:
 **Tests:** `tests/app/test_file_analyzer.py` (~120 lines)
 
 **Acceptance Criteria:**
+
 - ✅ Analyzes files correctly (same output as before)
 - ✅ Returns None for invalid files
 - ✅ Creates Function objects with complexity
 - ✅ Creates File objects with all KPIs
 - ✅ Testable with mocked KPICalculator
 
----
+______________________________________________________________________
 
 ### Phase 3: Extract Hierarchy Building (Week 1, Day 5)
 
@@ -645,7 +653,7 @@ class HierarchyBuilder:
 
 **Tests:** `tests/app/test_hierarchy_builder.py` (~100 lines)
 
----
+______________________________________________________________________
 
 ### Phase 4: Extract KPI Aggregation (Week 2, Day 1-2)
 
@@ -811,7 +819,7 @@ class KPIAggregator:
 
 **Tests:** `tests/app/test_kpi_aggregator.py` (~80 lines)
 
----
+______________________________________________________________________
 
 ### Phase 5: Extract Repo Grouping (Week 2, Day 3)
 
@@ -863,7 +871,7 @@ class RepoGrouper:
 
 **Tests:** `tests/app/test_repo_grouper.py` (~50 lines)
 
----
+______________________________________________________________________
 
 ### Phase 6: Refactor Main Analyzer (Week 2, Day 4-5)
 
@@ -1065,35 +1073,40 @@ class Analyzer:
 
 **Tests:** Update `tests/app/test_analyzer.py` (~200 lines, refactored)
 
----
+______________________________________________________________________
 
 ## 🧪 Testing Strategy
 
 ### Unit Tests (Per Component)
 
 1. **test_kpi_calculator.py** (~150 lines)
+
    - Test each strategy individually
    - Test calculate_all() orchestration
    - Test strategy registration
    - Mock KPI classes
 
 2. **test_file_analyzer.py** (~120 lines)
+
    - Test file analysis with various extensions
    - Test invalid file handling
    - Test function object creation
    - Mock KPICalculator
 
 3. **test_hierarchy_builder.py** (~100 lines)
+
    - Test root file placement
    - Test nested directory creation
    - Test multiple files in same directory
 
 4. **test_kpi_aggregator.py** (~80 lines)
+
    - Test recursive aggregation
    - Test empty directories
    - Test averaging logic
 
 5. **test_repo_grouper.py** (~50 lines)
+
    - Test single repo grouping
    - Test multi-repo grouping
 
@@ -1110,29 +1123,29 @@ class Analyzer:
 2. **Performance:** No regression (< 5% slower)
 3. **Output:** Identical to pre-refactoring
 
----
+______________________________________________________________________
 
 ## 📊 Expected Improvements
 
 ### Metrics
 
-| Metric | Before | After | Change |
-|--------|--------|-------|--------|
-| **File Complexity** | 90 | Max 25 | ↓ 72% |
-| **Lines per File** | 331 | Max 120 | ↓ 64% |
-| **Testability** | Medium | High | ↑↑ |
-| **Extensibility** | Low | High | ↑↑ |
-| **Maintainability** | 3/10 | 9/10 | ↑↑↑ |
+| Metric              | Before | After   | Change |
+| ------------------- | ------ | ------- | ------ |
+| **File Complexity** | 90     | Max 25  | ↓ 72%  |
+| **Lines per File**  | 331    | Max 120 | ↓ 64%  |
+| **Testability**     | Medium | High    | ↑↑     |
+| **Extensibility**   | Low    | High    | ↑↑     |
+| **Maintainability** | 3/10   | 9/10    | ↑↑↑    |
 
 ### Benefits
 
-✅ **Easy to add new KPIs**: Just create new strategy, register it  
-✅ **Testable**: Mock any component independently  
-✅ **Clear responsibilities**: Each class has one job  
-✅ **Follows ARCHITECTURE.md**: Strategy pattern, DI, SRP  
+✅ **Easy to add new KPIs**: Just create new strategy, register it\
+✅ **Testable**: Mock any component independently\
+✅ **Clear responsibilities**: Each class has one job\
+✅ **Follows ARCHITECTURE.md**: Strategy pattern, DI, SRP\
 ✅ **Reduced hotspot score**: 1800 → ~500 (estimated)
 
----
+______________________________________________________________________
 
 ## 🚀 Migration Plan
 
@@ -1155,13 +1168,15 @@ Keep original `analyzer.py` as `analyzer_legacy.py` for 1 release cycle.
 - Add refactoring case study to docs/
 - Update developer guide with examples of adding new KPIs
 
----
+______________________________________________________________________
 
 ## 📝 Summary
 
-This refactoring transforms `analyzer.py` from a **monolithic God object** into a **modular, extensible architecture** following MetricMancer's design principles.
+This refactoring transforms `analyzer.py` from a **monolithic God object** into a **modular, extensible architecture**
+following MetricMancer's design principles.
 
 **Key Changes:**
+
 1. ✅ **Complexity reduced** from 90 → max 25 per module
 2. ✅ **5 new specialized modules** (~60-100 lines each)
 3. ✅ **Strategy pattern** for KPI calculation (Open/Closed)
@@ -1169,14 +1184,15 @@ This refactoring transforms `analyzer.py` from a **monolithic God object** into 
 5. ✅ **Single Responsibility** (one class, one job)
 
 **Next Steps:**
+
 1. Review this plan
 2. Implement Phase 1 (KPICalculator)
 3. Run tests after each phase
 4. Merge when all phases complete
 
----
+______________________________________________________________________
 
-**Status:** 📋 Ready for Implementation  
-**Estimated Effort:** 2 weeks  
-**Risk:** Low (incremental, tested)  
+**Status:** 📋 Ready for Implementation\
+**Estimated Effort:** 2 weeks\
+**Risk:** Low (incremental, tested)\
 **Value:** High (reduces critical hotspot, improves maintainability)

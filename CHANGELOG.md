@@ -2,13 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [3.2.0] - 2025-10-31
 
 ### Added
 
-- **Multi-Language Cognitive Complexity (v3.2.0)**: Tree-sitter-based cognitive complexity analysis for multiple languages
+- **Multi-Language Cognitive Complexity (v3.2.0)**: Tree-sitter-based cognitive complexity analysis for multiple
+  languages
   - Implemented cognitive complexity calculators for Java, Go, JavaScript, TypeScript, and C
   - Factory pattern for language-specific calculators via `CognitiveComplexityCalculatorFactory`
   - Abstract base class `CognitiveComplexityCalculatorBase` for consistent implementation
@@ -34,7 +36,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Cognitive complexity now available for 6 languages: Python, Java, Go, JavaScript, TypeScript, C
 - Report generation includes both cyclomatic and cognitive complexity metrics
 - Factory pattern replaces conditional logic in cognitive complexity calculation
-- **BREAKING**: Migrated from `tree-sitter-languages` to `tree-sitter-language-pack` for better maintainability and official support
+- **BREAKING**: Migrated from `tree-sitter-languages` to `tree-sitter-language-pack` for better maintainability and
+  official support
   - Users building from source should run `pip install -r requirements.txt` to update dependencies
   - No user-facing functionality changes, but dependency update required for fresh installations
 
@@ -73,14 +76,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 **Git/Bitbucket-based KPIs:**
 
-- Code Ownership: Measures how many different developers have modified a file. Identifies files with low ownership (high risk for bugs). Can be retrieved via `git log --pretty="%an" <file>`.
-- Review Latency: Time from pull request creation to first comment. Highlights bottlenecks in the review process. Retrieved via Bitbucket API: `/pullrequests/{id}/comments`.
-- Merge Time: Time from PR creation to merge. Measures collaboration and delivery speed. Bitbucket API: `/pullrequests/{id}` with timestamps.
-- Comment Density: Number of comments per PR. Indicator of code review quality. Can be combined with Review Latency for a "Review Health Score".
+- Code Ownership: Measures how many different developers have modified a file. Identifies files with low ownership (high
+  risk for bugs). Can be retrieved via `git log --pretty="%an" <file>`.
+- Review Latency: Time from pull request creation to first comment. Highlights bottlenecks in the review process.
+  Retrieved via Bitbucket API: `/pullrequests/{id}/comments`.
+- Merge Time: Time from PR creation to merge. Measures collaboration and delivery speed. Bitbucket API:
+  `/pullrequests/{id}` with timestamps.
+- Comment Density: Number of comments per PR. Indicator of code review quality. Can be combined with Review Latency for
+  a "Review Health Score".
 
 **Jira-based KPIs:**
 
-- Cycle Time: Time from "In Progress" to "Done". Measures delivery speed. Retrieved via Jira API: `issue.changelog` → status changes.
+- Cycle Time: Time from "In Progress" to "Done". Measures delivery speed. Retrieved via Jira API: `issue.changelog` →
+  status changes.
 - Lead Time: Time from issue creation to delivery. Identifies bottlenecks in planning and prioritization.
 - Issue Reopen Rate: How often issues are reopened after being closed. Indicator of solution quality and test coverage.
 - Sprint Accuracy: Amount of planned work actually delivered. Measures team predictability.
@@ -97,7 +105,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- New HTML report templates: `base.html`, `overview.html`, and `repo.html` for improved report rendering and maintainability.
+- New HTML report templates: `base.html`, `overview.html`, and `repo.html` for improved report rendering and
+  maintainability.
 - Robust, modern CSS and interactive file tree for HTML reports.
 - UTF-8 output enforcement for CLI to support Unicode in all environments.
 
@@ -130,6 +139,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [2.0.1] - 2025-09-14
 
 ### Changed
+
 - Updated and deduplicated persona/user story sections in SoftwareSpecificationAndDesign.md for clarity and structure.
 - Rebuilt and corrected the Table of Contents to match the current document structure.
 - Fixed mermaid diagram rendering by removing extraneous code block markers after mermaid blocks.
@@ -140,7 +150,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [2.0.0] - 2025-09-14
 
 ### Added
-- Major documentation overhaul: new Software Specification and Design (SSD) document with full requirements, architecture, data model, KPIs, traceability, and user stories/personas.
+
+- Major documentation overhaul: new Software Specification and Design (SSD) document with full requirements,
+  architecture, data model, KPIs, traceability, and user stories/personas.
 - HTML, CLI, and JSON report generators now fully modular and extensible.
 - Aggregated KPIs at file, directory, and repository levels.
 - Hotspot analysis: highlights files/functions with both high complexity and high churn.
@@ -152,23 +164,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Link to SSD document added in README.md; README fully updated to match current state and SSD.
 
 ### Changed
+
 - Refactored codebase for extensibility: new KPI modules, parser modules, and report format modules are pluggable.
 - Improved CLI and HTML report output: clearer summaries, better error messages, and more actionable insights.
 - Updated requirements and non-functional requirements to reflect current and planned features.
 - Updated all documentation to follow Keep a Changelog and Semantic Versioning best practices.
 
 ### Fixed
+
 - Fixed markdown lint errors in documentation and README.
 - Fixed section numbering and formatting in SSD document.
 - Fixed test robustness for edge cases and error handling.
 
 ### Removed
+
 - Removed outdated/duplicate documentation and legacy report templates.
 
 ### Security
+
 - No security changes in this release.
 
 ### Deprecated
+
 - No deprecations in this release.
 
 ## [Unreleased]
@@ -177,14 +194,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 **Git/Bitbucket-based KPIs:**
 
-- Code Ownership: Measures how many different developers have modified a file. Identifies files with low ownership (high risk for bugs). Can be retrieved via `git log --pretty="%an" <file>`.
-- Review Latency: Time from pull request creation to first comment. Highlights bottlenecks in the review process. Retrieved via Bitbucket API: `/pullrequests/{id}/comments`.
-- Merge Time: Time from PR creation to merge. Measures collaboration and delivery speed. Bitbucket API: `/pullrequests/{id}` with timestamps.
-- Comment Density: Number of comments per PR. Indicator of code review quality. Can be combined with Review Latency for a "Review Health Score".
+- Code Ownership: Measures how many different developers have modified a file. Identifies files with low ownership (high
+  risk for bugs). Can be retrieved via `git log --pretty="%an" <file>`.
+- Review Latency: Time from pull request creation to first comment. Highlights bottlenecks in the review process.
+  Retrieved via Bitbucket API: `/pullrequests/{id}/comments`.
+- Merge Time: Time from PR creation to merge. Measures collaboration and delivery speed. Bitbucket API:
+  `/pullrequests/{id}` with timestamps.
+- Comment Density: Number of comments per PR. Indicator of code review quality. Can be combined with Review Latency for
+  a "Review Health Score".
 
 **Jira-based KPIs:**
 
-- Cycle Time: Time from "In Progress" to "Done". Measures delivery speed. Retrieved via Jira API: `issue.changelog` → status changes.
+- Cycle Time: Time from "In Progress" to "Done". Measures delivery speed. Retrieved via Jira API: `issue.changelog` →
+  status changes.
 - Lead Time: Time from issue creation to delivery. Identifies bottlenecks in planning and prioritization.
 - Issue Reopen Rate: How often issues are reopened after being closed. Indicator of solution quality and test coverage.
 - Sprint Accuracy: Amount of planned work actually delivered. Measures team predictability.
@@ -200,27 +222,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [1.2.0] - 2025-08-31
 
 ### Added
+
 - CLI report now lists files in the root directory before all folders, improving readability of file trees.
 - Debug output is now controlled by the debug flag for all CLI and app runs.
 - Repo root name detection in CLI report is now accurate and robust.
 
 ### Changed
-- Major refactoring: moved core modules to subfolders (`app`, `languages`, etc.) for better structure and maintainability.
+
+- Major refactoring: moved core modules to subfolders (`app`, `languages`, etc.) for better structure and
+  maintainability.
 - `collector.py`, `scanner.py`, and `config.py` relocated to logical subfolders; all imports updated accordingly.
 - Improved modularity and separation of concerns throughout the codebase.
 - All test files and mocks updated to reflect new module structure.
 
 ### Fixed
+
 - Indentation and import errors in several modules after refactoring.
 - All tests and CLI runs validated after each change to ensure stability.
 
 ### Removed
-- Old/duplicate files in root (`collector.py`, `scanner.py`, `app.py`, `config.py`) deleted after migration to subfolders.
+
+- Old/duplicate files in root (`collector.py`, `scanner.py`, `app.py`, `config.py`) deleted after migration to
+  subfolders.
 
 ### Security
+
 - No security changes in this release.
 
 ### Deprecated
+
 - No deprecations in this release.
 
 ## [1.1.1] - 2025-08-31

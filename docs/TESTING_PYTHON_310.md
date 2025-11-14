@@ -2,7 +2,8 @@
 
 ## Overview
 
-GitHub Actions CI/CD uses Python 3.10.18, while your local development environment may use a newer version (e.g., Python 3.12). To ensure compatibility before merging, always test with Python 3.10.
+GitHub Actions CI/CD uses Python 3.10.18, while your local development environment may use a newer version (e.g., Python
+3.12). To ensure compatibility before merging, always test with Python 3.10.
 
 ## Setup Python 3.10 Virtual Environment
 
@@ -71,6 +72,7 @@ python -m pytest tests/path/to/test_file.py -v
 **Problem:** Multi-line f-strings with implicit line continuations work in Python 3.12+ but fail in Python 3.10.
 
 **❌ Breaks in Python 3.10:**
+
 ```python
 print(
     f"Value: {var} {
@@ -79,6 +81,7 @@ print(
 ```
 
 **✅ Works in Python 3.10:**
+
 ```python
 label = 'High' if x > 5 else 'Low'
 print(f"Value: {var} {label}")
@@ -93,6 +96,7 @@ print(f"Value: {var} {label}")
 **Problem:** Some newer type hint features (e.g., `X | Y` union syntax) require Python 3.10+.
 
 **✅ Safe:**
+
 ```python
 from typing import Union
 def func(x: Union[int, str]) -> None:
@@ -100,6 +104,7 @@ def func(x: Union[int, str]) -> None:
 ```
 
 **⚠️ Python 3.10+ only:**
+
 ```python
 def func(x: int | str) -> None:
     pass
@@ -170,8 +175,6 @@ This means you're using Python 3.11+ syntax. Review the "Common Compatibility Is
 4. Re-run tests
 5. Commit and push
 
----
+______________________________________________________________________
 
-**Last Updated:** 2025-10-28
-**Python 3.10 Version:** 3.10.19
-**CI/CD Python Version:** 3.10.18
+**Last Updated:** 2025-10-28 **Python 3.10 Version:** 3.10.19 **CI/CD Python Version:** 3.10.18

@@ -1,0 +1,255 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/CmdrPrompt/MetricMancer/schemas/metricmancer-v1.schema.json",
+  "title": "MetricMancer Metrics Export",
+  "description": "JSON Schema for MetricMancer code quality metrics export format (v1.0)",
+  "version": "1.0.0",
+  "type": "array",
+  "items": {
+    "$ref": "#/definitions/MetricItem"
+  },
+  "definitions": {
+    "MetricItem": {
+      "type": "object",
+      "description": "A single metric item representing file, function, or package-level metrics",
+      "required": [
+        "filename"
+      ],
+      "properties": {
+        "filename": {
+          "type": "string",
+          "description": "Full path to the file or package (directory)",
+          "examples": [
+            "src/app/metric_mancer_app.py",
+            "src/app/"
+          ]
+        },
+        "function_name": {
+          "type": "string",
+          "description": "Name of the function (only present for function-level metrics)",
+          "examples": [
+            "run",
+            "analyze_files",
+            "__init__"
+          ]
+        },
+        "package": {
+          "type": "string",
+          "description": "Package/directory path (only present for package-level metrics)",
+          "examples": [
+            "src/app/",
+            "src/kpis/complexity/"
+          ]
+        },
+        "cyclomatic_complexity": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Cyclomatic complexity score (McCabe complexity)",
+          "minimum": 0,
+          "examples": [
+            5,
+            15,
+            42
+          ]
+        },
+        "cognitive_complexity": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Cognitive complexity score (SonarSource algorithm) - measures code understandability",
+          "minimum": 0,
+          "examples": [
+            3,
+            12,
+            28
+          ]
+        },
+        "churn": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Number of commits affecting this file (commit frequency)",
+          "minimum": 0,
+          "examples": [
+            10,
+            147,
+            523
+          ]
+        },
+        "hotspot_score": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Hotspot score (complexity × churn) - identifies high-risk code",
+          "minimum": 0,
+          "examples": [
+            150,
+            2205,
+            12495
+          ]
+        },
+        "code_ownership": {
+          "oneOf": [
+            {
+              "type": "object",
+              "description": "Ownership percentages by contributor email",
+              "patternProperties": {
+                "^[^@]+@[^@]+\\.[^@]+$": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 100,
+                  "description": "Percentage of lines owned by this contributor"
+                }
+              },
+              "additionalProperties": false,
+              "examples": [
+                {
+                  "alice@example.com": 65.5,
+                  "bob@example.com": 34.5
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "description": "List of contributor emails (for package-level aggregation)",
+              "items": {
+                "type": "string",
+                "pattern": "^[^@]+@[^@]+\\.[^@]+$"
+              },
+              "examples": [
+                [
+                  "alice@example.com",
+                  "bob@example.com",
+                  "charlie@example.com"
+                ]
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "shared_ownership": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Number of significant contributors (ownership >= 5%)",
+          "minimum": 0,
+          "examples": [
+            1,
+            2,
+            5
+          ]
+        },
+        "repo_name": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Name of the repository being analyzed",
+          "examples": [
+            "MetricMancer",
+            "my-project"
+          ]
+        },
+        "component": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Component or service name (optional metadata for multi-component repos)",
+          "examples": [
+            "api",
+            "frontend",
+            "payment-service"
+          ]
+        },
+        "team": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Team owning this component (optional metadata)",
+          "examples": [
+            "platform",
+            "backend",
+            "infra"
+          ]
+        },
+        "timestamp": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "ISO 8601 timestamp when the analysis was performed",
+          "format": "date-time",
+          "examples": [
+            "2025-11-14T12:30:00Z",
+            "2025-11-14T12:30:00+01:00"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "examples": [
+    [
+      {
+        "filename": "src/app/metric_mancer_app.py",
+        "cyclomatic_complexity": 85,
+        "cognitive_complexity": 42,
+        "churn": 147,
+        "hotspot_score": 12495,
+        "code_ownership": {
+          "alice@example.com": 65.5,
+          "bob@example.com": 34.5
+        },
+        "shared_ownership": 2,
+        "repo_name": "MetricMancer",
+        "component": "app",
+        "team": "platform",
+        "timestamp": "2025-11-14T12:30:00Z"
+      },
+      {
+        "filename": "src/app/metric_mancer_app.py",
+        "function_name": "run",
+        "cyclomatic_complexity": 12,
+        "cognitive_complexity": 8,
+        "churn": 147,
+        "hotspot_score": 1764,
+        "code_ownership": {
+          "alice@example.com": 100.0
+        },
+        "shared_ownership": 1,
+        "repo_name": "MetricMancer",
+        "component": "app",
+        "team": "platform",
+        "timestamp": "2025-11-14T12:30:00Z"
+      },
+      {
+        "filename": "src/app/",
+        "package": "src/app/",
+        "cyclomatic_complexity": 423,
+        "cognitive_complexity": 215,
+        "churn": 892,
+        "hotspot_score": 377316,
+        "code_ownership": [
+          "alice@example.com",
+          "bob@example.com",
+          "charlie@example.com"
+        ],
+        "shared_ownership": 5,
+        "repo_name": "MetricMancer",
+        "component": "app",
+        "team": "platform",
+        "timestamp": "2025-11-14T12:30:00Z"
+      }
+    ]
+  ]
+}

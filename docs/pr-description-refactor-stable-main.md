@@ -4,11 +4,13 @@ Fixes #51
 
 ## 🎯 Overview
 
-This PR refactors the MetricMancer application architecture to stabilize `main.py` and improve maintainability by implementing the Configuration Object and Factory patterns.
+This PR refactors the MetricMancer application architecture to stabilize `main.py` and improve maintainability by
+implementing the Configuration Object and Factory patterns.
 
 ## 📊 Current Problem
 
 `main.py` currently has:
+
 - **High Churn**: 23 commits/month
 - **Complexity**: 11
 - **Hotspot Score**: 253 (Critical)
@@ -18,6 +20,7 @@ This PR refactors the MetricMancer application architecture to stabilize `main.p
 ## 💡 Solution
 
 Implement three design patterns:
+
 1. **Configuration Object Pattern** - Centralize all settings in `AppConfig`
 2. **Factory Pattern** - Encapsulate report generator creation
 3. **Open/Closed Principle** - Open for extension, closed for modification
@@ -27,6 +30,7 @@ Implement three design patterns:
 This PR follows a phased approach to minimize risk:
 
 ### ✅ Phase 1: Create New Components (Non-Breaking)
+
 - [x] Create branch and draft PR
 - [ ] Create `src/config/__init__.py`
 - [ ] Create `src/config/app_config.py`
@@ -35,21 +39,25 @@ This PR follows a phased approach to minimize risk:
 - [ ] Add unit tests for `ReportGeneratorFactory`
 
 ### ⏳ Phase 2: Refactor MetricMancerApp
+
 - [ ] Update `MetricMancerApp.__init__()` to accept `AppConfig`
 - [ ] Remove individual parameter passing
 - [ ] Update internal methods to use `self.config`
 
 ### ⏳ Phase 3: Update Tests
+
 - [ ] Update all tests that instantiate `MetricMancerApp`
 - [ ] Add tests for configuration-based flow
 - [ ] Verify all 334 tests pass
 
 ### ⏳ Phase 4: Simplify main.py
+
 - [ ] Replace parameter construction with `AppConfig.from_cli_args()`
 - [ ] Remove hardcoded report generator selection
 - [ ] Add error handling for validation
 
 ### ⏳ Phase 5: Documentation
+
 - [ ] Update README with new pattern
 - [ ] Add configuration examples
 - [ ] Update architecture diagrams
@@ -58,14 +66,16 @@ This PR follows a phased approach to minimize risk:
 ## 🎯 Expected Benefits
 
 ### Code Quality Improvements
-| Metric | Before | After (Target) | Improvement |
-|--------|--------|----------------|-------------|
-| Complexity | 11 | <10 | -10%+ |
-| Churn | 23/month | 2-3/year | -92% |
-| Hotspot Score | 253 | <50 | -80% |
-| Parameters | 15+ | 1 | -93% |
+
+| Metric        | Before   | After (Target) | Improvement |
+| ------------- | -------- | -------------- | ----------- |
+| Complexity    | 11       | \<10           | -10%+       |
+| Churn         | 23/month | 2-3/year       | -92%        |
+| Hotspot Score | 253      | \<50           | -80%        |
+| Parameters    | 15+      | 1              | -93%        |
 
 ### Maintainability
+
 - ✅ New features don't require `main.py` changes
 - ✅ Clear separation of concerns
 - ✅ Easy to test with mock configurations
@@ -82,12 +92,14 @@ This PR follows a phased approach to minimize risk:
 ## 📚 Architecture Changes
 
 ### Before
+
 ```python
 main.py (15+ params) → MetricMancerApp → Business Logic
 ↑ Changes for every feature
 ```
 
 ### After
+
 ```python
 main.py → AppConfig → MetricMancerApp → Business Logic
           ↑ All configuration
@@ -97,6 +109,7 @@ main.py → AppConfig → MetricMancerApp → Business Logic
 ## 🔍 Code Examples
 
 ### New AppConfig Class
+
 ```python
 @dataclass
 class AppConfig:
@@ -118,6 +131,7 @@ class AppConfig:
 ```
 
 ### Simplified main.py
+
 ```python
 def main():
     args = parse_args().parse_args()
@@ -128,6 +142,7 @@ def main():
 ```
 
 ### Refactored MetricMancerApp
+
 ```python
 class MetricMancerApp:
     def __init__(self, config: AppConfig):
@@ -173,22 +188,22 @@ class MetricMancerApp:
 
 ## 👀 Review Notes
 
-This is a **DRAFT PR** to track progress through the implementation phases. 
+This is a **DRAFT PR** to track progress through the implementation phases.
 
 **Review Focus Areas:**
+
 1. Is the `AppConfig` design appropriate?
 2. Should we use dataclass or regular class?
 3. Do we need backward compatibility support?
 4. Should config file support be added now or later?
 
 **Do NOT merge** until:
+
 - All phases complete
 - All tests pass
 - Documentation updated
 - Code review approved
 
----
+______________________________________________________________________
 
-**Estimated Effort**: 8-11 hours
-**Priority**: Medium
-**Impact**: High (significantly reduces future maintenance)
+**Estimated Effort**: 8-11 hours **Priority**: Medium **Impact**: High (significantly reduces future maintenance)
