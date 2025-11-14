@@ -4,9 +4,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-MetricMancer is a software analytics tool that analyzes code repositories to extract key performance indicators (KPIs) like cyclomatic complexity, code churn, hotspots, and code ownership. Inspired by "Your Code as a Crime Scene" by Adam Tornhill, it provides actionable insights into code quality and technical risk.
+MetricMancer is a software analytics tool that analyzes code repositories to extract key performance indicators (KPIs)
+like cyclomatic complexity, code churn, hotspots, and code ownership. Inspired by "Your Code as a Crime Scene" by Adam
+Tornhill, it provides actionable insights into code quality and technical risk.
 
 **Key Features:**
+
 - Multi-language support (Python, JavaScript, TypeScript, Java, C#, C++, Go, Shell, Ada, IDL, JSON, YAML)
 - Cyclomatic Complexity and **Cognitive Complexity** (6 languages - human-centric understandability metric)
 - Multiple report formats (CLI summary/tree, HTML, JSON, CSV)
@@ -153,22 +156,26 @@ MetricMancer uses modern design patterns emphasizing maintainability and extensi
 ### Core Design Patterns
 
 1. **Configuration Object Pattern** (`src/config/app_config.py`)
+
    - All configuration centralized in `AppConfig` dataclass
    - Type-safe with automatic validation
    - Reduces main.py complexity (17% reduction achieved)
    - Factory method `AppConfig.from_cli_args()` for CLI integration
 
 2. **Factory Pattern** (`src/report/report_generator_factory.py`)
+
    - `ReportGeneratorFactory.create(format)` eliminates conditional logic
    - Easy to extend with new output formats
    - Maps format strings to generator classes
 
 3. **Strategy Pattern** (`src/report/report_interface.py`)
+
    - All report generators implement `ReportInterface`
    - Polymorphic behavior allows interchangeable generators
    - Clean separation of format-specific rendering logic
 
 4. **Builder Pattern** (`src/report/report_data_collector.py`)
+
    - Incremental construction of complex report data
    - Fluent interface for data collection
 
@@ -249,6 +256,7 @@ app.run()
 ### Multi-Format Generation (v3.1.0)
 
 When using `--output-formats html,json,summary`:
+
 - Code is scanned once, all formats generated in single pass
 - 50-70% performance improvement vs. separate runs
 - `MetricMancerApp` receives `report_generator_cls=None` for multi-format mode
@@ -257,6 +265,7 @@ When using `--output-formats html,json,summary`:
 ### Code Churn Measurement
 
 **IMPORTANT**: Current churn implementation measures **total historical commits**, not commits per time period.
+
 - This deviates from "Your Code as a Crime Scene" methodology
 - Should measure commits/month over configurable period
 - `--churn-period <days>` parameter exists but implementation needs completion
@@ -265,16 +274,19 @@ When using `--output-formats html,json,summary`:
 ### Adding New Features
 
 **New Output Format:**
+
 1. Implement `ReportInterface` in `src/report/`
 2. Add to `ReportGeneratorFactory._FORMAT_MAP`
 3. No changes needed in `main.py` or `MetricMancerApp`
 
 **New KPI:**
+
 1. Create calculator inheriting from `BaseKPI` in `src/kpis/`
 2. Implement `calculate()` method
 3. Register in appropriate analyzer
 
 **New Language:**
+
 1. Create parser in `src/languages/parsers/`
 2. Add extension mapping in `src/languages/config.py`
 3. Parser must extract functions/methods for complexity analysis
@@ -287,6 +299,7 @@ When using `--output-formats html,json,summary`:
 - **Current Stats**: 675+ passing tests, high coverage
 
 **Test Organization:**
+
 ```
 tests/
 ├── app/              # Application layer tests
@@ -297,6 +310,7 @@ tests/
 ```
 
 **Key Testing Principles:**
+
 - **TDD RED-GREEN-REFACTOR**: ALWAYS write tests BEFORE implementation
   1. 🔴 RED: Write failing test first
   2. 🟢 GREEN: Write minimal code to pass test
@@ -306,15 +320,18 @@ tests/
 - Edge cases: Explicit edge case test files (e.g., `test_*_edge.py`)
 
 **IMPORTANT - Development Workflow:**
+
 1. **Always follow RED-GREEN-REFACTOR** for all new features/fixes
 2. **Run tests after each change**: `python -m pytest tests/ -v`
 3. **Ensure all tests pass** before proposing commits
 4. **Follow ARCHITECTURE.md** - Use Strategy pattern, SOLID principles, etc.
-5. **Claude Code can always run tests without user confirmation** - Test execution is encouraged and never requires permission
+5. **Claude Code can always run tests without user confirmation** - Test execution is encouraged and never requires
+   permission
 
 ## Documentation
 
 **Architecture & Design:**
+
 - `ARCHITECTURE.md` - Detailed patterns, SOLID principles, component architecture
 - `SoftwareSpecificationAndDesign.md` - Complete requirements, use cases, analysis framework
 - `MIGRATION_GUIDE.md` - Migration to Configuration Object Pattern
@@ -322,6 +339,7 @@ tests/
 - `mermaid/` - Dynamic flow diagrams (system flows, processes)
 
 **Development:**
+
 - `CONTRIBUTING.md` - Contribution guidelines
 - `CHANGELOG.md` - Release history and changes
 - `LICENSE_INFO.md` - Licensing information for all dependencies
@@ -337,11 +355,13 @@ tests/
 ## Git Workflow
 
 **Branch Naming:**
+
 - Feature: `<issue-number>-feature-<name>`
 - Bugfix: `<issue-number>-bugfix-<name>`
 - Refactor: `<issue-number>-refactor-<name>`
 
 **Commit Workflow (IMPORTANT):**
+
 1. **Claude Code NEVER commits directly** - User commits manually
 2. When ready to commit, Claude Code should:
    - Run `git add` for changed files
@@ -350,12 +370,14 @@ tests/
 3. This ensures user maintains control and awareness of changes
 
 **Commit Message Format:**
+
 - Follow conventional commits: `type(scope): description`
 - Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
 - Reference issue numbers: `feat(#62): add cognitive complexity to CLI report`
 - Include Claude Code attribution: "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
 
 **Example Commit Proposal:**
+
 ```bash
 # Claude Code runs:
 git add src/report/cli/cli_report_format.py tests/report/test_cli_report_format.py
@@ -378,13 +400,14 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - `src/app/metric_mancer_app.py` - Main application class
 - `src/report/report_generator_factory.py` - Generator factory
 - `src/kpis/complexity/analyzer.py` - Cyclomatic complexity (supports 10+ languages)
-- **`src/kpis/cognitive_complexity/calculator_factory.py`** - **[New v3.2.0]** Cognitive complexity factory (6 languages via tree-sitter)
+- **`src/kpis/cognitive_complexity/calculator_factory.py`** - **[New v3.2.0]** Cognitive complexity factory (6 languages
+  via tree-sitter)
 - `src/kpis/codechurn/code_churn.py` - Churn analysis (needs time-based fix)
 - `src/analysis/code_review_advisor.py` - Code review recommendations
 
 ## Performance Characteristics
 
-- **Small repos** (<100 files): ~2s
+- **Small repos** (\<100 files): ~2s
 - **Medium repos** (1,000 files): ~15s
 - **Large repos** (10,000 files): ~2 min
 - **Multi-format generation**: 50-70% faster than separate runs (v3.1.0)
@@ -392,6 +415,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ## Output Files
 
 All reports go to `output/` directory by default (configurable with `--report-folder`):
+
 - HTML reports: `index.html` (interactive, modern)
 - JSON reports: `report.json` (machine-readable, OpenSearch-compatible)
 - CLI reports: Saved as `.md` files when using multi-format
@@ -401,6 +425,7 @@ All reports go to `output/` directory by default (configurable with `--report-fo
 ## VS Code Integration
 
 Tasks defined in `.vscode/tasks.json`:
+
 - "Run all tests (pytest)" - Default test task
 - "Run tests with coverage (pytest)" - Full coverage workflow
 - "Activate venv" - Activate virtual environment
@@ -410,6 +435,7 @@ Tasks defined in `.vscode/tasks.json`:
 ## Dependencies
 
 **Core:**
+
 - jinja2 - HTML template rendering
 - pydriller - Git history analysis
 - pytest, pytest-cov - Testing
@@ -421,9 +447,11 @@ Tasks defined in `.vscode/tasks.json`:
 
 ## Cognitive Complexity (v3.2.0)
 
-**Overview**: Human-centric metric measuring code understandability (nesting-aware), complementing Cyclomatic Complexity.
+**Overview**: Human-centric metric measuring code understandability (nesting-aware), complementing Cyclomatic
+Complexity.
 
 **Current State**:
+
 - ✅ **Multi-language support**: 6 languages (Python, Java, Go, JavaScript, TypeScript, C)
 - ✅ **Tree-sitter implementation**: Universal parser across all supported languages
 - ✅ **Factory pattern**: `CognitiveComplexityCalculatorFactory` for language-specific calculators
@@ -431,11 +459,13 @@ Tasks defined in `.vscode/tasks.json`:
 - ✅ **Integrated**: CLI, HTML, JSON reports + Quick Wins
 
 **Key Concepts**:
+
 - **Nesting penalty**: Each nesting level increases cognitive load
 - **Boolean sequences**: Count once, not per operator
 - **Flat vs Nested**: Same cyclomatic, very different cognitive scores
 
 **Example**:
+
 ```python
 # Low Cognitive (3), High Cyclomatic (4)
 if a: return 1
@@ -452,6 +482,7 @@ if a:           # +1
 ```
 
 **Thresholds** (SonarSource):
+
 - 0-5: ✅ Excellent
 - 6-10: 🟡 Good
 - 11-15: 🟠 Consider refactoring
@@ -459,9 +490,11 @@ if a:           # +1
 - 25+: 💀 Refactor immediately
 
 **Files**:
+
 - Factory: `src/kpis/cognitive_complexity/calculator_factory.py`
 - Base: `src/kpis/cognitive_complexity/calculator_base.py`
-- Calculators: `calculator_python.py`, `calculator_java.py`, `calculator_go.py`, `calculator_javascript.py`, `calculator_typescript.py`, `calculator_c.py`
+- Calculators: `calculator_python.py`, `calculator_java.py`, `calculator_go.py`, `calculator_javascript.py`,
+  `calculator_typescript.py`, `calculator_c.py`
 - Strategy: `src/app/kpi/kpi_calculator.py` (CognitiveComplexityKPIStrategy)
 - Tests: 135 tests across 9 test files covering all languages
 
@@ -479,12 +512,14 @@ if a:           # +1
 ## Useful Patterns in Codebase
 
 **Configuration access:**
+
 ```python
 config = AppConfig.from_cli_args(args)
 threshold_low = config.threshold_low  # Type-safe access
 ```
 
 **Creating report generators:**
+
 ```python
 generator_cls = ReportGeneratorFactory.create('html')
 generator = generator_cls(config)
@@ -492,12 +527,14 @@ output = generator.generate(repo_infos)
 ```
 
 **KPI calculation:**
+
 ```python
 kpi = ComplexityKPI()
 complexity = kpi.calculate(file_path, language)
 ```
 
 **Git operations (cached):**
+
 ```python
 from src.utilities.git_cache import GitCache
 cache = GitCache()

@@ -15,6 +15,7 @@ This document describes the architectural patterns, design decisions, and compon
 ## Overview
 
 MetricMancer is built on a modular, extensible architecture that emphasizes:
+
 - **Separation of Concerns**: Each component has a single, well-defined responsibility
 - **Open/Closed Principle**: Open for extension, closed for modification
 - **Dependency Injection**: Components receive dependencies rather than creating them
@@ -33,20 +34,26 @@ MetricMancer is built on a modular, extensible architecture that emphasizes:
 ### SOLID Principles
 
 #### Single Responsibility Principle (SRP)
+
 Each class/module has one reason to change:
+
 - `AppConfig`: Configuration management only
 - `ReportGeneratorFactory`: Report generator creation only
 - `MetricMancerApp`: Application orchestration only
 - KPI calculators: One metric calculation per class
 
 #### Open/Closed Principle (OCP)
+
 The codebase is open for extension, closed for modification:
+
 - New output formats: Add to factory, no changes to `main.py`
 - New KPIs: Implement interface, register in config
 - New languages: Add parser module, register in language config
 
 #### Liskov Substitution Principle (LSP)
+
 All report generators are interchangeable:
+
 ```python
 # All generators implement the same interface
 generator_cls = ReportGeneratorFactory.create(format)
@@ -55,13 +62,17 @@ generator.generate(data)  # Works for any format
 ```
 
 #### Interface Segregation Principle (ISP)
+
 Clients depend only on interfaces they use:
+
 - Report generators implement minimal interface
 - KPI calculators expose only `calculate()` method
 - Parsers provide language-specific interfaces
 
 #### Dependency Inversion Principle (DIP)
+
 High-level modules don't depend on low-level modules:
+
 - `MetricMancerApp` depends on abstract `ReportGenerator` interface
 - Concrete implementations injected via factory
 - Configuration injected rather than hardcoded
@@ -75,6 +86,7 @@ High-level modules don't depend on low-level modules:
 **Solution**: Centralize all configuration in a single, validated object
 
 **Implementation**:
+
 ```python
 @dataclass
 class AppConfig:
@@ -101,6 +113,7 @@ class AppConfig:
 ```
 
 **Benefits**:
+
 - ✅ Single source of truth for configuration
 - ✅ Type-safe with validation
 - ✅ Easy to test (just create object)
@@ -115,6 +128,7 @@ class AppConfig:
 **Solution**: Factory encapsulates generator creation logic
 
 **Implementation**:
+
 ```python
 class ReportGeneratorFactory:
     """Factory for creating report generators"""
@@ -136,6 +150,7 @@ class ReportGeneratorFactory:
 ```
 
 **Benefits**:
+
 - ✅ Eliminates conditional logic from `main.py`
 - ✅ Easy to add new formats (register in map)
 - ✅ Testable in isolation
@@ -150,6 +165,7 @@ class ReportGeneratorFactory:
 **Solution**: Each format implements common interface
 
 **Implementation**:
+
 ```python
 class ReportInterface(ABC):
     """Abstract interface for all report generators"""
@@ -171,6 +187,7 @@ class JSONReportGenerator(ReportInterface):
 ```
 
 **Benefits**:
+
 - ✅ Polymorphic behavior (any generator works)
 - ✅ Easy to add new formats
 - ✅ Testable independently
@@ -185,6 +202,7 @@ class JSONReportGenerator(ReportInterface):
 **Solution**: Incremental construction of report data
 
 **Implementation**:
+
 ```python
 class ReportDataCollector:
     """Builds report data incrementally"""
@@ -205,6 +223,7 @@ class ReportDataCollector:
 ```
 
 **Benefits**:
+
 - ✅ Fluent interface (method chaining)
 - ✅ Separates construction from representation
 - ✅ Easy to extend with new data types
@@ -272,6 +291,7 @@ main.py
 ```
 
 **Key Characteristics**:
+
 - ✅ Unidirectional dependencies (no circular refs)
 - ✅ Dependency injection (no hardcoded dependencies)
 - ✅ Layered architecture (clear separation)
@@ -308,6 +328,7 @@ main.py
 ### Data Structures
 
 **ReportData Hierarchy**:
+
 ```
 ReportData
 ├── repositories: List[RepositoryData]
@@ -331,6 +352,7 @@ ReportData
 **Context**: `main.py` had 15+ parameters, causing high churn
 
 **Options Considered**:
+
 1. Keep individual parameters (status quo)
 2. Use dictionary/kwargs
 3. **Configuration Object Pattern** ✅
@@ -338,12 +360,14 @@ ReportData
 **Decision**: Configuration Object Pattern
 
 **Rationale**:
+
 - Type-safe with validation
 - Self-documenting with field types/defaults
 - Easy to test and mock
 - Prevents invalid states
 
 **Trade-offs**:
+
 - ➕ Reduced churn (60-80% reduction predicted)
 - ➕ Better testability
 - ➕ Clear interface
@@ -355,6 +379,7 @@ ReportData
 **Context**: Conditional logic for selecting generators in `main.py`
 
 **Options Considered**:
+
 1. Keep if/elif chain in main.py
 2. Dictionary lookup in main.py
 3. **Factory Pattern** ✅
@@ -362,12 +387,14 @@ ReportData
 **Decision**: Factory Pattern with dedicated class
 
 **Rationale**:
+
 - Encapsulates creation logic
 - Single place to add new formats
 - Testable independently
 - Follows Open/Closed Principle
 
 **Trade-offs**:
+
 - ➕ Zero conditional logic in `main.py`
 - ➕ Easy to extend
 - ➕ Clear separation of concerns
@@ -378,6 +405,7 @@ ReportData
 **Context**: Major refactoring could break existing code
 
 **Options Considered**:
+
 1. Breaking change (force migration)
 2. Deprecation warnings
 3. **Full backward compatibility** ✅
@@ -385,12 +413,14 @@ ReportData
 **Decision**: Maintain 100% backward compatibility
 
 **Rationale**:
+
 - Allows gradual migration
 - No disruption to existing users
 - Proves pattern benefits without forcing adoption
 - Reduces risk of introducing bugs
 
 **Trade-offs**:
+
 - ➕ Zero breaking changes
 - ➕ User confidence
 - ➕ Gradual adoption
@@ -401,6 +431,7 @@ ReportData
 **Context**: High-impact refactoring requires confidence
 
 **Options Considered**:
+
 1. Refactor first, test later
 2. Manual testing only
 3. **Test-Driven Development** ✅
@@ -408,12 +439,14 @@ ReportData
 **Decision**: Strict TDD (Red-Green-Refactor)
 
 **Rationale**:
+
 - Ensures correctness before implementation
 - Prevents regressions
 - Documents expected behavior
 - Forces clear interface design
 
 **Trade-offs**:
+
 - ➕ High confidence in changes
 - ➕ Comprehensive test coverage
 - ➕ Clear requirements
@@ -435,20 +468,22 @@ ReportData
 
 ### Test Coverage by Component
 
-| Component | Test File | Tests | Coverage |
-|-----------|-----------|-------|----------|
-| AppConfig | `tests/config/test_app_config.py` | 37 | 100% |
-| ReportGeneratorFactory | `tests/report/test_report_generator_factory.py` | 12 | 100% |
-| MetricMancerApp (config) | `tests/app/test_metric_mancer_app_with_config.py` | 13 | 100% |
-| main.py (simplified) | `tests/test_main_simplification_tdd.py` | 10 | 95% |
-| Legacy migration | `tests/app/test_legacy_tests_migration_tdd.py` | 7 | 100% |
+| Component                | Test File                                         | Tests | Coverage |
+| ------------------------ | ------------------------------------------------- | ----- | -------- |
+| AppConfig                | `tests/config/test_app_config.py`                 | 37    | 100%     |
+| ReportGeneratorFactory   | `tests/report/test_report_generator_factory.py`   | 12    | 100%     |
+| MetricMancerApp (config) | `tests/app/test_metric_mancer_app_with_config.py` | 13    | 100%     |
+| main.py (simplified)     | `tests/test_main_simplification_tdd.py`           | 10    | 95%      |
+| Legacy migration         | `tests/app/test_legacy_tests_migration_tdd.py`    | 7     | 100%     |
 
 **Total**: 390 passing tests + 11 skipped (legacy)
 
 ### Test Approaches
 
 #### 1. Unit Tests
+
 Test individual components in isolation:
+
 ```python
 def test_appconfig_validation():
     """Test that AppConfig validates input"""
@@ -457,7 +492,9 @@ def test_appconfig_validation():
 ```
 
 #### 2. Integration Tests
+
 Test component interaction:
+
 ```python
 def test_config_and_factory_integration():
     """Test AppConfig works with Factory"""
@@ -467,7 +504,9 @@ def test_config_and_factory_integration():
 ```
 
 #### 3. End-to-End Tests
+
 Test full workflow:
+
 ```python
 def test_full_analysis_workflow():
     """Test complete analysis from config to output"""
@@ -500,6 +539,7 @@ All new features follow this cycle:
 ```
 
 **Example from Phase 4**:
+
 ```python
 # 🔴 RED: Write test first
 def test_main_uses_factory():
@@ -524,6 +564,7 @@ def main():
 ### Adding New Output Formats
 
 1. Implement `ReportInterface`:
+
    ```python
    class MyCustomReportGenerator(ReportInterface):
        def generate(self, data: ReportData) -> str:
@@ -532,6 +573,7 @@ def main():
    ```
 
 2. Register in factory:
+
    ```python
    # In ReportGeneratorFactory._FORMAT_MAP
    _FORMAT_MAP = {
@@ -545,6 +587,7 @@ def main():
 ### Adding New KPIs
 
 1. Create KPI calculator:
+
    ```python
    class MyCustomKPI(KPI):
        def calculate(self, file_data):
@@ -553,6 +596,7 @@ def main():
    ```
 
 2. Register in config:
+
    ```python
    # In src/config.py
    AVAILABLE_KPIS = {
@@ -565,17 +609,20 @@ def main():
 
 ### Case Study: Cognitive Complexity KPI
 
-**[Added in v3.2.0]** The Cognitive Complexity KPI demonstrates the extensibility of MetricMancer's architecture through the Strategy Pattern.
+**[Added in v3.2.0]** The Cognitive Complexity KPI demonstrates the extensibility of MetricMancer's architecture through
+the Strategy Pattern.
 
 #### Implementation Architecture
 
-**Problem**: Need a human-centric complexity metric that accounts for nesting depth, complementing Cyclomatic Complexity's path-counting approach.
+**Problem**: Need a human-centric complexity metric that accounts for nesting depth, complementing Cyclomatic
+Complexity's path-counting approach.
 
 **Solution**: Implemented using Strategy Pattern with zero modifications to core pipeline.
 
 **Key Components**:
 
 1. **CognitiveComplexityCalculator** (`src/kpis/cognitive_complexity/cognitive_complexity_kpi.py`)
+
    - AST-based analysis using Python's `ast` module
    - Implements SonarSource Cognitive Complexity algorithm
    - Tracks nesting depth recursively
@@ -583,12 +630,14 @@ def main():
    - Handles recursion detection
 
 2. **CognitiveComplexityKPIStrategy** (`src/app/kpi/kpi_calculator.py`)
+
    - Implements KPIStrategy protocol
    - Integrates with existing KPICalculator
    - Returns empty KPI for non-Python files
    - Timing tracked automatically
 
 3. **Integration Points**:
+
    - Reports: All formats (CLI, HTML, JSON) automatically support new KPI
    - Data Model: Works with existing `Dict[str, BaseKPI]` structure
    - Quick Wins: Automatically incorporated into recommendations
@@ -600,18 +649,21 @@ def main():
 *Choice*: AST-based analysis using Python's `ast` module
 
 *Rationale*:
+
 - ✅ Accurate: Handles all Python syntax correctly
 - ✅ Maintainable: Clear node-type mapping
 - ✅ Extensible: Easy to add new patterns
 - ❌ Language-specific: Requires per-language implementation
 
-*Trade-off*: Initial Python implementation used AST. Now expanded to 6 languages (Python, Java, Go, JavaScript, TypeScript, C) using tree-sitter parsers for universal AST support across languages.
+*Trade-off*: Initial Python implementation used AST. Now expanded to 6 languages (Python, Java, Go, JavaScript,
+TypeScript, C) using tree-sitter parsers for universal AST support across languages.
 
 **Decision: Strategy Pattern vs. Direct Integration**
 
 *Choice*: Strategy Pattern (new KPIStrategy class)
 
 *Rationale*:
+
 - ✅ Open/Closed Principle: No core modifications needed
 - ✅ Testability: Strategy tested in isolation
 - ✅ Consistency: Follows existing pattern for all KPIs
@@ -622,6 +674,7 @@ def main():
 *Choice*: Both - calculate per-function, aggregate to file level
 
 *Rationale*:
+
 - ✅ Detailed: Identifies specific problematic functions
 - ✅ Actionable: Developers can target specific refactorings
 - ✅ Consistent: Matches Cyclomatic Complexity behavior
@@ -637,11 +690,11 @@ def main():
 
 #### Performance Impact
 
-| Metric | Impact |
-|--------|--------|
-| Analysis Time | +5-8% (AST parsing overhead) |
-| Memory Usage | +2-3% (additional KPI storage) |
-| Test Execution | +0.15s (51 new tests) |
+| Metric         | Impact                         |
+| -------------- | ------------------------------ |
+| Analysis Time  | +5-8% (AST parsing overhead)   |
+| Memory Usage   | +2-3% (additional KPI storage) |
+| Test Execution | +0.15s (51 new tests)          |
 
 #### Algorithm Example
 
@@ -679,10 +732,11 @@ def calculate_cognitive_complexity(node, nesting=0):
 
 #### Multi-Language Support (v3.2.0)
 
-**Current**: 6 languages supported (Python, Java, Go, JavaScript, TypeScript, C)
-**Implementation**: Tree-sitter parsers with factory pattern for language-specific calculators
+**Current**: 6 languages supported (Python, Java, Go, JavaScript, TypeScript, C) **Implementation**: Tree-sitter parsers
+with factory pattern for language-specific calculators
 
 **Architecture Impact**:
+
 - Strategy pattern remained unchanged ✅
 - Language detection via `CognitiveComplexityCalculatorFactory` ✅
 - Tree-sitter parsers implemented per language ✅
@@ -693,6 +747,7 @@ def calculate_cognitive_complexity(node, nesting=0):
 ### Adding New Languages
 
 1. Create parser:
+
    ```python
    class MyLanguageParser:
        def parse(self, source_code):
@@ -701,6 +756,7 @@ def calculate_cognitive_complexity(node, nesting=0):
    ```
 
 2. Register language:
+
    ```python
    # In src/languages/config.py
    LANGUAGE_PARSERS = {
@@ -720,11 +776,11 @@ def calculate_cognitive_complexity(node, nesting=0):
 
 ### Benchmarks
 
-| Codebase Size | Analysis Time | Memory Usage |
-|---------------|---------------|--------------|
-| Small (100 files) | ~2s | ~50MB |
-| Medium (1000 files) | ~15s | ~200MB |
-| Large (10000 files) | ~2min | ~500MB |
+| Codebase Size       | Analysis Time | Memory Usage |
+| ------------------- | ------------- | ------------ |
+| Small (100 files)   | ~2s           | ~50MB        |
+| Medium (1000 files) | ~15s          | ~200MB       |
+| Large (10000 files) | ~2min         | ~500MB       |
 
 ## Future Enhancements
 
@@ -757,11 +813,10 @@ File-based Reports     →    API + Multiple Outputs
 
 ## Changelog
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0.0 | 2025-10-14 | Initial architecture document with Configuration Object Pattern |
+| Version | Date       | Changes                                                         |
+| ------- | ---------- | --------------------------------------------------------------- |
+| 1.0.0   | 2025-10-14 | Initial architecture document with Configuration Object Pattern |
 
----
+______________________________________________________________________
 
-**Maintained by**: MetricMancer Team
-**Last Updated**: 2025-10-14
+**Maintained by**: MetricMancer Team **Last Updated**: 2025-10-14

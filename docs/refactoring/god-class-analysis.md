@@ -5,6 +5,7 @@
 ### God-Class Symptoms Found
 
 #### 1. **Too Many Responsibilities** ❌
+
 ```
 Analyzer class responsibilities:
 1. File grouping by repository
@@ -22,6 +23,7 @@ COUNT: 10 distinct responsibilities (Should be 1-2 max!)
 ```
 
 #### 2. **Module-Level Functions That Should Be Classes** ❌
+
 ```python
 # Lines 1-287: 13 helper functions outside Analyzer class
 def initialize_timing()                    # Line 20
@@ -42,6 +44,7 @@ These should be organized into cohesive classes!
 ```
 
 #### 3. **Large Class** ❌
+
 ```
 Analyzer class:
 - Lines: 181 (lines 295-475)
@@ -60,6 +63,7 @@ Other: 7 lines (1.5%)
 ```
 
 #### 4. **High Coupling** ❌
+
 ```python
 # Imports show tight coupling to many modules:
 from src.app.hierarchy_builder import HierarchyBuilder      # Phase 3
@@ -78,6 +82,7 @@ COUPLING COUNT: 11 different modules!
 ```
 
 #### 5. **Low Cohesion** ❌
+
 ```
 Module-level functions have LOW cohesion:
 - Timing functions (initialize_timing)
@@ -94,16 +99,16 @@ These belong to different domains!
 
 ## 📊 God-Class Antipattern Score
 
-| Indicator | Status | Score |
-|-----------|--------|-------|
-| **Too many responsibilities** | ✅ Yes (10+) | 5/5 |
-| **Large size** | ✅ Yes (475 lines) | 4/5 |
-| **High complexity** | ✅ Yes (C:~60-75) | 5/5 |
-| **Low cohesion** | ✅ Yes (scattered) | 5/5 |
-| **High coupling** | ✅ Yes (11 imports) | 4/5 |
-| **Difficult to test** | ⚠️ Moderate | 3/5 |
-| **Difficult to extend** | ⚠️ Moderate | 3/5 |
-| **Difficult to understand** | ✅ Yes | 4/5 |
+| Indicator                     | Status              | Score |
+| ----------------------------- | ------------------- | ----- |
+| **Too many responsibilities** | ✅ Yes (10+)        | 5/5   |
+| **Large size**                | ✅ Yes (475 lines)  | 4/5   |
+| **High complexity**           | ✅ Yes (C:~60-75)   | 5/5   |
+| **Low cohesion**              | ✅ Yes (scattered)  | 5/5   |
+| **High coupling**             | ✅ Yes (11 imports) | 4/5   |
+| **Difficult to test**         | ⚠️ Moderate         | 3/5   |
+| **Difficult to extend**       | ⚠️ Moderate         | 3/5   |
+| **Difficult to understand**   | ✅ Yes              | 4/5   |
 
 **TOTAL GOD-CLASS SCORE: 33/40 (82.5%)** 🚨
 
@@ -114,33 +119,38 @@ These belong to different domains!
 ### Why Is This a God-Class?
 
 1. **Historical Growth**
+
    - Started simple, grew organically
    - Functions added as needed, not refactored
    - No clear architectural boundaries
 
 2. **"Convenient" Design**
+
    - Easy to add functions to analyzer.py
    - No forced separation of concerns
    - Helper functions live at module level
 
 3. **Missing Abstractions**
+
    - No FileProcessor class (just functions)
    - No TimingTracker class (just dict)
    - No KPICalculationCoordinator (scattered logic)
 
 4. **Phases 1-4 Helped But Not Enough**
+
    - ✅ Phase 1: KPICalculator extracted
    - ✅ Phase 2: FileAnalyzer extracted
    - ✅ Phase 3: HierarchyBuilder extracted
    - ✅ Phase 4: KPIAggregator extracted
    - ❌ Still have 13 orphaned functions
-   - ❌ _process_file is still 60+ lines
+   - ❌ \_process_file is still 60+ lines
 
 ## 🔧 Refactoring Recommendations
 
 ### Phase 5: Extract FileProcessor Class
 
 **Problem:**
+
 ```python
 # Lines 58-160: File processing scattered in functions
 def read_file_content()                  # File I/O
@@ -150,6 +160,7 @@ def calculate_ownership_kpis()           # Ownership
 ```
 
 **Solution:**
+
 ```python
 class FileProcessor:
     """
@@ -184,6 +195,7 @@ class FileProcessor:
 ```
 
 **Impact:**
+
 - Extract ~100 lines from analyzer.py
 - Reduce complexity by ~15 points
 - Clear file processing boundary
@@ -191,6 +203,7 @@ class FileProcessor:
 ### Phase 6: Extract TimingCoordinator Class
 
 **Problem:**
+
 ```python
 def initialize_timing()  # Line 20
 # Scattered timing code in _analyze_repo:
@@ -200,6 +213,7 @@ self.timing['filechurn'] += elapsed
 ```
 
 **Solution:**
+
 ```python
 class TimingCoordinator:
     """Tracks timing for different operations."""
@@ -228,6 +242,7 @@ class TimingCoordinator:
 ```
 
 **Impact:**
+
 - Extract ~30 lines
 - Reduce timing complexity
 - Reusable timing infrastructure
@@ -235,6 +250,7 @@ class TimingCoordinator:
 ### Phase 7: Extract KPIExtractionHelper Class
 
 **Problem:**
+
 ```python
 # Lines 161-254: Data extraction helpers
 def extract_numeric_kpi()
@@ -247,6 +263,7 @@ def calculate_average_kpis()
 ```
 
 **Solution:**
+
 ```python
 class KPIExtractionHelper:
     """Helper methods for extracting and collecting KPI data."""
@@ -273,6 +290,7 @@ class KPIExtractionHelper:
 ```
 
 **Impact:**
+
 - Extract ~90 lines
 - Group related helpers
 - Reduce module-level clutter
@@ -280,6 +298,7 @@ class KPIExtractionHelper:
 ### Phase 8: Simplify Analyzer to Coordinator
 
 **After Phases 5-7, Analyzer becomes:**
+
 ```python
 class Analyzer:
     """
@@ -334,6 +353,7 @@ class Analyzer:
 ```
 
 **Result:**
+
 - Analyzer reduced to ~80-100 lines
 - Complexity: C:~20-30
 - Clear coordination role
@@ -342,6 +362,7 @@ class Analyzer:
 ## 📈 Projected Improvement
 
 ### Current State (After Phase 4)
+
 ```
 analyzer.py
 ├── Lines: 475
@@ -352,6 +373,7 @@ analyzer.py
 ```
 
 ### After Phases 5-8
+
 ```
 analyzer.py (Coordinator)
 ├── Lines: ~100
@@ -377,6 +399,7 @@ kpi_extraction_helper.py
 ```
 
 **Total Improvement:**
+
 - Lines per component: 475 → ~100 avg (79% reduction)
 - Complexity per component: C:60 → C:20 avg (66% reduction)
 - Responsibilities: 10 → 2 (80% reduction)
@@ -385,6 +408,7 @@ kpi_extraction_helper.py
 ## 🎯 Immediate Next Steps
 
 ### Option 1: Continue Refactoring (Recommended)
+
 ```bash
 # Phase 5: Extract FileProcessor
 git checkout -b 60-refactor-phase5-file-processor
@@ -396,6 +420,7 @@ git checkout -b 60-refactor-phase5-file-processor
 ```
 
 ### Option 2: Merge Phase 4 First
+
 ```bash
 # Push current work
 git push origin 59-refactor-phase4-kpi-aggregator
@@ -405,6 +430,7 @@ git push origin 59-refactor-phase4-kpi-aggregator
 ```
 
 ### Option 3: Quick Assessment
+
 ```bash
 # Generate complexity report
 python -m src.main src/app --output-format json > phase4_complexity.json
@@ -418,27 +444,31 @@ python -m src.main src/app --output-format json > phase4_complexity.json
 ### Why Phases 1-4 Weren't Enough
 
 **What we extracted:**
+
 - ✅ KPICalculator (Phase 1) - KPI strategy pattern
 - ✅ FileAnalyzer (Phase 2) - File analysis coordination
 - ✅ HierarchyBuilder (Phase 3) - Tree building
 - ✅ KPIAggregator (Phase 4) - KPI aggregation
 
 **What remains in analyzer.py:**
+
 - ❌ 13 module-level helper functions (orphaned)
 - ❌ File processing logic (read, parse, calculate)
 - ❌ Timing tracking (scattered)
 - ❌ Data extraction utilities (helpers)
-- ❌ Large _process_file method (60+ lines)
+- ❌ Large \_process_file method (60+ lines)
 
 ### The Core Problem
 
 **analyzer.py is BOTH:**
+
 1. A coordinator (should be ~100 lines)
 2. A utility module (13 helper functions)
 3. A file processor (reading, parsing)
 4. A timing tracker (performance monitoring)
 
 **Solution:**
+
 - Keep #1 (coordinator role)
 - Extract #2-4 into dedicated classes
 
@@ -447,21 +477,21 @@ python -m src.main src/app --output-format json > phase4_complexity.json
 **YES, analyzer.py exhibits severe God-Class antipattern.**
 
 **Evidence:**
+
 - 475 lines (too large)
 - 10 responsibilities (too many)
 - 13 orphaned functions (low cohesion)
 - C:~60 complexity (too high)
 - 82.5% God-Class score (severe)
 
-**Recommendation:**
-Continue refactoring through Phases 5-8 to fully decompose the God-Class.
+**Recommendation:** Continue refactoring through Phases 5-8 to fully decompose the God-Class.
 
-**Priority:**
-Phase 5 (FileProcessor) will have the biggest impact - extracts ~100 lines and reduces complexity by ~15 points.
+**Priority:** Phase 5 (FileProcessor) will have the biggest impact - extracts ~100 lines and reduces complexity by ~15
+points.
 
----
+______________________________________________________________________
 
-*Analysis Date: October 16, 2025*  
-*Branch: 59-refactor-phase4-kpi-aggregator*  
-*Phase 4 Complete: ✅*  
+*Analysis Date: October 16, 2025*\
+*Branch: 59-refactor-phase4-kpi-aggregator*\
+*Phase 4 Complete: ✅*\
 *Phases 5-8 Needed: ⚠️*

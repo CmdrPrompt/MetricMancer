@@ -1,8 +1,7 @@
 # Root Directory Cleanup Plan
 
-**Created:** 2025-11-12
-**Status:** Draft
-**Goal:** Reorganize project root from 45+ files/directories to a clean, maintainable structure
+**Created:** 2025-11-12 **Status:** Draft **Goal:** Reorganize project root from 45+ files/directories to a clean,
+maintainable structure
 
 ## Current Problems
 
@@ -47,7 +46,7 @@ MetricMancer/
 
 **Result:** ~15 files/dirs in root (down from 45+)
 
----
+______________________________________________________________________
 
 ## Implementation Plan
 
@@ -123,7 +122,9 @@ rm -rf test_output/    # Contains 1 test file - review.md
 ### Phase 5: Handle Special Cases 🤔
 
 #### A. Labs directory
+
 **Options:**
+
 1. Keep as-is (if actively used for experiments)
 2. Archive to `archive/labs/`
 3. Delete entirely (if obsolete)
@@ -141,6 +142,7 @@ git rm -rf labs/
 ```
 
 #### B. Old venv directories
+
 ```bash
 # Remove old venv (use .venv instead)
 rm -rf venv/
@@ -151,6 +153,7 @@ git check-ignore venv/ .venv/ .venv-py310/
 ```
 
 #### C. Sample/Test directories
+
 ```bash
 # SampleWebpage - old HTML sample, likely obsolete
 git rm -rf SampleWebpage/
@@ -160,7 +163,9 @@ rm -rf test_output/
 ```
 
 #### D. MetricMancer.code-workspace
+
 **Decision:** Keep or remove?
+
 - **Keep:** If team uses VSCode workspaces
 - **Remove:** Personal preference, not needed for project
 
@@ -220,6 +225,7 @@ issue-fix--*.md
 ```
 
 **Changes needed:**
+
 ```makefile
 # OLD
 python check_licenses.py
@@ -241,6 +247,7 @@ python scripts/code_quality.py
 ```
 
 **Changes needed:**
+
 ```markdown
 # OLD
 [Architecture Documentation](ARCHITECTURE.md)
@@ -262,6 +269,7 @@ python scripts/code_quality.py
 ```
 
 **Changes needed:**
+
 ```markdown
 # OLD
 - `ARCHITECTURE.md` - Detailed patterns
@@ -281,6 +289,7 @@ python scripts/code_quality.py
 ```
 
 **Changes needed:**
+
 ```markdown
 # OLD
 python code_quality.py help
@@ -395,7 +404,7 @@ containing only essential configuration and user-facing documentation.
 Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
----
+______________________________________________________________________
 
 ## Rollback Plan 🔄
 
@@ -409,11 +418,12 @@ git reset --hard HEAD~1
 git checkout HEAD~1 -- <file_path>
 ```
 
----
+______________________________________________________________________
 
 ## Detailed File Inventory
 
 ### ✅ Keep in Root (15 items)
+
 ```
 .github/          # CI/CD workflows
 .coveragerc       # Coverage config
@@ -433,6 +443,7 @@ tests/            # Test code
 ```
 
 ### 📦 Move to docs/ (8 files)
+
 ```
 ARCHITECTURE.md                           → docs/ARCHITECTURE.md
 LICENSE_INFO.md                           → docs/LICENSE_INFO.md
@@ -445,6 +456,7 @@ MetricMancer_presentation.pptx            → docs/presentations/MetricMancer_pr
 ```
 
 ### 🔧 Move to scripts/ (5 files)
+
 ```
 check_licenses.py              → scripts/check_licenses.py
 clean_output.py                → scripts/clean_output.py
@@ -454,6 +466,7 @@ run_tests.sh                   → scripts/run_tests.sh
 ```
 
 ### 🗑️ Remove (10+ items)
+
 ```
 complexity_report.json         # Generated file
 quick-wins-report.txt          # Generated file
@@ -468,11 +481,12 @@ MetricMancer.code-workspace    # Optional - decide with team
 ```
 
 ### ⚠️ Evaluate (keep or archive)
+
 ```
 labs/                          # Experimental scripts - archive or keep?
 ```
 
----
+______________________________________________________________________
 
 ## Post-Cleanup Checklist
 
@@ -489,7 +503,7 @@ After running all commands:
 - [ ] No broken imports or paths
 - [ ] `.gitignore` prevents re-tracking removed files
 
----
+______________________________________________________________________
 
 ## Benefits After Cleanup
 
@@ -501,7 +515,7 @@ After running all commands:
 6. **🤝 Easier onboarding** - New contributors find things quickly
 7. **✨ Professional structure** - Follows Python best practices
 
----
+______________________________________________________________________
 
 ## Reference: Common Python Project Structure
 
@@ -522,7 +536,7 @@ project/
 
 This is what we're aiming for! ✨
 
----
+______________________________________________________________________
 
 ## Questions to Answer Before Execution
 
@@ -532,7 +546,7 @@ This is what we're aiming for! ✨
 4. **test_output/review.md** - Keep or delete?
 5. **Presentations** - Are these actively used/updated?
 
----
+______________________________________________________________________
 
 ## Timeline
 

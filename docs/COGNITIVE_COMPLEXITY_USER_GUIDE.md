@@ -1,7 +1,6 @@
 # Cognitive Complexity User Guide
 
-**Version:** 3.2.0
-**Language Support:** Python only (multi-language support planned)
+**Version:** 3.2.0 **Language Support:** Python, Java, Go, JavaScript, TypeScript, C (6 languages via tree-sitter)
 
 ## Table of Contents
 
@@ -16,7 +15,8 @@
 
 ## What is Cognitive Complexity?
 
-Cognitive Complexity is a metric that measures **how difficult code is to understand** from a human perspective. Unlike Cyclomatic Complexity which counts the number of execution paths, Cognitive Complexity accounts for:
+Cognitive Complexity is a metric that measures **how difficult code is to understand** from a human perspective. Unlike
+Cyclomatic Complexity which counts the number of execution paths, Cognitive Complexity accounts for:
 
 - **Nesting depth** - Deeply nested code is harder to understand
 - **Control flow breaks** - Each `if`, `for`, `while` adds complexity
@@ -42,17 +42,20 @@ def process_nested(data):
                 return process(data)
 ```
 
-Both functions have the same Cyclomatic Complexity (4), but the nested version has double the Cognitive Complexity because it's much harder to understand.
+Both functions have the same Cyclomatic Complexity (4), but the nested version has double the Cognitive Complexity
+because it's much harder to understand.
 
 ## Why Use Cognitive Complexity?
 
 ### Problems with Cyclomatic Complexity Alone
 
 Cyclomatic Complexity is excellent for:
+
 - ✅ **Test coverage planning** - Tells you how many test cases you need
 - ✅ **Path counting** - Measures execution path complexity
 
 But it has limitations:
+
 - ❌ **Doesn't reflect understandability** - Flat and nested code scored the same
 - ❌ **False positives** - Simple `switch` statements get high scores
 - ❌ **Misleading priorities** - Might flag easy-to-read code as complex
@@ -60,6 +63,7 @@ But it has limitations:
 ### Benefits of Cognitive Complexity
 
 Cognitive Complexity excels at:
+
 - ✅ **Refactoring prioritization** - Identifies truly hard-to-understand code
 - ✅ **Code review focus** - Helps reviewers find the most challenging sections
 - ✅ **Developer onboarding** - Shows new team members which code to avoid initially
@@ -67,14 +71,14 @@ Cognitive Complexity excels at:
 
 ### When to Use Which Metric
 
-| Task | Use Cyclomatic | Use Cognitive | Use Both |
-|------|----------------|---------------|----------|
-| Plan test coverage | ✅ | ❌ | - |
-| Prioritize refactoring | ❌ | ✅ | - |
-| Code review planning | - | ✅ | - |
-| Assess maintainability | - | - | ✅ |
-| Onboarding assessment | - | ✅ | - |
-| Complete health check | - | - | ✅ |
+| Task                   | Use Cyclomatic | Use Cognitive | Use Both |
+| ---------------------- | -------------- | ------------- | -------- |
+| Plan test coverage     | ✅             | ❌            | -        |
+| Prioritize refactoring | ❌             | ✅            | -        |
+| Code review planning   | -              | ✅            | -        |
+| Assess maintainability | -              | -             | ✅       |
+| Onboarding assessment  | -              | ✅            | -        |
+| Complete health check  | -              | -             | ✅       |
 
 ## Understanding the Algorithm
 
@@ -83,6 +87,7 @@ Cognitive Complexity follows these rules (per SonarSource specification):
 ### 1. Basic Increments (+1)
 
 These structures add +1 complexity:
+
 - `if`, `elif`, `else`
 - `for`, `while` loops
 - `except` blocks (exception handling)
@@ -142,35 +147,39 @@ def factorial(n):
 
 Based on SonarSource research and industry best practices:
 
-| Cognitive Complexity | Risk Level | Indicator | Action |
-|---------------------|------------|-----------|---------|
-| **0-5** | ✅ Low | Green | Excellent maintainability. No action needed. |
-| **6-10** | 🟡 Medium | Yellow | Good. Monitor for growth. Consider refactoring if increasing. |
-| **11-15** | 🟠 High | Orange | Consider refactoring. Breaking into smaller functions would help. |
-| **16-25** | 🔴 Critical | Red | Refactor soon. Code is difficult to understand and maintain. |
-| **25+** | 💀 Severe | Dark Red | **Refactor immediately**. High risk of bugs and maintenance issues. |
+| Cognitive Complexity | Risk Level  | Indicator | Action                                                              |
+| -------------------- | ----------- | --------- | ------------------------------------------------------------------- |
+| **0-5**              | ✅ Low      | Green     | Excellent maintainability. No action needed.                        |
+| **6-10**             | 🟡 Medium   | Yellow    | Good. Monitor for growth. Consider refactoring if increasing.       |
+| **11-15**            | 🟠 High     | Orange    | Consider refactoring. Breaking into smaller functions would help.   |
+| **16-25**            | 🔴 Critical | Red       | Refactor soon. Code is difficult to understand and maintain.        |
+| **25+**              | 💀 Severe   | Dark Red  | **Refactor immediately**. High risk of bugs and maintenance issues. |
 
 ### Real-World Interpretation
 
 **Example: MetricMancer Code Review Advisor**
 
 *Before refactoring:*
+
 - Cyclomatic Complexity: 190
 - Cognitive Complexity: 47 (🔴 Critical)
 - Status: Hard to understand, high maintenance risk
 
 *After refactoring:*
+
 - Cyclomatic Complexity: 210 (+10%)
 - Cognitive Complexity: 8 (🟡 Medium, -82%!)
 - Status: Easy to understand, low maintenance risk
 
-**Insight**: Cyclomatic went up slightly (more execution paths), but Cognitive dropped dramatically (much easier to understand). This is a successful refactoring!
+**Insight**: Cyclomatic went up slightly (more execution paths), but Cognitive dropped dramatically (much easier to
+understand). This is a successful refactoring!
 
 ## Best Practices for Refactoring
 
 ### Strategy 1: Extract Nested Logic
 
 **Before (Cognitive: 9):**
+
 ```python
 def process_order(order):
     if order:                           # +1
@@ -181,6 +190,7 @@ def process_order(order):
 ```
 
 **After (Cognitive: 4):**
+
 ```python
 def process_order(order):
     if not order:                       # +1
@@ -198,6 +208,7 @@ def process_order(order):
 ### Strategy 2: Extract Helper Functions
 
 **Before (Cognitive: 12):**
+
 ```python
 def analyze_user(user):
     if user:                            # +1
@@ -208,6 +219,7 @@ def analyze_user(user):
 ```
 
 **After (Cognitive: 2 + 4 = 6 total):**
+
 ```python
 def analyze_user(user):
     if not user or not user.is_active:  # +2 (reduced!)
@@ -225,6 +237,7 @@ def process_high_value_orders(orders):
 ### Strategy 3: Use Data Structures
 
 **Before (Cognitive: 10):**
+
 ```python
 def get_discount(customer_type):
     if customer_type == "gold":         # +1
@@ -237,6 +250,7 @@ def get_discount(customer_type):
 ```
 
 **After (Cognitive: 1):**
+
 ```python
 DISCOUNTS = {
     ("gold", "holiday"): 0.30,
@@ -291,6 +305,7 @@ python -m src.main src/ --output-format html
 ```
 
 Features:
+
 - **Sortable columns**: Click column headers to sort by Cognitive/Cyclomatic
 - **Color coding**: Visual indicators for risk levels
 - **Tabbed interface**: Overview, Quick Wins, Files, Functions
@@ -358,14 +373,14 @@ Quick Wins uses Cognitive Complexity to calculate refactoring ROI:
 
 Think of them as measuring different aspects:
 
-| Aspect | Cyclomatic | Cognitive |
-|--------|-----------|-----------|
-| **What it measures** | Number of execution paths | Mental effort to understand |
-| **Best for** | Test coverage planning | Refactoring prioritization |
-| **Algorithm** | Counts decision points | Counts + nesting penalty |
-| **Flat code** | High score | Low score ✅ |
-| **Nested code** | Same score | High score ⚠️ |
-| **Goal** | Keep low for testability | Keep low for maintainability |
+| Aspect               | Cyclomatic                | Cognitive                    |
+| -------------------- | ------------------------- | ---------------------------- |
+| **What it measures** | Number of execution paths | Mental effort to understand  |
+| **Best for**         | Test coverage planning    | Refactoring prioritization   |
+| **Algorithm**        | Counts decision points    | Counts + nesting penalty     |
+| **Flat code**        | High score                | Low score ✅                 |
+| **Nested code**      | Same score                | High score ⚠️                |
+| **Goal**             | Keep low for testability  | Keep low for maintainability |
 
 ### Example Comparison
 
@@ -395,16 +410,19 @@ def validate_nested(user):
 ### When They Disagree
 
 **High Cyclomatic, Low Cognitive:**
+
 - Many simple conditions (guard clauses, switch statements)
 - ✅ **Good code** - Easy to understand despite many paths
 - 🎯 **Action**: Focus on test coverage, no urgent refactoring
 
 **Low Cyclomatic, High Cognitive:**
+
 - Deep nesting with few branches
 - ⚠️ **Problematic code** - Hard to understand despite few paths
 - 🎯 **Action**: Refactor to reduce nesting (extract functions, guard clauses)
 
 **High Both:**
+
 - Complex nested logic with many branches
 - 🔴 **High risk** - Hard to test AND understand
 - 🎯 **Action**: Urgent refactoring needed (highest priority)
@@ -413,11 +431,13 @@ def validate_nested(user):
 
 ### Q: My code has high Cyclomatic but low Cognitive. Is this okay?
 
-**A:** Generally yes! This often indicates well-structured code with many simple cases (like guard clauses or switch statements). It's easy to understand but needs good test coverage. Focus on testing rather than refactoring.
+**A:** Generally yes! This often indicates well-structured code with many simple cases (like guard clauses or switch
+statements). It's easy to understand but needs good test coverage. Focus on testing rather than refactoring.
 
 ### Q: Why does my Cognitive Complexity go up after refactoring?
 
 **A:** This can happen if you convert flat code to nested code. Always aim to keep nesting shallow:
+
 - ✅ Use early returns (guard clauses)
 - ✅ Extract nested blocks to separate functions
 - ❌ Avoid adding nesting levels
@@ -425,29 +445,37 @@ def validate_nested(user):
 ### Q: What's a good target for Cognitive Complexity?
 
 **A:** Industry recommendations:
+
 - **Functions**: Keep below 10 (ideally below 5)
 - **Files**: Aggregate should be below 100
 - **Modules**: Monitor trend, aim for decreasing over time
 
 ### Q: Can I configure Cognitive Complexity thresholds?
 
-**A:** Not yet. Current implementation uses SonarSource's recommended thresholds. Custom thresholds are planned for a future release. Track the related issue for updates.
+**A:** Not yet. Current implementation uses SonarSource's recommended thresholds. Custom thresholds are planned for a
+future release. Track the related issue for updates.
 
 ### Q: Does Cognitive Complexity work for all languages?
 
-**A:** Currently **Python only**. Multi-language support (JavaScript, TypeScript, Java, C#, Go, etc.) is planned using tree-sitter parsers. See related GitHub issue for the multi-language implementation roadmap.
+**A:** Currently supports **6 languages**: Python, Java, Go, JavaScript, TypeScript, and C. These are implemented using
+tree-sitter parsers for accurate AST analysis. Additional language support (C#, Ruby, PHP, etc.) is planned. See the
+GitHub issues for the multi-language roadmap.
 
 ### Q: How does MetricMancer calculate Cognitive Complexity?
 
-**A:** MetricMancer uses Python's AST (Abstract Syntax Tree) module to parse code and implements the SonarSource Cognitive Complexity algorithm. See [ARCHITECTURE.md](../ARCHITECTURE.md) for technical details.
+**A:** MetricMancer uses **tree-sitter parsers** to parse code into Abstract Syntax Trees (AST) and implements the
+SonarSource Cognitive Complexity algorithm. The factory pattern (`CognitiveComplexityCalculatorFactory`) selects
+language-specific calculators based on file extension. See [ARCHITECTURE.md](../ARCHITECTURE.md) for technical details.
 
 ### Q: Should I optimize for Cyclomatic or Cognitive first?
 
-**A:** **Cognitive first** for maintainability! High Cognitive Complexity causes more day-to-day problems (bugs, slow development, hard reviews). Address Cyclomatic if test coverage is insufficient.
+**A:** **Cognitive first** for maintainability! High Cognitive Complexity causes more day-to-day problems (bugs, slow
+development, hard reviews). Address Cyclomatic if test coverage is insufficient.
 
 ### Q: Can Cognitive Complexity detect all code smells?
 
 **A:** No. Cognitive Complexity detects **structural complexity** but won't catch:
+
 - Poor naming
 - Duplicated code
 - Long parameter lists
@@ -458,6 +486,7 @@ Use it alongside code reviews and other quality metrics.
 ### Q: How often should I measure Cognitive Complexity?
 
 **A:** Recommended schedule:
+
 - **Every PR**: Check changed files in code reviews
 - **Weekly/Sprint**: Track trends in CI/CD dashboards
 - **Monthly**: Full codebase analysis to identify emerging hotspots
@@ -466,6 +495,7 @@ Use it alongside code reviews and other quality metrics.
 ### Q: My team disagrees on complexity scores. How do I build consensus?
 
 **A:** Tips for team adoption:
+
 1. **Start with examples**: Show side-by-side flat vs nested code
 2. **Use Quick Wins**: Focus on high-ROI refactorings first
 3. **Set team thresholds**: Agree on acceptable ranges together
@@ -484,18 +514,21 @@ The JSON is compatible with dashboards like Grafana, Kibana, or custom tools.
 
 ## References
 
-- [SonarSource Cognitive Complexity White Paper](https://www.sonarsource.com/docs/CognitiveComplexity.pdf) - Original specification
-- [G. Ann Campbell - Cognitive Complexity: A new way of measuring understandability](https://www.sonarsource.com/resources/cognitive-complexity/) - Research paper
+- [SonarSource Cognitive Complexity White Paper](https://www.sonarsource.com/docs/CognitiveComplexity.pdf) - Original
+  specification
+- [G. Ann Campbell - Cognitive Complexity: A new way of measuring understandability](https://www.sonarsource.com/resources/cognitive-complexity/)
+  \- Research paper
 - Adam Tornhill - "Software Design X-Rays" (Chapter 4: Complexity Trends) - Book reference
 - [MetricMancer ARCHITECTURE.md](../ARCHITECTURE.md) - Implementation details
 
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: https://github.com/CmdrPrompt/MetricMancer/issues
 - Documentation: See README.md and ARCHITECTURE.md
 - Related Issue: Multi-language support roadmap
 
----
+______________________________________________________________________
 
 **MetricMancer v3.2.0** - Making code complexity visible and actionable.

@@ -1,27 +1,27 @@
 # Refactoring Plan: metric_mancer_app.py
 
-**Status**: Draft
-**Created**: 2025-10-20
-**Target**: Reduce complexity from C:92, Cog:35 to C:<50, Cog:<15
-**Risk Level**: CRITICAL (Hotspot Score: 1196)
+**Status**: Draft **Created**: 2025-10-20 **Target**: Reduce complexity from C:92, Cog:35 to C:\<50, Cog:\<15 **Risk
+Level**: CRITICAL (Hotspot Score: 1196)
 
----
+______________________________________________________________________
 
 ## Executive Summary
 
-`metric_mancer_app.py` is a critical orchestrator file with high complexity and frequent changes. This refactoring plan aims to:
+`metric_mancer_app.py` is a critical orchestrator file with high complexity and frequent changes. This refactoring plan
+aims to:
 
-1. **Reduce Cyclomatic Complexity**: 92 → <50 (-45%)
-2. **Reduce Cognitive Complexity**: 35 → <15 (-57%)
+1. **Reduce Cyclomatic Complexity**: 92 → \<50 (-45%)
+2. **Reduce Cognitive Complexity**: 35 → \<15 (-57%)
 3. **Improve Testability**: Better separation of concerns
 4. **Maintain Backward Compatibility**: Use Adapter pattern during transition
 5. **Reduce Hotspot Risk**: Lower churn impact by simplifying structure
 
----
+______________________________________________________________________
 
 ## Current State Analysis
 
 ### Metrics
+
 ```
 Cyclomatic Complexity: 92
 Cognitive Complexity:  35
@@ -33,7 +33,9 @@ Average Method Length: 23.2 lines
 ```
 
 ### Responsibilities (Violation of SRP)
+
 Current file handles:
+
 1. ✅ Configuration management (good - uses Configuration Object Pattern)
 2. ❌ Scanning orchestration
 3. ❌ Analysis orchestration
@@ -49,64 +51,74 @@ Current file handles:
 ### Code Smells Identified
 
 1. **Long Parameter Lists** (Code Smell)
+
    - `__init__`: 20 parameters (before config refactor had 19)
    - `_initialize_config`: 19 parameters
    - Solution: ✅ Already using AppConfig, but need to clean up legacy parameters
 
 2. **Feature Envy** (Code Smell)
+
    - Multiple methods just delegate to other classes
    - Example: `_run_hotspot_analysis` → `extract_hotspots_from_data`
    - Solution: Move to dedicated coordinator classes
 
 3. **Long Methods**
+
    - `__init__`: 46 lines
    - `_initialize_config`: 40 lines
    - `run`: 40 lines
    - Solution: Extract methods, use composition
 
 4. **Divergent Change** (Code Smell)
+
    - File changes for multiple reasons (hotspot features, review features, delta features)
    - Solution: Split into focused coordinators
 
----
+______________________________________________________________________
 
 ## Refactoring Strategy
 
 ### Design Patterns to Apply
 
 1. **Facade Pattern** (Primary)
+
    - `MetricMancerApp` becomes a simple facade
    - Delegates to specialized coordinators
    - Hides complexity from clients
 
 2. **Strategy Pattern** (For Analysis Types)
+
    - `AnalysisStrategy` interface
    - Implementations: `HotspotAnalysis`, `ReviewAnalysis`, `DeltaAnalysis`
    - Enables adding new analysis types without modifying core
 
 3. **Builder Pattern** (For Configuration)
+
    - Already using `AppConfig.from_cli_args()`
    - Can extend with `AppConfigBuilder` for programmatic construction
 
 4. **Chain of Responsibility** (For Analysis Pipeline)
+
    - `AnalysisStep` interface with `execute()` and `next()`
    - Steps: Scan → Analyze → Report → PostProcess
    - Easy to add/remove/reorder steps
 
 5. **Adapter Pattern** (For Backward Compatibility)
+
    - `LegacyMetricMancerAppAdapter` wraps new structure
    - Maintains old API during transition
    - Can be deprecated after migration period
 
----
+______________________________________________________________________
 
 ## Refactoring Phases
 
 ### Phase 1: Extract Analysis Coordinators (Week 1)
-**Goal**: Reduce file complexity by 30%
-**Risk**: Low (extraction only, no logic changes)
+
+**Goal**: Reduce file complexity by 30% **Risk**: Low (extraction only, no logic changes)
 
 #### 1.1 Create `AnalysisCoordinator` Base Class
+
 ```python
 # src/app/coordination/analysis_coordinator.py
 from abc import ABC, abstractmethod
@@ -131,7 +143,9 @@ class AnalysisCoordinator(ABC):
 ```
 
 #### 1.2 Extract HotspotAnalysisCoordinator
+
 Move methods:
+
 - `_run_hotspot_analysis()` → `HotspotAnalysisCoordinator.execute()`
 - `_extract_all_hotspots()` → `HotspotAnalysisCoordinator._extract_hotspots()`
 - `_display_or_save_hotspots()` → `HotspotAnalysisCoordinator._save_output()`
@@ -153,7 +167,9 @@ class HotspotAnalysisCoordinator(AnalysisCoordinator):
 ```
 
 #### 1.3 Extract ReviewStrategyCoordinator
+
 Move methods:
+
 - `_run_review_strategy_analysis()` → `ReviewStrategyCoordinator.execute()`
 - `_convert_and_merge_repo_data()` → `ReviewStrategyCoordinator._prepare_data()`
 - `_get_changed_files_for_review()` → `ReviewStrategyCoordinator._get_changed_files()`
@@ -162,26 +178,30 @@ Move methods:
 **Expected Reduction**: -100 lines, -12 complexity points
 
 #### 1.4 Update Tests
+
 - Create `test_analysis_coordinator.py`
 - Create `test_hotspot_analysis_coordinator.py`
 - Create `test_review_strategy_coordinator.py`
 - Update `test_metric_mancer_app.py` to use mocks for coordinators
 
 **Testing Strategy**: RED-GREEN-REFACTOR
+
 1. 🔴 RED: Write failing tests for new coordinators
 2. 🟢 GREEN: Move code to coordinators, tests pass
 3. 🔵 REFACTOR: Clean up and optimize
 
----
+______________________________________________________________________
 
 ### Phase 2: Simplify Initialization (Week 2)
-**Goal**: Reduce constructor complexity
-**Risk**: Medium (affects public API)
+
+**Goal**: Reduce constructor complexity **Risk**: Medium (affects public API)
 
 #### 2.1 Remove Legacy Parameters
+
 Currently `__init__` accepts both `config` and individual parameters for backward compatibility.
 
 **Step 1**: Add deprecation warnings (1 release cycle)
+
 ```python
 def __init__(self, config: Optional[AppConfig] = None, **kwargs):
     if kwargs and config is None:
@@ -196,6 +216,7 @@ def __init__(self, config: Optional[AppConfig] = None, **kwargs):
 ```
 
 **Step 2**: Remove legacy parameters (next major version)
+
 ```python
 def __init__(self, config: AppConfig):
     """Initialize MetricMancerApp with configuration."""
@@ -207,6 +228,7 @@ def __init__(self, config: AppConfig):
 **Expected Reduction**: -30 lines, -5 complexity points
 
 #### 2.2 Extract Dependency Initialization
+
 ```python
 # src/app/infrastructure/dependency_factory.py
 class DependencyFactory:
@@ -229,6 +251,7 @@ class DependencyFactory:
 ```
 
 **Usage in __init__**:
+
 ```python
 def __init__(self, config: AppConfig):
     self.config = config
@@ -239,13 +262,14 @@ def __init__(self, config: AppConfig):
 
 **Expected Reduction**: -15 lines, -3 complexity points
 
----
+______________________________________________________________________
 
 ### Phase 3: Implement Analysis Pipeline (Week 3)
-**Goal**: Make execution flow more maintainable
-**Risk**: Medium (changes core execution logic)
+
+**Goal**: Make execution flow more maintainable **Risk**: Medium (changes core execution logic)
 
 #### 3.1 Create Pipeline Interface
+
 ```python
 # src/app/pipeline/analysis_pipeline.py
 from dataclasses import dataclass
@@ -278,7 +302,9 @@ class AnalysisPipeline:
 ```
 
 #### 3.2 Refactor `run()` Method
+
 **Before** (40 lines, complex):
+
 ```python
 def run(self):
     timing_reporter = TimingReporter()
@@ -289,6 +315,7 @@ def run(self):
 ```
 
 **After** (15 lines, simple):
+
 ```python
 def run(self):
     timing_reporter = TimingReporter()
@@ -312,13 +339,14 @@ def run(self):
 
 **Expected Reduction**: -25 lines, -8 complexity points
 
----
+______________________________________________________________________
 
 ### Phase 4: Add Comprehensive Tests (Week 4)
-**Goal**: Ensure refactoring didn't break anything
-**Risk**: Low (testing phase)
+
+**Goal**: Ensure refactoring didn't break anything **Risk**: Low (testing phase)
 
 #### 4.1 Test Coverage Targets
+
 ```
 Current Coverage: Unknown
 Target Coverage:  >85%
@@ -332,6 +360,7 @@ Critical paths to test:
 ```
 
 #### 4.2 Create Integration Tests
+
 ```python
 # tests/integration/test_metric_mancer_app_integration.py
 class TestMetricMancerAppIntegration:
@@ -364,6 +393,7 @@ class TestMetricMancerAppIntegration:
 ```
 
 #### 4.3 Create Unit Tests for Each Coordinator
+
 ```python
 # tests/app/coordination/test_hotspot_analysis_coordinator.py
 class TestHotspotAnalysisCoordinator:
@@ -379,19 +409,22 @@ class TestHotspotAnalysisCoordinator:
         # ...
 ```
 
----
+______________________________________________________________________
 
 ### Phase 5: Documentation & Knowledge Transfer (Week 5)
-**Goal**: Ensure team understands new architecture
-**Risk**: Low
+
+**Goal**: Ensure team understands new architecture **Risk**: Low
 
 #### 5.1 Update Architecture Documentation
+
 - Add UML class diagram for new structure
 - Document coordinator pattern usage
 - Add sequence diagrams for key workflows
 
 #### 5.2 Update CLAUDE.md
+
 Add section on new architecture:
+
 ```markdown
 ## Architecture: MetricMancerApp Refactoring (v4.0.0)
 
@@ -420,7 +453,8 @@ MetricMancerApp follows the **Facade Pattern** with specialized coordinators:
 ```
 
 #### 5.3 Create Migration Guide
-```markdown
+
+````markdown
 # Migration Guide: MetricMancerApp v3 → v4
 
 ## For Users
@@ -436,9 +470,10 @@ app = MetricMancerApp(
     threshold_high=20,
     output_format='html'
 )
-```
+````
 
 ### New API (Recommended)
+
 ```python
 config = AppConfig(
     directories=['src/'],
@@ -448,6 +483,7 @@ config = AppConfig(
 )
 app = MetricMancerApp(config)
 ```
+
 ```
 
 ---
@@ -456,14 +492,16 @@ app = MetricMancerApp(config)
 
 ### Complexity Reduction
 ```
-Metric                  | Before | After  | Change
-------------------------|--------|--------|--------
-Cyclomatic Complexity   | 92     | <50    | -45%
-Cognitive Complexity    | 35     | <15    | -57%
-Lines of Code           | 409    | ~250   | -39%
-Number of Methods       | 16     | ~10    | -38%
-Average Method Length   | 23.2   | <20    | -14%
-Max Nesting Depth       | 2      | 1      | -50%
+
+| Metric                | Before | After | Change |
+| --------------------- | ------ | ----- | ------ |
+| Cyclomatic Complexity | 92     | \<50  | -45%   |
+| Cognitive Complexity  | 35     | \<15  | -57%   |
+| Lines of Code         | 409    | ~250  | -39%   |
+| Number of Methods     | 16     | ~10   | -38%   |
+| Average Method Length | 23.2   | \<20  | -14%   |
+| Max Nesting Depth     | 2      | 1     | -50%   |
+
 ```
 
 ### Maintainability Improvements
@@ -475,10 +513,13 @@ Max Nesting Depth       | 2      | 1      | -50%
 
 ### Risk Reduction
 ```
-Hotspot Score: 1196 → <500 (target)
+
+Hotspot Score: 1196 → \<500 (target)
+
 - Reduced complexity = less likely to introduce bugs
 - Better separation = more localized changes
 - Improved tests = faster bug detection
+
 ```
 
 ---
@@ -498,9 +539,11 @@ Hotspot Score: 1196 → <500 (target)
 1. Keep old implementation in separate branch
 2. Feature flag for new vs old implementation
 3. Can toggle via environment variable:
-   ```
-   METRICMANCER_USE_LEGACY_APP=1 python -m src.main src/
-   ```
+```
+
+METRICMANCER_USE_LEGACY_APP=1 python -m src.main src/
+
+```
 
 ---
 
@@ -524,31 +567,22 @@ Hotspot Score: 1196 → <500 (target)
 ## Timeline
 
 ```
-Week 1: Extract Coordinators
-├── Days 1-2: Create base classes and HotspotAnalysisCoordinator
-├── Days 3-4: Create ReviewStrategyCoordinator
-└── Day 5: Tests and validation
 
-Week 2: Simplify Initialization
-├── Days 1-2: Add deprecation warnings
-├── Days 3-4: Extract DependencyFactory
-└── Day 5: Update tests
+Week 1: Extract Coordinators ├── Days 1-2: Create base classes and HotspotAnalysisCoordinator ├── Days 3-4: Create
+ReviewStrategyCoordinator └── Day 5: Tests and validation
 
-Week 3: Implement Pipeline
-├── Days 1-2: Create AnalysisPipeline
-├── Days 3-4: Refactor run() method
-└── Day 5: Integration testing
+Week 2: Simplify Initialization ├── Days 1-2: Add deprecation warnings ├── Days 3-4: Extract DependencyFactory └── Day
+5: Update tests
 
-Week 4: Comprehensive Testing
-├── Days 1-3: Unit tests for all components
-├── Day 4: Integration tests
-└── Day 5: Performance testing
+Week 3: Implement Pipeline ├── Days 1-2: Create AnalysisPipeline ├── Days 3-4: Refactor run() method └── Day 5:
+Integration testing
 
-Week 5: Documentation & Release
-├── Days 1-2: Update documentation
-├── Day 3: Knowledge transfer session
-├── Day 4: Code review
-└── Day 5: Release preparation
+Week 4: Comprehensive Testing ├── Days 1-3: Unit tests for all components ├── Day 4: Integration tests └── Day 5:
+Performance testing
+
+Week 5: Documentation & Release ├── Days 1-2: Update documentation ├── Day 3: Knowledge transfer session ├── Day 4: Code
+review └── Day 5: Release preparation
+
 ```
 
 **Total Effort**: 5 weeks (1 developer full-time, or 2 developers half-time)
@@ -578,3 +612,4 @@ Week 5: Documentation & Release
 **Author**: Claude Code (AI-assisted)
 **Reviewers**: [To be assigned]
 **Approval Date**: [Pending]
+```

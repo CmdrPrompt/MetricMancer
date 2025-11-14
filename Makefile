@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test coverage licenses serve check clean analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
+.PHONY: help install format lint test coverage licenses serve check clean format-md lint-md check-md analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -12,13 +12,16 @@ help:
 	@echo "  make install              - Install all dependencies in venv"
 	@echo ""
 	@echo "Code Quality Commands:"
-	@echo "  make format               - Auto-format code with autopep8"
-	@echo "  make lint                 - Check code with flake8"
+	@echo "  make format               - Auto-format Python code with autopep8"
+	@echo "  make lint                 - Check Python code with flake8"
+	@echo "  make format-md            - Auto-format Markdown files with mdformat"
+	@echo "  make lint-md              - Check Markdown files with mdformat"
 	@echo "  make test                 - Run all tests with pytest"
 	@echo "  make coverage             - Run tests with coverage report (HTML + terminal)"
 	@echo "  make licenses             - Check license compliance"
 	@echo "  make serve                - Start Python HTTP server for testing web pages"
 	@echo "  make check                - Run lint + test + licenses (CI workflow)"
+	@echo "  make check-md             - Run format-md + lint-md (Markdown workflow)"
 	@echo "  make clean                - Clean temporary files"
 	@echo ""
 	@echo "Self-Analysis Commands (run MetricMancer on itself):"
@@ -68,9 +71,22 @@ format:
 	@echo "✅ Formatting complete!"
 
 lint:
-	@echo "🔍 Checking code with flake8..."
+	@echo "🔍 Checking Python code with flake8..."
 	@source .venv/bin/activate && python -m flake8 src/ tests/
-	@echo "✅ Linting complete!"
+	@echo "✅ Python linting complete!"
+
+format-md:
+	@echo "📝 Auto-formatting Markdown files with mdformat..."
+	@source .venv/bin/activate && python -m mdformat *.md docs/*.md docs/**/*.md --wrap 120
+	@echo "✅ Markdown formatting complete!"
+
+lint-md:
+	@echo "🔍 Checking Markdown files with mdformat..."
+	@source .venv/bin/activate && python -m mdformat --check *.md docs/*.md docs/**/*.md --wrap 120
+	@echo "✅ Markdown linting complete!"
+
+check-md: format-md lint-md
+	@echo "✅ All Markdown checks passed!"
 
 test:
 	@echo "🧪 Running tests with pytest..."
@@ -87,7 +103,7 @@ coverage:
 
 licenses:
 	@echo "📋 Checking license compliance..."
-	@source .venv/bin/activate && python check_licenses.py
+	@source .venv/bin/activate && python scripts/check_licenses.py
 	@echo "✅ License check complete!"
 
 serve:
