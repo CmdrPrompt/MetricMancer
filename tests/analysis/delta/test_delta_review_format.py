@@ -10,6 +10,66 @@ from datetime import datetime
 from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
 
 
+def create_function_change(
+    file_path="test.py",
+    function_name="func",
+    start_line=1,
+    end_line=10,
+    change_type=ChangeType.MODIFIED,
+    complexity_before=5,
+    complexity_after=8,
+    complexity_delta=3,
+    cognitive_complexity_before=None,  # Auto-calculate if None
+    cognitive_complexity_after=None,  # Auto-calculate if None
+    cognitive_complexity_delta=None,  # Auto-calculate if None
+    churn=1,
+    hotspot_score=8.0,
+    last_author="dev@example.com",
+    lines_changed=10,
+    review_time_minutes=10
+):
+    """Helper to create FunctionChange with cognitive complexity fields.
+
+    Auto-calculates cognitive complexity if not provided (uses cyclomatic - 2 or 0).
+    """
+    # Auto-calculate cognitive complexity if not provided
+    if cognitive_complexity_before is None:
+        cognitive_complexity_before = max(0, (complexity_before - 2)) if complexity_before is not None else None
+
+    if cognitive_complexity_after is None:
+        cognitive_complexity_after = max(0, (complexity_after - 2)) if complexity_after is not None else None
+
+    if cognitive_complexity_delta is None:
+        if cognitive_complexity_before is not None and cognitive_complexity_after is not None:
+            cognitive_complexity_delta = cognitive_complexity_after - cognitive_complexity_before
+        elif cognitive_complexity_after is not None:
+            cognitive_complexity_delta = cognitive_complexity_after
+        elif cognitive_complexity_before is not None:
+            cognitive_complexity_delta = -cognitive_complexity_before
+        else:
+            cognitive_complexity_delta = 0
+
+    return FunctionChange(
+        file_path=file_path,
+        function_name=function_name,
+        start_line=start_line,
+        end_line=end_line,
+        change_type=change_type,
+        complexity_before=complexity_before,
+        complexity_after=complexity_after,
+        complexity_delta=complexity_delta,
+        cognitive_complexity_before=cognitive_complexity_before,
+        cognitive_complexity_after=cognitive_complexity_after,
+        cognitive_complexity_delta=cognitive_complexity_delta,
+        churn=churn,
+        hotspot_score=hotspot_score,
+        last_author=last_author,
+        last_modified=datetime.now(),
+        lines_changed=lines_changed,
+        review_time_minutes=review_time_minutes
+    )
+
+
 class TestDeltaReviewFormatBasics:
     """Test basic formatting functionality."""
 
@@ -81,7 +141,7 @@ class TestOverviewSection:
         formatter = DeltaReviewStrategyFormat()
 
         # Create sample changes
-        added = FunctionChange(
+        added = create_function_change(
             file_path="test.py",
             function_name="new_func",
             start_line=1,
@@ -93,12 +153,11 @@ class TestOverviewSection:
             churn=1,
             hotspot_score=3.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=5,
-            review_time_minutes=5
+            review_time_minutes=5,
         )
 
-        modified = FunctionChange(
+        modified = create_function_change(
             file_path="test.py",
             function_name="changed_func",
             start_line=10,
@@ -110,9 +169,8 @@ class TestOverviewSection:
             churn=10,
             hotspot_score=80.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=10,
-            review_time_minutes=10
+            review_time_minutes=10,
         )
 
         delta = DeltaDiff(
@@ -140,7 +198,7 @@ class TestOverviewSection:
 
         formatter = DeltaReviewStrategyFormat()
 
-        modified = FunctionChange(
+        modified = create_function_change(
             file_path="test.py",
             function_name="func",
             start_line=1,
@@ -152,9 +210,8 @@ class TestOverviewSection:
             churn=5,
             hotspot_score=75.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=10,
-            review_time_minutes=15
+            review_time_minutes=15,
         )
 
         delta = DeltaDiff(
@@ -184,7 +241,7 @@ class TestCriticalChangesSection:
 
         formatter = DeltaReviewStrategyFormat()
 
-        critical = FunctionChange(
+        critical = create_function_change(
             file_path="critical.py",
             function_name="hotspot_func",
             start_line=1,
@@ -194,11 +251,10 @@ class TestCriticalChangesSection:
             complexity_after=25,
             complexity_delta=15,
             churn=20,
-            hotspot_score=500.0,  # Very high!
+            hotspot_score=500.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=30,
-            review_time_minutes=30
+            review_time_minutes=30,
         )
 
         delta = DeltaDiff(
@@ -226,7 +282,7 @@ class TestCriticalChangesSection:
 
         formatter = DeltaReviewStrategyFormat()
 
-        critical = FunctionChange(
+        critical = create_function_change(
             file_path="test.py",
             function_name="complex_func",
             start_line=1,
@@ -238,9 +294,8 @@ class TestCriticalChangesSection:
             churn=10,
             hotspot_score=200.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=15,
-            review_time_minutes=25
+            review_time_minutes=25,
         )
 
         delta = DeltaDiff(
@@ -268,7 +323,7 @@ class TestCriticalChangesSection:
 
         formatter = DeltaReviewStrategyFormat()
 
-        critical = FunctionChange(
+        critical = create_function_change(
             file_path="test.py",
             function_name="func",
             start_line=1,
@@ -280,9 +335,8 @@ class TestCriticalChangesSection:
             churn=20,
             hotspot_score=300.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=10,
-            review_time_minutes=20
+            review_time_minutes=20,
         )
 
         delta = DeltaDiff(
@@ -312,7 +366,7 @@ class TestRefactoringsSection:
 
         formatter = DeltaReviewStrategyFormat()
 
-        refactoring = FunctionChange(
+        refactoring = create_function_change(
             file_path="improved.py",
             function_name="simplified_func",
             start_line=1,
@@ -320,13 +374,12 @@ class TestRefactoringsSection:
             change_type=ChangeType.MODIFIED,
             complexity_before=20,
             complexity_after=10,
-            complexity_delta=-10,  # Improved!
+            complexity_delta=-10,
             churn=5,
             hotspot_score=50.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=15,
-            review_time_minutes=10
+            review_time_minutes=10,
         )
 
         delta = DeltaDiff(
@@ -358,7 +411,7 @@ class TestAddedFunctionsSection:
 
         formatter = DeltaReviewStrategyFormat()
 
-        added = FunctionChange(
+        added = create_function_change(
             file_path="new.py",
             function_name="brand_new_func",
             start_line=1,
@@ -370,9 +423,8 @@ class TestAddedFunctionsSection:
             churn=1,
             hotspot_score=15.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=20,
-            review_time_minutes=15
+            review_time_minutes=15,
         )
 
         delta = DeltaDiff(
@@ -428,7 +480,7 @@ class TestMarkdownFormatting:
 
         formatter = DeltaReviewStrategyFormat()
 
-        func = FunctionChange(
+        func = create_function_change(
             file_path="test.py",
             function_name="func",
             start_line=1,
@@ -440,9 +492,8 @@ class TestMarkdownFormatting:
             churn=5,
             hotspot_score=40.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=5,
-            review_time_minutes=8
+            review_time_minutes=8,
         )
 
         delta = DeltaDiff(
@@ -468,7 +519,7 @@ class TestMarkdownFormatting:
 
         formatter = DeltaReviewStrategyFormat()
 
-        func = FunctionChange(
+        func = create_function_change(
             file_path="test.py",
             function_name="my_function",
             start_line=1,
@@ -480,9 +531,8 @@ class TestMarkdownFormatting:
             churn=5,
             hotspot_score=40.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=5,
-            review_time_minutes=8
+            review_time_minutes=8,
         )
 
         delta = DeltaDiff(
@@ -512,7 +562,7 @@ class TestReviewGuidance:
 
         formatter = DeltaReviewStrategyFormat()
 
-        high_complexity = FunctionChange(
+        high_complexity = create_function_change(
             file_path="complex.py",
             function_name="very_complex_func",
             start_line=1,
@@ -524,9 +574,8 @@ class TestReviewGuidance:
             churn=10,
             hotspot_score=300.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=50,
-            review_time_minutes=40
+            review_time_minutes=40,
         )
 
         delta = DeltaDiff(
@@ -554,7 +603,7 @@ class TestReviewGuidance:
 
         formatter = DeltaReviewStrategyFormat()
 
-        refactoring = FunctionChange(
+        refactoring = create_function_change(
             file_path="improved.py",
             function_name="refactored_func",
             start_line=1,
@@ -566,9 +615,8 @@ class TestReviewGuidance:
             churn=5,
             hotspot_score=50.0,
             last_author="dev@example.com",
-            last_modified=datetime.now(),
             lines_changed=20,
-            review_time_minutes=15
+            review_time_minutes=15,
         )
 
         delta = DeltaDiff(
