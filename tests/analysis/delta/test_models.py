@@ -8,6 +8,68 @@ Following TDD (RED-GREEN-REFACTOR):
 """
 
 from datetime import datetime
+from src.analysis.delta.models import ChangeType, FunctionChange
+
+
+def create_function_change(
+    file_path="test.py",
+    function_name="func",
+    start_line=1,
+    end_line=10,
+    change_type=ChangeType.MODIFIED,
+    complexity_before=5,
+    complexity_after=8,
+    complexity_delta=3,
+    cognitive_complexity_before=None,  # Auto-calculate if None
+    cognitive_complexity_after=None,  # Auto-calculate if None
+    cognitive_complexity_delta=None,  # Auto-calculate if None
+    churn=1,
+    hotspot_score=8.0,
+    last_author="dev@example.com",
+    last_modified=None,
+    lines_changed=10,
+    review_time_minutes=10
+):
+    """Helper to create FunctionChange with cognitive complexity fields."""
+    # Auto-calculate cognitive complexity if not provided
+    if cognitive_complexity_before is None:
+        cognitive_complexity_before = max(0, (complexity_before - 2)) if complexity_before is not None else None
+
+    if cognitive_complexity_after is None:
+        cognitive_complexity_after = max(0, (complexity_after - 2)) if complexity_after is not None else None
+
+    if cognitive_complexity_delta is None:
+        if cognitive_complexity_before is not None and cognitive_complexity_after is not None:
+            cognitive_complexity_delta = cognitive_complexity_after - cognitive_complexity_before
+        elif cognitive_complexity_after is not None:
+            cognitive_complexity_delta = cognitive_complexity_after
+        elif cognitive_complexity_before is not None:
+            cognitive_complexity_delta = -cognitive_complexity_before
+        else:
+            cognitive_complexity_delta = 0
+
+    if last_modified is None:
+        last_modified = datetime(2025, 10, 17, 10, 0, 0)
+
+    return FunctionChange(
+        file_path=file_path,
+        function_name=function_name,
+        start_line=start_line,
+        end_line=end_line,
+        change_type=change_type,
+        complexity_before=complexity_before,
+        complexity_after=complexity_after,
+        complexity_delta=complexity_delta,
+        cognitive_complexity_before=cognitive_complexity_before,
+        cognitive_complexity_after=cognitive_complexity_after,
+        cognitive_complexity_delta=cognitive_complexity_delta,
+        churn=churn,
+        hotspot_score=hotspot_score,
+        last_author=last_author,
+        last_modified=last_modified,
+        lines_changed=lines_changed,
+        review_time_minutes=review_time_minutes
+    )
 
 
 class TestChangeType:
@@ -36,7 +98,7 @@ class TestFunctionChange:
         """Test creating FunctionChange with all required fields."""
         from src.analysis.delta.models import FunctionChange, ChangeType
 
-        change = FunctionChange(
+        change = create_function_change(
             file_path="src/test.py",
             function_name="test_function",
             start_line=10,
@@ -71,7 +133,7 @@ class TestFunctionChange:
         """Test FunctionChange for newly added function (no before complexity)."""
         from src.analysis.delta.models import FunctionChange, ChangeType
 
-        change = FunctionChange(
+        change = create_function_change(
             file_path="src/new.py",
             function_name="new_function",
             start_line=1,
@@ -97,7 +159,7 @@ class TestFunctionChange:
         """Test FunctionChange for deleted function (no after complexity)."""
         from src.analysis.delta.models import FunctionChange, ChangeType
 
-        change = FunctionChange(
+        change = create_function_change(
             file_path="src/old.py",
             function_name="old_function",
             start_line=1,
@@ -124,7 +186,7 @@ class TestFunctionChange:
         """Test that complexity_delta can be negative (refactoring)."""
         from src.analysis.delta.models import FunctionChange, ChangeType
 
-        change = FunctionChange(
+        change = create_function_change(
             file_path="src/refactored.py",
             function_name="refactored_func",
             start_line=1,
@@ -176,7 +238,7 @@ class TestDeltaDiff:
         """Test DeltaDiff with actual function changes."""
         from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
 
-        added = FunctionChange(
+        added = create_function_change(
             file_path="src/new.py",
             function_name="new_func",
             start_line=1,
@@ -193,7 +255,7 @@ class TestDeltaDiff:
             review_time_minutes=5
         )
 
-        modified = FunctionChange(
+        modified = create_function_change(
             file_path="src/changed.py",
             function_name="changed_func",
             start_line=10,
@@ -233,7 +295,7 @@ class TestDeltaDiff:
         """Test that DeltaDiff can identify refactorings (negative delta)."""
         from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
 
-        refactoring = FunctionChange(
+        refactoring = create_function_change(
             file_path="src/improved.py",
             function_name="improved_func",
             start_line=1,
@@ -273,7 +335,7 @@ class TestDeltaDiff:
         # Create some changes
         changes = []
         for i in range(3):
-            changes.append(FunctionChange(
+            changes.append(create_function_change(
                 file_path=f"src/file{i}.py",
                 function_name=f"func{i}",
                 start_line=1,
@@ -316,7 +378,7 @@ class TestDataModelValidation:
         from src.analysis.delta.models import FunctionChange, ChangeType
 
         # This should work
-        change = FunctionChange(
+        change = create_function_change(
             file_path="src/test.py",
             function_name="test",
             start_line=10,
@@ -342,7 +404,7 @@ class TestDataModelValidation:
         churn = 8
         expected_hotspot = complexity_after * churn  # 80
 
-        change = FunctionChange(
+        change = create_function_change(
             file_path="src/test.py",
             function_name="test",
             start_line=1,
