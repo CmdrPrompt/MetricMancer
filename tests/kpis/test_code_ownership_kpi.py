@@ -18,18 +18,22 @@ class TestCodeOwnershipKPI(unittest.TestCase):
 
     @patch('os.path.exists', return_value=True)
     @patch('src.utilities.git_cache.subprocess.run')
-    @patch('src.utilities.git_cache.subprocess.check_output')
-    def test_file_tracked_and_blame_works(self, mock_check_output, mock_run, mock_exists):
+    def test_file_tracked_and_blame_works(self, mock_run, mock_exists):
         # Rensa cache för att undvika påverkan från andra tester
         from src.utilities.git_cache import get_git_cache
         get_git_cache().clear_cache()
 
-        # Mock git ls-files (för tracked file check)
-        mock_run.return_value.stdout = 'tracked.py\n'
-        mock_run.return_value.returncode = 0
+        def mock_run_side_effect(cmd, **kwargs):
+            result = unittest.mock.MagicMock()
+            if 'ls-files' in cmd:
+                result.stdout = 'tracked.py\n'
+                result.returncode = 0
+            elif 'blame' in cmd:
+                result.stdout = 'author Alice\nauthor Bob\nauthor Alice\n'
+                result.returncode = 0
+            return result
 
-        # Mock git blame
-        mock_check_output.return_value = 'author Alice\nauthor Bob\nauthor Alice\n'
+        mock_run.side_effect = mock_run_side_effect
 
         kpi = CodeOwnershipKPI(file_path='tracked.py', repo_root='.')
         # Alice: 2/3, Bob: 1/3

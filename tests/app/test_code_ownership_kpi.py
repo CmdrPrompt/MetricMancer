@@ -11,18 +11,27 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
 
     @patch("os.path.exists", return_value=True)
     @patch("src.utilities.git_cache.subprocess.run")
-    @patch("src.utilities.git_cache.subprocess.check_output")
-    def test_cache_usage_and_value(self, mock_check_output, mock_run, mock_exists):
+    def test_cache_usage_and_value(self, mock_run, mock_exists):
         """
         Test that CodeOwnershipKPI uses cache and returns correct value.
         Should call git only once per file, even if called multiple times.
         """
-        # Mock git ls-files (tracked files check)
-        mock_run.return_value.stdout = "some_file.py\n"
-        mock_run.return_value.returncode = 0
+        # Track git call count
+        call_count = 0
 
-        # Mock git blame output
-        mock_check_output.return_value = "author Thomas\n" * 10
+        def mock_run_side_effect(cmd, **kwargs):
+            nonlocal call_count
+            result = unittest.mock.MagicMock()
+            if 'ls-files' in cmd:
+                result.stdout = "some_file.py\n"
+                result.returncode = 0
+            elif 'blame' in cmd:
+                call_count += 1
+                result.stdout = "author Thomas\n" * 10
+                result.returncode = 0
+            return result
+
+        mock_run.side_effect = mock_run_side_effect
 
         file_path = "some_file.py"
         # Create dummy file so that os.path.exists returns True
@@ -32,7 +41,7 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
         try:
             kpi1 = CodeOwnershipKPI(file_path=file_path, repo_root=".")
             # Check that git blame was called once (cache should be used)
-            self.assertEqual(mock_check_output.call_count, 1, "Git blame should be called once for cache.")
+            self.assertEqual(call_count, 1, "Git blame should be called once for cache.")
 
             # Check the value calculation
             self.assertEqual(kpi1.value, {"Thomas": 100.0}, "KPI value calculation is incorrect.")
@@ -40,7 +49,7 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
             # Second instance should use cache
             kpi2 = CodeOwnershipKPI(file_path=file_path, repo_root=".")
             # Git blame should still only be called once (cache hit)
-            self.assertEqual(mock_check_output.call_count, 1, "Cache should prevent second git call.")
+            self.assertEqual(call_count, 1, "Cache should prevent second git call.")
             self.assertEqual(kpi2.value, {"Thomas": 100.0}, "KPI value calculation is incorrect on cache hit.")
         finally:
             # Clean up test file
@@ -66,12 +75,20 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
 
     @patch("os.path.exists", return_value=True)
     @patch("src.utilities.git_cache.subprocess.run")
-    @patch("src.utilities.git_cache.subprocess.check_output", side_effect=Exception("blame error"))
-    def test_blame_fails(self, mock_check_output, mock_run, mock_exists):
+    def test_blame_fails(self, mock_run, mock_exists):
         """
         Test that CodeOwnershipKPI handles git blame failures gracefully.
         """
-        mock_run.return_value.returncode = 0  # Tracked
+        def mock_run_side_effect(cmd, **kwargs):
+            result = unittest.mock.MagicMock()
+            if 'ls-files' in cmd:
+                result.stdout = "tracked.py\n"
+                result.returncode = 0
+            elif 'blame' in cmd:
+                raise Exception("blame error")
+            return result
+
+        mock_run.side_effect = mock_run_side_effect
         kpi = CodeOwnershipKPI(file_path="tracked.py", repo_root=".")
         self.assertEqual(kpi.value, {}, "KPI value should be empty if git blame fails.")
 
