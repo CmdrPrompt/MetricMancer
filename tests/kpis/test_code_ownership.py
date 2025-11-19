@@ -11,16 +11,19 @@ class TestCodeOwnershipKPI(unittest.TestCase):
 
     @patch('os.path.exists', return_value=True)
     @patch('src.utilities.git_cache.subprocess.run')
-    @patch('src.utilities.git_cache.subprocess.check_output')
-    def test_calculate_ownership_basic(self, mock_check_output, mock_run, mock_exists):
-        # Mock git ls-files
-        mock_run.return_value.stdout = 'dummy.py\n'
-        mock_run.return_value.returncode = 0
+    def test_calculate_ownership_basic(self, mock_run, mock_exists):
+        def mock_run_side_effect(cmd, **kwargs):
+            result = unittest.mock.MagicMock()
+            if 'ls-files' in cmd:
+                result.stdout = 'dummy.py\n'
+                result.returncode = 0
+            elif 'blame' in cmd:
+                # Simulate git blame output for a file with 4 lines, 2 authors
+                result.stdout = 'author Alice\n' * 3 + 'author Bob\n'
+                result.returncode = 0
+            return result
 
-        # Simulate git blame output for a file with 4 lines, 2 authors
-        mock_check_output.return_value = (
-            'author Alice\n' * 3 + 'author Bob\n'
-        )
+        mock_run.side_effect = mock_run_side_effect
 
         kpi = CodeOwnershipKPI('/repo/dummy.py', '/repo')
         self.assertIn('Alice', kpi.value)
@@ -30,11 +33,17 @@ class TestCodeOwnershipKPI(unittest.TestCase):
 
     @patch('os.path.exists', return_value=True)
     @patch('src.utilities.git_cache.subprocess.run')
-    @patch('src.utilities.git_cache.subprocess.check_output', side_effect=Exception('not a git repo'))
-    def test_calculate_ownership_error(self, mock_check_output, mock_run, mock_exists):
-        # Mock git ls-files to indicate file is tracked
-        mock_run.return_value.stdout = 'dummy.py\n'
-        mock_run.return_value.returncode = 0
+    def test_calculate_ownership_error(self, mock_run, mock_exists):
+        def mock_run_side_effect(cmd, **kwargs):
+            result = unittest.mock.MagicMock()
+            if 'ls-files' in cmd:
+                result.stdout = 'dummy.py\n'
+                result.returncode = 0
+            elif 'blame' in cmd:
+                raise Exception('not a git repo')
+            return result
+
+        mock_run.side_effect = mock_run_side_effect
 
         kpi = CodeOwnershipKPI('/repo/dummy.py', '/repo')
         self.assertEqual(kpi.value, {})

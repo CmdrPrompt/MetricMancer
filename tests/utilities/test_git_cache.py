@@ -5,6 +5,7 @@ Write tests that expect the KPI classes to use the cache.
 import unittest
 from unittest.mock import patch, call
 import os
+import subprocess
 
 from src.utilities.git_cache import GitDataCache, get_git_cache
 
@@ -102,14 +103,15 @@ class TestGitDataCache(unittest.TestCase):
             self.assertTrue(result)
             mock_run.assert_not_called()
 
-    @patch('subprocess.check_output')
+    @patch('subprocess.run')
     @patch.object(GitDataCache, 'is_file_tracked', return_value=True)
     @patch('os.path.exists', return_value=True)
-    def test_get_git_blame_cache_miss(self, mock_exists, mock_tracked, mock_check_output):
+    def test_get_git_blame_cache_miss(self, mock_exists, mock_tracked, mock_run):
         """Test get_git_blame when cache is empty (cache miss)."""
         # Setup mock
         blame_output = "author Alice\nauthor Bob\nauthor Alice\n"
-        mock_check_output.return_value = blame_output
+        mock_run.return_value.stdout = blame_output
+        mock_run.return_value.returncode = 0
 
         # Call method
         result = self.cache.get_git_blame(self.test_repo, self.test_file)
@@ -120,10 +122,12 @@ class TestGitDataCache(unittest.TestCase):
         self.assertIn(repo_key, self.cache.blame_cache)
         self.assertEqual(self.cache.blame_cache[repo_key][self.test_file], blame_output)
 
-        # Verify git blame was called
-        mock_check_output.assert_called_once_with(
+        # Verify git blame was called via _run_git_command
+        mock_run.assert_called_once_with(
             ['git', '-C', os.path.abspath(self.test_repo), 'blame', '--line-porcelain', self.test_file],
-            text=True
+            capture_output=True,
+            text=True,
+            check=True
         )
 
     def test_get_git_blame_cache_hit(self):
@@ -237,6 +241,253 @@ class TestGitDataCache(unittest.TestCase):
             "total_tracked_files": 2
         }
         self.assertEqual(stats, expected)
+
+
+class TestGitCacheHelperMethods(unittest.TestCase):
+    """Test helper methods for git command execution and data processing."""
+
+    def setUp(self):
+        """Set up test environment."""
+        self.cache = GitDataCache()
+        self.test_repo = "/test/repo"
+
+    def tearDown(self):
+        """Clean up after tests."""
+        self.cache.clear_cache()
+
+    def test_normalize_repo_path_absolute(self):
+        """Test _normalize_repo_path with absolute path."""
+        result = self.cache._normalize_repo_path("/absolute/path/to/repo")
+        self.assertEqual(result, os.path.abspath("/absolute/path/to/repo"))
+
+    def test_normalize_repo_path_relative(self):
+        """Test _normalize_repo_path with relative path."""
+        relative_path = "relative/path"
+        result = self.cache._normalize_repo_path(relative_path)
+        expected = os.path.abspath(relative_path)
+        self.assertEqual(result, expected)
+
+    def test_normalize_repo_path_current_dir(self):
+        """Test _normalize_repo_path with current directory."""
+        result = self.cache._normalize_repo_path(".")
+        self.assertEqual(result, os.path.abspath("."))
+
+    def test_normalize_repo_path_already_normalized(self):
+        """Test _normalize_repo_path is idempotent."""
+        path = os.path.abspath("/some/path")
+        result = self.cache._normalize_repo_path(path)
+        self.assertEqual(result, path)
+
+    def test_get_repo_cache_creates_new_cache(self):
+        """Test _get_repo_cache creates new cache dict if not exists."""
+        cache_dict = {}
+        repo_root = "/test/repo"
+
+        result = self.cache._get_repo_cache(cache_dict, repo_root)
+
+        # Should create and return new dict
+        self.assertIsInstance(result, dict)
+        self.assertEqual(len(result), 0)
+        self.assertIn(repo_root, cache_dict)
+        self.assertIs(cache_dict[repo_root], result)
+
+    def test_get_repo_cache_returns_existing_cache(self):
+        """Test _get_repo_cache returns existing cache dict."""
+        cache_dict = {"/test/repo": {"file.py": "data"}}
+        repo_root = "/test/repo"
+
+        result = self.cache._get_repo_cache(cache_dict, repo_root)
+
+        # Should return existing dict
+        self.assertIs(result, cache_dict[repo_root])
+        self.assertEqual(result, {"file.py": "data"})
+
+    def test_get_repo_cache_normalizes_path(self):
+        """Test _get_repo_cache normalizes repo_root path."""
+        cache_dict = {}
+        relative_path = "relative/path"
+
+        result = self.cache._get_repo_cache(cache_dict, relative_path)
+
+        # Should use normalized path as key
+        normalized = os.path.abspath(relative_path)
+        self.assertIn(normalized, cache_dict)
+        self.assertIs(result, cache_dict[normalized])
+
+    @patch('src.utilities.git_cache.debug_print')
+    def test_log_cache_access_hit(self, mock_debug):
+        """Test _log_cache_access logs cache hit."""
+        self.cache._log_cache_access("test.py", hit=True, cache_type="ownership")
+
+        mock_debug.assert_called_once_with("[CACHE] Hit: ownership data for test.py")
+
+    @patch('src.utilities.git_cache.debug_print')
+    def test_log_cache_access_miss(self, mock_debug):
+        """Test _log_cache_access logs cache miss."""
+        self.cache._log_cache_access("test.py", hit=False, cache_type="churn")
+
+        mock_debug.assert_called_once_with("[CACHE] Miss: churn data for test.py")
+
+    @patch('src.utilities.git_cache.debug_print')
+    def test_log_cache_access_blame_type(self, mock_debug):
+        """Test _log_cache_access with blame cache type."""
+        self.cache._log_cache_access("src/main.py", hit=True, cache_type="git blame")
+
+        mock_debug.assert_called_once_with("[CACHE] Hit: git blame for src/main.py")
+
+    @patch('subprocess.run')
+    def test_run_git_command_success(self, mock_run):
+        """Test _run_git_command with successful git execution."""
+        # Setup mock
+        mock_run.return_value.stdout = "file1.py\nfile2.py\n"
+        mock_run.return_value.returncode = 0
+
+        # Call helper method
+        result = self.cache._run_git_command(self.test_repo, ['ls-files'])
+
+        # Assert result
+        self.assertEqual(result, "file1.py\nfile2.py\n")
+        mock_run.assert_called_once_with(
+            ['git', '-C', os.path.abspath(self.test_repo), 'ls-files'],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+
+    @patch('subprocess.run')
+    def test_run_git_command_with_subprocess_error(self, mock_run):
+        """Test _run_git_command handles subprocess errors gracefully."""
+        # Setup mock to raise error
+        mock_run.side_effect = subprocess.CalledProcessError(1, 'git')
+
+        # Call helper method
+        result = self.cache._run_git_command(self.test_repo, ['ls-files'])
+
+        # Assert returns None on error
+        self.assertIsNone(result)
+
+    @patch('subprocess.run')
+    def test_run_git_command_with_permission_error(self, mock_run):
+        """Test _run_git_command handles permission errors."""
+        # Setup mock to raise PermissionError
+        mock_run.side_effect = PermissionError("Permission denied")
+
+        # Call helper method
+        result = self.cache._run_git_command(self.test_repo, ['ls-files'])
+
+        # Assert returns None on permission error
+        self.assertIsNone(result)
+
+    @patch.object(GitDataCache, 'is_file_tracked', return_value=False)
+    @patch('subprocess.run')
+    def test_run_git_command_with_untracked_file_check(self, mock_run, mock_tracked):
+        """Test _run_git_command skips untracked files when check_file is provided."""
+        # Call with check_file parameter for untracked file
+        result = self.cache._run_git_command(self.test_repo, ['blame', 'file.py'], check_file='file.py')
+
+        # Assert returns None without calling subprocess
+        self.assertIsNone(result)
+        mock_run.assert_not_called()
+
+    @patch.object(GitDataCache, 'is_file_tracked', return_value=True)
+    @patch('subprocess.run')
+    def test_run_git_command_with_tracked_file_check(self, mock_run, mock_tracked):
+        """Test _run_git_command proceeds with tracked files."""
+        # Setup mock
+        mock_run.return_value.stdout = "blame output"
+        mock_run.return_value.returncode = 0
+
+        # Call with check_file parameter for tracked file
+        result = self.cache._run_git_command(self.test_repo, ['blame', 'file.py'], check_file='file.py')
+
+        # Assert subprocess was called
+        self.assertEqual(result, "blame output")
+        mock_run.assert_called_once()
+
+    def test_calculate_ownership_from_blame_multiple_authors(self):
+        """Test _calculate_ownership_from_blame with multiple authors."""
+        blame_output = "author Alice\nauthor Bob\nauthor Alice\nauthor Alice\nauthor Bob\n"
+
+        result = self.cache._calculate_ownership_from_blame(blame_output)
+
+        expected = {"Alice": 60.0, "Bob": 40.0}
+        self.assertEqual(result, expected)
+
+    def test_calculate_ownership_from_blame_single_author(self):
+        """Test _calculate_ownership_from_blame with single author."""
+        blame_output = "author Alice\nauthor Alice\nauthor Alice\n"
+
+        result = self.cache._calculate_ownership_from_blame(blame_output)
+
+        expected = {"Alice": 100.0}
+        self.assertEqual(result, expected)
+
+    def test_calculate_ownership_from_blame_empty_output(self):
+        """Test _calculate_ownership_from_blame with empty blame output."""
+        blame_output = ""
+
+        result = self.cache._calculate_ownership_from_blame(blame_output)
+
+        self.assertEqual(result, {})
+
+    def test_calculate_ownership_from_blame_no_authors(self):
+        """Test _calculate_ownership_from_blame with no author lines."""
+        blame_output = "commit abc123\nfile test.py\n"
+
+        result = self.cache._calculate_ownership_from_blame(blame_output)
+
+        self.assertEqual(result, {})
+
+    @patch.object(GitDataCache, '_run_git_command')
+    def test_calculate_churn_with_commits(self, mock_run_git):
+        """Test _calculate_churn with multiple commits."""
+        # Setup mock git log output
+        mock_run_git.return_value = "abc123 commit 1\ndef456 commit 2\nghi789 commit 3\n"
+
+        result = self.cache._calculate_churn(self.test_repo, "file.py")
+
+        # Assert correct churn count
+        self.assertEqual(result, 3)
+        mock_run_git.assert_called_once_with(
+            self.test_repo,
+            ['log', '--oneline', '--since', '30 days ago', '--', 'file.py']
+        )
+
+    @patch.object(GitDataCache, '_run_git_command')
+    def test_calculate_churn_no_commits(self, mock_run_git):
+        """Test _calculate_churn with no commits."""
+        # Setup mock with empty output
+        mock_run_git.return_value = ""
+
+        result = self.cache._calculate_churn(self.test_repo, "file.py")
+
+        self.assertEqual(result, 0)
+
+    @patch.object(GitDataCache, '_run_git_command')
+    def test_calculate_churn_git_error(self, mock_run_git):
+        """Test _calculate_churn when git command fails."""
+        # Setup mock to return None (error case)
+        mock_run_git.return_value = None
+
+        result = self.cache._calculate_churn(self.test_repo, "file.py")
+
+        self.assertEqual(result, 0)
+
+    @patch.object(GitDataCache, '_run_git_command')
+    def test_calculate_churn_custom_period(self, mock_run_git):
+        """Test _calculate_churn respects custom churn_period_days."""
+        # Create cache with custom period
+        custom_cache = GitDataCache(churn_period_days=90)
+        mock_run_git.return_value = "abc123 commit\n"
+
+        result = custom_cache._calculate_churn(self.test_repo, "file.py")
+
+        # Assert uses correct time period
+        mock_run_git.assert_called_once_with(
+            self.test_repo,
+            ['log', '--oneline', '--since', '90 days ago', '--', 'file.py']
+        )
+        self.assertEqual(result, 1)
 
 
 if __name__ == '__main__':
