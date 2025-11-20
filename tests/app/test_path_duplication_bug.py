@@ -12,6 +12,7 @@ import tempfile
 import shutil
 import unittest
 from unittest.mock import patch, MagicMock
+import warnings
 
 
 class TestPathDuplicationBug(unittest.TestCase):
@@ -55,7 +56,7 @@ class TestPathDuplicationBug(unittest.TestCase):
             review_output='output/review_strategy.md'  # Contains path prefix
         )
 
-        app = MetricMancerApp(config)
+        app = MetricMancerApp(config=config)
 
         # Create mock repo_info
         mock_repo_info = MagicMock()
@@ -108,7 +109,7 @@ class TestPathDuplicationBug(unittest.TestCase):
             review_output='review_strategy.md'  # Just filename, no path
         )
 
-        app = MetricMancerApp(config)
+        app = MetricMancerApp(config=config)
 
         # Create mock repo_info
         mock_repo_info = MagicMock()
