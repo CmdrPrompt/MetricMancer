@@ -7,6 +7,7 @@ to provide precise function-level delta analysis between commits/branches.
 
 import os
 import subprocess
+import textwrap
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
@@ -455,6 +456,11 @@ class DeltaAnalyzer:
             start = function['start_line'] - 1  # Convert to 0-indexed
             end = function['end_line']
             function_code = '\n'.join(lines[start:end])
+
+            # CRITICAL FIX: Remove leading indentation for class methods
+            # Python's ast.parse() cannot parse indented code (e.g., class methods)
+            # textwrap.dedent() removes common leading whitespace
+            function_code = textwrap.dedent(function_code)
 
             # Calculate for file returns dict {function_name: complexity}
             complexity_map = calculator.calculate_for_file(function_code)
