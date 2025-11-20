@@ -20,15 +20,17 @@ class TestMetricMancerApp(unittest.TestCase):
             output_format='human'
         )
         app = MetricMancerApp(config=config)
-        self.assertEqual(app.directories, ['dir1', 'dir2'])
-        self.assertEqual(app.threshold_low, 1)
-        self.assertEqual(app.threshold_high, 2)
-        self.assertEqual(app.problem_file_threshold, 3)
-        self.assertEqual(app.output_file, 'out.html')
-        self.assertEqual(app.level, 'file')
-        self.assertTrue(app.hierarchical)
-        self.assertEqual(app.output_format, 'human')
-        self.assertIsNotNone(app.config)
+        # After Refactoring #6: Use app.app_config instead of duplicate attributes
+        self.assertEqual(app.app_config.directories, ['dir1', 'dir2'])
+        self.assertEqual(app.app_config.threshold_low, 1)
+        self.assertEqual(app.app_config.threshold_high, 2)
+        self.assertEqual(app.app_config.problem_file_threshold, 3)
+        self.assertEqual(app.app_config.output_file, 'out.html')
+        self.assertEqual(app.app_config.level, 'file')
+        self.assertTrue(app.app_config.hierarchical)
+        self.assertEqual(app.app_config.output_format, 'human')
+        self.assertIsNotNone(app.config)  # Backward compatibility alias
+        self.assertIs(app.config, app.app_config)  # Should be same object
         self.assertIsNotNone(app.scanner)
         self.assertIsNotNone(app.analyzer)
 
