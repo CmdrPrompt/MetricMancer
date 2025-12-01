@@ -219,7 +219,8 @@ class HierarchyBuilder:
                     dir_name=part,
                     scan_dir_path=str(current_path),
                     repo_root_path=repo_info.repo_root_path,
-                    repo_name=repo_info.repo_name
+                    repo_name=repo_info.repo_name,
+                    timestamp=repo_info.timestamp
                 )
 
             # Navigate to next level
