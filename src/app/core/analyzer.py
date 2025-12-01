@@ -2,6 +2,7 @@ from collections import defaultdict
 from pathlib import Path
 from tqdm import tqdm
 import time
+from datetime import datetime, timezone
 
 from src.app.hierarchy.hierarchy_builder import HierarchyBuilder
 from src.app.kpi.kpi_aggregator import KPIAggregator
@@ -242,7 +243,8 @@ class Analyzer:
             repo_root_path=repo_root,
             repo_name=repo_root_path.name,
             dir_name=repo_root_path.name,
-            scan_dir_path="."
+            scan_dir_path=".",
+            timestamp=datetime.now(timezone.utc).isoformat()
         )
 
         # Initialize timing accumulators
