@@ -150,8 +150,11 @@ def _add_basic_args(parser):
         "--extreme-complexity-threshold",
         type=int,
         default=Defaults.EXTREME_COMPLEXITY_THRESHOLD,
-        help=f"Threshold for extreme complexity in summary report. "
-             f"Files above this threshold are flagged as critical regardless of churn (default: {Defaults.EXTREME_COMPLEXITY_THRESHOLD})"
+        help=(
+            f"Threshold for extreme complexity in summary report. "
+            f"Files above this threshold are flagged as critical regardless of churn "
+            f"(default: {Defaults.EXTREME_COMPLEXITY_THRESHOLD})"
+        )
     )
 
 
@@ -181,7 +184,7 @@ def _add_output_args(parser):
         type=str,
         default=Defaults.OUTPUT_FORMAT,
         help=f"Output format: '{Defaults.OUTPUT_FORMAT}' (default dashboard), 'quick-wins' (prioritized improvements), "
-             "'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
+        "'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
     )
     parser.add_argument(
         "--output-formats",
