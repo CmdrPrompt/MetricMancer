@@ -52,6 +52,7 @@ class AppConfig:
     threshold_low: float = 10.0
     threshold_high: float = 20.0
     problem_file_threshold: Optional[float] = None
+    extreme_complexity_threshold: int = 100
 
     # Output settings
     output_format: str = "summary"  # Backward compatibility (singular)
@@ -142,6 +143,7 @@ class AppConfig:
             'threshold_low': args.threshold_low,
             'threshold_high': args.threshold_high,
             'problem_file_threshold': args.problem_file_threshold,
+            'extreme_complexity_threshold': getattr(args, 'extreme_complexity_threshold', 100),
         }
 
     @staticmethod

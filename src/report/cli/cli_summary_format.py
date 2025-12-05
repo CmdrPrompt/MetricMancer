@@ -17,17 +17,22 @@ class CLISummaryFormat(ReportFormatStrategy):
         Focuses on actionable insights and critical issues.
         """
 
+        # Get extreme complexity threshold from kwargs (default: 100)
+        extreme_threshold = kwargs.get('extreme_complexity_threshold', 100)
+
         # Collect all files and calculate statistics
         all_files = self._collect_all_files(repo_info)
         stats = self._calculate_statistics(all_files)
 
         # Categorize files by risk level
-        critical_files, emerging_files, high_complexity_files, high_churn_files = self._categorize_files(all_files)
+        critical_files, emerging_files, high_complexity_files, high_churn_files, extreme_files = self._categorize_files(
+            all_files, extreme_threshold=extreme_threshold
+        )
 
         # Print the dashboard
         self._print_header()
         self._print_overview(stats)
-        self._print_critical_issues(critical_files)
+        self._print_critical_issues(critical_files, extreme_files, extreme_threshold)
         self._print_high_priority(emerging_files, high_complexity_files, high_churn_files)
         self._print_health_metrics(stats)
         self._print_recommendations(critical_files, emerging_files, high_complexity_files, all_files)
@@ -62,22 +67,28 @@ class CLISummaryFormat(ReportFormatStrategy):
         if not files:
             return {
                 'total_files': 0,
-                'total_complexity': 0,
                 'avg_complexity': 0.0,
-                'min_complexity': 0,
                 'max_complexity': 0,
+                'avg_cognitive_complexity': 0.0,
+                'max_cognitive_complexity': 0,
                 'avg_churn': 0.0,
                 'total_churn': 0
             }
 
         complexities = []
+        cognitive_complexities = []
         churns = []
 
         for file_obj in files:
-            # Get complexity
+            # Get cyclomatic complexity
             complexity_kpi = file_obj.kpis.get('complexity')
             if complexity_kpi and complexity_kpi.value is not None:
                 complexities.append(complexity_kpi.value)
+
+            # Get cognitive complexity
+            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
+            if cognitive_kpi and cognitive_kpi.value is not None:
+                cognitive_complexities.append(cognitive_kpi.value)
 
             # Get churn
             churn_kpi = file_obj.kpis.get('churn')
@@ -85,59 +96,72 @@ class CLISummaryFormat(ReportFormatStrategy):
                 churns.append(churn_kpi.value)
 
         total_complexity = sum(complexities) if complexities else 0
+        total_cognitive = sum(cognitive_complexities) if cognitive_complexities else 0
         total_churn = sum(churns) if churns else 0
 
         return {
             'total_files': len(files),
-            'total_complexity': total_complexity,
             'avg_complexity': total_complexity / len(complexities) if complexities else 0.0,
-            'min_complexity': min(complexities) if complexities else 0,
             'max_complexity': max(complexities) if complexities else 0,
+            'avg_cognitive_complexity': total_cognitive / len(cognitive_complexities) if cognitive_complexities else 0.0,
+            'max_cognitive_complexity': max(cognitive_complexities) if cognitive_complexities else 0,
             'avg_churn': total_churn / len(churns) if churns else 0.0,
             'total_churn': total_churn
         }
 
-    def _categorize_files(self, files: List[File]) -> Tuple[List, List, List, List]:
+    def _categorize_files(self, files: List[File], extreme_threshold: int = 100) -> Tuple[List, List, List, List, List]:
         """
         Categorize files by risk level based on hotspot analysis criteria.
 
+        Args:
+            files: List of files to categorize
+            extreme_threshold: Complexity threshold for extreme complexity (default: 100)
+
         Returns:
-            Tuple of (critical_hotspots, emerging_hotspots, high_complexity, high_churn)
+            Tuple of (critical_hotspots, emerging_hotspots, high_complexity, high_churn, extreme_complexity)
+            Each list contains tuples: (file_obj, complexity, cognitive_complexity, churn, hotspot)
         """
         critical = []
         emerging = []
         high_complexity = []
         high_churn = []
+        extreme_complexity = []
 
         for file_obj in files:
             complexity_kpi = file_obj.kpis.get('complexity')
+            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
             churn_kpi = file_obj.kpis.get('churn')
             hotspot_kpi = file_obj.kpis.get('hotspot')
 
             complexity = complexity_kpi.value if complexity_kpi and complexity_kpi.value is not None else 0
+            cognitive_complexity = cognitive_kpi.value if cognitive_kpi and cognitive_kpi.value is not None else 0
             churn = churn_kpi.value if churn_kpi and churn_kpi.value is not None else 0
             hotspot = hotspot_kpi.value if hotspot_kpi and hotspot_kpi.value is not None else 0
 
+            # Extreme complexity: Files above extreme threshold (regardless of churn)
+            if complexity > extreme_threshold:
+                extreme_complexity.append((file_obj, complexity, cognitive_complexity, churn, hotspot))
             # Critical: High complexity AND high churn (from hotspot_analyzer criteria)
-            if complexity > 15 and churn > 10:
-                critical.append((file_obj, complexity, churn, hotspot))
+            elif complexity > 15 and churn > 10:
+                critical.append((file_obj, complexity, cognitive_complexity, churn, hotspot))
             # Emerging: Medium complexity AND high churn
             elif 5 <= complexity <= 15 and churn > 10:
-                emerging.append((file_obj, complexity, churn, hotspot))
+                emerging.append((file_obj, complexity, cognitive_complexity, churn, hotspot))
             # High complexity alone
             elif complexity > 15:
-                high_complexity.append((file_obj, complexity, churn, hotspot))
+                high_complexity.append((file_obj, complexity, cognitive_complexity, churn, hotspot))
             # High churn alone
             elif churn > 10:
-                high_churn.append((file_obj, complexity, churn, hotspot))
+                high_churn.append((file_obj, complexity, cognitive_complexity, churn, hotspot))
 
-        # Sort by hotspot score (highest first)
-        critical.sort(key=lambda x: x[3], reverse=True)
-        emerging.sort(key=lambda x: x[3], reverse=True)
+        # Sort by complexity (highest first) for extreme, hotspot score for others
+        extreme_complexity.sort(key=lambda x: x[1], reverse=True)
+        critical.sort(key=lambda x: x[4], reverse=True)
+        emerging.sort(key=lambda x: x[4], reverse=True)
         high_complexity.sort(key=lambda x: x[1], reverse=True)
-        high_churn.sort(key=lambda x: x[2], reverse=True)
+        high_churn.sort(key=lambda x: x[3], reverse=True)
 
-        return critical, emerging, high_complexity, high_churn
+        return critical, emerging, high_complexity, high_churn, extreme_complexity
 
     def _print_header(self):
         """Print the dashboard header."""
@@ -151,22 +175,35 @@ class CLISummaryFormat(ReportFormatStrategy):
         """Print overview statistics."""
         print("📊 OVERVIEW")
         print(f"   Files Analyzed:        {stats['total_files']}")
-        print(f"   Total Complexity:      {stats['total_complexity']:,}")
         print(f"   Average Complexity:    {stats['avg_complexity']:.1f}")
+        print(f"   Max Complexity:        {stats['max_complexity']}")
+        print(f"   Average Cognitive:     {stats['avg_cognitive_complexity']:.1f}")
+        print(f"   Max Cognitive:         {stats['max_cognitive_complexity']}")
         print()
 
-    def _print_critical_issues(self, critical_files: List):
-        """Print critical issues section."""
+    def _print_critical_issues(self, critical_files: List, extreme_files: List, extreme_threshold: int = 100):
+        """Print critical issues section with both hotspots and extreme complexity."""
         print("🔥 CRITICAL ISSUES (Immediate Attention Required)")
-        print(f"   Critical Hotspots:     {len(critical_files)} files")
+        print(f"   Critical Hotspots:     {len(critical_files)} files (High complexity + Active changes)")
+        print(f"   Extreme Complexity:    {len(extreme_files)} files (>{extreme_threshold} complexity, regardless of churn)")
 
-        if critical_files:
-            print("   Top 3 Risk Files:")
-            for i, (file_obj, complexity, churn, hotspot) in enumerate(critical_files[:3], 1):
+        # Combine and sort by a risk score (max of complexity and hotspot)
+        all_critical = []
+        for file_obj, complexity, cognitive_complexity, churn, hotspot in critical_files:
+            all_critical.append(('HOTSPOT', file_obj, complexity, cognitive_complexity, churn, hotspot))
+        for file_obj, complexity, cognitive_complexity, churn, hotspot in extreme_files:
+            all_critical.append(('EXTREME', file_obj, complexity, cognitive_complexity, churn, hotspot))
+
+        # Sort by complexity (highest first)
+        all_critical.sort(key=lambda x: x[2], reverse=True)
+
+        if all_critical:
+            print(f"   Top {min(5, len(all_critical))} Critical Files:")
+            for i, (category, file_obj, complexity, cognitive_complexity, churn, hotspot) in enumerate(all_critical[:5], 1):
                 file_path = self._get_file_path(file_obj)
-                print(f"   {i}. {file_path:40s} (Hotspot: {hotspot}, C:{complexity}, Churn:{churn})")
+                print(f"   {i}. {file_path:35s} (C:{complexity}, Cog:{cognitive_complexity}, Churn:{churn})")
         else:
-            print("   ✅ No critical hotspots detected")
+            print("   ✅ No critical issues detected")
         print()
 
     def _print_high_priority(self, emerging: List, high_complexity: List, high_churn: List):

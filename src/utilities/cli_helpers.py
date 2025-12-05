@@ -20,6 +20,10 @@ def _print_basic_usage():
         "  --problem-file-threshold     (Optional) Sets the threshold for individual file complexity. "
         "Files above this value are listed under each problematic folder in the summary."
     )
+    print(
+        "  --extreme-complexity-threshold  Threshold for extreme complexity (default: 100). "
+        "Files above this are flagged as critical in summary report regardless of churn."
+    )
 
 
 def _print_output_options():
@@ -139,6 +143,13 @@ def _add_basic_args(parser):
         type=float,
         default=None,
         help="Threshold for problem files (default: same as high threshold)"
+    )
+    parser.add_argument(
+        "--extreme-complexity-threshold",
+        type=int,
+        default=100,
+        help="Threshold for extreme complexity in summary report. "
+             "Files above this threshold are flagged as critical regardless of churn (default: 100)"
     )
 
 
