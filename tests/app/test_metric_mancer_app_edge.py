@@ -15,13 +15,13 @@ class TestMetricMancerAppEdgeCases(unittest.TestCase):
         mock_scanner.scan.return_value = []
         mock_analyzer.analyze.return_value = {}
         mock_report_cls = MagicMock()
-        # Note: Keeping legacy pattern here since empty dirs is edge case
-        # and AppConfig validates against this (which is better behavior)
-        app = MetricMancerApp([], report_generator_cls=mock_report_cls)
-        app.run()
-        mock_scanner.scan.assert_called_once_with([])
-        mock_analyzer.analyze.assert_called_once_with([])
-        mock_report_cls.assert_not_called()
+
+        # Empty directories should be caught early with ValueError (fail-fast behavior)
+        with self.assertRaises(ValueError) as cm:
+            config = AppConfig(directories=[])
+            app = MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
+
+        self.assertIn("At least one directory", str(cm.exception))
 
     @patch('src.app.metric_mancer_app.Config')
     @patch('src.app.metric_mancer_app.Scanner')

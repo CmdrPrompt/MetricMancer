@@ -17,7 +17,10 @@ def create_function_change_mock(
     change_type=ChangeType.ADDED,
     complexity_before=None,
     complexity_after=10,
-    complexity_delta=10
+    complexity_delta=10,
+    cognitive_complexity_before=None,
+    cognitive_complexity_after=0,
+    cognitive_complexity_delta=0
 ):
     """Helper to create properly mocked FunctionChange objects."""
     func = Mock(spec=FunctionChange)
@@ -29,6 +32,9 @@ def create_function_change_mock(
     func.complexity_before = complexity_before
     func.complexity_after = complexity_after
     func.complexity_delta = complexity_delta
+    func.cognitive_complexity_before = cognitive_complexity_before
+    func.cognitive_complexity_after = cognitive_complexity_after
+    func.cognitive_complexity_delta = cognitive_complexity_delta
     func.churn = 5
     func.hotspot_score = 50.0
     func.last_author = "test@example.com"

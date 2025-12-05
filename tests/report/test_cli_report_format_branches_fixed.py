@@ -201,19 +201,8 @@ class TestCLIReportFormatBranches:
         )
         scan_dir.files["tracked.py"] = tracked_file
 
-        # Define the is_tracked_file function that checks ownership
-        def is_tracked_file(file_obj):
-            co = file_obj.kpis.get('Code Ownership')
-            if not co or not hasattr(co, 'value'):
-                return False
-            if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
-                return False
-            if co.value.get('ownership') == 'N/A':
-                return False
-            return True
-
-        # Test - should find tracked file
-        result = self.formatter._has_tracked_files(scan_dir, is_tracked_file)
+        # Test - should find tracked file (now uses internal _is_tracked_file method)
+        result = self.formatter._has_tracked_files(scan_dir)
         assert result is True
 
     def test_has_tracked_files_with_no_ownership(self):
@@ -229,18 +218,8 @@ class TestCLIReportFormatBranches:
         )
         scan_dir.files["untracked.py"] = untracked_file
 
-        def is_tracked_file(file_obj):
-            co = file_obj.kpis.get('Code Ownership')
-            if not co or not hasattr(co, 'value'):
-                return False
-            if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
-                return False
-            if co.value.get('ownership') == 'N/A':
-                return False
-            return True
-
-        # Test - should not find any tracked files
-        result = self.formatter._has_tracked_files(scan_dir, is_tracked_file)
+        # Test - should not find any tracked files (now uses internal _is_tracked_file method)
+        result = self.formatter._has_tracked_files(scan_dir)
         assert result is False
 
     def test_collect_all_files_with_nested_structure(self):

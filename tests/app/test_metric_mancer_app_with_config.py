@@ -12,6 +12,7 @@ import tempfile
 
 from src.config.app_config import AppConfig
 from src.app.metric_mancer_app import MetricMancerApp
+import warnings
 
 
 class TestMetricMancerAppWithConfig(unittest.TestCase):
@@ -85,43 +86,6 @@ class TestMetricMancerAppWithConfig(unittest.TestCase):
         self.assertEqual(app.config.review_output, 'review.md')
         self.assertEqual(app.config.review_branch_only, True)
         self.assertEqual(app.config.review_base_branch, 'develop')
-
-    def test_backward_compatibility_with_individual_params(self):
-        """Test that old parameter-based initialization still works."""
-        # During transition, we want to maintain backward compatibility
-        app = MetricMancerApp(
-            directories=[self.temp_dir],
-            threshold_low=5.0,
-            threshold_high=15.0,
-            problem_file_threshold=10,
-            output_file='test_report.html'
-        )
-
-        # Should still work
-        self.assertIsNotNone(app)
-        self.assertEqual(app.threshold_low, 5.0)
-        self.assertEqual(app.directories, [self.temp_dir])
-
-    def test_config_parameter_takes_precedence(self):
-        """Test that config parameter overrides individual parameters if both provided."""
-        config = AppConfig(
-            directories=['/config/path'],
-            threshold_low=10.0,
-            threshold_high=20.0
-        )
-
-        # If both config and individual params provided, config should win
-        app = MetricMancerApp(
-            config=config,
-            directories=['/old/path'],
-            threshold_low=5.0,
-            threshold_high=15.0
-        )
-
-        # Config values should be used
-        self.assertEqual(app.config.directories, ['/config/path'])
-        self.assertEqual(app.config.threshold_low, 10.0)
-        self.assertEqual(app.config.threshold_high, 20.0)
 
     @patch('src.app.metric_mancer_app.Scanner')
     @patch('src.app.metric_mancer_app.Analyzer')

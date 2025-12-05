@@ -125,6 +125,38 @@ class KPIAggregator:
             debug_print(f"[KPIAggregator] Error aggregating file: {e}")
             return result
 
+    def _count_files_in_tree(self, directory_obj: Any) -> int:
+        """
+        Count total number of files in directory tree.
+
+        Args:
+            directory_obj: ScanDir object to count files from
+
+        Returns:
+            Total number of files in tree
+        """
+        count = 0
+
+        # Count files in this directory
+        files = getattr(directory_obj, 'files', {})
+        if isinstance(files, dict):
+            count += len(files)
+        elif isinstance(files, list):
+            count += len(files)
+
+        # Recursively count files in subdirectories
+        scan_dirs = getattr(directory_obj, 'scan_dirs', {})
+        if isinstance(scan_dirs, dict):
+            for subdir in scan_dirs.values():
+                count += self._count_files_in_tree(subdir)
+        else:
+            # Fallback for old 'children' attribute
+            children = getattr(directory_obj, 'children', [])
+            for child in children:
+                count += self._count_files_in_tree(child)
+
+        return count
+
     def aggregate_directory(self, directory_obj: Any) -> Dict[str, Any]:
         """
         Aggregate KPIs for a directory and all its children (Composite pattern).
@@ -132,34 +164,34 @@ class KPIAggregator:
         This method implements recursive aggregation following the Composite pattern:
         1. Recursively aggregates KPIs from all subdirectories
         2. Aggregates KPIs from all files in this directory
-        3. Combines all values using aggregation functions
+        3. Calculates averages across all files in the tree
         4. Updates the directory's kpis dictionary with aggregated values
 
         Integrates with HierarchyBuilder (Phase 3):
-        - Expects ScanDir objects with children and files attributes
+        - Expects ScanDir objects with scan_dirs (dict) and files (dict) attributes
         - Recursively processes entire tree structure
         - Updates KPIs in-place for each directory node
 
         Args:
-            directory_obj: ScanDir object with files, children, and kpis attributes
+            directory_obj: ScanDir object with files, scan_dirs, and kpis attributes
                           (created by HierarchyBuilder)
 
         Returns:
-            Dictionary mapping KPI names to aggregated values
+            Dictionary mapping KPI names to average values
 
         Example:
             >>> # Directory structure built by HierarchyBuilder
             >>> root = ScanDir(name="src")
             >>> # After FileAnalyzer has processed all files
             >>> result = aggregator.aggregate_directory(root)
-            >>> print(result["complexity"])  # Sum of all file complexities
-            150
+            >>> print(result["complexity"])  # Average complexity across all files
+            15.5
             >>> # root.kpis now contains aggregated values
 
         Algorithm:
             1. Collect KPI values from subdirectories (recursive)
             2. Collect KPI values from files (base case)
-            3. Apply aggregation function per KPI type
+            3. Calculate average for each KPI type
             4. Update directory object with aggregated KPIs
 
         Performance:
@@ -172,48 +204,50 @@ class KPIAggregator:
             kpi_values: Dict[str, List[Any]] = {}
 
             # 1. Recursively aggregate subdirectories (Composite pattern)
+            # Support both new 'scan_dirs' (dict) and old 'children' (list) attributes
+            scan_dirs = getattr(directory_obj, 'scan_dirs', {})
+            if isinstance(scan_dirs, dict) and scan_dirs:
+                debug_print(f"[KPIAggregator] Aggregating {len(scan_dirs)} subdirectories")
+                for subdir in scan_dirs.values():
+                    child_kpis = self.aggregate_directory(subdir)
+
+                    # Collect values from child (these are already averages)
+                    # We need to re-aggregate from files, not from averages
+                    # So we skip this step and only aggregate from files directly
+
+            # Fallback for old 'children' attribute
             children = getattr(directory_obj, 'children', [])
             if children:
-                debug_print(f"[KPIAggregator] Aggregating {len(children)} subdirectories")
+                debug_print(f"[KPIAggregator] Aggregating {len(children)} subdirectories (old format)")
                 for child in children:
                     child_kpis = self.aggregate_directory(child)
 
-                    # Collect values from child
-                    for kpi_name, kpi_value in child_kpis.items():
-                        if kpi_name not in kpi_values:
-                            kpi_values[kpi_name] = []
-                        kpi_values[kpi_name].append(kpi_value)
+            # 2. Collect KPI values from all files in tree (recursive)
+            self._collect_file_kpis(directory_obj, kpi_values)
 
-            # 2. Aggregate files in this directory
-            files = getattr(directory_obj, 'files', [])
-            if files:
-                debug_print(f"[KPIAggregator] Aggregating {len(files)} files")
-                for file_obj in files:
-                    file_kpis = self.aggregate_file(file_obj)
-
-                    # Collect values from file
-                    for kpi_name, kpi_value in file_kpis.items():
-                        if kpi_name not in kpi_values:
-                            kpi_values[kpi_name] = []
-                        kpi_values[kpi_name].append(kpi_value)
-
-            # 3. Apply aggregation functions
+            # 3. Calculate averages
             result = {}
             for kpi_name, values in kpi_values.items():
                 if not values:
                     continue
 
-                # Get aggregation function for this KPI (default: sum)
-                # Allows different strategies per KPI type
-                agg_func = self.aggregation_functions.get(kpi_name, sum)
-
-                try:
-                    aggregated_value = agg_func(values)
-                    result[kpi_name] = aggregated_value
-                except (TypeError, ValueError) as e:
-                    debug_print(f"[KPIAggregator] Error aggregating {kpi_name}: {e}")
-                    # Skip this KPI on error - fail gracefully
-                    continue
+                # Use custom aggregation function if provided, otherwise calculate average
+                if kpi_name in self.aggregation_functions:
+                    agg_func = self.aggregation_functions[kpi_name]
+                    try:
+                        aggregated_value = agg_func(values)
+                        result[kpi_name] = aggregated_value
+                    except (TypeError, ValueError) as e:
+                        debug_print(f"[KPIAggregator] Error aggregating {kpi_name}: {e}")
+                        continue
+                else:
+                    # Default: calculate average
+                    try:
+                        avg_value = sum(values) / len(values) if values else 0
+                        result[kpi_name] = round(avg_value, 1)
+                    except (TypeError, ValueError) as e:
+                        debug_print(f"[KPIAggregator] Error averaging {kpi_name}: {e}")
+                        continue
 
             # 4. Update directory's kpis dictionary with aggregated values
             # This makes the aggregated values available for reporting
@@ -230,7 +264,7 @@ class KPIAggregator:
 
                     directory_obj.kpis[kpi_name] = AggregatedKPI(kpi_name, agg_value)
 
-            dir_name = getattr(directory_obj, 'name', 'unknown')
+            dir_name = getattr(directory_obj, 'dir_name', getattr(directory_obj, 'name', 'unknown'))
             debug_print(f"[KPIAggregator] Aggregated directory {dir_name}: {result}")
 
             return result
@@ -238,3 +272,35 @@ class KPIAggregator:
         except Exception as e:
             debug_print(f"[KPIAggregator] Error aggregating directory: {e}")
             return {}
+
+    def _collect_file_kpis(self, directory_obj: Any, kpi_values: Dict[str, List[Any]]) -> None:
+        """
+        Recursively collect KPI values from all files in directory tree.
+
+        Args:
+            directory_obj: ScanDir object to collect from
+            kpi_values: Dictionary to accumulate KPI values (modified in place)
+        """
+        # Collect from files in this directory
+        files = getattr(directory_obj, 'files', {})
+
+        # Handle both dict and list formats
+        file_list = files.values() if isinstance(files, dict) else files
+
+        for file_obj in file_list:
+            file_kpis = self.aggregate_file(file_obj)
+            for kpi_name, kpi_value in file_kpis.items():
+                if kpi_name not in kpi_values:
+                    kpi_values[kpi_name] = []
+                kpi_values[kpi_name].append(kpi_value)
+
+        # Recursively collect from subdirectories
+        scan_dirs = getattr(directory_obj, 'scan_dirs', {})
+        if isinstance(scan_dirs, dict):
+            for subdir in scan_dirs.values():
+                self._collect_file_kpis(subdir, kpi_values)
+        else:
+            # Fallback for old 'children' attribute
+            children = getattr(directory_obj, 'children', [])
+            for child in children:
+                self._collect_file_kpis(child, kpi_values)

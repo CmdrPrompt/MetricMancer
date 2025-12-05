@@ -25,6 +25,22 @@ class ReviewRecommendation:
 class CodeReviewAdvisor:
     """Generates code review recommendations based on complexity, churn, and ownership metrics."""
 
+    # Risk classification thresholds
+    COMPLEXITY_HIGH = 15  # Complexity above this is considered high
+    COMPLEXITY_CRITICAL = 50  # Complexity above this requires senior architect
+    COMPLEXITY_LOW = 5  # Complexity below this is considered low
+
+    CHURN_HIGH = 10  # Churn above this indicates instability
+    CHURN_LOW = 5  # Churn at or below this indicates stability
+
+    # Hotspot score thresholds (complexity × churn)
+    HOTSPOT_CRITICAL = 150  # Critical hotspot requiring immediate attention
+    HOTSPOT_HIGH = 75  # High-risk hotspot
+    HOTSPOT_MEDIUM = 25  # Medium-risk hotspot
+
+    # Reviewer count thresholds
+    REVIEWER_COMPLEXITY_HIGH = 20  # Complexity above this needs 2 reviewers
+
     def __init__(self):
         self.recommendations = []
 
@@ -73,19 +89,19 @@ class CodeReviewAdvisor:
 
     def _classify_risk(self, complexity: int, churn: float, hotspot: int) -> Tuple[str, str]:
         """Classify file into risk level and category."""
-        if complexity > 15 and churn > 10:
+        if complexity > self.COMPLEXITY_HIGH and churn > self.CHURN_HIGH:
             return ("critical", "critical_hotspot")
-        elif complexity > 15 and churn <= 5:
+        elif complexity > self.COMPLEXITY_HIGH and churn <= self.CHURN_LOW:
             return ("medium", "stable_complexity")
-        elif 5 <= complexity <= 15 and churn > 10:
+        elif self.COMPLEXITY_LOW <= complexity <= self.COMPLEXITY_HIGH and churn > self.CHURN_HIGH:
             return ("high", "emerging_hotspot")
-        elif complexity < 5 and churn > 10:
+        elif complexity < self.COMPLEXITY_LOW and churn > self.CHURN_HIGH:
             return ("low", "active_simple")
-        elif hotspot > 150:
+        elif hotspot > self.HOTSPOT_CRITICAL:
             return ("critical", "critical_hotspot")
-        elif hotspot > 75:
+        elif hotspot > self.HOTSPOT_HIGH:
             return ("high", "high_risk")
-        elif hotspot > 25:
+        elif hotspot > self.HOTSPOT_MEDIUM:
             return ("medium", "medium_risk")
         else:
             return ("low", "low_risk")
@@ -153,9 +169,9 @@ class CodeReviewAdvisor:
         Returns:
             Tuple of (reviewer_count, rationale_string)
         """
-        if risk_level == "critical" or complexity > 50:
+        if risk_level == "critical" or complexity > self.COMPLEXITY_CRITICAL:
             return (3, "Senior architect + 2 reviewers (critical risk/high complexity)")
-        elif risk_level == "high" or complexity > 20:
+        elif risk_level == "high" or complexity > self.REVIEWER_COMPLEXITY_HIGH:
             return (2, "Senior developer + peer reviewer (elevated risk)")
         else:
             return (1, "Standard peer review (low-medium risk)")
@@ -178,9 +194,9 @@ class CodeReviewAdvisor:
         }
 
         # Add focus areas based on conditions
-        if complexity > 15:
+        if complexity > self.COMPLEXITY_HIGH:
             focus_areas.extend(complexity_areas)
-        if churn > 10:
+        if churn > self.CHURN_HIGH:
             focus_areas.extend(churn_areas)
         if category == "critical_hotspot":
             focus_areas.extend(critical_areas)

@@ -76,6 +76,11 @@ class DeltaReviewStrategyFormat:
             len(delta.deleted_functions)
         )
 
+        # Calculate cognitive complexity delta
+        total_cognitive_delta = sum(
+            f.cognitive_complexity_delta for f in (delta.added_functions + delta.modified_functions + delta.deleted_functions)
+        )
+
         lines = [
             "## Overview",
             "",
@@ -88,17 +93,27 @@ class DeltaReviewStrategyFormat:
             f"  - Modified: {len(delta.modified_functions)}",
             f"  - Deleted: {len(delta.deleted_functions)}",
             "",
-            f"- **Complexity Delta:** {delta.total_complexity_delta:+d}",
+            f"- **Cyclomatic Complexity Delta:** {delta.total_complexity_delta:+d}",
+            f"- **Cognitive Complexity Delta:** {total_cognitive_delta:+d}",
             f"- **Estimated Review Time:** {self._format_time(delta.total_review_time_minutes)}",
             "",
         ]
 
         # Highlight if complexity increased significantly
         if delta.total_complexity_delta > 20:
-            lines.append("⚠️  **Warning:** Significant complexity increase detected!")
+            lines.append("⚠️  **Warning:** Significant cyclomatic complexity increase detected!")
             lines.append("")
         elif delta.total_complexity_delta < -20:
-            lines.append("✅ **Good:** Significant complexity reduction!")
+            lines.append("✅ **Good:** Significant cyclomatic complexity reduction!")
+            lines.append("")
+
+        if total_cognitive_delta > 15:
+            lines.append("⚠️  **Warning:** Significant cognitive complexity increase detected!")
+            lines.append("         Code is becoming harder to understand.")
+            lines.append("")
+        elif total_cognitive_delta < -15:
+            lines.append("✅ **Good:** Significant cognitive complexity reduction!")
+            lines.append("         Code is becoming easier to understand.")
             lines.append("")
 
         return "\n".join(lines)
@@ -239,17 +254,30 @@ class DeltaReviewStrategyFormat:
             lines.append(f"**File:** {change.file_path} (lines {change.start_line}-{change.end_line})")
             lines.append("")
 
-            # Complexity info
+            # Cyclomatic Complexity info
             if change.complexity_before is not None and change.complexity_after is not None:
                 delta_str = f"{change.complexity_delta:+d}"
                 lines.append(
-                    f"- **Complexity:** {change.complexity_before} → {change.complexity_after} "
+                    f"- **Cyclomatic Complexity:** {change.complexity_before} → {change.complexity_after} "
                     f"({delta_str}) {icon}"
                 )
             elif change.complexity_after is not None:
-                lines.append(f"- **Complexity:** {change.complexity_after}")
+                lines.append(f"- **Cyclomatic Complexity:** {change.complexity_after}")
             elif change.complexity_before is not None:
-                lines.append(f"- **Complexity:** {change.complexity_before} (deleted)")
+                lines.append(f"- **Cyclomatic Complexity:** {change.complexity_before} (deleted)")
+
+            # Cognitive Complexity info
+            if change.cognitive_complexity_before is not None and change.cognitive_complexity_after is not None:
+                cog_delta_str = f"{change.cognitive_complexity_delta:+d}"
+                cog_icon = "🟢" if change.cognitive_complexity_delta <= 0 else ("🟡" if change.cognitive_complexity_delta <= 5 else "🔴")
+                lines.append(
+                    f"- **Cognitive Complexity:** {change.cognitive_complexity_before} → {change.cognitive_complexity_after} "
+                    f"({cog_delta_str}) {cog_icon}"
+                )
+            elif change.cognitive_complexity_after is not None:
+                lines.append(f"- **Cognitive Complexity:** {change.cognitive_complexity_after}")
+            elif change.cognitive_complexity_before is not None:
+                lines.append(f"- **Cognitive Complexity:** {change.cognitive_complexity_before} (deleted)")
 
             # Additional metrics
             lines.append(f"- **Hotspot Score:** {change.hotspot_score:.0f}")
