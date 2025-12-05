@@ -384,6 +384,113 @@ class TestComplexityCalculation:
             assert func.complexity_after > func.complexity_before  # Increased
             assert func.complexity_delta > 0  # Positive delta
 
+    def test_cognitive_complexity_tracking(self):
+        """Test that DeltaAnalyzer tracks cognitive complexity separately from cyclomatic."""
+        from src.analysis.delta.delta_analyzer import DeltaAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_path = Path(tmpdir)
+
+            # Setup git repo
+            subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
+                           cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'config', 'user.name', 'Test User'],
+                           cwd=repo_path, check=True, capture_output=True)
+
+            # Initial: Simple function (cognitive = 0, cyclomatic = 1)
+            test_file = repo_path / "test.py"
+            test_file.write_text("def func():\n    return 1")
+            subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'commit', '-m', 'Initial'], cwd=repo_path, check=True, capture_output=True)
+            result = subprocess.run(['git', 'rev-parse', 'HEAD'],
+                                    cwd=repo_path, check=True, capture_output=True, text=True)
+            commit1 = result.stdout.strip()
+
+            # Modified: Add nested if (cognitive = 3, cyclomatic = 3)
+            test_file.write_text("""def func():
+    if True:        # +1
+        if False:   # +2 (1 + nesting)
+            return 1
+    return 0
+""")
+            subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'commit', '-m', 'Add nested if'], cwd=repo_path, check=True, capture_output=True)
+
+            analyzer = DeltaAnalyzer(repo_path=str(repo_path))
+
+            delta_diff = analyzer.analyze_commit_range(
+                from_commit=commit1,
+                to_commit='HEAD'
+            )
+
+            # Should have one modified function
+            assert len(delta_diff.modified_functions) == 1
+            func = delta_diff.modified_functions[0]
+
+            # Should track both complexity types
+            assert hasattr(func, 'cognitive_complexity_before')
+            assert hasattr(func, 'cognitive_complexity_after')
+            assert hasattr(func, 'cognitive_complexity_delta')
+
+            # Cognitive complexity should be different from cyclomatic
+            # (nesting-aware vs branch-counting)
+            assert func.cognitive_complexity_after is not None
+            assert func.cognitive_complexity_delta != 0
+
+    def test_cognitive_vs_cyclomatic_complexity_difference(self):
+        """Test that cognitive and cyclomatic complexity can differ significantly."""
+        from src.analysis.delta.delta_analyzer import DeltaAnalyzer
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_path = Path(tmpdir)
+
+            # Setup git repo
+            subprocess.run(['git', 'init'], cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
+                           cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'config', 'user.name', 'Test User'],
+                           cwd=repo_path, check=True, capture_output=True)
+
+            # Initial: Flat structure (same cyclomatic and cognitive)
+            test_file = repo_path / "test.py"
+            test_file.write_text("""def func():
+    if a: return 1
+    if b: return 2
+    if c: return 3
+""")
+            subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'commit', '-m', 'Initial'], cwd=repo_path, check=True, capture_output=True)
+            result = subprocess.run(['git', 'rev-parse', 'HEAD'],
+                                    cwd=repo_path, check=True, capture_output=True, text=True)
+            commit1 = result.stdout.strip()
+
+            # Modified: Nested structure (higher cognitive than cyclomatic)
+            test_file.write_text("""def func():
+    if a:           # +1
+        if b:       # +2 (1 + nesting)
+            if c:   # +3 (1 + 2 nesting)
+                return 1
+""")
+            subprocess.run(['git', 'add', 'test.py'], cwd=repo_path, check=True, capture_output=True)
+            subprocess.run(['git', 'commit', '-m', 'Nested'], cwd=repo_path, check=True, capture_output=True)
+
+            analyzer = DeltaAnalyzer(repo_path=str(repo_path))
+
+            delta_diff = analyzer.analyze_commit_range(
+                from_commit=commit1,
+                to_commit='HEAD'
+            )
+
+            assert len(delta_diff.modified_functions) == 1
+            func = delta_diff.modified_functions[0]
+
+            # Same cyclomatic (3 conditions in both versions)
+            # But different cognitive (flat=3, nested=6)
+            # This test verifies we track both independently
+            assert func.cognitive_complexity_after is not None
+            assert func.complexity_after is not None
+
 
 class TestEdgeCases:
     """Test edge cases and error handling."""

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict, List, Optional
 from src.kpis.base_kpi import BaseKPI
 
 
@@ -31,6 +31,7 @@ class BaseDir:
     scan_dir_path: str  # Relative path from repo_root
     repo_root_path: str
     repo_name: str
+    timestamp: Optional[str] = None  # ISO 8601 timestamp of analysis
 
 
 @dataclass

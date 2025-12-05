@@ -7,12 +7,14 @@ to provide precise function-level delta analysis between commits/branches.
 
 import os
 import subprocess
+import textwrap
 from typing import Optional, List, Dict, Any
 from datetime import datetime
 
 from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
 from src.analysis.delta.function_diff_parser import FunctionDiffParser
 from src.kpis.complexity.analyzer import ComplexityAnalyzer
+from src.kpis.cognitive_complexity.calculator_factory import CognitiveComplexityCalculatorFactory
 from src.languages.config import LANGUAGES
 from src.utilities.git_helpers import find_git_repo_root
 
@@ -36,6 +38,7 @@ class DeltaAnalyzer:
         self.repo_root = find_git_repo_root(repo_path)
         self.diff_parser = FunctionDiffParser()
         self.complexity_analyzer = ComplexityAnalyzer()
+        self.cognitive_complexity_factory = CognitiveComplexityCalculatorFactory()
 
     def analyze_branch_delta(
         self,
@@ -222,6 +225,18 @@ class DeltaAnalyzer:
                         language_config
                     )
 
+                    # Calculate cognitive complexity
+                    base_cognitive = self._calculate_function_cognitive_complexity(
+                        base_content,
+                        base_func,
+                        file_path
+                    )
+                    target_cognitive = self._calculate_function_cognitive_complexity(
+                        target_content,
+                        target_func,
+                        file_path
+                    )
+
                     function_change = FunctionChange(
                         file_path=file_path,
                         function_name=func_name,
@@ -231,6 +246,9 @@ class DeltaAnalyzer:
                         complexity_before=base_complexity,
                         complexity_after=target_complexity,
                         complexity_delta=target_complexity - base_complexity,
+                        cognitive_complexity_before=base_cognitive,
+                        cognitive_complexity_after=target_cognitive,
+                        cognitive_complexity_delta=target_cognitive - base_cognitive,
                         churn=1,  # Will be calculated in Phase 3
                         hotspot_score=float(target_complexity * 1),  # complexity × churn
                         last_author="unknown",  # Will be calculated in Phase 3
@@ -248,6 +266,12 @@ class DeltaAnalyzer:
                         language_config
                     )
 
+                    target_cognitive = self._calculate_function_cognitive_complexity(
+                        target_content,
+                        target_func,
+                        file_path
+                    )
+
                     function_change = FunctionChange(
                         file_path=file_path,
                         function_name=func_name,
@@ -257,6 +281,9 @@ class DeltaAnalyzer:
                         complexity_before=None,
                         complexity_after=target_complexity,
                         complexity_delta=target_complexity,
+                        cognitive_complexity_before=None,
+                        cognitive_complexity_after=target_cognitive,
+                        cognitive_complexity_delta=target_cognitive,
                         churn=1,
                         hotspot_score=float(target_complexity * 1),
                         last_author="unknown",
@@ -276,6 +303,12 @@ class DeltaAnalyzer:
                         language_config
                     )
 
+                    base_cognitive = self._calculate_function_cognitive_complexity(
+                        base_content,
+                        base_func,
+                        file_path
+                    )
+
                     function_change = FunctionChange(
                         file_path=file_path,
                         function_name=base_func['name'],
@@ -285,6 +318,9 @@ class DeltaAnalyzer:
                         complexity_before=base_complexity,
                         complexity_after=None,
                         complexity_delta=-base_complexity,
+                        cognitive_complexity_before=base_cognitive,
+                        cognitive_complexity_after=None,
+                        cognitive_complexity_delta=-base_cognitive,
                         churn=1,
                         hotspot_score=0.0,
                         last_author="unknown",
@@ -389,6 +425,61 @@ class DeltaAnalyzer:
         complexity, _ = self.complexity_analyzer.calculate_for_file(function_code, language_config)
 
         return complexity if complexity > 0 else 1  # Minimum complexity is 1
+
+    def _calculate_function_cognitive_complexity(
+        self,
+        file_content: str,
+        function: Dict[str, Any],
+        file_path: str
+    ) -> int:
+        """
+        Calculate cognitive complexity for a specific function.
+
+        Args:
+            file_content: Full file source code
+            function: Function dict with start_line and end_line
+            file_path: File path (used to determine language from extension)
+
+        Returns:
+            Cognitive complexity of the function (0 if not supported)
+        """
+        # Create cognitive complexity calculator based on file extension
+        calculator = self.cognitive_complexity_factory.create(file_path)
+        if calculator is None:
+            # Language not supported for cognitive complexity
+            return 0
+
+        # Calculate cognitive complexity
+        try:
+            # Extract just the function's code
+            lines = file_content.split('\n')
+            start = function['start_line'] - 1  # Convert to 0-indexed
+            end = function['end_line']
+            function_code = '\n'.join(lines[start:end])
+
+            # CRITICAL FIX: Remove leading indentation for class methods
+            # Python's ast.parse() cannot parse indented code (e.g., class methods)
+            # textwrap.dedent() removes common leading whitespace
+            function_code = textwrap.dedent(function_code)
+
+            # Calculate for file returns dict {function_name: complexity}
+            complexity_map = calculator.calculate_for_file(function_code)
+
+            # Get the function name
+            func_name = function['name']
+
+            # Return cognitive complexity for this function
+            # If multiple functions, get the first one (should be the only one)
+            if func_name in complexity_map:
+                return complexity_map[func_name]
+            elif complexity_map:
+                # Return the first (and likely only) function's complexity
+                return list(complexity_map.values())[0]
+            else:
+                return 0
+        except Exception as e:
+            # Silently return 0 if calculation fails
+            return 0
 
     def _estimate_review_time(self, complexity: int) -> int:
         """

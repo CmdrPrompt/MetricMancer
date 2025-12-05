@@ -32,9 +32,17 @@ class FunctionChange:
     start_line: int
     end_line: int
     change_type: ChangeType
+
+    # Cyclomatic complexity (branch coverage metric)
     complexity_before: Optional[int]  # None for ADDED functions
     complexity_after: Optional[int]   # None for DELETED functions
     complexity_delta: int             # Positive = increase, Negative = refactoring
+
+    # Cognitive complexity (understandability metric - nesting-aware)
+    cognitive_complexity_before: Optional[int]  # None for ADDED functions
+    cognitive_complexity_after: Optional[int]   # None for DELETED functions
+    cognitive_complexity_delta: int             # Positive = harder to understand
+
     churn: int                        # Number of times this function has changed
     hotspot_score: float              # complexity × churn (Tornhill's hotspot formula)
     last_author: str
