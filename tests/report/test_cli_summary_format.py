@@ -21,8 +21,8 @@ class TestCLISummaryFormat(unittest.TestCase):
         self.mock_debug_print = MagicMock()
 
     def _create_mock_file(self, name: str, file_path: str, complexity: int = 5,
-                          churn: float = 3.0, hotspot: float = 15.0,
-                          has_ownership: bool = True) -> File:
+                          cognitive_complexity: int = None, churn: float = 3.0,
+                          hotspot: float = 15.0, has_ownership: bool = True) -> File:
         """Helper to create a mock File object with KPIs."""
         file_obj = File(name=name, file_path=file_path)
 
@@ -30,6 +30,11 @@ class TestCLISummaryFormat(unittest.TestCase):
         complexity_kpi = MagicMock(spec=BaseKPI)
         complexity_kpi.value = complexity
         file_obj.kpis['complexity'] = complexity_kpi
+
+        # Add cognitive complexity (default to cyclomatic if not specified)
+        cognitive_kpi = MagicMock(spec=BaseKPI)
+        cognitive_kpi.value = cognitive_complexity if cognitive_complexity is not None else complexity
+        file_obj.kpis['cognitive_complexity'] = cognitive_kpi
 
         churn_kpi = MagicMock(spec=BaseKPI)
         churn_kpi.value = churn
@@ -145,22 +150,37 @@ class TestCalculateStatistics(TestCLISummaryFormat):
         stats = self.formatter._calculate_statistics(files)
 
         self.assertEqual(stats['total_files'], 3)
-        self.assertEqual(stats['total_complexity'], 45)
         self.assertAlmostEqual(stats['avg_complexity'], 15.0)
-        self.assertEqual(stats['min_complexity'], 10)
         self.assertEqual(stats['max_complexity'], 20)
         self.assertAlmostEqual(stats['avg_churn'], 7.5)
         self.assertAlmostEqual(stats['total_churn'], 22.5)
+
+    def test_calculate_stats_with_cognitive_complexity(self):
+        """Test statistics calculation includes cognitive complexity."""
+        files = [
+            self._create_mock_file('f1.py', 'src/f1.py', complexity=10, cognitive_complexity=8, churn=5.0),
+            self._create_mock_file('f2.py', 'src/f2.py', complexity=20, cognitive_complexity=25, churn=10.0),
+            self._create_mock_file('f3.py', 'src/f3.py', complexity=15, cognitive_complexity=12, churn=7.5),
+        ]
+
+        stats = self.formatter._calculate_statistics(files)
+
+        # Cyclomatic complexity stats
+        self.assertAlmostEqual(stats['avg_complexity'], 15.0)
+        self.assertEqual(stats['max_complexity'], 20)
+
+        # Cognitive complexity stats
+        self.assertAlmostEqual(stats['avg_cognitive_complexity'], 15.0)
+        self.assertEqual(stats['max_cognitive_complexity'], 25)
 
     def test_calculate_stats_empty(self):
         """Test statistics calculation with no files."""
         stats = self.formatter._calculate_statistics([])
 
         self.assertEqual(stats['total_files'], 0)
-        self.assertEqual(stats['total_complexity'], 0)
         self.assertEqual(stats['avg_complexity'], 0.0)
-        self.assertEqual(stats['min_complexity'], 0)
         self.assertEqual(stats['max_complexity'], 0)
+        self.assertEqual(stats['max_cognitive_complexity'], 0)
 
     def test_calculate_stats_with_missing_kpis(self):
         """Test statistics calculation when some files lack KPIs."""
@@ -183,7 +203,7 @@ class TestCalculateStatistics(TestCLISummaryFormat):
         stats = self.formatter._calculate_statistics([file1, file2])
 
         self.assertEqual(stats['total_files'], 2)
-        self.assertEqual(stats['total_complexity'], 10)  # Only file1
+        self.assertEqual(stats['max_complexity'], 10)  # Only file1 has complexity
         self.assertAlmostEqual(stats['avg_complexity'], 10.0)  # Only file1
         self.assertAlmostEqual(stats['total_churn'], 15.0)  # Both files
 
@@ -198,13 +218,14 @@ class TestCategorizeFiles(TestCLISummaryFormat):
             complexity=20, churn=15.0, hotspot=300.0
         )
 
-        crit, emerg, high_c, high_ch = self.formatter._categorize_files([critical])
+        crit, emerg, high_c, high_ch, extreme = self.formatter._categorize_files([critical], extreme_threshold=100)
 
         self.assertEqual(len(crit), 1)
         self.assertEqual(crit[0][0], critical)
         self.assertEqual(len(emerg), 0)
         self.assertEqual(len(high_c), 0)
         self.assertEqual(len(high_ch), 0)
+        self.assertEqual(len(extreme), 0)
 
     def test_categorize_emerging_hotspot(self):
         """Test categorization of emerging hotspots (5<C<=15, Churn>10)."""
@@ -213,11 +234,12 @@ class TestCategorizeFiles(TestCLISummaryFormat):
             complexity=10, churn=12.0, hotspot=120.0
         )
 
-        crit, emerg, high_c, high_ch = self.formatter._categorize_files([emerging])
+        crit, emerg, high_c, high_ch, extreme = self.formatter._categorize_files([emerging], extreme_threshold=100)
 
         self.assertEqual(len(crit), 0)
         self.assertEqual(len(emerg), 1)
         self.assertEqual(emerg[0][0], emerging)
+        self.assertEqual(len(extreme), 0)
 
     def test_categorize_high_complexity_only(self):
         """Test categorization of high complexity files (C>15, Churn<=10)."""
@@ -226,12 +248,13 @@ class TestCategorizeFiles(TestCLISummaryFormat):
             complexity=20, churn=5.0, hotspot=100.0
         )
 
-        crit, emerg, high_c, high_ch = self.formatter._categorize_files([high_complexity])
+        crit, emerg, high_c, high_ch, extreme = self.formatter._categorize_files([high_complexity], extreme_threshold=100)
 
         self.assertEqual(len(crit), 0)
         self.assertEqual(len(emerg), 0)
         self.assertEqual(len(high_c), 1)
         self.assertEqual(high_c[0][0], high_complexity)
+        self.assertEqual(len(extreme), 0)
 
     def test_categorize_high_churn_only(self):
         """Test categorization of high churn files (C<5, Churn>10)."""
@@ -240,13 +263,14 @@ class TestCategorizeFiles(TestCLISummaryFormat):
             complexity=3, churn=15.0, hotspot=45.0
         )
 
-        crit, emerg, high_c, high_ch = self.formatter._categorize_files([high_churn])
+        crit, emerg, high_c, high_ch, extreme = self.formatter._categorize_files([high_churn], extreme_threshold=100)
 
         self.assertEqual(len(crit), 0)
         self.assertEqual(len(emerg), 0)
         self.assertEqual(len(high_c), 0)
         self.assertEqual(len(high_ch), 1)
         self.assertEqual(high_ch[0][0], high_churn)
+        self.assertEqual(len(extreme), 0)
 
     def test_categorize_sorted_by_hotspot(self):
         """Test that files are sorted by hotspot score (descending)."""
@@ -257,7 +281,7 @@ class TestCategorizeFiles(TestCLISummaryFormat):
         file3 = self._create_mock_file('f3.py', 'src/f3.py',
                                        complexity=20, churn=15.0, hotspot=200.0)
 
-        crit, _, _, _ = self.formatter._categorize_files([file1, file2, file3])
+        crit, _, _, _, _ = self.formatter._categorize_files([file1, file2, file3], extreme_threshold=100)
 
         self.assertEqual(len(crit), 3)
         self.assertEqual(crit[0][0], file2)  # Highest hotspot first
@@ -266,20 +290,59 @@ class TestCategorizeFiles(TestCLISummaryFormat):
 
     def test_categorize_mixed_files(self):
         """Test categorization with multiple file types."""
-        critical = self._create_mock_file('c.py', 'c.py', 20, 15.0, 300.0)
-        emerging = self._create_mock_file('e.py', 'e.py', 10, 12.0, 120.0)
-        high_c = self._create_mock_file('hc.py', 'hc.py', 20, 5.0, 100.0)
-        high_ch = self._create_mock_file('hch.py', 'hch.py', 3, 15.0, 45.0)  # Changed from 5 to 3
-        normal = self._create_mock_file('n.py', 'n.py', 3, 5.0, 15.0)  # Changed from 5 to 3
+        critical = self._create_mock_file('c.py', 'c.py', complexity=20, churn=15.0, hotspot=300.0)
+        emerging = self._create_mock_file('e.py', 'e.py', complexity=10, churn=12.0, hotspot=120.0)
+        high_c = self._create_mock_file('hc.py', 'hc.py', complexity=20, churn=5.0, hotspot=100.0)
+        high_ch = self._create_mock_file('hch.py', 'hch.py', complexity=3, churn=15.0, hotspot=45.0)
+        normal = self._create_mock_file('n.py', 'n.py', complexity=3, churn=5.0, hotspot=15.0)
 
-        crit, emerg, h_c, h_ch = self.formatter._categorize_files(
-            [critical, emerging, high_c, high_ch, normal]
+        crit, emerg, h_c, h_ch, extreme = self.formatter._categorize_files(
+            [critical, emerging, high_c, high_ch, normal],
+            extreme_threshold=100
         )
 
         self.assertEqual(len(crit), 1)
         self.assertEqual(len(emerg), 1)
         self.assertEqual(len(h_c), 1)
         self.assertEqual(len(h_ch), 1)
+        self.assertEqual(len(extreme), 0)  # No files above 100
+
+    def test_categorize_extreme_complexity(self):
+        """Test categorization of extreme complexity files (>100 complexity)."""
+        extreme = self._create_mock_file('extreme.py', 'src/extreme.py',
+                                         complexity=240, cognitive_complexity=116, churn=2.0, hotspot=480.0)
+        normal = self._create_mock_file('normal.py', 'src/normal.py',
+                                        complexity=20, churn=5.0, hotspot=100.0)
+
+        crit, emerg, h_c, h_ch, extreme_files = self.formatter._categorize_files(
+            [extreme, normal],
+            extreme_threshold=100
+        )
+
+        # Extreme complexity file should be in extreme category
+        self.assertEqual(len(extreme_files), 1)
+        self.assertEqual(extreme_files[0][0], extreme)
+        self.assertEqual(extreme_files[0][1], 240)  # complexity
+        self.assertEqual(extreme_files[0][2], 116)  # cognitive_complexity
+
+    def test_categorize_custom_extreme_threshold(self):
+        """Test categorization with custom extreme complexity threshold."""
+        file1 = self._create_mock_file('f1.py', 'src/f1.py', complexity=75, churn=3.0)
+        file2 = self._create_mock_file('f2.py', 'src/f2.py', complexity=55, churn=2.0)
+
+        # With threshold 50, file1 and file2 should be extreme
+        _, _, _, _, extreme = self.formatter._categorize_files(
+            [file1, file2],
+            extreme_threshold=50
+        )
+        self.assertEqual(len(extreme), 2)
+
+        # With threshold 100, neither should be extreme
+        _, _, _, _, extreme = self.formatter._categorize_files(
+            [file1, file2],
+            extreme_threshold=100
+        )
+        self.assertEqual(len(extreme), 0)
 
 
 class TestPrintMethods(TestCLISummaryFormat):
@@ -308,8 +371,10 @@ class TestPrintMethods(TestCLISummaryFormat):
         """Test overview printing."""
         stats = {
             'total_files': 65,
-            'total_complexity': 1085,
-            'avg_complexity': 16.7
+            'avg_complexity': 16.7,
+            'max_complexity': 90,
+            'avg_cognitive_complexity': 16.7,
+            'max_cognitive_complexity': 85
         }
 
         output = self._capture_print_output(self.formatter._print_overview, stats)
@@ -317,35 +382,77 @@ class TestPrintMethods(TestCLISummaryFormat):
         self.assertIn('📊 OVERVIEW', output)
         self.assertIn('Files Analyzed:', output)
         self.assertIn('65', output)
-        self.assertIn('1,085', output)
         self.assertIn('16.7', output)
+
+    def test_print_overview_with_cognitive_complexity(self):
+        """Test overview printing includes cognitive complexity with max values."""
+        stats = {
+            'total_files': 65,
+            'avg_complexity': 16.7,
+            'max_complexity': 90,
+            'avg_cognitive_complexity': 14.6,
+            'max_cognitive_complexity': 85
+        }
+
+        output = self._capture_print_output(self.formatter._print_overview, stats)
+
+        self.assertIn('📊 OVERVIEW', output)
+        self.assertIn('Average Complexity:', output)
+        self.assertIn('16.7', output)
+        self.assertIn('Max Complexity:', output)
+        self.assertIn('90', output)
+        # Verify cognitive complexity is shown
+        self.assertIn('Average Cognitive:', output)
+        self.assertIn('14.6', output)
+        self.assertIn('Max Cognitive:', output)
+        self.assertIn('85', output)
 
     def test_print_critical_issues_with_files(self):
         """Test critical issues section with files."""
-        file1 = self._create_mock_file('f1.py', 'src/app/analyzer.py', 90, 20.0, 1800.0)
-        file2 = self._create_mock_file('f2.py', 'src/app/scanner.py', 70, 15.0, 1050.0)
-        critical = [(file1, 90, 20.0, 1800.0), (file2, 70, 15.0, 1050.0)]
+        file1 = self._create_mock_file('f1.py', 'src/app/analyzer.py', complexity=90,
+                                       cognitive_complexity=85, churn=20.0, hotspot=1800.0)
+        file2 = self._create_mock_file('f2.py', 'src/app/scanner.py', complexity=70,
+                                       cognitive_complexity=75, churn=15.0, hotspot=1050.0)
+        critical = [(file1, 90, 85, 20.0, 1800.0), (file2, 70, 75, 15.0, 1050.0)]
+        extreme = []
 
         output = self._capture_print_output(
-            self.formatter._print_critical_issues, critical
+            self.formatter._print_critical_issues, critical, extreme, 100
         )
 
         self.assertIn('🔥 CRITICAL ISSUES', output)
         self.assertIn('2 files', output)
         self.assertIn('analyzer.py', output)
-        self.assertIn('Hotspot: 1800', output)
         self.assertIn('C:90', output)
+        self.assertIn('Cog:85', output)  # Cognitive complexity shown
         self.assertIn('Churn:20', output)
+
+    def test_print_critical_issues_with_extreme_complexity(self):
+        """Test critical issues section with extreme complexity files."""
+        extreme_file = self._create_mock_file('extreme.py', 'src/extreme.py', complexity=240,
+                                              cognitive_complexity=116, churn=2.0, hotspot=480.0)
+        extreme = [(extreme_file, 240, 116, 2.0, 480.0)]
+        critical = []
+
+        output = self._capture_print_output(
+            self.formatter._print_critical_issues, critical, extreme, 100
+        )
+
+        self.assertIn('🔥 CRITICAL ISSUES', output)
+        self.assertIn('1 files', output)
+        self.assertIn('extreme.py', output)
+        self.assertIn('C:240', output)
+        self.assertIn('Cog:116', output)
 
     def test_print_critical_issues_no_files(self):
         """Test critical issues section with no critical files."""
         output = self._capture_print_output(
-            self.formatter._print_critical_issues, []
+            self.formatter._print_critical_issues, [], [], 100
         )
 
         self.assertIn('🔥 CRITICAL ISSUES', output)
         self.assertIn('0 files', output)
-        self.assertIn('✅ No critical hotspots detected', output)
+        self.assertIn('✅ No critical issues detected', output)
 
     def test_print_high_priority(self):
         """Test high priority section."""

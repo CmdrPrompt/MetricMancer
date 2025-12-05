@@ -199,7 +199,9 @@ class ReportCoordinator:
             # Pass review tab settings for HTML reports
             include_review_tab=self.app_config.include_review_tab,
             review_branch_only=self.app_config.review_branch_only,
-            review_base_branch=self.app_config.review_base_branch
+            review_base_branch=self.app_config.review_base_branch,
+            # Pass extreme complexity threshold for summary report
+            extreme_complexity_threshold=self.app_config.extreme_complexity_threshold
         )
 
     def generate_reports_for_format(self, output_format: str, repo_infos: List[RepoInfo],
