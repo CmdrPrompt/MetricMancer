@@ -165,10 +165,10 @@ class TestAggregateDirectory:
 
         result = aggregator.aggregate_directory(dir_obj)
 
-        # Default aggregation is sum
+        # Default aggregation is average
         assert result == {
-            'complexity': 30,  # 10 + 20
-            'churn': 20        # 5 + 15
+            'complexity': 15.0,  # (10 + 20) / 2
+            'churn': 10.0        # (5 + 15) / 2
         }
 
     def test_aggregate_directory_with_subdirectories(self):
@@ -201,8 +201,8 @@ class TestAggregateDirectory:
 
         result = aggregator.aggregate_directory(parent)
 
-        # Should aggregate both subdirectory and parent files
-        assert result == {'complexity': 30}  # 10 + 20
+        # Should aggregate both subdirectory and parent files (average)
+        assert result == {'complexity': 15.0}  # (10 + 20) / 2
 
     def test_aggregate_directory_custom_function_max(self):
         """Should use custom aggregation function (max)."""
@@ -376,8 +376,8 @@ class TestAggregateDirectory:
 
         result = aggregator.aggregate_directory(dir_root)
 
-        # Should aggregate all levels: 15 + 10 + 5 = 30
-        assert result == {'complexity': 30}
+        # Should aggregate all levels: (15 + 10 + 5) / 3 = 10.0
+        assert result == {'complexity': 10.0}
 
     def test_aggregate_directory_multiple_kpi_types(self):
         """Should aggregate multiple KPI types simultaneously."""
@@ -406,9 +406,9 @@ class TestAggregateDirectory:
         result = aggregator.aggregate_directory(dir_obj)
 
         assert result == {
-            'complexity': 30,
-            'churn': 20,
-            'hotspot': 20
+            'complexity': 15.0,  # (10 + 20) / 2
+            'churn': 10.0,       # (5 + 15) / 2
+            'hotspot': 10.0      # (7 + 13) / 2
         }
 
     def test_aggregate_directory_handles_exception(self):
@@ -454,7 +454,7 @@ class TestKPIAggregatorIntegration:
 
         result = aggregator.aggregate_directory(dir_obj)
 
-        assert result == {'complexity': 30}
+        assert result == {'complexity': 15.0}  # (10 + 20) / 2
         assert isinstance(dir_obj.kpis['complexity'].value, (int, float))
 
     def test_aggregate_with_real_churn_kpi(self):
@@ -475,7 +475,7 @@ class TestKPIAggregatorIntegration:
 
         result = aggregator.aggregate_directory(dir_obj)
 
-        assert result == {'churn': 20}
+        assert result == {'churn': 10.0}  # (5 + 15) / 2
 
     def test_aggregate_with_mixed_real_kpis(self):
         """Should work with multiple real KPI types."""
