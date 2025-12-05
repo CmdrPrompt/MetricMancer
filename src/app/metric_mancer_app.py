@@ -149,9 +149,38 @@ class MetricMancerApp:
         return report_links
 
     def run(self):
-        # Initialize timing reporter
+        """
+        Main entry point for running the analysis pipeline.
+
+        Pipeline steps:
+        1. Scan files in configured directories
+        2. Analyze files for complexity metrics
+        3. Generate reports in configured formats
+        4. Run optional analyses (hotspots, review strategy, delta review)
+        """
         timing_reporter = TimingReporter()
 
+        # Core pipeline: scan → analyze → report
+        files, repo_infos = self._run_core_pipeline(timing_reporter)
+        report_links = self._prepare_report_links(repo_infos)
+        self._run_report_generation(timing_reporter, repo_infos, report_links)
+
+        # Optional analyses
+        self._run_optional_analyses(repo_infos)
+
+        # Print timing summary
+        self._print_timing_summary(timing_reporter)
+
+    def _run_core_pipeline(self, timing_reporter: TimingReporter):
+        """
+        Execute the core scan and analysis pipeline.
+
+        Args:
+            timing_reporter: TimingReporter instance for tracking execution time
+
+        Returns:
+            Tuple of (files, repo_infos)
+        """
         # Step 1: Scan files
         timing_reporter.start_scan()
         files = self._scan_files()
@@ -162,10 +191,17 @@ class MetricMancerApp:
         repo_infos = self._analyze_files(files)
         timing_reporter.end_analysis()
 
-        # Step 3: Prepare report links
-        report_links = self._prepare_report_links(repo_infos)
+        return files, repo_infos
 
-        # Step 4: Generate reports
+    def _run_report_generation(self, timing_reporter: TimingReporter, repo_infos, report_links):
+        """
+        Execute report generation for all configured formats.
+
+        Args:
+            timing_reporter: TimingReporter instance for tracking execution time
+            repo_infos: List of RepoInfo objects from analysis
+            report_links: Cross-links for multi-repo reports
+        """
         timing_reporter.start_report_generation()
         os.makedirs(self.app_config.report_folder, exist_ok=True)
         is_multi_format = len(self.app_config.output_formats) > 1
@@ -173,19 +209,32 @@ class MetricMancerApp:
         self._generate_all_reports(repo_infos, report_links, is_multi_format)
         timing_reporter.end_report_generation()
 
-        # Run hotspot analysis if requested
+    def _run_optional_analyses(self, repo_infos):
+        """
+        Run optional analyses based on configuration flags.
+
+        Args:
+            repo_infos: List of RepoInfo objects from analysis
+        """
         if self.app_config.list_hotspots:
             self._run_hotspot_analysis(repo_infos)
 
-        # Run review strategy analysis if requested
         if self.app_config.review_strategy:
             self._run_review_strategy_analysis(repo_infos)
 
-        # Run delta review analysis if requested
         if self.app_config.delta_review:
             self._run_delta_review_analysis(repo_infos)
 
-        # Print timing summary
+    def _print_timing_summary(self, timing_reporter: TimingReporter):
+        """
+        Print timing summary for the analysis run.
+
+        Args:
+            timing_reporter: TimingReporter instance with recorded timings
+        """
+        if self.app_config.no_timing:
+            return
+
         analyzer_timing = getattr(self.analyzer, 'timing', None)
         timing_reporter.print_summary(analyzer_timing)
 
