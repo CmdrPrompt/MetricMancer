@@ -9,6 +9,7 @@ from dataclasses import dataclass, field
 from typing import List, Optional
 
 from src.config.config_validator import ConfigValidator
+from src.config.defaults import Defaults
 
 
 @dataclass
@@ -49,43 +50,44 @@ class AppConfig:
     directories: List[str]
 
     # Threshold settings
-    threshold_low: float = 10.0
-    threshold_high: float = 20.0
+    threshold_low: float = Defaults.THRESHOLD_LOW
+    threshold_high: float = Defaults.THRESHOLD_HIGH
     problem_file_threshold: Optional[float] = None
-    extreme_complexity_threshold: int = 100
+    extreme_complexity_threshold: int = Defaults.EXTREME_COMPLEXITY_THRESHOLD
 
     # Output settings
-    output_format: str = "summary"  # Backward compatibility (singular)
-    output_formats: List[str] = field(default_factory=lambda: ['summary'])  # NEW: Multi-format support
+    output_format: str = Defaults.OUTPUT_FORMAT  # Backward compatibility (singular)
+    output_formats: List[str] = field(default_factory=lambda: [Defaults.OUTPUT_FORMAT])  # Multi-format support
     using_output_formats_flag: bool = False  # True if user explicitly used --output-formats
     output_file: Optional[str] = None
-    report_folder: str = "output"
-    level: str = "file"
+    report_folder: str = Defaults.REPORT_FOLDER
+    level: str = Defaults.LEVEL
     hierarchical: bool = False
 
     # Hotspot analysis settings
     list_hotspots: bool = False
-    hotspot_threshold: int = 50
+    hotspot_threshold: int = Defaults.HOTSPOT_THRESHOLD
     hotspot_output: Optional[str] = None
 
     # Review strategy settings
     review_strategy: bool = False
-    review_output: str = "review_strategy.md"
+    review_output: str = Defaults.REVIEW_OUTPUT
     review_branch_only: bool = False
-    review_base_branch: str = "main"
+    review_base_branch: str = Defaults.REVIEW_BASE_BRANCH
     include_review_tab: bool = False  # Include Code Review tab in HTML report
 
     # Code churn settings
-    churn_period: int = 30
+    churn_period: int = Defaults.CHURN_PERIOD
 
     # Delta review settings (function-level analysis)
     delta_review: bool = False
-    delta_base_branch: str = "main"
+    delta_base_branch: str = Defaults.DELTA_BASE_BRANCH
     delta_target_branch: Optional[str] = None  # None = current branch
-    delta_output: str = "delta_review.md"
+    delta_output: str = Defaults.DELTA_OUTPUT
 
     # Debug settings
     debug: bool = False
+    no_timing: bool = False  # Suppress timing information output
 
     def __post_init__(self):
         """
@@ -130,7 +132,7 @@ class AppConfig:
         if not output_formats_value and getattr(args, 'output_format', None):
             output_formats_value = [args.output_format]
 
-        output_format_value = getattr(args, 'output_format', 'summary')
+        output_format_value = getattr(args, 'output_format', Defaults.OUTPUT_FORMAT)
         if output_formats_value:
             output_format_value = output_formats_value[0]
 
@@ -143,7 +145,7 @@ class AppConfig:
             'threshold_low': args.threshold_low,
             'threshold_high': args.threshold_high,
             'problem_file_threshold': args.problem_file_threshold,
-            'extreme_complexity_threshold': getattr(args, 'extreme_complexity_threshold', 100),
+            'extreme_complexity_threshold': getattr(args, 'extreme_complexity_threshold', Defaults.EXTREME_COMPLEXITY_THRESHOLD),
         }
 
     @staticmethod
@@ -177,10 +179,10 @@ class AppConfig:
 
         return {
             'output_format': output_format_value,
-            'output_formats': output_formats_value if output_formats_value else ['summary'],
+            'output_formats': output_formats_value if output_formats_value else [Defaults.OUTPUT_FORMAT],
             'using_output_formats_flag': using_output_formats_flag,
             'output_file': output_file,
-            'report_folder': getattr(args, 'report_folder', None) or 'output',
+            'report_folder': getattr(args, 'report_folder', None) or Defaults.REPORT_FOLDER,
             'level': args.level,
             'hierarchical': args.hierarchical,
         }
@@ -190,7 +192,7 @@ class AppConfig:
         """Extract hotspot-related settings from CLI args."""
         return {
             'list_hotspots': getattr(args, 'list_hotspots', False),
-            'hotspot_threshold': getattr(args, 'hotspot_threshold', 50),
+            'hotspot_threshold': getattr(args, 'hotspot_threshold', Defaults.HOTSPOT_THRESHOLD),
             'hotspot_output': getattr(args, 'hotspot_output', None),
         }
 
@@ -199,9 +201,9 @@ class AppConfig:
         """Extract review strategy settings from CLI args."""
         return {
             'review_strategy': getattr(args, 'review_strategy', False),
-            'review_output': getattr(args, 'review_output', 'review_strategy.md'),
+            'review_output': getattr(args, 'review_output', Defaults.REVIEW_OUTPUT),
             'review_branch_only': getattr(args, 'review_branch_only', False),
-            'review_base_branch': getattr(args, 'review_base_branch', 'main'),
+            'review_base_branch': getattr(args, 'review_base_branch', Defaults.REVIEW_BASE_BRANCH),
             'include_review_tab': getattr(args, 'include_review_tab', False),
         }
 
@@ -209,7 +211,7 @@ class AppConfig:
     def _extract_churn_settings(args) -> dict:
         """Extract code churn settings from CLI args."""
         return {
-            'churn_period': getattr(args, 'churn_period', 30),
+            'churn_period': getattr(args, 'churn_period', Defaults.CHURN_PERIOD),
         }
 
     @staticmethod
@@ -217,9 +219,9 @@ class AppConfig:
         """Extract delta review settings from CLI args."""
         return {
             'delta_review': getattr(args, 'delta_review', False),
-            'delta_base_branch': getattr(args, 'delta_base_branch', 'main'),
+            'delta_base_branch': getattr(args, 'delta_base_branch', Defaults.DELTA_BASE_BRANCH),
             'delta_target_branch': getattr(args, 'delta_target_branch', None),
-            'delta_output': getattr(args, 'delta_output', 'delta_review.md'),
+            'delta_output': getattr(args, 'delta_output', Defaults.DELTA_OUTPUT),
         }
 
     @staticmethod
@@ -227,6 +229,7 @@ class AppConfig:
         """Extract debug settings from CLI args."""
         return {
             'debug': getattr(args, 'debug', False),
+            'no_timing': getattr(args, 'no_timing', False),
         }
 
     @classmethod

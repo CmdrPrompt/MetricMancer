@@ -96,7 +96,6 @@ class TestGetChangedFiles(unittest.TestCase):
 
         mock_get_changed.assert_called_once_with(
             repo_path='/my/repo',
-            current_branch='feature/test',
             base_branch='develop'
         )
 
@@ -114,7 +113,6 @@ class TestGetChangedFiles(unittest.TestCase):
 
         mock_get_changed.assert_called_once_with(
             repo_path='/my/repo',
-            current_branch='feature/test',
             base_branch='main'
         )
 

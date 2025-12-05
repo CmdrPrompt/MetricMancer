@@ -4,6 +4,8 @@ Helper functions for CLI argument parsing and usage printing for ComplexityScann
 
 import argparse
 
+from src.config.defaults import Defaults
+
 
 def _print_basic_usage():
     """Print basic usage and parameter descriptions."""
@@ -124,19 +126,19 @@ def _add_basic_args(parser):
         "--report-folder",
         type=str,
         default=None,
-        help="Folder to write all reports to. Default is 'output'."
+        help=f"Folder to write all reports to. Default is '{Defaults.REPORT_FOLDER}'."
     )
     parser.add_argument(
         "--threshold-low",
         type=float,
-        default=10.0,
-        help="Threshold for low complexity (default: 10.0)"
+        default=Defaults.THRESHOLD_LOW,
+        help=f"Threshold for low complexity (default: {Defaults.THRESHOLD_LOW})"
     )
     parser.add_argument(
         "--threshold-high",
         type=float,
-        default=20.0,
-        help="Threshold for high complexity (default: 20.0)"
+        default=Defaults.THRESHOLD_HIGH,
+        help=f"Threshold for high complexity (default: {Defaults.THRESHOLD_HIGH})"
     )
     parser.add_argument(
         "--problem-file-threshold",
@@ -147,9 +149,9 @@ def _add_basic_args(parser):
     parser.add_argument(
         "--extreme-complexity-threshold",
         type=int,
-        default=100,
-        help="Threshold for extreme complexity in summary report. "
-             "Files above this threshold are flagged as critical regardless of churn (default: 100)"
+        default=Defaults.EXTREME_COMPLEXITY_THRESHOLD,
+        help=f"Threshold for extreme complexity in summary report. "
+             f"Files above this threshold are flagged as critical regardless of churn (default: {Defaults.EXTREME_COMPLEXITY_THRESHOLD})"
     )
 
 
@@ -177,8 +179,8 @@ def _add_output_args(parser):
     parser.add_argument(
         "--output-format",
         type=str,
-        default="summary",
-        help="Output format: 'summary' (default dashboard), 'quick-wins' (prioritized improvements), "
+        default=Defaults.OUTPUT_FORMAT,
+        help=f"Output format: '{Defaults.OUTPUT_FORMAT}' (default dashboard), 'quick-wins' (prioritized improvements), "
              "'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
     )
     parser.add_argument(
@@ -214,8 +216,8 @@ def _add_output_args(parser):
     parser.add_argument(
         "--level",
         type=str,
-        default="file",
-        help="Detail level for reports: 'file' (default) or 'function'."
+        default=Defaults.LEVEL,
+        help=f"Detail level for reports: '{Defaults.LEVEL}' (default) or 'function'."
     )
     parser.add_argument(
         "--hierarchical",
@@ -225,8 +227,13 @@ def _add_output_args(parser):
     parser.add_argument(
         "--churn-period",
         type=int,
-        default=30,
-        help="Number of days to analyze for code churn (default: 30)."
+        default=Defaults.CHURN_PERIOD,
+        help=f"Number of days to analyze for code churn (default: {Defaults.CHURN_PERIOD})."
+    )
+    parser.add_argument(
+        "--no-timing",
+        action="store_true",
+        help="Suppress timing information output."
     )
 
 
@@ -240,8 +247,8 @@ def _add_hotspot_args(parser):
     parser.add_argument(
         "--hotspot-threshold",
         type=int,
-        default=50,
-        help="Minimum hotspot score to include in hotspot list (default: 50)."
+        default=Defaults.HOTSPOT_THRESHOLD,
+        help=f"Minimum hotspot score to include in hotspot list (default: {Defaults.HOTSPOT_THRESHOLD})."
     )
     parser.add_argument(
         "--hotspot-output",
@@ -262,8 +269,8 @@ def _add_review_args(parser):
     parser.add_argument(
         "--review-output",
         type=str,
-        default="review_strategy.md",
-        help="Output file for code review strategy report (default: review_strategy.md, supports .txt and .md)."
+        default=Defaults.REVIEW_OUTPUT,
+        help=f"Output file for code review strategy report (default: {Defaults.REVIEW_OUTPUT}, supports .txt and .md)."
     )
     parser.add_argument(
         "--review-branch-only",
@@ -273,8 +280,8 @@ def _add_review_args(parser):
     parser.add_argument(
         "--review-base-branch",
         type=str,
-        default="main",
-        help="Base branch to compare against when using --review-branch-only (default: main)."
+        default=Defaults.REVIEW_BASE_BRANCH,
+        help=f"Base branch to compare against when using --review-branch-only (default: {Defaults.REVIEW_BASE_BRANCH})."
     )
     parser.add_argument(
         "--include-review-tab",
@@ -294,8 +301,8 @@ def _add_delta_args(parser):
     parser.add_argument(
         "--delta-base-branch",
         type=str,
-        default="main",
-        help="Base branch for delta comparison (default: main)."
+        default=Defaults.DELTA_BASE_BRANCH,
+        help=f"Base branch for delta comparison (default: {Defaults.DELTA_BASE_BRANCH})."
     )
     parser.add_argument(
         "--delta-target-branch",
@@ -306,8 +313,8 @@ def _add_delta_args(parser):
     parser.add_argument(
         "--delta-output",
         type=str,
-        default="delta_review.md",
-        help="Output file for delta review report (default: delta_review.md)."
+        default=Defaults.DELTA_OUTPUT,
+        help=f"Output file for delta review report (default: {Defaults.DELTA_OUTPUT})."
     )
 
 

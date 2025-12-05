@@ -70,7 +70,6 @@ class FileChangeDetector:
         current_branch = get_current_branch(self.repo_path)
         changed_files = get_changed_files_in_branch(
             repo_path=self.repo_path,
-            current_branch=current_branch,
             base_branch=base_branch
         )
         return current_branch, changed_files
