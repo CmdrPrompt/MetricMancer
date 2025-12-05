@@ -104,7 +104,9 @@ class CLIReportFormat(ReportFormatStrategy):
             is_last = (i == len(items) - 1)
             connector = "└── " if is_last else "├── "
             if isinstance(item, ScanDir):
-                print(f"{prefix}{connector}{item.dir_name}/")
+                # Format directory with KPI stats
+                dir_stats = self._format_dir_stats(item)
+                print(f"{prefix}{connector}{item.dir_name}/ {dir_stats}")
                 new_prefix = prefix + ("    " if is_last else "│   ")
                 self._print_dir_recursively(item, level, new_prefix)
             elif isinstance(item, File):
@@ -132,6 +134,24 @@ class CLIReportFormat(ReportFormatStrategy):
         """
         kpi = kpis.get(kpi_name)
         return kpi.value if kpi and kpi.value is not None else '?'
+
+    def _format_dir_stats(self, dir_obj: ScanDir) -> str:
+        """
+        Format average KPI statistics for a directory.
+
+        Shows average values for all files in the directory tree.
+        Returns empty string if no KPIs are available.
+        """
+        c_val = self._get_kpi_value(dir_obj.kpis, 'complexity')
+        cog_val = self._get_kpi_value(dir_obj.kpis, 'cognitive_complexity')
+        ch_val = self._get_kpi_value(dir_obj.kpis, 'churn')
+        h_val = self._get_kpi_value(dir_obj.kpis, 'hotspot')
+
+        # Only show if at least one KPI is available
+        if all(v == '?' for v in [c_val, cog_val, ch_val, h_val]):
+            return ""
+
+        return f"[Avg C:{c_val}, Avg Cog:{cog_val}, Avg Churn:{ch_val}, Avg Hotspot:{h_val}]"
 
     def _format_file_stats(self, file_obj: File) -> str:
         """
