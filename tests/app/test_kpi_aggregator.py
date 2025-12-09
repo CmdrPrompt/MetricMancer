@@ -499,3 +499,125 @@ class TestKPIAggregatorIntegration:
         assert result['complexity'] == 10
         assert result['churn'] == 5
         assert result['hotspot'] == 7
+
+
+class TestKPIAggregatorHelpers:
+    """Tests for helper methods extracted during refactoring."""
+
+    def test_get_subdirectories_with_scan_dirs_dict(self):
+        """Should extract subdirectories from scan_dirs dict format."""
+        aggregator = KPIAggregator()
+
+        subdir1 = Mock()
+        subdir1.name = "sub1"
+        subdir2 = Mock()
+        subdir2.name = "sub2"
+
+        dir_obj = Mock()
+        dir_obj.scan_dirs = {'sub1': subdir1, 'sub2': subdir2}
+
+        result = aggregator._get_subdirectories(dir_obj)
+
+        assert len(result) == 2
+        assert subdir1 in result
+        assert subdir2 in result
+
+    def test_get_subdirectories_with_children_list(self):
+        """Should extract subdirectories from children list format (legacy)."""
+        aggregator = KPIAggregator()
+
+        subdir1 = Mock()
+        subdir1.name = "sub1"
+        subdir2 = Mock()
+        subdir2.name = "sub2"
+
+        dir_obj = Mock(spec=['children'])
+        dir_obj.children = [subdir1, subdir2]
+
+        result = aggregator._get_subdirectories(dir_obj)
+
+        assert len(result) == 2
+        assert subdir1 in result
+        assert subdir2 in result
+
+    def test_get_subdirectories_with_no_children(self):
+        """Should return empty list when no subdirectories exist."""
+        aggregator = KPIAggregator()
+
+        dir_obj = Mock(spec=['name'])
+
+        result = aggregator._get_subdirectories(dir_obj)
+
+        assert result == []
+
+    def test_get_files_from_directory_with_dict(self):
+        """Should extract files from dict format."""
+        aggregator = KPIAggregator()
+
+        file1 = Mock()
+        file1.name = "file1.py"
+        file2 = Mock()
+        file2.name = "file2.py"
+
+        dir_obj = Mock()
+        dir_obj.files = {'file1.py': file1, 'file2.py': file2}
+
+        result = aggregator._get_files_from_directory(dir_obj)
+
+        assert len(result) == 2
+        assert file1 in result
+        assert file2 in result
+
+    def test_get_files_from_directory_with_list(self):
+        """Should extract files from list format."""
+        aggregator = KPIAggregator()
+
+        file1 = Mock()
+        file1.name = "file1.py"
+        file2 = Mock()
+        file2.name = "file2.py"
+
+        dir_obj = Mock()
+        dir_obj.files = [file1, file2]
+
+        result = aggregator._get_files_from_directory(dir_obj)
+
+        assert len(result) == 2
+        assert file1 in result
+        assert file2 in result
+
+    def test_get_files_from_directory_with_no_files(self):
+        """Should return empty list when no files exist."""
+        aggregator = KPIAggregator()
+
+        dir_obj = Mock(spec=['name'])
+
+        result = aggregator._get_files_from_directory(dir_obj)
+
+        assert result == []
+
+    def test_calculate_aggregated_value_with_average(self):
+        """Should calculate average when no custom function provided."""
+        aggregator = KPIAggregator()
+
+        values = [10, 20, 30]
+        result = aggregator._calculate_aggregated_value('complexity', values)
+
+        assert result == 20.0
+
+    def test_calculate_aggregated_value_with_custom_function(self):
+        """Should use custom aggregation function when provided."""
+        aggregator = KPIAggregator(aggregation_functions={'hotspot': max})
+
+        values = [5, 15, 10]
+        result = aggregator._calculate_aggregated_value('hotspot', values)
+
+        assert result == 15
+
+    def test_calculate_aggregated_value_with_empty_values(self):
+        """Should return None for empty values list."""
+        aggregator = KPIAggregator()
+
+        result = aggregator._calculate_aggregated_value('complexity', [])
+
+        assert result is None
