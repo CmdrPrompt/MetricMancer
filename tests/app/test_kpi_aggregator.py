@@ -28,18 +28,19 @@ class TestKPIAggregatorInit:
     def test_init_with_no_functions(self):
         """Should initialize with empty aggregation functions dict."""
         aggregator = KPIAggregator()
-        assert aggregator.aggregation_functions == {}
+        # Aggregation functions now in strategy
+        assert aggregator.aggregation_strategy.aggregation_functions == {}
 
     def test_init_with_custom_functions(self):
         """Should initialize with provided aggregation functions."""
         custom_funcs = {'complexity': sum, 'hotspot': max}
         aggregator = KPIAggregator(aggregation_functions=custom_funcs)
-        assert aggregator.aggregation_functions == custom_funcs
+        assert aggregator.aggregation_strategy.aggregation_functions == custom_funcs
 
     def test_init_with_none_functions(self):
         """Should handle None explicitly and use empty dict."""
         aggregator = KPIAggregator(aggregation_functions=None)
-        assert aggregator.aggregation_functions == {}
+        assert aggregator.aggregation_strategy.aggregation_functions == {}
 
 
 class TestAggregateFile:
@@ -516,7 +517,7 @@ class TestKPIAggregatorHelpers:
         dir_obj = Mock()
         dir_obj.scan_dirs = {'sub1': subdir1, 'sub2': subdir2}
 
-        result = aggregator._get_subdirectories(dir_obj)
+        result = aggregator.directory_accessor.get_subdirectories(dir_obj)
 
         assert len(result) == 2
         assert subdir1 in result
@@ -534,7 +535,7 @@ class TestKPIAggregatorHelpers:
         dir_obj = Mock(spec=['children'])
         dir_obj.children = [subdir1, subdir2]
 
-        result = aggregator._get_subdirectories(dir_obj)
+        result = aggregator.directory_accessor.get_subdirectories(dir_obj)
 
         assert len(result) == 2
         assert subdir1 in result
@@ -546,9 +547,36 @@ class TestKPIAggregatorHelpers:
 
         dir_obj = Mock(spec=['name'])
 
-        result = aggregator._get_subdirectories(dir_obj)
+        result = aggregator.directory_accessor.get_subdirectories(dir_obj)
 
         assert result == []
+
+    def test_get_subdirectories_scan_dirs_precedence_over_children(self):
+        """Should prefer scan_dirs over children when both exist."""
+        aggregator = KPIAggregator()
+
+        subdir_scan1 = Mock()
+        subdir_scan1.name = "scan1"
+        subdir_scan2 = Mock()
+        subdir_scan2.name = "scan2"
+
+        subdir_child1 = Mock()
+        subdir_child1.name = "child1"
+        subdir_child2 = Mock()
+        subdir_child2.name = "child2"
+
+        dir_obj = Mock()
+        dir_obj.scan_dirs = {'scan1': subdir_scan1, 'scan2': subdir_scan2}
+        dir_obj.children = [subdir_child1, subdir_child2]
+
+        result = aggregator.directory_accessor.get_subdirectories(dir_obj)
+
+        # Should only return scan_dirs subdirectories
+        assert len(result) == 2
+        assert subdir_scan1 in result
+        assert subdir_scan2 in result
+        assert subdir_child1 not in result
+        assert subdir_child2 not in result
 
     def test_get_files_from_directory_with_dict(self):
         """Should extract files from dict format."""
@@ -562,7 +590,7 @@ class TestKPIAggregatorHelpers:
         dir_obj = Mock()
         dir_obj.files = {'file1.py': file1, 'file2.py': file2}
 
-        result = aggregator._get_files_from_directory(dir_obj)
+        result = aggregator.directory_accessor.get_files(dir_obj)
 
         assert len(result) == 2
         assert file1 in result
@@ -580,7 +608,7 @@ class TestKPIAggregatorHelpers:
         dir_obj = Mock()
         dir_obj.files = [file1, file2]
 
-        result = aggregator._get_files_from_directory(dir_obj)
+        result = aggregator.directory_accessor.get_files(dir_obj)
 
         assert len(result) == 2
         assert file1 in result
@@ -592,7 +620,7 @@ class TestKPIAggregatorHelpers:
 
         dir_obj = Mock(spec=['name'])
 
-        result = aggregator._get_files_from_directory(dir_obj)
+        result = aggregator.directory_accessor.get_files(dir_obj)
 
         assert result == []
 
@@ -601,7 +629,7 @@ class TestKPIAggregatorHelpers:
         aggregator = KPIAggregator()
 
         values = [10, 20, 30]
-        result = aggregator._calculate_aggregated_value('complexity', values)
+        result = aggregator.aggregation_strategy.calculate_aggregated_value('complexity', values)
 
         assert result == 20.0
 
@@ -610,7 +638,7 @@ class TestKPIAggregatorHelpers:
         aggregator = KPIAggregator(aggregation_functions={'hotspot': max})
 
         values = [5, 15, 10]
-        result = aggregator._calculate_aggregated_value('hotspot', values)
+        result = aggregator.aggregation_strategy.calculate_aggregated_value('hotspot', values)
 
         assert result == 15
 
@@ -618,6 +646,6 @@ class TestKPIAggregatorHelpers:
         """Should return None for empty values list."""
         aggregator = KPIAggregator()
 
-        result = aggregator._calculate_aggregated_value('complexity', [])
+        result = aggregator.aggregation_strategy.calculate_aggregated_value('complexity', [])
 
         assert result is None
