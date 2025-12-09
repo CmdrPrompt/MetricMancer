@@ -21,6 +21,14 @@ from typing import Dict, Any, Callable, Optional, List
 from src.utilities.debug import debug_print
 
 
+class AggregatedKPI:
+    """Lightweight KPI object for aggregated values."""
+
+    def __init__(self, name: str, value: Any):
+        self.name = name
+        self.value = value
+
+
 class KPIAggregator:
     """
     Aggregates KPIs across directory hierarchy using Composite pattern.
@@ -74,6 +82,128 @@ class KPIAggregator:
         """
         self.aggregation_functions = aggregation_functions if aggregation_functions is not None else {}
 
+    def _get_subdirectories(self, directory_obj: Any) -> List[Any]:
+        """
+        Extract subdirectories from a directory object.
+
+        Handles both new 'scan_dirs' (dict) and old 'children' (list) formats.
+
+        Args:
+            directory_obj: Directory object to extract subdirectories from
+
+        Returns:
+            List of subdirectory objects
+        """
+        # Try new format first (scan_dirs dict)
+        scan_dirs = getattr(directory_obj, 'scan_dirs', None)
+        if scan_dirs and isinstance(scan_dirs, dict):
+            return list(scan_dirs.values())
+
+        # Fall back to old format (children list)
+        children = getattr(directory_obj, 'children', None)
+        if children:
+            return list(children)
+
+        return []
+
+    def _get_files_from_directory(self, directory_obj: Any) -> List[Any]:
+        """
+        Extract files from a directory object.
+
+        Handles both dict and list formats for files attribute.
+
+        Args:
+            directory_obj: Directory object to extract files from
+
+        Returns:
+            List of file objects
+        """
+        files = getattr(directory_obj, 'files', None)
+        if files is None:
+            return []
+
+        # Handle dict format
+        if isinstance(files, dict):
+            return list(files.values())
+
+        # Handle list format
+        if isinstance(files, list):
+            return list(files)
+
+        return []
+
+    def _calculate_aggregated_value(self, kpi_name: str, values: List[Any]) -> Optional[float]:
+        """
+        Calculate aggregated value for a KPI.
+
+        Uses custom aggregation function if provided, otherwise calculates average.
+
+        Args:
+            kpi_name: Name of the KPI to aggregate
+            values: List of values to aggregate
+
+        Returns:
+            Aggregated value, or None if values is empty
+        """
+        if not values:
+            return None
+
+        try:
+            # Use custom aggregation function if provided
+            if kpi_name in self.aggregation_functions:
+                return self.aggregation_functions[kpi_name](values)
+
+            # Default: calculate average
+            avg_value = sum(values) / len(values)
+            return round(avg_value, 1)
+
+        except (TypeError, ValueError) as e:
+            debug_print(f"[KPIAggregator] Error aggregating {kpi_name}: {e}")
+            return None
+
+    def _get_directory_name(self, directory_obj: Any) -> str:
+        """
+        Extract directory name from directory object.
+
+        Tries 'dir_name' first, then 'name', with 'unknown' as fallback.
+
+        Args:
+            directory_obj: Directory object to extract name from
+
+        Returns:
+            Directory name string
+        """
+        return getattr(directory_obj, 'dir_name', getattr(directory_obj, 'name', 'unknown'))
+
+    def _add_kpi_value(self, kpi_values: Dict[str, List[Any]], kpi_name: str, kpi_value: Any) -> None:
+        """
+        Add a KPI value to the collection dictionary.
+
+        Initializes the list if the KPI name doesn't exist yet.
+
+        Args:
+            kpi_values: Dictionary to collect KPI values
+            kpi_name: Name of the KPI
+            kpi_value: Value to add
+        """
+        if kpi_name not in kpi_values:
+            kpi_values[kpi_name] = []
+        kpi_values[kpi_name].append(kpi_value)
+
+    def _update_directory_kpis(self, directory_obj: Any, aggregated_values: Dict[str, Any]) -> None:
+        """
+        Update directory's kpis dictionary with aggregated values.
+
+        Args:
+            directory_obj: Directory object to update
+            aggregated_values: Dictionary of KPI names to aggregated values
+        """
+        if not hasattr(directory_obj, 'kpis'):
+            return
+
+        for kpi_name, agg_value in aggregated_values.items():
+            directory_obj.kpis[kpi_name] = AggregatedKPI(kpi_name, agg_value)
+
     def aggregate_file(self, file_obj: Any) -> Dict[str, Any]:
         """
         Aggregate KPIs from a file object.
@@ -112,11 +242,12 @@ class KPIAggregator:
             # Extract values from KPI objects
             # KPI objects come from KPICalculator strategies
             for kpi_name, kpi_obj in kpis.items():
-                if kpi_obj is not None:
-                    # Try to get value attribute
-                    value = getattr(kpi_obj, 'value', None)
-                    if value is not None:
-                        result[kpi_name] = value
+                if kpi_obj is None:
+                    continue
+
+                value = getattr(kpi_obj, 'value', None)
+                if value is not None:
+                    result[kpi_name] = value
 
             debug_print(f"[KPIAggregator] Aggregated file {getattr(file_obj, 'name', 'unknown')}: {result}")
             return result
@@ -135,25 +266,12 @@ class KPIAggregator:
         Returns:
             Total number of files in tree
         """
-        count = 0
-
         # Count files in this directory
-        files = getattr(directory_obj, 'files', {})
-        if isinstance(files, dict):
-            count += len(files)
-        elif isinstance(files, list):
-            count += len(files)
+        count = len(self._get_files_from_directory(directory_obj))
 
         # Recursively count files in subdirectories
-        scan_dirs = getattr(directory_obj, 'scan_dirs', {})
-        if isinstance(scan_dirs, dict):
-            for subdir in scan_dirs.values():
-                count += self._count_files_in_tree(subdir)
-        else:
-            # Fallback for old 'children' attribute
-            children = getattr(directory_obj, 'children', [])
-            for child in children:
-                count += self._count_files_in_tree(child)
+        for subdir in self._get_subdirectories(directory_obj):
+            count += self._count_files_in_tree(subdir)
 
         return count
 
@@ -204,67 +322,27 @@ class KPIAggregator:
             kpi_values: Dict[str, List[Any]] = {}
 
             # 1. Recursively aggregate subdirectories (Composite pattern)
-            # Support both new 'scan_dirs' (dict) and old 'children' (list) attributes
-            scan_dirs = getattr(directory_obj, 'scan_dirs', {})
-            if isinstance(scan_dirs, dict) and scan_dirs:
-                debug_print(f"[KPIAggregator] Aggregating {len(scan_dirs)} subdirectories")
-                for subdir in scan_dirs.values():
-                    child_kpis = self.aggregate_directory(subdir)
-
-                    # Collect values from child (these are already averages)
-                    # We need to re-aggregate from files, not from averages
-                    # So we skip this step and only aggregate from files directly
-
-            # Fallback for old 'children' attribute
-            children = getattr(directory_obj, 'children', [])
-            if children:
-                debug_print(f"[KPIAggregator] Aggregating {len(children)} subdirectories (old format)")
-                for child in children:
-                    child_kpis = self.aggregate_directory(child)
+            subdirs = self._get_subdirectories(directory_obj)
+            if subdirs:
+                debug_print(f"[KPIAggregator] Aggregating {len(subdirs)} subdirectories")
+                for subdir in subdirs:
+                    # Recursively aggregate subdirectories
+                    self.aggregate_directory(subdir)
 
             # 2. Collect KPI values from all files in tree (recursive)
             self._collect_file_kpis(directory_obj, kpi_values)
 
-            # 3. Calculate averages
+            # 3. Calculate aggregated values
             result = {}
             for kpi_name, values in kpi_values.items():
-                if not values:
-                    continue
-
-                # Use custom aggregation function if provided, otherwise calculate average
-                if kpi_name in self.aggregation_functions:
-                    agg_func = self.aggregation_functions[kpi_name]
-                    try:
-                        aggregated_value = agg_func(values)
-                        result[kpi_name] = aggregated_value
-                    except (TypeError, ValueError) as e:
-                        debug_print(f"[KPIAggregator] Error aggregating {kpi_name}: {e}")
-                        continue
-                else:
-                    # Default: calculate average
-                    try:
-                        avg_value = sum(values) / len(values) if values else 0
-                        result[kpi_name] = round(avg_value, 1)
-                    except (TypeError, ValueError) as e:
-                        debug_print(f"[KPIAggregator] Error averaging {kpi_name}: {e}")
-                        continue
+                aggregated_value = self._calculate_aggregated_value(kpi_name, values)
+                if aggregated_value is not None:
+                    result[kpi_name] = aggregated_value
 
             # 4. Update directory's kpis dictionary with aggregated values
-            # This makes the aggregated values available for reporting
-            if hasattr(directory_obj, 'kpis'):
-                for kpi_name, agg_value in result.items():
-                    # Create KPI object with aggregated value
-                    # Matches the interface expected by report generators
-                    class AggregatedKPI:
-                        """Lightweight KPI object for aggregated values."""
+            self._update_directory_kpis(directory_obj, result)
 
-                        def __init__(self, name, value):
-                            self.name = name
-                            self.value = value
-
-                    directory_obj.kpis[kpi_name] = AggregatedKPI(kpi_name, agg_value)
-
-            dir_name = getattr(directory_obj, 'dir_name', getattr(directory_obj, 'name', 'unknown'))
+            dir_name = self._get_directory_name(directory_obj)
             debug_print(f"[KPIAggregator] Aggregated directory {dir_name}: {result}")
 
             return result
@@ -282,25 +360,11 @@ class KPIAggregator:
             kpi_values: Dictionary to accumulate KPI values (modified in place)
         """
         # Collect from files in this directory
-        files = getattr(directory_obj, 'files', {})
-
-        # Handle both dict and list formats
-        file_list = files.values() if isinstance(files, dict) else files
-
-        for file_obj in file_list:
+        for file_obj in self._get_files_from_directory(directory_obj):
             file_kpis = self.aggregate_file(file_obj)
             for kpi_name, kpi_value in file_kpis.items():
-                if kpi_name not in kpi_values:
-                    kpi_values[kpi_name] = []
-                kpi_values[kpi_name].append(kpi_value)
+                self._add_kpi_value(kpi_values, kpi_name, kpi_value)
 
         # Recursively collect from subdirectories
-        scan_dirs = getattr(directory_obj, 'scan_dirs', {})
-        if isinstance(scan_dirs, dict):
-            for subdir in scan_dirs.values():
-                self._collect_file_kpis(subdir, kpi_values)
-        else:
-            # Fallback for old 'children' attribute
-            children = getattr(directory_obj, 'children', [])
-            for child in children:
-                self._collect_file_kpis(child, kpi_values)
+        for subdir in self._get_subdirectories(directory_obj):
+            self._collect_file_kpis(subdir, kpi_values)
