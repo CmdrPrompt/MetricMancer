@@ -1,10 +1,11 @@
 from src.report.report_format_strategy import ReportFormatStrategy
+from src.report.cli.cli_format_base import CLIFormatBase
 from src.kpis.model import RepoInfo, ScanDir, File, Function
 from src.utilities.debug import debug_print
 from typing import List, Tuple, Dict
 
 
-class CLIReportFormat(ReportFormatStrategy):
+class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
     """
     CLI report formatter with tree-based visualization.
 
@@ -21,19 +22,6 @@ class CLIReportFormat(ReportFormatStrategy):
     # Constants for ownership formatting
     MAX_AUTHORS_DISPLAY = 3
 
-    def _is_tracked_file(self, file_obj: File, debug: bool = False) -> bool:
-        """
-        Check if a file is tracked in git based on Code Ownership KPI.
-
-        Args:
-            file_obj: File object to check
-            debug: If True, print debug information (unused, kept for API compatibility)
-
-        Returns:
-            True if file is git-tracked, False otherwise
-        """
-        return self._has_valid_ownership_data(file_obj.kpis.get('Code Ownership'))
-
     def print_report(self, repo_info: RepoInfo, debug_print, level="file", **kwargs):
         """
         Prints a report for the given RepoInfo object directly to the console.
@@ -47,17 +35,8 @@ class CLIReportFormat(ReportFormatStrategy):
         self._print_dir_recursively(repo_info, level, prefix=self.PREFIX_CONTINUE)
 
     def _collect_all_files(self, scan_dir: ScanDir, debug: bool = True) -> List[File]:
-        """
-        Recursively collects all git-tracked File objects from a ScanDir tree.
-
-        Args:
-            scan_dir: Directory to scan
-            debug: Enable debug output (default: True)
-
-        Returns:
-            List of tracked File objects
-        """
-        files = [f for f in scan_dir.files.values() if self._is_tracked_file(f, debug=debug)]
+        """Recursively collects all git-tracked File objects from a ScanDir tree."""
+        files = [f for f in scan_dir.files.values() if self._is_tracked_file(f)]
         debug_print(f"[DEBUG] _collect_all_files: {len(files)} files passed filter from {len(scan_dir.files)} total")
 
         for sub_dir in scan_dir.scan_dirs.values():
@@ -190,26 +169,6 @@ class CLIReportFormat(ReportFormatStrategy):
 
         return result
 
-    def _has_valid_ownership_data(self, ownership_kpi) -> bool:
-        """
-        Check if ownership KPI contains valid data.
-
-        Returns False for None, empty dict, or N/A format.
-        Returns True for valid ownership dictionaries with author data.
-        """
-        # Check KPI exists and has value attribute
-        if not ownership_kpi or not hasattr(ownership_kpi, 'value'):
-            return False
-
-        value = ownership_kpi.value
-
-        # Check value is valid dict with content
-        if not isinstance(value, dict) or not value:
-            return False
-
-        # Check for legacy N/A format
-        return value.get('ownership') != 'N/A'
-
     def _format_author_list(self, authors_dict: dict, max_display: int = None) -> str:
         """
         Format author dictionary into readable list.
@@ -240,7 +199,7 @@ class CLIReportFormat(ReportFormatStrategy):
         Limits display to max 3 authors sorted by contribution percentage.
         Returns empty string if no valid ownership data.
         """
-        if not self._has_valid_ownership_data(code_ownership_kpi):
+        if not self._has_valid_ownership(code_ownership_kpi):
             return ''
 
         value = code_ownership_kpi.value
