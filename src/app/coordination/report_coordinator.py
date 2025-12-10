@@ -40,14 +40,12 @@ class ReportCoordinator:
         self.level = app_config.level
         self.hierarchical = app_config.hierarchical
         self.report_folder = app_config.report_folder
-        
+
         # Initialize filename generator
         self.filename_generator = FileNameGenerator(
             self.output_file,
             app_config.using_output_formats_flag
         )
-
-
 
     def get_generator_from_factory(self, output_format: str):
         """
@@ -154,12 +152,12 @@ class ReportCoordinator:
             self.generate_single_report(
                 repo_info, output_format, output_file, links_for_this, is_multi_format
             )
-    
+
     def _handle_review_strategy_format(self, output_format: str, repo_infos: List[RepoInfo],
-                                      review_strategy_callback):
+                                       review_strategy_callback):
         """
         Handle review strategy format generation.
-        
+
         Args:
             output_format: Output format name
             repo_infos: List of repository information objects
@@ -167,10 +165,9 @@ class ReportCoordinator:
         """
         if not review_strategy_callback:
             return
-        
+
         review_branch_only = (output_format == 'review-strategy-branch')
-        output_filename = ('review_strategy_branch.md' if review_branch_only
-                          else 'review_strategy.md')
+        output_filename = FormatMapper.get_review_strategy_filename(output_format)
         review_strategy_callback(repo_infos, review_branch_only, output_filename)
 
     def generate_all_reports(self, repo_infos: List[RepoInfo], report_links: List[Dict],
