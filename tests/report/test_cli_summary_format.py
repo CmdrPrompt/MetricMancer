@@ -74,7 +74,7 @@ class TestCLISummaryFormat(unittest.TestCase):
 
 
 class TestCollectAllFiles(TestCLISummaryFormat):
-    """Tests for _collect_all_files method."""
+    """Tests for _collect_tracked_files method."""
 
     def test_collect_files_with_ownership(self):
         """Test collecting files that have code ownership."""
@@ -83,7 +83,7 @@ class TestCollectAllFiles(TestCLISummaryFormat):
 
         repo_info = self._create_mock_repo([file1, file2])
 
-        files = self.formatter._collect_all_files(repo_info)
+        files = self.formatter._collect_tracked_files(repo_info)
 
         self.assertEqual(len(files), 2)
         self.assertIn(file1, files)
@@ -96,7 +96,7 @@ class TestCollectAllFiles(TestCLISummaryFormat):
 
         repo_info = self._create_mock_repo([tracked, untracked])
 
-        files = self.formatter._collect_all_files(repo_info)
+        files = self.formatter._collect_tracked_files(repo_info)
 
         self.assertEqual(len(files), 1)
         self.assertIn(tracked, files)
@@ -121,7 +121,7 @@ class TestCollectAllFiles(TestCLISummaryFormat):
         subdir.files['file2.py'] = file2
         repo_info.scan_dirs['subdir'] = subdir
 
-        files = self.formatter._collect_all_files(repo_info)
+        files = self.formatter._collect_tracked_files(repo_info)
 
         self.assertEqual(len(files), 2)
         self.assertIn(file1, files)
@@ -131,7 +131,7 @@ class TestCollectAllFiles(TestCLISummaryFormat):
         """Test collecting files from empty repository."""
         repo_info = self._create_mock_repo([])
 
-        files = self.formatter._collect_all_files(repo_info)
+        files = self.formatter._collect_tracked_files(repo_info)
 
         self.assertEqual(len(files), 0)
 

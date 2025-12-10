@@ -4,11 +4,12 @@ Provides actionable insights prioritized by importance instead of file tree.
 """
 
 from src.report.report_format_strategy import ReportFormatStrategy
-from src.kpis.model import RepoInfo, ScanDir, File
+from src.report.cli.cli_format_base import CLIFormatBase
+from src.kpis.model import RepoInfo, File
 from typing import List, Tuple, Dict
 
 
-class CLISummaryFormat(ReportFormatStrategy):
+class CLISummaryFormat(CLIFormatBase, ReportFormatStrategy):
     """Formats analysis results as an executive summary dashboard."""
 
     def print_report(self, repo_info: RepoInfo, debug_print, level="file", **kwargs):
@@ -21,7 +22,7 @@ class CLISummaryFormat(ReportFormatStrategy):
         extreme_threshold = kwargs.get('extreme_complexity_threshold', 100)
 
         # Collect all files and calculate statistics
-        all_files = self._collect_all_files(repo_info)
+        all_files = self._collect_tracked_files(repo_info)
         stats = self._calculate_statistics(all_files)
 
         # Categorize files by risk level
@@ -38,30 +39,6 @@ class CLISummaryFormat(ReportFormatStrategy):
         self._print_recommendations(critical_files, emerging_files, high_complexity_files, all_files)
         self._print_detailed_reports(repo_info, **kwargs)
 
-    def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
-        """Recursively collects all git-tracked File objects from a ScanDir tree."""
-
-        def is_tracked_file(file_obj: File):
-            co = file_obj.kpis.get('Code Ownership')
-            if not co or not hasattr(co, 'value'):
-                return False
-
-            # Handle new cache structure: value is either None/empty dict for untracked files,
-            # or dict with author percentages for tracked files
-            if co.value is None or not isinstance(co.value, dict) or len(co.value) == 0:
-                return False
-
-            # Check if it's the old 'N/A' format or actual ownership data
-            if co.value.get('ownership') == 'N/A':
-                return False
-
-            return True
-
-        files = [f for f in scan_dir.files.values() if is_tracked_file(f)]
-        for sub_dir in scan_dir.scan_dirs.values():
-            files.extend(self._collect_all_files(sub_dir))
-        return files
-
     def _calculate_statistics(self, files: List[File]) -> Dict:
         """Calculate overview statistics from all files."""
         if not files:
@@ -75,25 +52,15 @@ class CLISummaryFormat(ReportFormatStrategy):
                 'total_churn': 0
             }
 
-        complexities = []
-        cognitive_complexities = []
-        churns = []
-
-        for file_obj in files:
-            # Get cyclomatic complexity
-            complexity_kpi = file_obj.kpis.get('complexity')
-            if complexity_kpi and complexity_kpi.value is not None:
-                complexities.append(complexity_kpi.value)
-
-            # Get cognitive complexity
-            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
-            if cognitive_kpi and cognitive_kpi.value is not None:
-                cognitive_complexities.append(cognitive_kpi.value)
-
-            # Get churn
-            churn_kpi = file_obj.kpis.get('churn')
-            if churn_kpi and churn_kpi.value is not None:
-                churns.append(churn_kpi.value)
+        # Collect values - only include files with actual KPI values (not None)
+        complexities = [self._get_kpi_value(f.kpis, 'complexity') for f in files
+                        if f.kpis.get('complexity') and f.kpis['complexity'].value is not None]
+        cognitive_complexities = [
+            self._get_kpi_value(f.kpis, 'cognitive_complexity') for f in files
+            if f.kpis.get('cognitive_complexity') and f.kpis['cognitive_complexity'].value is not None
+        ]
+        churns = [self._get_kpi_value(f.kpis, 'churn') for f in files
+                  if f.kpis.get('churn') and f.kpis['churn'].value is not None]
 
         total_complexity = sum(complexities) if complexities else 0
         total_cognitive = sum(cognitive_complexities) if cognitive_complexities else 0
@@ -103,7 +70,9 @@ class CLISummaryFormat(ReportFormatStrategy):
             'total_files': len(files),
             'avg_complexity': total_complexity / len(complexities) if complexities else 0.0,
             'max_complexity': max(complexities) if complexities else 0,
-            'avg_cognitive_complexity': total_cognitive / len(cognitive_complexities) if cognitive_complexities else 0.0,
+            'avg_cognitive_complexity': (
+                total_cognitive / len(cognitive_complexities) if cognitive_complexities else 0.0
+            ),
             'max_cognitive_complexity': max(cognitive_complexities) if cognitive_complexities else 0,
             'avg_churn': total_churn / len(churns) if churns else 0.0,
             'total_churn': total_churn
@@ -113,13 +82,8 @@ class CLISummaryFormat(ReportFormatStrategy):
         """
         Categorize files by risk level based on hotspot analysis criteria.
 
-        Args:
-            files: List of files to categorize
-            extreme_threshold: Complexity threshold for extreme complexity (default: 100)
-
         Returns:
             Tuple of (critical_hotspots, emerging_hotspots, high_complexity, high_churn, extreme_complexity)
-            Each list contains tuples: (file_obj, complexity, cognitive_complexity, churn, hotspot)
         """
         critical = []
         emerging = []
@@ -128,15 +92,11 @@ class CLISummaryFormat(ReportFormatStrategy):
         extreme_complexity = []
 
         for file_obj in files:
-            complexity_kpi = file_obj.kpis.get('complexity')
-            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
-            churn_kpi = file_obj.kpis.get('churn')
-            hotspot_kpi = file_obj.kpis.get('hotspot')
-
-            complexity = complexity_kpi.value if complexity_kpi and complexity_kpi.value is not None else 0
-            cognitive_complexity = cognitive_kpi.value if cognitive_kpi and cognitive_kpi.value is not None else 0
-            churn = churn_kpi.value if churn_kpi and churn_kpi.value is not None else 0
-            hotspot = hotspot_kpi.value if hotspot_kpi and hotspot_kpi.value is not None else 0
+            kpis = self._extract_file_kpis(file_obj)
+            complexity = kpis['complexity']
+            cognitive_complexity = kpis['cognitive_complexity']
+            churn = kpis['churn']
+            hotspot = kpis['hotspot']
 
             # Extreme complexity: Files above extreme threshold (regardless of churn)
             if complexity > extreme_threshold:
@@ -185,7 +145,7 @@ class CLISummaryFormat(ReportFormatStrategy):
         """Print critical issues section with both hotspots and extreme complexity."""
         print("🔥 CRITICAL ISSUES (Immediate Attention Required)")
         print(f"   Critical Hotspots:     {len(critical_files)} files (High complexity + Active changes)")
-        print(f"   Extreme Complexity:    {len(extreme_files)} files (>{extreme_threshold} complexity, regardless of churn)")
+        print(f"   Extreme Complexity:    {len(extreme_files)} files (>{extreme_threshold}, regardless of churn)")
 
         # Combine and sort by a risk score (max of complexity and hotspot)
         all_critical = []
@@ -199,9 +159,9 @@ class CLISummaryFormat(ReportFormatStrategy):
 
         if all_critical:
             print(f"   Top {min(5, len(all_critical))} Critical Files:")
-            for i, (category, file_obj, complexity, cognitive_complexity, churn, hotspot) in enumerate(all_critical[:5], 1):
+            for i, (category, file_obj, cplx, cog_cplx, churn, hotspot) in enumerate(all_critical[:5], 1):
                 file_path = self._get_file_path(file_obj)
-                print(f"   {i}. {file_path:35s} (C:{complexity}, Cog:{cognitive_complexity}, Churn:{churn})")
+                print(f"   {i}. {file_path:35s} (C:{cplx}, Cog:{cog_cplx}, Churn:{churn})")
         else:
             print("   ✅ No critical issues detected")
         print()

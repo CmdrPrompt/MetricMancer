@@ -4,11 +4,12 @@ Prioritizes improvements by impact vs. effort for maximum ROI.
 """
 
 from src.report.report_format_strategy import ReportFormatStrategy
-from src.kpis.model import RepoInfo, ScanDir, File
+from src.report.cli.cli_format_base import CLIFormatBase
+from src.kpis.model import RepoInfo, File
 from typing import List, Tuple, Dict
 
 
-class CLIQuickWinsFormat(ReportFormatStrategy):
+class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
     """Formats analysis results as prioritized quick win suggestions."""
 
     def print_report(self, repo_info: RepoInfo, debug_print, level="file", **kwargs):
@@ -16,42 +17,14 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         Prints quick win suggestions prioritized by impact vs. effort.
         Helps teams focus on high-value, low-effort improvements.
         """
-        # start_time = time.time()
-
-        # Collect all files and calculate quick wins
-        all_files = self._collect_all_files(repo_info)
+        # Collect files with metrics and calculate quick wins
+        all_files = self._collect_files_with_metrics(repo_info)
         quick_wins = self._calculate_quick_wins(all_files)
 
         # Print the report
         self._print_header()
         self._print_quick_wins(quick_wins)
         self._print_summary(quick_wins)
-
-    def _collect_all_files(self, scan_dir: ScanDir) -> List[File]:
-        """Recursively collects all File objects from a ScanDir tree.
-
-        Includes both git-tracked and non-git-tracked files.
-        Quick wins analysis works best with git history (for churn/hotspot metrics),
-        but can still provide value based on complexity alone.
-        """
-
-        def is_valid_file(file_obj: File):
-            # Accept files with complexity metrics (basic requirement)
-            complexity_kpi = file_obj.kpis.get('complexity')
-            if complexity_kpi and complexity_kpi.value is not None and complexity_kpi.value > 0:
-                return True
-
-            # Also accept files with cognitive complexity
-            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
-            if cognitive_kpi and cognitive_kpi.value is not None and cognitive_kpi.value > 0:
-                return True
-
-            return False
-
-        files = [f for f in scan_dir.files.values() if is_valid_file(f)]
-        for sub_dir in scan_dir.scan_dirs.values():
-            files.extend(self._collect_all_files(sub_dir))
-        return files
 
     def _calculate_quick_wins(self, files: List[File]) -> List[Dict]:
         """
@@ -62,18 +35,14 @@ class CLIQuickWinsFormat(ReportFormatStrategy):
         quick_wins = []
 
         for file_obj in files:
-            # Extract KPIs
-            complexity_kpi = file_obj.kpis.get('complexity')
-            churn_kpi = file_obj.kpis.get('churn')
-            hotspot_kpi = file_obj.kpis.get('hotspot')
-            cognitive_kpi = file_obj.kpis.get('cognitive_complexity')
+            # Extract KPIs using base class helper
+            kpis = self._extract_file_kpis(file_obj)
+            complexity = kpis['complexity']
+            churn = kpis['churn']
+            hotspot = kpis['hotspot']
+            cognitive_complexity = kpis['cognitive_complexity']
             ownership_kpi = file_obj.kpis.get('Code Ownership')
             shared_kpi = file_obj.kpis.get('Shared Code Ownership')
-
-            complexity = complexity_kpi.value if complexity_kpi and complexity_kpi.value is not None else 0
-            churn = churn_kpi.value if churn_kpi and churn_kpi.value is not None else 0
-            hotspot = hotspot_kpi.value if hotspot_kpi and hotspot_kpi.value is not None else 0
-            cognitive_complexity = cognitive_kpi.value if cognitive_kpi and cognitive_kpi.value is not None else 0
 
             # Calculate impact score (0-10)
             impact = self._calculate_impact(complexity, churn, hotspot, cognitive_complexity)
