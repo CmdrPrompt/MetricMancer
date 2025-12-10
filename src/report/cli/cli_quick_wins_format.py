@@ -3,10 +3,14 @@ Quick Win Suggestions formatter for terminal output.
 Prioritizes improvements by impact vs. effort for maximum ROI.
 """
 
+from collections import Counter
 from src.report.report_format_strategy import ReportFormatStrategy
 from src.report.cli.cli_format_base import CLIFormatBase
 from src.kpis.model import RepoInfo, File
 from typing import List, Tuple, Dict
+
+# Minimum impact threshold for inclusion in quick wins
+MIN_IMPACT_THRESHOLD = 3
 
 # Score thresholds: (threshold, points) - checked in order, first match wins
 HOTSPOT_THRESHOLDS = [(500, 5), (300, 4), (150, 3), (50, 2), (0, 1)]
@@ -53,56 +57,45 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
         Returns list of dicts sorted by ROI (impact/effort ratio).
         """
         quick_wins = []
-
         for file_obj in files:
-            # Extract KPIs using base class helper
-            kpis = self._extract_file_kpis(file_obj)
-            complexity = kpis['complexity']
-            churn = kpis['churn']
-            hotspot = kpis['hotspot']
-            cognitive_complexity = kpis['cognitive_complexity']
-            ownership_kpi = file_obj.kpis.get('Code Ownership')
-            shared_kpi = file_obj.kpis.get('Shared Code Ownership')
+            entry = self._build_quick_win_entry(file_obj)
+            if entry:
+                quick_wins.append(entry)
 
-            # Calculate impact score (0-10)
-            impact = self._calculate_impact(complexity, churn, hotspot, cognitive_complexity)
-
-            # Calculate effort score (0-10, higher = more effort)
-            effort = self._calculate_effort(complexity, file_obj)
-
-            # Calculate ROI (impact/effort ratio)
-            roi = impact / max(effort, 1)  # Avoid division by zero
-
-            # Determine action type and description
-            action_type, action_desc, reason = self._determine_action(
-                file_obj, complexity, churn, hotspot, ownership_kpi, shared_kpi, cognitive_complexity
-            )
-
-            # Estimate time required
-            time_estimate = self._estimate_time(effort, complexity)
-
-            # Only include files with some improvement potential (impact > 3)
-            if impact > 3:
-                quick_wins.append({
-                    'file': file_obj,
-                    'file_path': self._get_file_path(file_obj),
-                    'impact': impact,
-                    'effort': effort,
-                    'roi': roi,
-                    'action_type': action_type,
-                    'action_desc': action_desc,
-                    'reason': reason,
-                    'time_estimate': time_estimate,
-                    'complexity': complexity,
-                    'cognitive_complexity': cognitive_complexity,
-                    'churn': churn,
-                    'hotspot': hotspot
-                })
-
-        # Sort by ROI (highest first)
         quick_wins.sort(key=lambda x: x['roi'], reverse=True)
-
         return quick_wins
+
+    def _build_quick_win_entry(self, file_obj: File) -> Dict | None:
+        """Build a quick win entry for a file. Returns None if impact too low."""
+        kpis = self._extract_file_kpis(file_obj)
+        complexity, churn = kpis['complexity'], kpis['churn']
+        hotspot, cognitive = kpis['hotspot'], kpis['cognitive_complexity']
+        shared_kpi = file_obj.kpis.get('Shared Code Ownership')
+
+        impact = self._calculate_impact(complexity, churn, hotspot, cognitive)
+        if impact <= MIN_IMPACT_THRESHOLD:
+            return None
+
+        effort = self._calculate_effort(complexity, file_obj)
+        action_type, action_desc, reason = self._determine_action(
+            complexity, churn, cognitive, shared_kpi
+        )
+
+        return {
+            'file': file_obj,
+            'file_path': self._get_file_path(file_obj),
+            'impact': impact,
+            'effort': effort,
+            'roi': impact / max(effort, 1),
+            'action_type': action_type,
+            'action_desc': action_desc,
+            'reason': reason,
+            'time_estimate': self._estimate_time(effort, complexity),
+            'complexity': complexity,
+            'cognitive_complexity': cognitive,
+            'churn': churn,
+            'hotspot': hotspot
+        }
 
     def _score_from_thresholds(self, value: float, thresholds: List[Tuple[int, int]]) -> int:
         """Calculate score based on threshold table. Returns points for first threshold exceeded."""
@@ -134,7 +127,8 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
         Higher score = more effort required.
         """
         num_functions = len(file_obj.functions) if hasattr(file_obj, 'functions') else 0
-        num_authors = self._get_num_authors(file_obj)
+        shared_kpi = file_obj.kpis.get('Shared Code Ownership')
+        num_authors = self._get_num_authors_from_kpi(shared_kpi)
 
         score = (
             self._score_from_thresholds(complexity, COMPLEXITY_EFFORT_THRESHOLDS) +
@@ -143,91 +137,53 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
         )
         return min(score, 10)
 
-    def _get_num_authors(self, file_obj: File) -> int:
-        """Get number of significant authors from Shared Code Ownership KPI."""
-        shared_kpi = file_obj.kpis.get('Shared Code Ownership')
-        if shared_kpi and shared_kpi.value:
-            return shared_kpi.value.get('num_significant_authors', 0)
-        return 0
-
-    def _determine_action(self, file_obj: File, complexity: int, churn: float,
-                          hotspot: float, ownership_kpi, shared_kpi,
-                          cognitive_complexity: int = 0) -> Tuple[str, str, str]:
+    def _determine_action(self, complexity: int, churn: float,
+                          cognitive: int, shared_kpi) -> Tuple[str, str, str]:
         """
         Determine the recommended action type based on file characteristics.
-
-        Args:
-            cognitive_complexity: Cognitive complexity (understanding difficulty)
 
         Returns:
             (action_type, action_description, reason)
         """
-        # Very high cognitive complexity = reduce nesting (PRIORITY)
-        if cognitive_complexity > 25:
-            return (
-                'Reduce Nesting',
-                'Reduce nesting depth and extract helper methods',
-                f'Very high cognitive complexity (Cog:{cognitive_complexity}) - hard to understand'
-            )
+        num_authors = self._get_num_authors_from_kpi(shared_kpi)
 
-        # Check for single owner + high complexity = documentation opportunity
-        if shared_kpi and shared_kpi.value:
-            num_authors = shared_kpi.value.get('num_significant_authors', 0)
-            if num_authors == 1 and complexity > 30:
-                return (
-                    'Document',
-                    'Add comprehensive documentation and comments',
-                    f'Single owner (100%), high complexity (C:{complexity})'
-                )
+        # Check conditions in priority order
+        if cognitive > 25:
+            return ('Reduce Nesting', 'Reduce nesting depth and extract helper methods',
+                    f'Very high cognitive complexity (Cog:{cognitive}) - hard to understand')
 
-        # Critical hotspot = refactor
+        if num_authors == 1 and complexity > 30:
+            return ('Document', 'Add comprehensive documentation and comments',
+                    f'Single owner (100%), high complexity (C:{complexity})')
+
         if complexity > 15 and churn > 10:
-            return (
-                'Refactor',
-                'Break down into smaller functions (<10 complexity each)',
-                f'Critical hotspot (C:{complexity}, Churn:{churn})'
-            )
+            return ('Refactor', 'Break down into smaller functions (<10 complexity each)',
+                    f'Critical hotspot (C:{complexity}, Churn:{churn})')
 
-        # High complexity alone = refactor
         if complexity > 20:
-            return (
-                'Refactor',
-                'Extract functions to reduce complexity',
-                f'High complexity (C:{complexity})'
-            )
+            return ('Refactor', 'Extract functions to reduce complexity',
+                    f'High complexity (C:{complexity})')
 
-        # Moderate cognitive complexity = simplify
-        if cognitive_complexity > 15:
-            return (
-                'Simplify',
-                'Reduce nesting and simplify boolean conditions',
-                f'Moderate cognitive complexity (Cog:{cognitive_complexity})'
-            )
+        if cognitive > 15:
+            return ('Simplify', 'Reduce nesting and simplify boolean conditions',
+                    f'Moderate cognitive complexity (Cog:{cognitive})')
 
-        # High churn = add tests
         if churn > 10:
-            return (
-                'Add Tests',
-                'Start with happy path tests, then edge cases',
-                f'High churn (Churn:{churn}) - likely lacks test coverage'
-            )
+            return ('Add Tests', 'Start with happy path tests, then edge cases',
+                    f'High churn (Churn:{churn}) - likely lacks test coverage')
 
-        # Fragmented ownership = establish ownership
+        if num_authors > 3:
+            return ('Review Ownership', 'Establish clear ownership and responsibility',
+                    f'Fragmented ownership ({num_authors} significant authors)')
+
+        return ('Improve', 'General code quality improvements',
+                f'Moderate metrics (C:{complexity}, Churn:{churn})')
+
+    def _get_num_authors_from_kpi(self, shared_kpi) -> int:
+        """Extract number of significant authors from shared ownership KPI."""
         if shared_kpi and shared_kpi.value:
-            num_authors = shared_kpi.value.get('num_significant_authors', 0)
-            if num_authors > 3:
-                return (
-                    'Review Ownership',
-                    'Establish clear ownership and responsibility',
-                    f'Fragmented ownership ({num_authors} significant authors)'
-                )
-
-        # Default = general improvement
-        return (
-            'Improve',
-            'General code quality improvements',
-            f'Moderate metrics (C:{complexity}, Churn:{churn})'
-        )
+            return shared_kpi.value.get('num_significant_authors', 0)
+        return 0
 
     def _estimate_time(self, effort: int, complexity: int) -> str:
         """Estimate time required based on effort score."""
@@ -310,22 +266,15 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
             return
 
         print("📊 SUMMARY")
-
-        # Count by action type
-        action_counts = {}
-        for win in quick_wins:
-            action = win['action_type']
-            action_counts[action] = action_counts.get(action, 0) + 1
+        action_counts = Counter(win['action_type'] for win in quick_wins)
 
         print(f"   Total Opportunities:  {len(quick_wins)}")
-        for action, count in sorted(action_counts.items(), key=lambda x: x[1], reverse=True):
+        for action, count in action_counts.most_common():
             print(f"   {action:20s}: {count}")
 
-        # ROI insights
-        if quick_wins:
-            print(f"\n   Best ROI:  {quick_wins[0]['file_path']}")
-            print(f"              (Impact: {quick_wins[0]['impact']}/10, Effort: {quick_wins[0]['effort']}/10)")
-
+        best = quick_wins[0]
+        print(f"\n   Best ROI:  {best['file_path']}")
+        print(f"              (Impact: {best['impact']}/10, Effort: {best['effort']}/10)")
         print()
         print("💡 TIP: Start with items 1-3 for maximum return on investment")
         print()

@@ -368,17 +368,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_document(self):
         """Test action determination for documentation."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 1}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=35,
             churn=5,
-            hotspot=100,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Document")
@@ -386,17 +382,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_refactor_critical(self):
         """Test action determination for critical refactoring."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=20,
             churn=15,
-            hotspot=200,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Refactor")
@@ -404,17 +396,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_refactor_high_complexity(self):
         """Test action determination for high complexity refactoring."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=25,
             churn=5,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Refactor")
@@ -422,17 +410,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_add_tests(self):
         """Test action determination for adding tests."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=10,
             churn=15,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Add Tests")
@@ -440,17 +424,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_review_ownership(self):
         """Test action determination for ownership review."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 5}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=10,
             churn=5,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Review Ownership")
@@ -458,17 +438,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_improve(self):
         """Test action determination for general improvement."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=10,
             churn=5,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Improve")
