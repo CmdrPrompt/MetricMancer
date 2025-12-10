@@ -147,28 +147,28 @@ class TestCLIReportFormat(unittest.TestCase):
         result = fmt._format_shared_ownership(None)
         self.assertEqual(result, '')
 
-    def test_has_valid_ownership_data_with_valid_dict(self):
+    def test_has_valid_ownership_with_valid_dict(self):
         """Test ownership validation with valid dict data."""
         fmt = CLIReportFormat()
         ownership_kpi = MagicMock(value={'Alice': 100.0})
-        self.assertTrue(fmt._has_valid_ownership_data(ownership_kpi))
+        self.assertTrue(fmt._has_valid_ownership(ownership_kpi))
 
-    def test_has_valid_ownership_data_with_none(self):
+    def test_has_valid_ownership_with_none(self):
         """Test ownership validation with None."""
         fmt = CLIReportFormat()
-        self.assertFalse(fmt._has_valid_ownership_data(None))
+        self.assertFalse(fmt._has_valid_ownership(None))
 
-    def test_has_valid_ownership_data_with_empty_dict(self):
+    def test_has_valid_ownership_with_empty_dict(self):
         """Test ownership validation with empty dict."""
         fmt = CLIReportFormat()
         ownership_kpi = MagicMock(value={})
-        self.assertFalse(fmt._has_valid_ownership_data(ownership_kpi))
+        self.assertFalse(fmt._has_valid_ownership(ownership_kpi))
 
-    def test_has_valid_ownership_data_with_na_format(self):
+    def test_has_valid_ownership_with_na_format(self):
         """Test ownership validation with N/A format."""
         fmt = CLIReportFormat()
         ownership_kpi = MagicMock(value={'ownership': 'N/A'})
-        self.assertFalse(fmt._has_valid_ownership_data(ownership_kpi))
+        self.assertFalse(fmt._has_valid_ownership(ownership_kpi))
 
     # === Additional tests for directory/file printing ===
 

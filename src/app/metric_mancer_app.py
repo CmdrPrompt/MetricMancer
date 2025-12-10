@@ -5,6 +5,7 @@ from src.app.scanning.scanner import Scanner
 from src.app.hierarchy.data_converter import DataConverter
 from src.app.coordination.report_coordinator import ReportCoordinator
 from src.app.coordination.delta_review_coordinator import DeltaReviewCoordinator
+from src.app.coordination.filename_generator import FileNameGenerator
 from src.app.infrastructure.timing_reporter import TimingReporter
 from src.app.infrastructure.exception_handler import ExceptionHandler
 from src.app.services.hotspot_service import HotspotService
@@ -135,18 +136,9 @@ class MetricMancerApp:
 
     def _prepare_report_links(self, repo_infos):
         """Prepare cross-links for multi-repo reports."""
-        report_links = []
-        if len(repo_infos) > 1:
-            for idx, repo_info in enumerate(repo_infos):
-                output_file = self.app_config.output_file or "complexity_report.html"
-                base, ext = os.path.splitext(output_file)
-                filename = f"{base}_{idx + 1}{ext}"
-                report_links.append({
-                    'href': filename,
-                    'name': getattr(repo_info, 'repo_name', f'Repo {idx + 1}'),
-                    'selected': False
-                })
-        return report_links
+        return FileNameGenerator.prepare_report_links(
+            repo_infos, self.app_config.output_file
+        )
 
     def run(self):
         """
@@ -293,7 +285,10 @@ class MetricMancerApp:
             output_filename: Override output filename (default: use config.review_output)
         """
         # Use parameter if provided, otherwise fall back to config
-        review_branch_only = review_branch_only if review_branch_only is not None else self.app_config.review_branch_only
+        if review_branch_only is not None:
+            review_branch_only = review_branch_only
+        else:
+            review_branch_only = self.app_config.review_branch_only
         output_filename = output_filename if output_filename is not None else self.app_config.review_output
 
         # Convert and merge repo data

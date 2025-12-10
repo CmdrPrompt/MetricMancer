@@ -105,31 +105,16 @@ class TestQuickWinsCognitiveComplexityActionsRED(unittest.TestCase):
         The action should specifically mention reducing nesting.
         """
         # Arrange: File with high cognitive complexity
-        file_obj = MagicMock(spec=File)
-        file_obj.name = "complex_nested.py"
-        file_obj.functions = []
-        file_obj.kpis = {
-            'complexity': MagicMock(value=20),
-            'cognitive_complexity': MagicMock(value=35),  # Very high
-            'churn': MagicMock(value=5),
-            'hotspot': MagicMock(value=100),
-            'Shared Code Ownership': None
-        }
-
         complexity = 20
-        cognitive_complexity = 35
+        cognitive_complexity = 35  # Very high
         churn = 5
-        hotspot = 100
 
-        # Act: Determine action (method signature may need updating)
+        # Act: Determine action
         action_type, action_desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=complexity,
             churn=churn,
-            hotspot=hotspot,
-            ownership_kpi=None,
-            shared_kpi=None,
-            cognitive_complexity=cognitive_complexity  # NEW parameter
+            cognitive=cognitive_complexity,
+            shared_kpi=None
         )
 
         # Assert: Should recommend reducing nesting
@@ -146,25 +131,12 @@ class TestQuickWinsCognitiveComplexityActionsRED(unittest.TestCase):
 
         Example: "High cognitive complexity (CogC:35)"
         """
-        # Arrange
-        file_obj = MagicMock(spec=File)
-        file_obj.name = "test.py"
-        file_obj.functions = []
-        file_obj.kpis = {
-            'complexity': MagicMock(value=15),
-            'cognitive_complexity': MagicMock(value=28),
-            'Shared Code Ownership': None
-        }
-
         # Act
         _, _, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=15,
             churn=5,
-            hotspot=75,
-            ownership_kpi=None,
-            shared_kpi=None,
-            cognitive_complexity=28
+            cognitive=28,
+            shared_kpi=None
         )
 
         # Assert: Reason should include cognitive complexity value
