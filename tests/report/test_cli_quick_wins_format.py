@@ -8,10 +8,10 @@ from src.kpis.model import File, Function, ScanDir, RepoInfo
 from src.report.cli.cli_quick_wins_format import CLIQuickWinsFormat
 
 
-class TestCollectAllFiles(unittest.TestCase):
-    """Test _collect_all_files method."""
+class TestCollectFilesWithMetrics(unittest.TestCase):
+    """Test _collect_files_with_metrics method."""
 
-    def test_collect_all_files_with_ownership(self):
+    def test_collect_files_with_metrics_with_ownership(self):
         """Test collecting files with ownership data."""
         # Create mock files
         file1 = File(name="file1.py", file_path="src/file1.py")
@@ -50,13 +50,13 @@ class TestCollectAllFiles(unittest.TestCase):
 
         # Test
         formatter = CLIQuickWinsFormat()
-        all_files = formatter._collect_all_files(repo_info)
+        all_files = formatter._collect_files_with_metrics(repo_info)
 
         self.assertEqual(len(all_files), 2)
         self.assertIn(file1, all_files)
         self.assertIn(file2, all_files)
 
-    def test_collect_all_files_empty_repo(self):
+    def test_collect_files_with_metrics_empty_repo(self):
         """Test collecting files from empty repository."""
         repo_info = RepoInfo(
             dir_name="empty_repo",
@@ -66,11 +66,11 @@ class TestCollectAllFiles(unittest.TestCase):
         )
 
         formatter = CLIQuickWinsFormat()
-        all_files = formatter._collect_all_files(repo_info)
+        all_files = formatter._collect_files_with_metrics(repo_info)
 
         self.assertEqual(len(all_files), 0)
 
-    def test_collect_all_files_multiple_subdirs(self):
+    def test_collect_files_with_metrics_multiple_subdirs(self):
         """Test collecting files from nested subdirectories."""
         file1 = File(name="file1.py", file_path="src/file1.py")
 
@@ -112,7 +112,7 @@ class TestCollectAllFiles(unittest.TestCase):
         repo_info.scan_dirs = {"tests": subdir}
 
         formatter = CLIQuickWinsFormat()
-        all_files = formatter._collect_all_files(repo_info)
+        all_files = formatter._collect_files_with_metrics(repo_info)
 
         self.assertEqual(len(all_files), 2)
 
@@ -368,17 +368,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_document(self):
         """Test action determination for documentation."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 1}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=35,
             churn=5,
-            hotspot=100,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Document")
@@ -386,17 +382,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_refactor_critical(self):
         """Test action determination for critical refactoring."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=20,
             churn=15,
-            hotspot=200,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Refactor")
@@ -404,17 +396,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_refactor_high_complexity(self):
         """Test action determination for high complexity refactoring."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=25,
             churn=5,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Refactor")
@@ -422,17 +410,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_add_tests(self):
         """Test action determination for adding tests."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=10,
             churn=15,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Add Tests")
@@ -440,17 +424,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_review_ownership(self):
         """Test action determination for ownership review."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 5}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=10,
             churn=5,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Review Ownership")
@@ -458,17 +438,13 @@ class TestDetermineAction(unittest.TestCase):
 
     def test_determine_action_improve(self):
         """Test action determination for general improvement."""
-        file_obj = File(name="test.py", file_path="test.py")
-
         shared_kpi = MagicMock(spec=BaseKPI)
         shared_kpi.value = {'num_significant_authors': 2}
 
         action, desc, reason = self.formatter._determine_action(
-            file_obj=file_obj,
             complexity=10,
             churn=5,
-            hotspot=50,
-            ownership_kpi=MagicMock(),
+            cognitive=10,
             shared_kpi=shared_kpi
         )
         self.assertEqual(action, "Improve")
