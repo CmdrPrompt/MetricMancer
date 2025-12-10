@@ -8,6 +8,26 @@ from src.report.cli.cli_format_base import CLIFormatBase
 from src.kpis.model import RepoInfo, File
 from typing import List, Tuple, Dict
 
+# Score thresholds: (threshold, points) - checked in order, first match wins
+HOTSPOT_THRESHOLDS = [(500, 5), (300, 4), (150, 3), (50, 2), (0, 1)]
+COGNITIVE_THRESHOLDS = [(25, 4), (15, 3), (10, 2), (5, 1)]
+CYCLOMATIC_THRESHOLDS = [(50, 2), (20, 1)]
+CHURN_THRESHOLDS = [(15, 2), (10, 1)]
+
+# Effort thresholds
+COMPLEXITY_EFFORT_THRESHOLDS = [(100, 5), (50, 4), (30, 3), (15, 2), (5, 1)]
+FUNCTION_COUNT_THRESHOLDS = [(20, 3), (10, 2), (5, 1)]
+AUTHOR_COUNT_THRESHOLDS = [(4, 2), (2, 1)]
+
+# Time estimates: (effort_threshold, estimate)
+TIME_ESTIMATES = [(8, '1-2 days'), (6, '4-8 hours'), (4, '2-4 hours'), (2, '1-2 hours')]
+DEFAULT_TIME_ESTIMATE = '30-60 min'
+
+# Label thresholds for impact/effort display
+LABEL_HIGH_THRESHOLD = 7
+LABEL_MEDIUM_THRESHOLD = 5
+EFFORT_MEDIUM_THRESHOLD = 4
+
 
 class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
     """Formats analysis results as prioritized quick win suggestions."""
@@ -84,6 +104,13 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
 
         return quick_wins
 
+    def _score_from_thresholds(self, value: float, thresholds: List[Tuple[int, int]]) -> int:
+        """Calculate score based on threshold table. Returns points for first threshold exceeded."""
+        for threshold, points in thresholds:
+            if value > threshold:
+                return points
+        return 0
+
     def _calculate_impact(self, complexity: int, churn: float, hotspot: float,
                           cognitive_complexity: int = 0) -> int:
         """
@@ -92,91 +119,36 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
 
         Cognitive complexity is weighted higher than cyclomatic complexity because
         it better reflects actual understandability and maintenance difficulty.
-
-        Args:
-            complexity: Cyclomatic complexity
-            churn: Code churn (commits)
-            hotspot: Hotspot score (complexity × churn)
-            cognitive_complexity: Cognitive complexity (understanding difficulty)
         """
-        score = 0
-
-        # Hotspot score contributes most (0-5 points)
-        if hotspot > 500:
-            score += 5
-        elif hotspot > 300:
-            score += 4
-        elif hotspot > 150:
-            score += 3
-        elif hotspot > 50:
-            score += 2
-        elif hotspot > 0:
-            score += 1
-
-        # Cognitive complexity contributes more (0-4 points) - PRIORITIZED
-        # High cognitive = hard to understand, more bugs, higher maintenance burden
-        if cognitive_complexity > 25:
-            score += 4
-        elif cognitive_complexity > 15:
-            score += 3
-        elif cognitive_complexity > 10:
-            score += 2
-        elif cognitive_complexity > 5:
-            score += 1
-
-        # Cyclomatic complexity contributes (0-2 points)
-        # Lower weight than cognitive since it doesn't account for nesting
-        if complexity > 50:
-            score += 2
-        elif complexity > 20:
-            score += 1
-
-        # Churn contributes (0-2 points)
-        if churn > 15:
-            score += 2
-        elif churn > 10:
-            score += 1
-
-        return min(score, 10)  # Cap at 10
+        score = (
+            self._score_from_thresholds(hotspot, HOTSPOT_THRESHOLDS) +
+            self._score_from_thresholds(cognitive_complexity, COGNITIVE_THRESHOLDS) +
+            self._score_from_thresholds(complexity, CYCLOMATIC_THRESHOLDS) +
+            self._score_from_thresholds(churn, CHURN_THRESHOLDS)
+        )
+        return min(score, 10)
 
     def _calculate_effort(self, complexity: int, file_obj: File) -> int:
         """
         Calculate effort score (0-10) based on file characteristics.
         Higher score = more effort required.
         """
-        score = 0
-
-        # Complexity-based effort (0-5 points)
-        if complexity > 100:
-            score += 5
-        elif complexity > 50:
-            score += 4
-        elif complexity > 30:
-            score += 3
-        elif complexity > 15:
-            score += 2
-        elif complexity > 5:
-            score += 1
-
-        # File size estimate (0-3 points) - based on functions count
         num_functions = len(file_obj.functions) if hasattr(file_obj, 'functions') else 0
-        if num_functions > 20:
-            score += 3
-        elif num_functions > 10:
-            score += 2
-        elif num_functions > 5:
-            score += 1
+        num_authors = self._get_num_authors(file_obj)
 
-        # Ownership fragmentation adds effort (0-2 points)
+        score = (
+            self._score_from_thresholds(complexity, COMPLEXITY_EFFORT_THRESHOLDS) +
+            self._score_from_thresholds(num_functions, FUNCTION_COUNT_THRESHOLDS) +
+            self._score_from_thresholds(num_authors, AUTHOR_COUNT_THRESHOLDS)
+        )
+        return min(score, 10)
+
+    def _get_num_authors(self, file_obj: File) -> int:
+        """Get number of significant authors from Shared Code Ownership KPI."""
         shared_kpi = file_obj.kpis.get('Shared Code Ownership')
         if shared_kpi and shared_kpi.value:
-            num_authors = shared_kpi.value.get('num_significant_authors', 0)
-            if num_authors > 4:
-                score += 2
-            elif num_authors > 2:
-                score += 1
-
-        return min(score, 10)  # Cap at 10
+            return shared_kpi.value.get('num_significant_authors', 0)
+        return 0
 
     def _determine_action(self, file_obj: File, complexity: int, churn: float,
                           hotspot: float, ownership_kpi, shared_kpi,
@@ -259,16 +231,10 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
 
     def _estimate_time(self, effort: int, complexity: int) -> str:
         """Estimate time required based on effort score."""
-        if effort >= 8:
-            return '1-2 days'
-        elif effort >= 6:
-            return '4-8 hours'
-        elif effort >= 4:
-            return '2-4 hours'
-        elif effort >= 2:
-            return '1-2 hours'
-        else:
-            return '30-60 min'
+        for threshold, estimate in TIME_ESTIMATES:
+            if effort >= threshold:
+                return estimate
+        return DEFAULT_TIME_ESTIMATE
 
     def _print_header(self):
         """Print the header."""
@@ -296,47 +262,47 @@ class CLIQuickWinsFormat(CLIFormatBase, ReportFormatStrategy):
             print(f"\n💡 {len(quick_wins) - display_count} more opportunities available")
             print("   Run with --output-format json for full list")
 
+    def _get_level_label(self, value: int, high_threshold: int, medium_threshold: int) -> str:
+        """Get label (High/Medium/Low) based on value and thresholds."""
+        if value >= high_threshold:
+            return 'High'
+        return 'Medium' if value >= medium_threshold else 'Low'
+
+    def _format_metrics(self, win: Dict) -> str:
+        """Format metrics string for display."""
+        parts = []
+        if win['complexity'] > 0:
+            parts.append(f"Complexity: {win['complexity']}")
+        if win['cognitive_complexity'] > 0:
+            parts.append(f"Cognitive: {win['cognitive_complexity']}")
+        if win['churn'] > 0:
+            parts.append(f"Churn: {win['churn']}")
+        return ', '.join(parts)
+
     def _print_quick_win(self, index: int, win: Dict):
         """Print a single quick win suggestion."""
-        # Header
         print(f"{index}. {win['action_type']}: {win['file_path']}")
 
-        # Impact bar
-        impact_bar = self._create_bar(win['impact'], 10, '█')
-        impact_label = 'High' if win['impact'] >= 7 else 'Medium' if win['impact'] >= 5 else 'Low'
-        print(f"   Impact:  {impact_bar} {impact_label} ({win['impact']}/10)")
+        # Impact and effort bars with labels
+        impact_label = self._get_level_label(win['impact'], LABEL_HIGH_THRESHOLD, LABEL_MEDIUM_THRESHOLD)
+        effort_label = self._get_level_label(win['effort'], LABEL_HIGH_THRESHOLD, EFFORT_MEDIUM_THRESHOLD)
 
-        # Effort bar
-        effort_bar = self._create_bar(win['effort'], 10, '█')
-        effort_label = 'High' if win['effort'] >= 7 else 'Medium' if win['effort'] >= 4 else 'Low'
-        print(f"   Effort:  {effort_bar} {effort_label} ({win['effort']}/10)")
-
-        # Time estimate
+        print(f"   Impact:  {self._create_bar(win['impact'], 10)} {impact_label} ({win['impact']}/10)")
+        print(f"   Effort:  {self._create_bar(win['effort'], 10)} {effort_label} ({win['effort']}/10)")
         print(f"   Time:    {win['time_estimate']}")
 
-        # Metrics - show both complexity metrics if available
-        metrics_parts = []
-        if win['complexity'] > 0:
-            metrics_parts.append(f"Complexity: {win['complexity']}")
-        if win['cognitive_complexity'] > 0:
-            metrics_parts.append(f"Cognitive: {win['cognitive_complexity']}")
-        if win['churn'] > 0:
-            metrics_parts.append(f"Churn: {win['churn']}")
-        if metrics_parts:
-            print(f"   Metrics: {', '.join(metrics_parts)}")
+        metrics = self._format_metrics(win)
+        if metrics:
+            print(f"   Metrics: {metrics}")
 
-        # Reason
         print(f"   Reason:  {win['reason']}")
-
-        # Action
         print(f"   Action:  {win['action_desc']}")
         print()
 
-    def _create_bar(self, value: int, max_value: int, char: str = '█') -> str:
+    def _create_bar(self, value: int, max_value: int) -> str:
         """Create a visual bar for impact/effort display."""
         filled = int((value / max_value) * 10)
-        empty = 10 - filled
-        return char * filled + '░' * empty
+        return '█' * filled + '░' * (10 - filled)
 
     def _print_summary(self, quick_wins: List[Dict]):
         """Print summary statistics."""
