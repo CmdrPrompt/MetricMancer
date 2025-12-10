@@ -20,33 +20,19 @@ class CLIReportFormat(ReportFormatStrategy):
 
     # Constants for ownership formatting
     MAX_AUTHORS_DISPLAY = 3
+
     def _is_tracked_file(self, file_obj: File, debug: bool = False) -> bool:
         """
         Check if a file is tracked in git based on Code Ownership KPI.
 
-        A file is considered tracked if it has valid ownership data (not None,
-        not empty dict, and not the legacy 'N/A' format).
-
         Args:
             file_obj: File object to check
-            debug: If True, print debug information
+            debug: If True, print debug information (unused, kept for API compatibility)
 
         Returns:
             True if file is git-tracked, False otherwise
         """
-        co = file_obj.kpis.get('Code Ownership')
-
-        if debug:
-            debug_print(f"[DEBUG] Checking file {file_obj.file_path}: co={type(co)}")
-
-        # Use centralized validation logic
-        is_valid = self._has_valid_ownership_data(co)
-
-        if debug:
-            status = "ownership={co.value}, returning True" if is_valid else "no valid ownership, returning False"
-            debug_print(f"[DEBUG] File {file_obj.file_path}: {status}")
-
-        return is_valid
+        return self._has_valid_ownership_data(file_obj.kpis.get('Code Ownership'))
 
     def print_report(self, repo_info: RepoInfo, debug_print, level="file", **kwargs):
         """
@@ -79,6 +65,16 @@ class CLIReportFormat(ReportFormatStrategy):
 
         return files
 
+    def _calc_stats(self, values: List[float]) -> Tuple[float, float, float]:
+        """Calculate avg, min, max for a list of values. Returns (0,0,0) if empty."""
+        if not values:
+            return 0, 0, 0
+        return (
+            round(sum(values) / len(values), 1),
+            round(min(values), 1),
+            round(max(values), 1)
+        )
+
     def _get_repo_stats(self, repo_info: RepoInfo) -> Tuple[str, List[File]]:
         """Calculates statistics for the entire repository by traversing the model."""
         all_files = self._collect_all_files(repo_info)
@@ -90,12 +86,10 @@ class CLIReportFormat(ReportFormatStrategy):
         complexities = [f.kpis['complexity'].value for f in all_files if f.kpis.get('complexity')]
         churns = [f.kpis['churn'].value for f in all_files if f.kpis.get('churn')]
 
-        avg_complexity = round(sum(complexities) / len(complexities), 1) if complexities else 0
-        min_complexity = round(min(complexities), 1) if complexities else 0
-        max_complexity = round(max(complexities), 1) if complexities else 0
-        avg_churn = round(sum(churns) / len(churns), 1) if churns else 0
+        avg_c, min_c, max_c = self._calc_stats(complexities)
+        avg_churn = self._calc_stats(churns)[0]  # Only need avg for churn
 
-        stats_str = f"[Avg. C:{avg_complexity}, Min C:{min_complexity}, Max C:{max_complexity}, Avg. Churn:{avg_churn}]"
+        stats_str = f"[Avg. C:{avg_c}, Min C:{min_c}, Max C:{max_c}, Avg. Churn:{avg_churn}]"
         return stats_str, all_files
 
     def _get_visible_directories(self, scan_dir: ScanDir) -> List[ScanDir]:
@@ -152,13 +146,9 @@ class CLIReportFormat(ReportFormatStrategy):
 
     def _has_tracked_files(self, scan_dir: ScanDir) -> bool:
         """Returns True if this dir or any subdir contains a tracked file."""
-        for f in scan_dir.files.values():
-            if self._is_tracked_file(f):
-                return True
-        for d in scan_dir.scan_dirs.values():
-            if self._has_tracked_files(d):
-                return True
-        return False
+        has_direct = any(self._is_tracked_file(f) for f in scan_dir.files.values())
+        has_nested = any(self._has_tracked_files(d) for d in scan_dir.scan_dirs.values())
+        return has_direct or has_nested
 
     def _get_connector(self, is_last: bool) -> str:
         """Get tree connector string based on position."""
@@ -270,7 +260,7 @@ class CLIReportFormat(ReportFormatStrategy):
         Shows number of significant authors and their names.
         Returns empty string if no valid data.
         """
-        # Early returns for invalid data
+        # Validate KPI structure
         if not shared_ownership_kpi or not hasattr(shared_ownership_kpi, 'value'):
             return ''
 
@@ -278,42 +268,32 @@ class CLIReportFormat(ReportFormatStrategy):
         if not isinstance(value, dict):
             return ''
 
-        # Handle special cases with early returns
+        # Check for special cases
         if 'error' in value:
             return " Shared: ERROR"
-
         if value.get('shared_ownership') == 'N/A':
             return " Shared: N/A"
-
         if 'num_significant_authors' not in value:
             return ''
 
-        # Format structured shared ownership data
         return self._format_shared_ownership_authors(value)
 
     def _format_shared_ownership_authors(self, value: dict) -> str:
-        """
-        Format author information from shared ownership value.
-
-        Handles zero, one, or multiple authors with appropriate formatting.
-        """
+        """Format author information from shared ownership value."""
         num_authors = value['num_significant_authors']
         authors = value.get('authors', [])
         threshold = value.get('threshold', 20.0)
 
-        # Handle different author counts
+        # Handle zero or single author cases
         if num_authors == 0:
             return f" Shared: None (threshold: {threshold}%)"
-
         if num_authors == 1:
             return f" Shared: Single owner ({authors[0]})"
 
-        # Multiple authors - limit display
-        max_display = self.MAX_AUTHORS_DISPLAY
-        author_list = ", ".join(authors[:max_display])
-        if len(authors) > max_display:
+        # Multiple authors - format with limit
+        author_list = ", ".join(authors[:self.MAX_AUTHORS_DISPLAY])
+        if len(authors) > self.MAX_AUTHORS_DISPLAY:
             author_list += "..."
-
         return f" Shared: {num_authors} authors ({author_list})"
 
     def _format_dir_stats(self, dir_obj: ScanDir) -> str:
@@ -329,24 +309,20 @@ class CLIReportFormat(ReportFormatStrategy):
         if all(v == '?' for v in kpis.values()):
             return ""
 
-        return f"[Avg C:{kpis['complexity']}, Avg Cog:{kpis['cognitive']}, Avg Churn:{kpis['churn']}, Avg Hotspot:{kpis['hotspot']}]"
+        return (f"[Avg C:{kpis['complexity']}, Avg Cog:{kpis['cognitive']}, "
+                f"Avg Churn:{kpis['churn']}, Avg Hotspot:{kpis['hotspot']}]")
 
     def _format_file_stats(self, file_obj: File) -> str:
-        """
-        Formats the KPI statistics string for a single file,
-        including code ownership, shared ownership, and cognitive complexity if available.
-        """
+        """Formats the KPI statistics string for a single file."""
         kpis = self._extract_kpis(file_obj.kpis, include_cognitive=True)
+        base_stats = (f"[C:{kpis['complexity']}, Cog:{kpis['cognitive']}, "
+                      f"Churn:{kpis['churn']}, Hotspot:{kpis['hotspot']}]")
 
-        # Use helper methods to format ownership
+        # Append ownership strings (they include leading space if non-empty)
         ownership_str = self._format_code_ownership(file_obj.kpis.get('Code Ownership'))
         shared_str = self._format_shared_ownership(file_obj.kpis.get('Shared Ownership'))
 
-        # Build stats string with optional ownership sections
-        base_stats = f"[C:{kpis['complexity']}, Cog:{kpis['cognitive']}, Churn:{kpis['churn']}, Hotspot:{kpis['hotspot']}]"
-        separator = " " if ownership_str and shared_str else ""
-
-        return base_stats + ownership_str + separator + shared_str
+        return base_stats + ownership_str + shared_str
 
     def _print_functions(self, functions: List[Function], prefix: str, is_file_last: bool):
         """Prints the functions for a given file, including cognitive complexity if available."""
