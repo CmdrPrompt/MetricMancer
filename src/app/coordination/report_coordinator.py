@@ -188,17 +188,3 @@ class ReportCoordinator:
                 output_format, repo_infos, report_links, is_multi_format,
                 review_strategy_callback
             )
-
-    @staticmethod
-    def prepare_report_links(repo_infos: List[RepoInfo], output_file: str) -> List[Dict]:
-        """
-        Prepare cross-links for multi-repo reports.
-
-        Args:
-            repo_infos: List of repository information objects
-            output_file: Base output filename
-
-        Returns:
-            List of report link dictionaries
-        """
-        return FileNameGenerator.prepare_report_links(repo_infos, output_file)
