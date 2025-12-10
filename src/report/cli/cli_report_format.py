@@ -78,11 +78,7 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
         Returns only directories that have at least one tracked file
         in themselves or their descendants.
         """
-        visible_dirs = []
-        for d in scan_dir.scan_dirs.values():
-            if self._has_tracked_files(d):
-                visible_dirs.append(d)
-        return visible_dirs
+        return [d for d in scan_dir.scan_dirs.values() if self._has_tracked_files(d)]
 
     def _print_directory_item(self, item: ScanDir, connector: str, prefix: str, level: str):
         """Print a single directory item with stats and recurse into it."""
@@ -106,22 +102,28 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
         Recursively prints the directory structure, its files, and their KPIs.
         Directories containing only untracked files (ownership N/A) are not shown.
         """
-        # Filter tracked files and visible directories
+        items = self._get_sorted_items(scan_dir)
+        self._print_items(items, prefix, level)
+
+    def _get_sorted_items(self, scan_dir: ScanDir) -> List:
+        """Get sorted list of visible directories and tracked files."""
         files = [f for f in scan_dir.files.values() if self._is_tracked_file(f)]
         visible_dirs = self._get_visible_directories(scan_dir)
+        return sorted(visible_dirs, key=lambda d: d.dir_name) + sorted(files, key=lambda f: f.name)
 
-        # Sort and combine items
-        items = sorted(visible_dirs, key=lambda d: d.dir_name) + sorted(files, key=lambda f: f.name)
-
-        # Print each item with appropriate formatting
+    def _print_items(self, items: List, prefix: str, level: str):
+        """Print list of items (directories and files) with tree formatting."""
         for i, item in enumerate(items):
             is_last = (i == len(items) - 1)
             connector = self._get_connector(is_last)
+            self._print_item(item, connector, prefix, level, is_last)
 
-            if isinstance(item, ScanDir):
-                self._print_directory_item(item, connector, prefix, level)
-            elif isinstance(item, File):
-                self._print_file_item(item, connector, prefix, level, is_last)
+    def _print_item(self, item, connector: str, prefix: str, level: str, is_last: bool):
+        """Print a single item (directory or file)."""
+        if isinstance(item, ScanDir):
+            self._print_directory_item(item, connector, prefix, level)
+        elif isinstance(item, File):
+            self._print_file_item(item, connector, prefix, level, is_last)
 
     def _has_tracked_files(self, scan_dir: ScanDir) -> bool:
         """Returns True if this dir or any subdir contains a tracked file."""
@@ -185,12 +187,14 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
 
         sorted_authors = sorted(authors_dict.items(), key=lambda x: x[1], reverse=True)
         author_list = [f"{author} {percent}%" for author, percent in sorted_authors[:max_display]]
+        return self._add_remaining_count(author_list, len(sorted_authors), max_display)
 
-        remaining = len(sorted_authors) - max_display
+    def _add_remaining_count(self, items: List[str], total: int, displayed: int) -> str:
+        """Add '+ N more' suffix if there are remaining items."""
+        remaining = total - displayed
         if remaining > 0:
-            author_list.append(f"+ {remaining} more")
-
-        return ", ".join(author_list)
+            items.append(f"+ {remaining} more")
+        return ", ".join(items)
 
     def _format_code_ownership(self, code_ownership_kpi) -> str:
         """
@@ -219,15 +223,10 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
         Shows number of significant authors and their names.
         Returns empty string if no valid data.
         """
-        # Validate KPI structure
-        if not shared_ownership_kpi or not hasattr(shared_ownership_kpi, 'value'):
+        if not self._is_valid_shared_ownership(shared_ownership_kpi):
             return ''
 
         value = shared_ownership_kpi.value
-        if not isinstance(value, dict):
-            return ''
-
-        # Check for special cases
         if 'error' in value:
             return " Shared: ERROR"
         if value.get('shared_ownership') == 'N/A':
@@ -237,23 +236,30 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
 
         return self._format_shared_ownership_authors(value)
 
+    def _is_valid_shared_ownership(self, kpi) -> bool:
+        """Check if shared ownership KPI has valid structure."""
+        if not kpi or not hasattr(kpi, 'value'):
+            return False
+        return isinstance(kpi.value, dict)
+
     def _format_shared_ownership_authors(self, value: dict) -> str:
         """Format author information from shared ownership value."""
         num_authors = value['num_significant_authors']
         authors = value.get('authors', [])
         threshold = value.get('threshold', 20.0)
 
-        # Handle zero or single author cases
         if num_authors == 0:
             return f" Shared: None (threshold: {threshold}%)"
         if num_authors == 1:
             return f" Shared: Single owner ({authors[0]})"
 
-        # Multiple authors - format with limit
+        return self._format_multiple_authors(num_authors, authors)
+
+    def _format_multiple_authors(self, num_authors: int, authors: List[str]) -> str:
+        """Format display string for multiple authors."""
         author_list = ", ".join(authors[:self.MAX_AUTHORS_DISPLAY])
-        if len(authors) > self.MAX_AUTHORS_DISPLAY:
-            author_list += "..."
-        return f" Shared: {num_authors} authors ({author_list})"
+        suffix = "..." if len(authors) > self.MAX_AUTHORS_DISPLAY else ""
+        return f" Shared: {num_authors} authors ({author_list}{suffix})"
 
     def _format_dir_stats(self, dir_obj: ScanDir) -> str:
         """
