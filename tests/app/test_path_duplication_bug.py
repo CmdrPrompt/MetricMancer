@@ -12,7 +12,6 @@ import tempfile
 import shutil
 import unittest
 from unittest.mock import patch, MagicMock
-import warnings
 
 
 class TestPathDuplicationBug(unittest.TestCase):

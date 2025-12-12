@@ -248,7 +248,9 @@ class TestCategorizeFiles(TestCLISummaryFormat):
             complexity=20, churn=5.0, hotspot=100.0
         )
 
-        crit, emerg, high_c, high_ch, extreme = self.formatter._categorize_files([high_complexity], extreme_threshold=100)
+        crit, emerg, high_c, high_ch, extreme = self.formatter._categorize_files(
+            [high_complexity], extreme_threshold=100
+        )
 
         self.assertEqual(len(crit), 0)
         self.assertEqual(len(emerg), 0)

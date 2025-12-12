@@ -19,7 +19,7 @@ class TestMetricMancerAppEdgeCases(unittest.TestCase):
         # Empty directories should be caught early with ValueError (fail-fast behavior)
         with self.assertRaises(ValueError) as cm:
             config = AppConfig(directories=[])
-            app = MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
+            MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
 
         self.assertIn("At least one directory", str(cm.exception))
 

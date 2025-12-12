@@ -12,7 +12,6 @@ import tempfile
 
 from src.config.app_config import AppConfig
 from src.app.metric_mancer_app import MetricMancerApp
-import warnings
 
 
 class TestMetricMancerAppWithConfig(unittest.TestCase):

@@ -11,9 +11,8 @@ RED-GREEN-REFACTOR:
 """
 
 import unittest
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 import io
-import sys
 
 
 class TestExceptionHandlerBasics(unittest.TestCase):

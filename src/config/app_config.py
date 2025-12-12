@@ -145,7 +145,9 @@ class AppConfig:
             'threshold_low': args.threshold_low,
             'threshold_high': args.threshold_high,
             'problem_file_threshold': args.problem_file_threshold,
-            'extreme_complexity_threshold': getattr(args, 'extreme_complexity_threshold', Defaults.EXTREME_COMPLEXITY_THRESHOLD),
+            'extreme_complexity_threshold': getattr(
+                args, 'extreme_complexity_threshold', Defaults.EXTREME_COMPLEXITY_THRESHOLD
+            ),
         }
 
     @staticmethod
