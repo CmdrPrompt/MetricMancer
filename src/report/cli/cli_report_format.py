@@ -11,16 +11,27 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
 
     Provides human-readable command-line output with hierarchical
     directory structure and KPI metrics.
+
+    Tree Structure:
+        The formatter uses Unicode box-drawing characters to create
+        a visual tree structure similar to the Unix 'tree' command.
+
+    Attributes:
+        CONNECTOR_LAST: Connector for the last item in a directory (└──)
+        CONNECTOR_CONTINUE: Connector for non-last items (├──)
+        PREFIX_LAST: Prefix extension after last item (spaces)
+        PREFIX_CONTINUE: Prefix extension after non-last items (│)
+        MAX_AUTHORS_DISPLAY: Maximum number of authors to show in ownership display
     """
 
-    # Constants for tree formatting
-    CONNECTOR_LAST = "└── "
-    CONNECTOR_CONTINUE = "├── "
-    PREFIX_LAST = "    "
-    PREFIX_CONTINUE = "│   "
+    # Tree formatting constants - Unicode box-drawing characters
+    CONNECTOR_LAST = "└── "      # Last item in directory
+    CONNECTOR_CONTINUE = "├── "  # Non-last item in directory
+    PREFIX_LAST = "    "         # Indent after last item (no vertical line)
+    PREFIX_CONTINUE = "│   "     # Indent with continuing vertical line
 
-    # Constants for ownership formatting
-    MAX_AUTHORS_DISPLAY = 3
+    # Ownership display configuration
+    MAX_AUTHORS_DISPLAY = 3      # Limit authors shown to keep output readable
 
     def print_report(self, repo_info: RepoInfo, debug_print, level="file", **kwargs):
         """
@@ -126,10 +137,15 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
             self._print_file_item(item, connector, prefix, level, is_last)
 
     def _has_tracked_files(self, scan_dir: ScanDir) -> bool:
-        """Returns True if this dir or any subdir contains a tracked file."""
-        has_direct = any(self._is_tracked_file(f) for f in scan_dir.files.values())
-        has_nested = any(self._has_tracked_files(d) for d in scan_dir.scan_dirs.values())
-        return has_direct or has_nested
+        """Returns True if this dir or any subdir contains a tracked file.
+
+        Uses short-circuit evaluation to avoid unnecessary recursion.
+        """
+        # Check direct files first (cheaper operation)
+        if any(self._is_tracked_file(f) for f in scan_dir.files.values()):
+            return True
+        # Only recurse into subdirs if no direct tracked files found
+        return any(self._has_tracked_files(d) for d in scan_dir.scan_dirs.values())
 
     def _get_connector(self, is_last: bool) -> str:
         """Get tree connector string based on position."""
@@ -138,16 +154,6 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
     def _get_prefix_extension(self, is_last: bool) -> str:
         """Get prefix extension based on position."""
         return self.PREFIX_LAST if is_last else self.PREFIX_CONTINUE
-
-    def _get_kpi_value(self, kpis: dict, kpi_name: str) -> str:
-        """
-        Extract KPI value with proper None handling.
-
-        Returns '?' if KPI is missing or value is None.
-        This ensures consistent fallback behavior across all KPIs.
-        """
-        kpi = kpis.get(kpi_name)
-        return kpi.value if kpi and kpi.value is not None else '?'
 
     def _extract_kpis(self, kpis: dict, include_cognitive: bool = True) -> Dict[str, str]:
         """
@@ -159,15 +165,20 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
 
         Returns:
             Dictionary with extracted KPI values
+
+        Example:
+            >>> kpis = {'complexity': KPI(value=10), 'churn': KPI(value=5)}
+            >>> self._extract_kpis(kpis)
+            {'complexity': 10, 'churn': 5, 'hotspot': '?', 'cognitive': '?'}
         """
         result = {
-            'complexity': self._get_kpi_value(kpis, 'complexity'),
-            'churn': self._get_kpi_value(kpis, 'churn'),
-            'hotspot': self._get_kpi_value(kpis, 'hotspot')
+            'complexity': self._get_kpi_value(kpis, 'complexity', '?'),
+            'churn': self._get_kpi_value(kpis, 'churn', '?'),
+            'hotspot': self._get_kpi_value(kpis, 'hotspot', '?')
         }
 
         if include_cognitive:
-            result['cognitive'] = self._get_kpi_value(kpis, 'cognitive_complexity')
+            result['cognitive'] = self._get_kpi_value(kpis, 'cognitive_complexity', '?')
 
         return result
 
@@ -222,11 +233,34 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
 
         Shows number of significant authors and their names.
         Returns empty string if no valid data.
+
+        Example:
+            >>> kpi = KPI(value={'num_significant_authors': 2, 'authors': ['Alice', 'Bob']})
+            >>> self._format_shared_ownership(kpi)
+            ' Shared: 2 authors (Alice, Bob)'
         """
-        if not self._is_valid_shared_ownership(shared_ownership_kpi):
+        validation_result = self._validate_shared_ownership(shared_ownership_kpi)
+        if validation_result is not None:
+            return validation_result
+
+        return self._format_shared_ownership_authors(shared_ownership_kpi.value)
+
+    def _validate_shared_ownership(self, kpi) -> str:
+        """
+        Validate shared ownership KPI and return early result if invalid.
+
+        Returns:
+            String result if KPI is invalid/error/N/A, None if valid and should continue processing.
+        """
+        # Check basic structure
+        if not kpi or not hasattr(kpi, 'value'):
+            return ''
+        if not isinstance(kpi.value, dict):
             return ''
 
-        value = shared_ownership_kpi.value
+        value = kpi.value
+
+        # Check for error/N/A states
         if 'error' in value:
             return " Shared: ERROR"
         if value.get('shared_ownership') == 'N/A':
@@ -234,13 +268,8 @@ class CLIReportFormat(CLIFormatBase, ReportFormatStrategy):
         if 'num_significant_authors' not in value:
             return ''
 
-        return self._format_shared_ownership_authors(value)
-
-    def _is_valid_shared_ownership(self, kpi) -> bool:
-        """Check if shared ownership KPI has valid structure."""
-        if not kpi or not hasattr(kpi, 'value'):
-            return False
-        return isinstance(kpi.value, dict)
+        # Valid - return None to signal continue processing
+        return None
 
     def _format_shared_ownership_authors(self, value: dict) -> str:
         """Format author information from shared ownership value."""
