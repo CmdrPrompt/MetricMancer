@@ -10,7 +10,7 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
         get_git_cache().clear_cache()
 
     @patch("os.path.exists", return_value=True)
-    @patch("src.utilities.git_cache.subprocess.run")
+    @patch("src.utilities.git_helpers.subprocess.run")
     def test_cache_usage_and_value(self, mock_run, mock_exists):
         """
         Test that CodeOwnershipKPI uses cache and returns correct value.
@@ -74,7 +74,7 @@ class TestCodeOwnershipKPICache(unittest.TestCase):
         self.assertEqual(kpi.value, {}, "KPI value should be empty for files not tracked by git.")
 
     @patch("os.path.exists", return_value=True)
-    @patch("src.utilities.git_cache.subprocess.run")
+    @patch("src.utilities.git_helpers.subprocess.run")
     def test_blame_fails(self, mock_run, mock_exists):
         """
         Test that CodeOwnershipKPI handles git blame failures gracefully.

@@ -53,7 +53,6 @@ pip install metricmancer  # Runtime dependencies only
 [project]
 dependencies = [
   "jinja2>=3.1.0",
-  "pydriller>=2.0",
   "tqdm>=4.65.0",
   "PyYAML>=6.0",
   "pip-licenses>=4.0",

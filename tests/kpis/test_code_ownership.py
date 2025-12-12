@@ -10,7 +10,7 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         get_git_cache().clear_cache()
 
     @patch('os.path.exists', return_value=True)
-    @patch('src.utilities.git_cache.subprocess.run')
+    @patch('src.utilities.git_helpers.subprocess.run')
     def test_calculate_ownership_basic(self, mock_run, mock_exists):
         def mock_run_side_effect(cmd, **kwargs):
             result = unittest.mock.MagicMock()
@@ -32,7 +32,7 @@ class TestCodeOwnershipKPI(unittest.TestCase):
         self.assertEqual(kpi.value['Bob'], 25.0)
 
     @patch('os.path.exists', return_value=True)
-    @patch('src.utilities.git_cache.subprocess.run')
+    @patch('src.utilities.git_helpers.subprocess.run')
     def test_calculate_ownership_error(self, mock_run, mock_exists):
         def mock_run_side_effect(cmd, **kwargs):
             result = unittest.mock.MagicMock()

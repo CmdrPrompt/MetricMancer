@@ -437,11 +437,11 @@ Tasks defined in `.vscode/tasks.json`:
 **Core:**
 
 - jinja2 - HTML template rendering
-- pydriller - Git history analysis
 - pytest, pytest-cov - Testing
 - autopep8, flake8 - Code quality
 - PyYAML - YAML parsing
 - tqdm - Progress bars
+- tree-sitter - Multi-language parsing
 
 **Python Version**: 3.10+ required
 

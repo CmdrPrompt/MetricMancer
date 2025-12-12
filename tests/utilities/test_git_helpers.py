@@ -6,14 +6,16 @@ This module tests:
 - Directory traversal logic
 - Edge cases for git operations
 - Error handling for invalid paths
+- Git command execution helper
 """
 
 import pytest
 import os
+import subprocess
 import tempfile
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
-from src.utilities.git_helpers import find_git_repo_root
+from src.utilities.git_helpers import find_git_repo_root, run_git_command
 
 
 class TestGitHelpers:
@@ -256,3 +258,82 @@ class TestGitHelpersEdgeCases:
                 if os.path.exists(test_path) or test_path in ['.', './', '../']:
                     result = find_git_repo_root(test_path)
                     assert os.path.isabs(result), f"Result should be absolute path for input: {test_path}"
+
+
+class TestRunGitCommand:
+    """Test cases for run_git_command helper function."""
+
+    def test_run_git_command_success(self):
+        """Test successful git command execution."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Initialize a git repo
+            subprocess.run(['git', 'init'], cwd=temp_dir, capture_output=True)
+
+            # Run a simple git command
+            result = run_git_command(temp_dir, ['status', '--porcelain'])
+
+            # Should return output (empty string for clean repo)
+            assert result is not None
+
+    def test_run_git_command_with_args(self):
+        """Test git command with multiple arguments."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            subprocess.run(['git', 'init'], cwd=temp_dir, capture_output=True)
+
+            # Run git log with args
+            result = run_git_command(temp_dir, ['log', '--oneline', '-1'])
+
+            # Should return None (no commits yet) or empty string
+            # git log on empty repo fails, so we expect None
+            assert result is None or result == ""
+
+    def test_run_git_command_not_a_git_repo(self):
+        """Test git command in a non-git directory."""
+        with tempfile.TemporaryDirectory() as temp_dir:
+            # Don't initialize git - just an empty directory
+            result = run_git_command(temp_dir, ['status'])
+
+            # Should return None due to error
+            assert result is None
+
+    def test_run_git_command_normalizes_path(self):
+        """Test that repo path is normalized to absolute."""
+        with patch('subprocess.run') as mock_run:
+            mock_run.return_value = MagicMock(stdout="output", returncode=0)
+
+            # Call with relative path - use current directory
+            cwd = os.getcwd()
+            run_git_command('.', ['status'])
+
+            # Verify absolute path was used
+            call_args = mock_run.call_args
+            git_c_arg_index = call_args[0][0].index('-C')
+            used_path = call_args[0][0][git_c_arg_index + 1]
+            assert os.path.isabs(used_path)
+
+    def test_run_git_command_subprocess_error(self):
+        """Test handling of subprocess.CalledProcessError."""
+        with patch('subprocess.run') as mock_run:
+            mock_run.side_effect = subprocess.CalledProcessError(1, 'git', stderr='error')
+
+            result = run_git_command('/some/repo', ['status'])
+
+            assert result is None
+
+    def test_run_git_command_permission_error(self):
+        """Test handling of PermissionError."""
+        with patch('subprocess.run') as mock_run:
+            mock_run.side_effect = PermissionError("Permission denied")
+
+            result = run_git_command('/some/repo', ['status'])
+
+            assert result is None
+
+    def test_run_git_command_unexpected_error(self):
+        """Test handling of unexpected exceptions."""
+        with patch('subprocess.run') as mock_run:
+            mock_run.side_effect = RuntimeError("Unexpected error")
+
+            result = run_git_command('/some/repo', ['status'])
+
+            assert result is None
