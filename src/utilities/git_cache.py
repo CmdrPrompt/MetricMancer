@@ -259,19 +259,27 @@ class GitDataCache:
     def clear_cache(self, repo_root: Optional[str] = None):
         """Clear cache for a specific repo or the entire cache."""
         if repo_root:
-            self.ownership_cache.pop(repo_root, None)
-            self.churn_cache.pop(repo_root, None)
-            self.blame_cache.pop(repo_root, None)
-            self.tracked_files_cache.pop(repo_root, None)
-            self._ls_files_cache.pop(repo_root, None)
-            debug_print(f"[CACHE] Cleared cache for repo: {repo_root}")
+            self._clear_repo_cache(repo_root)
         else:
-            self.ownership_cache.clear()
-            self.churn_cache.clear()
-            self.blame_cache.clear()
-            self.tracked_files_cache.clear()
-            self._ls_files_cache.clear()
-            debug_print("[CACHE] Cleared all caches")
+            self._clear_all_caches()
+
+    def _clear_repo_cache(self, repo_root: str):
+        """Clear all caches for a specific repository."""
+        self.ownership_cache.pop(repo_root, None)
+        self.churn_cache.pop(repo_root, None)
+        self.blame_cache.pop(repo_root, None)
+        self.tracked_files_cache.pop(repo_root, None)
+        self._ls_files_cache.pop(repo_root, None)
+        debug_print(f"[CACHE] Cleared cache for repo: {repo_root}")
+
+    def _clear_all_caches(self):
+        """Clear all cached data."""
+        self.ownership_cache.clear()
+        self.churn_cache.clear()
+        self.blame_cache.clear()
+        self.tracked_files_cache.clear()
+        self._ls_files_cache.clear()
+        debug_print("[CACHE] Cleared all caches")
 
     def is_file_tracked(self, repo_root: str, file_path: str) -> bool:
         """
@@ -443,64 +451,76 @@ class GitDataCache:
         repo_root = self._normalize_repo_path(repo_root)
         debug_print(f"[CACHE] Pre-building cache for {len(file_paths)} files")
 
-        # Step 1: Pre-populate tracked files cache efficiently
+        # Step 1: Pre-populate tracked files cache
+        valid_files = self._prebuild_tracked_files_cache(repo_root, file_paths)
+        if not valid_files:
+            return
+
+        # Step 2: Pre-build ownership and blame data
+        self._prebuild_ownership_cache(repo_root, valid_files)
+
+        # Step 3: Pre-build churn data
+        self._prebuild_churn_cache(repo_root, valid_files)
+
+        debug_print(f"[CACHE] Pre-building completed for {len(valid_files)} files")
+
+    def _prebuild_tracked_files_cache(self, repo_root: str, file_paths: list[str]) -> list[str]:
+        """Pre-build tracked files cache and return list of valid tracked files."""
         debug_print(f"[CACHE] Pre-building tracked files cache for repo: {repo_root}")
         output = self._run_git_command(repo_root, ['ls-files'])
 
         if output is None:
             debug_print(f"[CACHE] Error pre-building tracked files")
-            return
+            return []
 
         tracked_files = set(output.strip().split('\n')) if output.strip() else set()
         self.tracked_files_cache[repo_root] = tracked_files
         debug_print(f"[CACHE] Pre-built tracked files cache with {len(tracked_files)} files")
 
-        # Step 2: Filter to only tracked files from our file list
         valid_files = [fp for fp in file_paths if fp in tracked_files]
         debug_print(f"[CACHE] {len(valid_files)} of {len(file_paths)} files are tracked by git")
+        return valid_files
 
-        # Step 3: Pre-build ownership data efficiently
+    def _prebuild_ownership_cache(self, repo_root: str, valid_files: list[str]):
+        """Pre-build ownership and blame data for uncached files."""
         repo_ownership_cache = self._get_repo_cache(self.ownership_cache, repo_root)
         repo_blame_cache = self._get_repo_cache(self.blame_cache, repo_root)
 
-        uncached_ownership_files = [fp for fp in valid_files if fp not in repo_ownership_cache]
-        debug_print(f"[CACHE] Pre-building ownership for {len(uncached_ownership_files)} uncached files")
+        uncached_files = [fp for fp in valid_files if fp not in repo_ownership_cache]
+        debug_print(f"[CACHE] Pre-building ownership for {len(uncached_files)} uncached files")
 
-        for file_path in uncached_ownership_files:
-            # Get blame data using helper method
-            blame_output = self._run_git_command(
-                repo_root,
-                ['blame', '--line-porcelain', file_path]
-            )
+        for file_path in uncached_files:
+            self._prebuild_single_file_ownership(repo_root, file_path, repo_ownership_cache, repo_blame_cache)
 
-            if blame_output is None:
-                debug_print(f"[CACHE] Error pre-building ownership for {file_path}")
-                repo_ownership_cache[file_path] = {}
-                repo_blame_cache[file_path] = None
-                continue
+    def _prebuild_single_file_ownership(self, repo_root: str, file_path: str,
+                                         repo_ownership_cache: dict, repo_blame_cache: dict):
+        """Pre-build ownership data for a single file."""
+        blame_output = self._run_git_command(repo_root, ['blame', '--line-porcelain', file_path])
 
-            repo_blame_cache[file_path] = blame_output
+        if blame_output is None:
+            debug_print(f"[CACHE] Error pre-building ownership for {file_path}")
+            repo_ownership_cache[file_path] = {}
+            repo_blame_cache[file_path] = None
+            return
 
-            # Calculate ownership using helper method
-            ownership_result = self._calculate_ownership_from_blame(blame_output)
-            repo_ownership_cache[file_path] = ownership_result
-            debug_print(f"[CACHE] Pre-built ownership for {file_path}: {len(ownership_result)} authors")
+        repo_blame_cache[file_path] = blame_output
+        ownership_result = self._calculate_ownership_from_blame(blame_output)
+        repo_ownership_cache[file_path] = ownership_result
+        debug_print(f"[CACHE] Pre-built ownership for {file_path}: {len(ownership_result)} authors")
 
-        # Step 4: Pre-build churn data efficiently
+    def _prebuild_churn_cache(self, repo_root: str, valid_files: list[str]):
+        """Pre-build churn data for uncached files."""
         repo_churn_cache = self._get_repo_cache(self.churn_cache, repo_root)
-        uncached_churn_files = [fp for fp in valid_files if fp not in repo_churn_cache]
-        debug_print(f"[CACHE] Pre-building churn for {len(uncached_churn_files)} uncached files")
+        uncached_files = [fp for fp in valid_files if fp not in repo_churn_cache]
+        debug_print(f"[CACHE] Pre-building churn for {len(uncached_files)} uncached files")
 
-        for file_path in uncached_churn_files:
-            # Calculate churn using helper method
+        for file_path in uncached_files:
             churn_count = self._calculate_churn(repo_root, file_path)
             repo_churn_cache[file_path] = churn_count
             debug_print(
                 f"[CACHE] Pre-built churn for {file_path}: {churn_count} commits "
                 f"(last {self.churn_period_days} days)"
             )
-
-        debug_print(f"[CACHE] Pre-building completed for {len(valid_files)} files")
 
     def get_cache_stats(self) -> Dict[str, Any]:
         """Return statistics about cache usage."""

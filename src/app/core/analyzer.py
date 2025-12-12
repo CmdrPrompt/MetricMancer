@@ -79,34 +79,29 @@ def collect_kpi_values(scan_dir):
     Returns:
         dict: Dictionary of KPI value lists
     """
-    complexity_vals = []
-    churn_vals = []
-    hotspot_vals = []
-    shared_ownership_counts = []
+    result = {
+        'complexity': [],
+        'churn': [],
+        'hotspot': [],
+        'shared_ownership': []
+    }
 
     for file in scan_dir.files.values():
-        val = extract_numeric_kpi(file, 'complexity')
+        _collect_file_kpi_values(file, result)
+
+    return result
+
+
+def _collect_file_kpi_values(file, result):
+    """Collect KPI values from a single file into result dict."""
+    for kpi_name in ['complexity', 'churn', 'hotspot']:
+        val = extract_numeric_kpi(file, kpi_name)
         if val is not None:
-            complexity_vals.append(val)
+            result[kpi_name].append(val)
 
-        val = extract_numeric_kpi(file, 'churn')
-        if val is not None:
-            churn_vals.append(val)
-
-        val = extract_numeric_kpi(file, 'hotspot')
-        if val is not None:
-            hotspot_vals.append(val)
-
-        count = extract_shared_ownership_count(file)
-        if count is not None:
-            shared_ownership_counts.append(count)
-
-    return {
-        'complexity': complexity_vals,
-        'churn': churn_vals,
-        'hotspot': hotspot_vals,
-        'shared_ownership': shared_ownership_counts
-    }
+    count = extract_shared_ownership_count(file)
+    if count is not None:
+        result['shared_ownership'].append(count)
 
 
 def extract_file_authors(file):
@@ -156,28 +151,15 @@ def calculate_average_kpis(kpi_values):
     Returns:
         dict: Dictionary of average KPI values
     """
-    avg_complexity = (
-        round(sum(kpi_values['complexity']) / len(kpi_values['complexity']), 1)
-        if kpi_values['complexity'] else None
-    )
-    avg_churn = (
-        round(sum(kpi_values['churn']) / len(kpi_values['churn']), 1)
-        if kpi_values['churn'] else None
-    )
-    avg_hotspot = (
-        round(sum(kpi_values['hotspot']) / len(kpi_values['hotspot']), 1)
-        if kpi_values['hotspot'] else None
-    )
-    avg_shared_ownership = (
-        round(sum(kpi_values['shared_ownership']) / len(kpi_values['shared_ownership']), 1)
-        if kpi_values['shared_ownership'] else None
-    )
+    def safe_average(values):
+        """Calculate average of a list, returning None if empty."""
+        return round(sum(values) / len(values), 1) if values else None
 
     return {
-        'complexity': avg_complexity,
-        'churn': avg_churn,
-        'hotspot': avg_hotspot,
-        'shared_ownership': avg_shared_ownership
+        'complexity': safe_average(kpi_values['complexity']),
+        'churn': safe_average(kpi_values['churn']),
+        'hotspot': safe_average(kpi_values['hotspot']),
+        'shared_ownership': safe_average(kpi_values['shared_ownership'])
     }
 
 
