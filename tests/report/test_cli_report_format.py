@@ -252,6 +252,131 @@ class TestCLIReportFormat(unittest.TestCase):
             call_args = str(mock_print.call_args)
             self.assertIn('test.py', call_args)
 
+    # === NEW TESTS: Coverage for previously untested methods ===
+
+    def test_print_functions(self):
+        """Test printing functions for a file."""
+        fmt = CLIReportFormat()
+        functions = [
+            Function(name='foo', kpis={
+                'complexity': MagicMock(value=5),
+                'cognitive_complexity': MagicMock(value=3)
+            }),
+            Function(name='bar', kpis={
+                'complexity': MagicMock(value=2),
+                'cognitive_complexity': MagicMock(value=1)
+            })
+        ]
+
+        with patch('builtins.print') as mock_print:
+            fmt._print_functions(functions, '│   ', False)
+            # Should print 2 functions (sorted alphabetically: bar, foo)
+            self.assertEqual(mock_print.call_count, 2)
+            calls = [str(c) for c in mock_print.call_args_list]
+            # bar should come first (alphabetically)
+            self.assertIn('bar()', calls[0])
+            self.assertIn('foo()', calls[1])
+
+    def test_calc_stats_with_values(self):
+        """Test statistics calculation with normal values."""
+        fmt = CLIReportFormat()
+        values = [10.0, 20.0, 30.0]
+        avg, min_val, max_val = fmt._calc_stats(values)
+        self.assertEqual(avg, 20.0)
+        self.assertEqual(min_val, 10.0)
+        self.assertEqual(max_val, 30.0)
+
+    def test_calc_stats_empty_list(self):
+        """Test statistics calculation with empty list."""
+        fmt = CLIReportFormat()
+        avg, min_val, max_val = fmt._calc_stats([])
+        self.assertEqual(avg, 0)
+        self.assertEqual(min_val, 0)
+        self.assertEqual(max_val, 0)
+
+    def test_calc_stats_single_value(self):
+        """Test statistics calculation with single value."""
+        fmt = CLIReportFormat()
+        values = [42.0]
+        avg, min_val, max_val = fmt._calc_stats(values)
+        self.assertEqual(avg, 42.0)
+        self.assertEqual(min_val, 42.0)
+        self.assertEqual(max_val, 42.0)
+
+    def test_format_dir_stats_with_missing_kpis(self):
+        """Test directory stats formatting when all KPIs are missing."""
+        fmt = CLIReportFormat()
+        dir_obj = ScanDir(
+            dir_name='empty_dir',
+            scan_dir_path='./empty_dir',
+            repo_root_path='/repo',
+            repo_name='repo',
+            files={},
+            scan_dirs={},
+            kpis={}
+        )
+        result = fmt._format_dir_stats(dir_obj)
+        self.assertEqual(result, "")
+
+    def test_format_dir_stats_with_partial_kpis(self):
+        """Test directory stats formatting with some KPIs present."""
+        fmt = CLIReportFormat()
+        dir_obj = ScanDir(
+            dir_name='partial_dir',
+            scan_dir_path='./partial_dir',
+            repo_root_path='/repo',
+            repo_name='repo',
+            files={},
+            scan_dirs={},
+            kpis={'complexity': MagicMock(value=15)}
+        )
+        result = fmt._format_dir_stats(dir_obj)
+        self.assertIn('Avg C:15', result)
+        self.assertIn('?', result)  # Other KPIs should show '?'
+
+    def test_validate_shared_ownership_with_error(self):
+        """Test validation returns ERROR string for error state."""
+        fmt = CLIReportFormat()
+        kpi = MagicMock(value={'error': 'Git not available'})
+        result = fmt._validate_shared_ownership(kpi)
+        self.assertEqual(result, " Shared: ERROR")
+
+    def test_validate_shared_ownership_with_na(self):
+        """Test validation returns N/A string for N/A state."""
+        fmt = CLIReportFormat()
+        kpi = MagicMock(value={'shared_ownership': 'N/A'})
+        result = fmt._validate_shared_ownership(kpi)
+        self.assertEqual(result, " Shared: N/A")
+
+    def test_validate_shared_ownership_valid_returns_none(self):
+        """Test validation returns None for valid KPI (continue processing)."""
+        fmt = CLIReportFormat()
+        kpi = MagicMock(value={'num_significant_authors': 2, 'authors': ['A', 'B']})
+        result = fmt._validate_shared_ownership(kpi)
+        self.assertIsNone(result)
+
+    def test_has_tracked_files_short_circuits(self):
+        """Test that _has_tracked_files short-circuits when direct file found."""
+        fmt = CLIReportFormat()
+
+        # Create a tracked file
+        tracked_file = File(name='tracked.py', file_path='tracked.py', kpis={
+            'Code Ownership': MagicMock(value={'Alice': 100.0})
+        })
+
+        # Create scan_dir with tracked file - should return True without checking subdirs
+        scan_dir = ScanDir(
+            dir_name='test',
+            scan_dir_path='./test',
+            repo_root_path='/repo',
+            repo_name='repo',
+            files={'tracked.py': tracked_file},
+            scan_dirs={},  # No subdirs to recurse into
+            kpis={}
+        )
+
+        self.assertTrue(fmt._has_tracked_files(scan_dir))
+
 
 if __name__ == '__main__':
     unittest.main()
