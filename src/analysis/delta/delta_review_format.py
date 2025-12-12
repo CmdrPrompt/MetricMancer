@@ -5,8 +5,25 @@ Generates markdown reports for function-level code review guidance,
 following Adam Tornhill's "Your Code as a Crime Scene" methodology.
 """
 
-from typing import List
+from typing import List, Dict, Optional
 from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
+
+# Complexity thresholds
+COMPLEXITY_WARNING_THRESHOLD = 20
+COMPLEXITY_GOOD_THRESHOLD = -20
+COGNITIVE_WARNING_THRESHOLD = 15
+COGNITIVE_GOOD_THRESHOLD = -15
+HIGH_COMPLEXITY_THRESHOLD = 10
+MODERATE_COMPLEXITY_DELTA = 5
+
+# Icons for different change types and severity
+ICONS = {
+    'added': '➕',
+    'deleted': '🗑️ ',
+    'increase_high': '🔴',
+    'increase_moderate': '🟡',
+    'decrease': '🟢',
+}
 
 
 class DeltaReviewStrategyFormat:
@@ -70,18 +87,26 @@ class DeltaReviewStrategyFormat:
 
     def _format_overview(self, delta: DeltaDiff) -> str:
         """Format overview section."""
-        total_functions = (
-            len(delta.added_functions) +
-            len(delta.modified_functions) +
-            len(delta.deleted_functions)
-        )
+        total_functions = self._count_total_functions(delta)
+        total_cognitive_delta = self._calculate_cognitive_delta(delta)
 
-        # Calculate cognitive complexity delta
-        total_cognitive_delta = sum(
-            f.cognitive_complexity_delta for f in (delta.added_functions + delta.modified_functions + delta.deleted_functions)
-        )
+        lines = self._build_overview_header(delta, total_functions, total_cognitive_delta)
+        lines.extend(self._build_complexity_warnings(delta.total_complexity_delta, total_cognitive_delta))
 
-        lines = [
+        return "\n".join(lines)
+
+    def _count_total_functions(self, delta: DeltaDiff) -> int:
+        """Count total functions changed."""
+        return len(delta.added_functions) + len(delta.modified_functions) + len(delta.deleted_functions)
+
+    def _calculate_cognitive_delta(self, delta: DeltaDiff) -> int:
+        """Calculate total cognitive complexity delta."""
+        all_changes = delta.added_functions + delta.modified_functions + delta.deleted_functions
+        return sum(f.cognitive_complexity_delta for f in all_changes)
+
+    def _build_overview_header(self, delta: DeltaDiff, total_functions: int, total_cognitive_delta: int) -> List[str]:
+        """Build overview header lines."""
+        return [
             "## Overview",
             "",
             f"**Commits:** `{delta.base_commit[:7]}` → `{delta.target_commit[:7]}`",
@@ -99,24 +124,36 @@ class DeltaReviewStrategyFormat:
             "",
         ]
 
-        # Highlight if complexity increased significantly
-        if delta.total_complexity_delta > 20:
-            lines.append("⚠️  **Warning:** Significant cyclomatic complexity increase detected!")
-            lines.append("")
-        elif delta.total_complexity_delta < -20:
-            lines.append("✅ **Good:** Significant cyclomatic complexity reduction!")
-            lines.append("")
+    def _build_complexity_warnings(self, cc_delta: int, cog_delta: int) -> List[str]:
+        """Build complexity warning messages."""
+        lines = []
+        lines.extend(self._get_cyclomatic_warning(cc_delta))
+        lines.extend(self._get_cognitive_warning(cog_delta))
+        return lines
 
-        if total_cognitive_delta > 15:
-            lines.append("⚠️  **Warning:** Significant cognitive complexity increase detected!")
-            lines.append("         Code is becoming harder to understand.")
-            lines.append("")
-        elif total_cognitive_delta < -15:
-            lines.append("✅ **Good:** Significant cognitive complexity reduction!")
-            lines.append("         Code is becoming easier to understand.")
-            lines.append("")
+    def _get_cyclomatic_warning(self, delta: int) -> List[str]:
+        """Get cyclomatic complexity warning message."""
+        if delta > COMPLEXITY_WARNING_THRESHOLD:
+            return ["⚠️  **Warning:** Significant cyclomatic complexity increase detected!", ""]
+        if delta < COMPLEXITY_GOOD_THRESHOLD:
+            return ["✅ **Good:** Significant cyclomatic complexity reduction!", ""]
+        return []
 
-        return "\n".join(lines)
+    def _get_cognitive_warning(self, delta: int) -> List[str]:
+        """Get cognitive complexity warning message."""
+        if delta > COGNITIVE_WARNING_THRESHOLD:
+            return [
+                "⚠️  **Warning:** Significant cognitive complexity increase detected!",
+                "         Code is becoming harder to understand.",
+                ""
+            ]
+        if delta < COGNITIVE_GOOD_THRESHOLD:
+            return [
+                "✅ **Good:** Significant cognitive complexity reduction!",
+                "         Code is becoming easier to understand.",
+                ""
+            ]
+        return []
 
     def _format_critical_changes(self, delta: DeltaDiff) -> str:
         """Format critical changes section (high hotspot scores)."""
@@ -149,30 +186,39 @@ class DeltaReviewStrategyFormat:
 
     def _format_added_functions(self, delta: DeltaDiff) -> str:
         """Format added functions section."""
-        lines = [
-            "## ➕ New Functions",
-            "",
-        ]
+        lines = ["## ➕ New Functions", ""]
 
-        # Show high-complexity new functions first
-        high_complexity = [f for f in delta.added_functions if f.complexity_after and f.complexity_after > 10]
-        normal = [f for f in delta.added_functions if f.complexity_after and f.complexity_after <= 10]
+        high_complexity, normal = self._split_by_complexity(delta.added_functions)
 
         if high_complexity:
-            lines.append("### High Complexity (>10)")
-            lines.append("")
-            for change in high_complexity:
-                lines.extend(self._format_function_change(change))
-
+            lines.extend(self._format_high_complexity_section(high_complexity))
         if normal:
-            if high_complexity:
-                lines.append("")
-            lines.append("### Standard Complexity")
-            lines.append("")
-            for change in normal:
-                lines.extend(self._format_function_change(change, brief=True))
+            lines.extend(self._format_normal_complexity_section(normal, bool(high_complexity)))
 
         return "\n".join(lines)
+
+    def _split_by_complexity(self, functions: List[FunctionChange]) -> tuple:
+        """Split functions into high and normal complexity groups."""
+        high = [f for f in functions if f.complexity_after and f.complexity_after > HIGH_COMPLEXITY_THRESHOLD]
+        normal = [f for f in functions if f.complexity_after and f.complexity_after <= HIGH_COMPLEXITY_THRESHOLD]
+        return high, normal
+
+    def _format_high_complexity_section(self, functions: List[FunctionChange]) -> List[str]:
+        """Format high complexity functions section."""
+        lines = ["### High Complexity (>10)", ""]
+        for change in functions:
+            lines.extend(self._format_function_change(change))
+        return lines
+
+    def _format_normal_complexity_section(self, functions: List[FunctionChange], has_high: bool) -> List[str]:
+        """Format normal complexity functions section."""
+        lines = []
+        if has_high:
+            lines.append("")
+        lines.extend(["### Standard Complexity", ""])
+        for change in functions:
+            lines.extend(self._format_function_change(change, brief=True))
+        return lines
 
     def _format_modified_summary(self, delta: DeltaDiff) -> str:
         """Format modified functions summary."""
@@ -224,111 +270,151 @@ class DeltaReviewStrategyFormat:
         Returns:
             List of formatted lines
         """
-        lines = []
-
-        # Icon based on change type and complexity
-        if change.change_type == ChangeType.ADDED:
-            icon = "➕"
-        elif change.change_type == ChangeType.DELETED:
-            icon = "🗑️ "
-        elif change.complexity_delta > 0:
-            icon = "🔴" if change.complexity_delta > 10 else "🟡"
-        else:
-            icon = "🟢"
+        icon = self._get_change_icon(change)
 
         if brief:
-            # Brief format - one line
-            complexity_info = ""
-            if change.complexity_before is not None and change.complexity_after is not None:
-                complexity_info = f" ({change.complexity_before} → {change.complexity_after})"
-            elif change.complexity_after is not None:
-                complexity_info = f" (complexity: {change.complexity_after})"
+            return self._format_brief_change(change, icon)
+        return self._format_detailed_change(change, icon, include_guidance)
 
-            lines.append(
-                f"- {icon} `{change.function_name}()` in {change.file_path}{complexity_info}"
-            )
-        else:
-            # Detailed format
-            lines.append(f"### {icon} `{change.function_name}()`")
-            lines.append("")
-            lines.append(f"**File:** {change.file_path} (lines {change.start_line}-{change.end_line})")
-            lines.append("")
+    def _get_change_icon(self, change: FunctionChange) -> str:
+        """Get icon based on change type and complexity delta."""
+        if change.change_type == ChangeType.ADDED:
+            return ICONS['added']
+        if change.change_type == ChangeType.DELETED:
+            return ICONS['deleted']
+        if change.complexity_delta > HIGH_COMPLEXITY_THRESHOLD:
+            return ICONS['increase_high']
+        if change.complexity_delta > 0:
+            return ICONS['increase_moderate']
+        return ICONS['decrease']
 
-            # Cyclomatic Complexity info
-            if change.complexity_before is not None and change.complexity_after is not None:
-                delta_str = f"{change.complexity_delta:+d}"
-                lines.append(
-                    f"- **Cyclomatic Complexity:** {change.complexity_before} → {change.complexity_after} "
-                    f"({delta_str}) {icon}"
-                )
-            elif change.complexity_after is not None:
-                lines.append(f"- **Cyclomatic Complexity:** {change.complexity_after}")
-            elif change.complexity_before is not None:
-                lines.append(f"- **Cyclomatic Complexity:** {change.complexity_before} (deleted)")
+    def _format_brief_change(self, change: FunctionChange, icon: str) -> List[str]:
+        """Format a brief one-line change description."""
+        complexity_info = self._get_brief_complexity_info(change)
+        return [f"- {icon} `{change.function_name}()` in {change.file_path}{complexity_info}"]
 
-            # Cognitive Complexity info
-            if change.cognitive_complexity_before is not None and change.cognitive_complexity_after is not None:
-                cog_delta_str = f"{change.cognitive_complexity_delta:+d}"
-                cog_icon = "🟢" if change.cognitive_complexity_delta <= 0 else ("🟡" if change.cognitive_complexity_delta <= 5 else "🔴")
-                lines.append(
-                    f"- **Cognitive Complexity:** {change.cognitive_complexity_before} → {change.cognitive_complexity_after} "
-                    f"({cog_delta_str}) {cog_icon}"
-                )
-            elif change.cognitive_complexity_after is not None:
-                lines.append(f"- **Cognitive Complexity:** {change.cognitive_complexity_after}")
-            elif change.cognitive_complexity_before is not None:
-                lines.append(f"- **Cognitive Complexity:** {change.cognitive_complexity_before} (deleted)")
+    def _get_brief_complexity_info(self, change: FunctionChange) -> str:
+        """Get brief complexity info string."""
+        if change.complexity_before is not None and change.complexity_after is not None:
+            return f" ({change.complexity_before} → {change.complexity_after})"
+        if change.complexity_after is not None:
+            return f" (complexity: {change.complexity_after})"
+        return ""
 
-            # Additional metrics
-            lines.append(f"- **Hotspot Score:** {change.hotspot_score:.0f}")
-            lines.append(f"- **Review Time:** ~{change.review_time_minutes} minutes")
-            lines.append("")
+    def _format_detailed_change(self, change: FunctionChange, icon: str, include_guidance: bool) -> List[str]:
+        """Format a detailed change description."""
+        lines = [
+            f"### {icon} `{change.function_name}()`",
+            "",
+            f"**File:** {change.file_path} (lines {change.start_line}-{change.end_line})",
+            ""
+        ]
+        lines.append(self._format_cyclomatic_complexity(change, icon))
+        lines.append(self._format_cognitive_complexity(change))
+        lines.append(f"- **Hotspot Score:** {change.hotspot_score:.0f}")
+        lines.append(f"- **Review Time:** ~{change.review_time_minutes} minutes")
+        lines.append("")
 
-            # Review guidance
-            if include_guidance:
-                lines.extend(self._format_review_guidance(change))
+        if include_guidance:
+            lines.extend(self._format_review_guidance(change))
 
         return lines
+
+    def _format_cyclomatic_complexity(self, change: FunctionChange, icon: str) -> str:
+        """Format cyclomatic complexity line."""
+        if change.complexity_before is not None and change.complexity_after is not None:
+            delta_str = f"{change.complexity_delta:+d}"
+            return (f"- **Cyclomatic Complexity:** {change.complexity_before} → {change.complexity_after} "
+                    f"({delta_str}) {icon}")
+        if change.complexity_after is not None:
+            return f"- **Cyclomatic Complexity:** {change.complexity_after}"
+        if change.complexity_before is not None:
+            return f"- **Cyclomatic Complexity:** {change.complexity_before} (deleted)"
+        return "- **Cyclomatic Complexity:** N/A"
+
+    def _format_cognitive_complexity(self, change: FunctionChange) -> str:
+        """Format cognitive complexity line."""
+        if change.cognitive_complexity_before is not None and change.cognitive_complexity_after is not None:
+            cog_delta_str = f"{change.cognitive_complexity_delta:+d}"
+            cog_icon = self._get_cognitive_icon(change.cognitive_complexity_delta)
+            return (f"- **Cognitive Complexity:** {change.cognitive_complexity_before} → "
+                    f"{change.cognitive_complexity_after} ({cog_delta_str}) {cog_icon}")
+        if change.cognitive_complexity_after is not None:
+            return f"- **Cognitive Complexity:** {change.cognitive_complexity_after}"
+        if change.cognitive_complexity_before is not None:
+            return f"- **Cognitive Complexity:** {change.cognitive_complexity_before} (deleted)"
+        return "- **Cognitive Complexity:** N/A"
+
+    def _get_cognitive_icon(self, delta: int) -> str:
+        """Get icon for cognitive complexity delta."""
+        if delta <= 0:
+            return ICONS['decrease']
+        if delta <= MODERATE_COMPLEXITY_DELTA:
+            return ICONS['increase_moderate']
+        return ICONS['increase_high']
 
     def _format_review_guidance(self, change: FunctionChange) -> List[str]:
         """Generate review guidance checklist for a function change."""
         lines = ["**Review Focus:**", ""]
-
-        if change.complexity_delta > 10:
-            # High complexity increase
-            lines.append("- [ ] Review all new branches and conditional logic")
-            lines.append("- [ ] Verify error handling for edge cases")
-            lines.append("- [ ] Consider if function should be decomposed")
-            lines.append("- [ ] Validate test coverage for new complexity")
-            lines.append("- [ ] Check for potential simplification opportunities")
-
-        elif change.complexity_delta > 5:
-            # Moderate complexity increase
-            lines.append("- [ ] Review new branches added")
-            lines.append("- [ ] Verify error handling")
-            lines.append("- [ ] Check test coverage")
-
-        elif change.complexity_delta < 0:
-            # Refactoring
-            lines.append("- [ ] Verify refactoring maintains behavior")
-            lines.append("- [ ] Check test coverage is still adequate")
-            lines.append("- [ ] Validate performance hasn't degraded")
-
-        elif change.change_type == ChangeType.ADDED:
-            # New function
-            lines.append("- [ ] Verify function has clear purpose")
-            lines.append("- [ ] Check error handling")
-            lines.append("- [ ] Validate test coverage")
-            if change.complexity_after and change.complexity_after > 15:
-                lines.append("- [ ] Consider simplification for high complexity")
-
-        else:
-            # General review
-            lines.append("- [ ] Review changes for correctness")
-            lines.append("- [ ] Verify test coverage")
-
+        lines.extend(self._get_review_checklist(change))
         lines.append("")
         return lines
+
+    def _get_review_checklist(self, change: FunctionChange) -> List[str]:
+        """Get appropriate review checklist based on change characteristics."""
+        if change.complexity_delta > HIGH_COMPLEXITY_THRESHOLD:
+            return self._high_complexity_checklist()
+        if change.complexity_delta > MODERATE_COMPLEXITY_DELTA:
+            return self._moderate_complexity_checklist()
+        if change.complexity_delta < 0:
+            return self._refactoring_checklist()
+        if change.change_type == ChangeType.ADDED:
+            return self._new_function_checklist(change)
+        return self._general_checklist()
+
+    def _high_complexity_checklist(self) -> List[str]:
+        """Checklist for high complexity increase."""
+        return [
+            "- [ ] Review all new branches and conditional logic",
+            "- [ ] Verify error handling for edge cases",
+            "- [ ] Consider if function should be decomposed",
+            "- [ ] Validate test coverage for new complexity",
+            "- [ ] Check for potential simplification opportunities"
+        ]
+
+    def _moderate_complexity_checklist(self) -> List[str]:
+        """Checklist for moderate complexity increase."""
+        return [
+            "- [ ] Review new branches added",
+            "- [ ] Verify error handling",
+            "- [ ] Check test coverage"
+        ]
+
+    def _refactoring_checklist(self) -> List[str]:
+        """Checklist for refactoring (complexity decrease)."""
+        return [
+            "- [ ] Verify refactoring maintains behavior",
+            "- [ ] Check test coverage is still adequate",
+            "- [ ] Validate performance hasn't degraded"
+        ]
+
+    def _new_function_checklist(self, change: FunctionChange) -> List[str]:
+        """Checklist for new functions."""
+        checklist = [
+            "- [ ] Verify function has clear purpose",
+            "- [ ] Check error handling",
+            "- [ ] Validate test coverage"
+        ]
+        if change.complexity_after and change.complexity_after > 15:
+            checklist.append("- [ ] Consider simplification for high complexity")
+        return checklist
+
+    def _general_checklist(self) -> List[str]:
+        """General review checklist."""
+        return [
+            "- [ ] Review changes for correctness",
+            "- [ ] Verify test coverage"
+        ]
 
     def _format_time(self, minutes: int) -> str:
         """Format review time in human-readable format."""
