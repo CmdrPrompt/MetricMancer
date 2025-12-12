@@ -51,7 +51,6 @@ Required for MetricMancer to run. Installed with `pip install metricmancer`:
 [project]
 dependencies = [
   "jinja2>=3.1.0",           # HTML report templates
-  "pydriller>=2.0",          # Git history analysis
   "tqdm>=4.65.0",            # Progress bars
   "PyYAML>=6.0",             # YAML config parsing
   "pip-licenses>=4.0",       # License compliance

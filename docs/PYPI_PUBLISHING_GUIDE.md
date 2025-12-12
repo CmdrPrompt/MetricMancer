@@ -195,7 +195,6 @@ dependencies = [
   "pytest",          # DEV ONLY
   "pytest-cov",      # DEV ONLY
   "coverage",        # DEV ONLY
-  "pydriller",
   "tqdm",
   "PyYAML",
   "autopep8",        # DEV ONLY
@@ -212,7 +211,6 @@ dependencies = [
 ```toml
 dependencies = [
   "jinja2",
-  "pydriller",
   "tqdm",
   "PyYAML",
   "pip-licenses",
@@ -505,7 +503,7 @@ rm -rf test-env test-project
 **Issue**: Dependencies not found
 
 ```
-ERROR: Could not find a version that satisfies the requirement pydriller
+ERROR: Could not find a version that satisfies the requirement <package>
 ```
 
 **Fix**: Use `--extra-index-url https://pypi.org/simple` to fetch deps from main PyPI
@@ -909,7 +907,6 @@ dev = [
 ```toml
 dependencies = [
   "jinja2",
-  "pydriller",
   "tqdm",
   "PyYAML",
   "pip-licenses",

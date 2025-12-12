@@ -60,7 +60,7 @@ install:
 	@echo "✅ Installation complete!"
 	@echo ""
 	@echo "📋 Critical packages installed:"
-	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|pydriller|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff|tree-sitter)"
+	@source .venv/bin/activate && pip list | grep -iE "(jinja2|pytest|tqdm|pyyaml|autopep8|flake8|pip-licenses|coverage|unidiff|tree-sitter)"
 	@echo ""
 	@echo "🌳 Tree-sitter verification:"
 	@source .venv/bin/activate && pip show tree-sitter tree-sitter-language-pack | grep -E "(Name|Version)" || echo "   ⚠️  Tree-sitter packages not found!"

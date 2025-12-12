@@ -24,7 +24,6 @@ free use, modification, and distribution.
 | --------------------------------------------------------------------------------- | ------- | ------------------ | ----------------------------------------------- |
 | [Jinja2](https://jinja.palletsprojects.com/)                                      | 3.1.6   | BSD License        | Template engine for HTML report generation      |
 | [PyYAML](https://pyyaml.org/)                                                     | 6.0.3   | MIT License        | YAML file parsing and configuration             |
-| [PyDriller](https://github.com/ishepard/pydriller)                                | 2.9     | Apache 2.0         | Git repository mining for churn analysis        |
 | [tqdm](https://github.com/tqdm/tqdm)                                              | 4.67.1  | MIT / MPL 2.0      | Progress bars for CLI                           |
 | [tree-sitter](https://tree-sitter.github.io/)                                     | 0.25.2  | MIT License        | Multi-language parsing for cognitive complexity |
 | [tree-sitter-language-pack](https://github.com/Goldziher/tree-sitter-language-pack) | 0.11.0  | MIT OR Apache 2.0  | Pre-compiled tree-sitter language grammars      |
@@ -102,7 +101,7 @@ free use, modification, and distribution.
 
 | Package                                              | Version | License     | Purpose                       |
 | ---------------------------------------------------- | ------- | ----------- | ----------------------------- |
-| [lizard](https://github.com/terryyin/lizard)         | 1.17.31 | Freeware    | Code complexity analyzer (transitive via PyDriller) |
+| [GitPython](https://github.com/gitpython-developers/GitPython) | 3.1.45  | BSD-3-Clause | Git repository interaction |
 
 ## License Compatibility
 
@@ -178,7 +177,6 @@ This document was last updated: **November 19, 2025**
   - tree-sitter-yaml (0.7.2, MIT License) - YAML grammar
 - Updated version numbers for existing dependencies (rpds-py, typing_extensions, urllib3)
 - Manually verified all packages previously showing "UNKNOWN" license status
-- Moved lizard to transitive dependencies section (required by PyDriller)
 - Added Python Software Foundation (PSF) License to compatibility section
 
 ### November 14, 2025

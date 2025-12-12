@@ -6,9 +6,9 @@ Implements the cache design from Issue #38.
 """
 from typing import Dict, Optional, Any, Set
 import os
-import subprocess
 from collections import Counter
 from src.utilities.debug import debug_print
+from src.utilities.git_helpers import run_git_command
 
 
 class GitDataCache:
@@ -148,6 +148,9 @@ class GitDataCache:
         """
         Run a git command with consistent error handling.
 
+        Delegates to the centralized run_git_command helper from git_helpers,
+        adding optional file tracking check.
+
         Args:
             repo_root: Root directory of the git repository
             args: List of git command arguments (e.g., ['ls-files'], ['blame', 'file.py'])
@@ -162,23 +165,7 @@ class GitDataCache:
         if check_file and not self.is_file_tracked(repo_root, check_file):
             return None
 
-        try:
-            result = subprocess.run(
-                ['git', '-C', repo_root] + args,
-                capture_output=True,
-                text=True,
-                check=True
-            )
-            return result.stdout
-        except subprocess.CalledProcessError as e:
-            debug_print(f"[CACHE] Git command failed: {e}")
-            return None
-        except PermissionError as e:
-            debug_print(f"[CACHE] Permission denied: {e}")
-            return None
-        except Exception as e:
-            debug_print(f"[CACHE] Unexpected error running git command: {e}")
-            return None
+        return run_git_command(repo_root, args)
 
     # ============================================================================
     # Data Calculation Helpers
@@ -493,7 +480,7 @@ class GitDataCache:
             self._prebuild_single_file_ownership(repo_root, file_path, repo_ownership_cache, repo_blame_cache)
 
     def _prebuild_single_file_ownership(self, repo_root: str, file_path: str,
-                                         repo_ownership_cache: dict, repo_blame_cache: dict):
+                                        repo_ownership_cache: dict, repo_blame_cache: dict):
         """Pre-build ownership data for a single file."""
         blame_output = self._run_git_command(repo_root, ['blame', '--line-porcelain', file_path])
 

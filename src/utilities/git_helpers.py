@@ -10,6 +10,47 @@ from typing import List, Optional
 from src.utilities.debug import debug_print
 
 
+def run_git_command(repo_root: str, args: list[str]) -> Optional[str]:
+    """
+    Run a git command with consistent error handling.
+
+    This is a centralized helper for executing git commands across the codebase.
+    It normalizes the repo path and provides consistent error handling.
+
+    Args:
+        repo_root: Root directory of the git repository
+        args: List of git command arguments (e.g., ['ls-files'], ['blame', 'file.py'])
+
+    Returns:
+        Command stdout output as string, or None on error
+
+    Example:
+        >>> run_git_command("/my/repo", ["ls-files"])
+        "file1.py\nfile2.py\n..."
+        >>> run_git_command("/my/repo", ["blame", "--line-porcelain", "main.py"])
+        "<blame output>"
+    """
+    repo_root = os.path.abspath(repo_root)
+
+    try:
+        result = subprocess.run(
+            ['git', '-C', repo_root] + args,
+            capture_output=True,
+            text=True,
+            check=True
+        )
+        return result.stdout
+    except subprocess.CalledProcessError as e:
+        debug_print(f"[GIT] Command failed: git {' '.join(args)} - {e}")
+        return None
+    except PermissionError as e:
+        debug_print(f"[GIT] Permission denied: {e}")
+        return None
+    except Exception as e:
+        debug_print(f"[GIT] Unexpected error running git command: {e}")
+        return None
+
+
 def find_git_repo_root(start_path: str) -> str:
     """
     Find the root of a git repository by traversing up the filesystem
