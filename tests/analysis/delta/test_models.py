@@ -96,7 +96,7 @@ class TestFunctionChange:
 
     def test_function_change_creation_with_all_fields(self):
         """Test creating FunctionChange with all required fields."""
-        from src.analysis.delta.models import FunctionChange, ChangeType
+        from src.analysis.delta.models import ChangeType
 
         change = create_function_change(
             file_path="src/test.py",
@@ -131,7 +131,7 @@ class TestFunctionChange:
 
     def test_function_change_with_added_function(self):
         """Test FunctionChange for newly added function (no before complexity)."""
-        from src.analysis.delta.models import FunctionChange, ChangeType
+        from src.analysis.delta.models import ChangeType
 
         change = create_function_change(
             file_path="src/new.py",
@@ -157,7 +157,7 @@ class TestFunctionChange:
 
     def test_function_change_with_deleted_function(self):
         """Test FunctionChange for deleted function (no after complexity)."""
-        from src.analysis.delta.models import FunctionChange, ChangeType
+        from src.analysis.delta.models import ChangeType
 
         change = create_function_change(
             file_path="src/old.py",
@@ -184,7 +184,7 @@ class TestFunctionChange:
 
     def test_function_change_calculates_negative_delta(self):
         """Test that complexity_delta can be negative (refactoring)."""
-        from src.analysis.delta.models import FunctionChange, ChangeType
+        from src.analysis.delta.models import ChangeType
 
         change = create_function_change(
             file_path="src/refactored.py",
@@ -236,7 +236,7 @@ class TestDeltaDiff:
 
     def test_delta_diff_with_changes(self):
         """Test DeltaDiff with actual function changes."""
-        from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
+        from src.analysis.delta.models import DeltaDiff, ChangeType
 
         added = create_function_change(
             file_path="src/new.py",
@@ -293,7 +293,7 @@ class TestDeltaDiff:
 
     def test_delta_diff_identifies_refactorings(self):
         """Test that DeltaDiff can identify refactorings (negative delta)."""
-        from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
+        from src.analysis.delta.models import DeltaDiff, ChangeType
 
         refactoring = create_function_change(
             file_path="src/improved.py",
@@ -330,7 +330,7 @@ class TestDeltaDiff:
 
     def test_delta_diff_total_function_count(self):
         """Test calculating total number of changed functions."""
-        from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
+        from src.analysis.delta.models import DeltaDiff, ChangeType
 
         # Create some changes
         changes = []
@@ -375,7 +375,7 @@ class TestDataModelValidation:
 
     def test_function_change_requires_valid_line_numbers(self):
         """Test that start_line must be <= end_line."""
-        from src.analysis.delta.models import FunctionChange, ChangeType
+        from src.analysis.delta.models import ChangeType
 
         # This should work
         change = create_function_change(
@@ -398,7 +398,7 @@ class TestDataModelValidation:
 
     def test_hotspot_score_is_complexity_times_churn(self):
         """Test that hotspot_score formula is correct (complexity × churn)."""
-        from src.analysis.delta.models import FunctionChange, ChangeType
+        from src.analysis.delta.models import ChangeType
 
         complexity_after = 10
         churn = 8

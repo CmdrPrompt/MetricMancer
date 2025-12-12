@@ -525,7 +525,7 @@ class DeltaAnalyzer:
                 return list(complexity_map.values())[0]
             else:
                 return 0
-        except Exception as e:
+        except Exception:
             # Silently return 0 if calculation fails
             return 0
 

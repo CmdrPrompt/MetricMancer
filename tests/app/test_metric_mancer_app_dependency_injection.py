@@ -180,11 +180,15 @@ class TestDependencyInjectionDocumentation(unittest.TestCase):
 
         # Docstring should mention scanner and analyzer parameters
         # (or at least one of them for DI)
-        mentions_di = ('scanner' in docstring.lower() or
-                      'analyzer' in docstring.lower() or
-                      'inject' in docstring.lower())
-        self.assertTrue(mentions_di,
-                       "Docstring should mention dependency injection parameters")
+        mentions_di = (
+            'scanner' in docstring.lower() or
+            'analyzer' in docstring.lower() or
+            'inject' in docstring.lower()
+        )
+        self.assertTrue(
+            mentions_di,
+            "Docstring should mention dependency injection parameters"
+        )
 
 
 class TestBackwardCompatibilityWithDI(unittest.TestCase):

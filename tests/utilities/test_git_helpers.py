@@ -301,8 +301,7 @@ class TestRunGitCommand:
         with patch('subprocess.run') as mock_run:
             mock_run.return_value = MagicMock(stdout="output", returncode=0)
 
-            # Call with relative path - use current directory
-            cwd = os.getcwd()
+            # Call with relative path
             run_git_command('.', ['status'])
 
             # Verify absolute path was used

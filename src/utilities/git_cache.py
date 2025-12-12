@@ -457,7 +457,7 @@ class GitDataCache:
         output = self._run_git_command(repo_root, ['ls-files'])
 
         if output is None:
-            debug_print(f"[CACHE] Error pre-building tracked files")
+            debug_print("[CACHE] Error pre-building tracked files")
             return []
 
         tracked_files = set(output.strip().split('\n')) if output.strip() else set()

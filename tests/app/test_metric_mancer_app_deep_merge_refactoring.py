@@ -11,7 +11,6 @@ RED-GREEN-REFACTOR:
 """
 
 import unittest
-from unittest.mock import Mock
 from src.config.app_config import AppConfig
 from src.app.metric_mancer_app import MetricMancerApp
 
@@ -251,23 +250,24 @@ class TestRefactoringCodeQuality(unittest.TestCase):
         self.app = MetricMancerApp(config=self.config)
 
     def test_helper_methods_are_small(self):
-        """Test that helper methods are smaller than original (< 15 lines each including docstrings)."""
+        """Test that helper methods are smaller than original (< 15 lines each)."""
         import inspect
 
+        def count_code_lines(source):
+            lines = source.split('\n')
+            return len([line for line in lines if line.strip() and not line.strip().startswith('#')])
+
         # Check _merge_files_at_level
-        source_lines = inspect.getsource(self.app._merge_files_at_level)
-        line_count = len([line for line in source_lines.split('\n') if line.strip() and not line.strip().startswith('#')])
-        self.assertLess(line_count, 15, "_merge_files_at_level should be < 15 lines")
+        source = inspect.getsource(self.app._merge_files_at_level)
+        self.assertLess(count_code_lines(source), 15, "_merge_files_at_level should be < 15 lines")
 
         # Check _merge_subdirectories
-        source_lines = inspect.getsource(self.app._merge_subdirectories)
-        line_count = len([line for line in source_lines.split('\n') if line.strip() and not line.strip().startswith('#')])
-        self.assertLess(line_count, 15, "_merge_subdirectories should be < 15 lines")
+        source = inspect.getsource(self.app._merge_subdirectories)
+        self.assertLess(count_code_lines(source), 15, "_merge_subdirectories should be < 15 lines")
 
         # Check _merge_other_keys
-        source_lines = inspect.getsource(self.app._merge_other_keys)
-        line_count = len([line for line in source_lines.split('\n') if line.strip() and not line.strip().startswith('#')])
-        self.assertLess(line_count, 15, "_merge_other_keys should be < 15 lines")
+        source = inspect.getsource(self.app._merge_other_keys)
+        self.assertLess(count_code_lines(source), 15, "_merge_other_keys should be < 15 lines")
 
     def test_deep_merge_has_reduced_complexity(self):
         """Test that _deep_merge_scan_dirs has lower complexity after refactoring."""

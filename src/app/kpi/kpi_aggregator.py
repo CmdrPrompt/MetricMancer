@@ -90,8 +90,6 @@ class KPIAggregator:
         self.value_collector = KPIValueCollector(self.directory_accessor)
         self.aggregation_strategy = AggregationStrategy(aggregation_functions)
 
-
-
     def _update_directory_kpis(self, directory_obj: Any, aggregated_values: Dict[str, Any]) -> None:
         """
         Update directory's kpis dictionary with aggregated values.
@@ -191,5 +189,3 @@ class KPIAggregator:
         except Exception as e:
             debug_print(f"[KPIAggregator] Error aggregating directory: {e}")
             return {}
-
-

@@ -181,7 +181,7 @@ class TestMetricMancerAppConfigAccess(unittest.TestCase):
         app = MetricMancerApp(config=self.config)
 
         # _scan_files should use app.app_config.directories (not app.directories)
-        files = app._scan_files()
+        app._scan_files()
         mock_scanner.scan.assert_called_once_with(self.config.directories)
 
     @patch('src.app.metric_mancer_app.Scanner')

@@ -5,7 +5,7 @@ Generates markdown reports for function-level code review guidance,
 following Adam Tornhill's "Your Code as a Crime Scene" methodology.
 """
 
-from typing import List, Dict, Optional
+from typing import List
 from src.analysis.delta.models import DeltaDiff, FunctionChange, ChangeType
 
 # Complexity thresholds

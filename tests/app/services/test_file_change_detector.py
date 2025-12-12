@@ -11,7 +11,7 @@ RED-GREEN-REFACTOR:
 """
 
 import unittest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 import tempfile
 import os
 
@@ -238,7 +238,7 @@ class TestIntegrationWithExceptionHandler(unittest.TestCase):
         mock_handler.handle_git_operation.return_value = ('feature/test', ['file1.py'])
 
         detector = FileChangeDetector(repo_path=self.temp_dir)
-        result = detector.get_changed_files(base_branch='main')
+        detector.get_changed_files(base_branch='main')
 
         # Should have called ExceptionHandler
         mock_handler.handle_git_operation.assert_called()
