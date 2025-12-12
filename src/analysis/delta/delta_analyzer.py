@@ -168,7 +168,6 @@ class DeltaAnalyzer:
         Returns:
             DeltaDiff object with all function changes
         """
-        # Parse diff to get changed files and lines
         file_changes = self.diff_parser.parse_git_diff(diff_text)
 
         added_functions = []
@@ -176,172 +175,221 @@ class DeltaAnalyzer:
         deleted_functions = []
 
         for file_change in file_changes:
-            file_path = file_change['file_path']
+            file_result = self._analyze_file_change(file_change, base_ref, target_ref)
+            if file_result:
+                added_functions.extend(file_result['added'])
+                modified_functions.extend(file_result['modified'])
+                deleted_functions.extend(file_result['deleted'])
 
-            # Skip non-source files
-            if not self._is_source_file(file_path):
-                continue
+        return self._build_delta_diff(
+            base_commit, target_commit,
+            added_functions, modified_functions, deleted_functions
+        )
 
-            # Get language
-            language_config = self._get_language_config(file_path)
-            if not language_config:
-                continue
+    def _analyze_file_change(
+        self,
+        file_change: Dict[str, Any],
+        base_ref: str,
+        target_ref: str
+    ) -> Optional[Dict[str, List[FunctionChange]]]:
+        """Analyze a single file's changes and return categorized function changes."""
+        file_path = file_change['file_path']
 
-            language = language_config.get('name', 'unknown').lower()
+        if not self._is_source_file(file_path):
+            return None
 
-            # Get file content from both versions
-            base_content = self._get_file_content(file_path, base_ref) if not file_change['is_added'] else ""
-            target_content = self._get_file_content(file_path, target_ref) if not file_change['is_deleted'] else ""
+        language_config = self._get_language_config(file_path)
+        if not language_config:
+            return None
 
-            # Extract functions from both versions
-            base_functions = self.diff_parser.extract_functions_from_source(
-                base_content, language) if base_content else []
-            target_functions = self.diff_parser.extract_functions_from_source(
-                target_content, language) if target_content else []
+        language = language_config.get('name', 'unknown').lower()
 
-            # Map changed lines to functions
-            affected_target_functions = self.diff_parser.map_lines_to_functions(
-                target_functions,
-                file_change['changed_lines']
-            ) if target_functions else []
+        # Get file content from both versions
+        base_content = self._get_file_content(file_path, base_ref) if not file_change['is_added'] else ""
+        target_content = self._get_file_content(file_path, target_ref) if not file_change['is_deleted'] else ""
 
-            # Analyze each affected function
-            for target_func in affected_target_functions:
-                func_name = target_func['name']
+        # Extract functions from both versions
+        base_functions = self._extract_functions(base_content, language)
+        target_functions = self._extract_functions(target_content, language)
 
-                # Find matching function in base version
-                base_func = self._find_function_by_name(base_functions, func_name)
+        # Map changed lines to functions
+        affected_target_functions = self.diff_parser.map_lines_to_functions(
+            target_functions,
+            file_change['changed_lines']
+        ) if target_functions else []
 
-                if base_func:
-                    # Modified function - calculate complexity change
-                    base_complexity = self._calculate_function_complexity(
-                        base_content,
-                        base_func,
-                        language_config
-                    )
-                    target_complexity = self._calculate_function_complexity(
-                        target_content,
-                        target_func,
-                        language_config
-                    )
+        added = []
+        modified = []
+        deleted = []
 
-                    # Calculate cognitive complexity
-                    base_cognitive = self._calculate_function_cognitive_complexity(
-                        base_content,
-                        base_func,
-                        file_path
-                    )
-                    target_cognitive = self._calculate_function_cognitive_complexity(
-                        target_content,
-                        target_func,
-                        file_path
-                    )
-
-                    function_change = FunctionChange(
-                        file_path=file_path,
-                        function_name=func_name,
-                        start_line=target_func['start_line'],
-                        end_line=target_func['end_line'],
-                        change_type=ChangeType.MODIFIED,
-                        complexity_before=base_complexity,
-                        complexity_after=target_complexity,
-                        complexity_delta=target_complexity - base_complexity,
-                        cognitive_complexity_before=base_cognitive,
-                        cognitive_complexity_after=target_cognitive,
-                        cognitive_complexity_delta=target_cognitive - base_cognitive,
-                        churn=1,  # Will be calculated in Phase 3
-                        hotspot_score=float(target_complexity * 1),  # complexity × churn
-                        last_author="unknown",  # Will be calculated in Phase 3
-                        last_modified=datetime.now(),
-                        lines_changed=len(file_change['changed_lines']),
-                        review_time_minutes=self._estimate_review_time(target_complexity)
-                    )
-
-                    modified_functions.append(function_change)
+        # Analyze affected functions
+        for target_func in affected_target_functions:
+            func_change = self._analyze_function_change(
+                file_path, file_change, target_func, base_functions,
+                base_content, target_content, language_config
+            )
+            if func_change:
+                if func_change.change_type == ChangeType.ADDED:
+                    added.append(func_change)
                 else:
-                    # Added function
-                    target_complexity = self._calculate_function_complexity(
-                        target_content,
-                        target_func,
-                        language_config
-                    )
+                    modified.append(func_change)
 
-                    target_cognitive = self._calculate_function_cognitive_complexity(
-                        target_content,
-                        target_func,
-                        file_path
-                    )
+        # Check for deleted functions
+        if file_change['is_deleted']:
+            deleted = self._get_deleted_functions(file_path, base_functions, base_content, language_config)
 
-                    function_change = FunctionChange(
-                        file_path=file_path,
-                        function_name=func_name,
-                        start_line=target_func['start_line'],
-                        end_line=target_func['end_line'],
-                        change_type=ChangeType.ADDED,
-                        complexity_before=None,
-                        complexity_after=target_complexity,
-                        complexity_delta=target_complexity,
-                        cognitive_complexity_before=None,
-                        cognitive_complexity_after=target_cognitive,
-                        cognitive_complexity_delta=target_cognitive,
-                        churn=1,
-                        hotspot_score=float(target_complexity * 1),
-                        last_author="unknown",
-                        last_modified=datetime.now(),
-                        lines_changed=len(file_change['changed_lines']),
-                        review_time_minutes=self._estimate_review_time(target_complexity)
-                    )
+        return {'added': added, 'modified': modified, 'deleted': deleted}
 
-                    added_functions.append(function_change)
+    def _extract_functions(self, content: str, language: str) -> List[Dict[str, Any]]:
+        """Extract functions from source content."""
+        if not content:
+            return []
+        return self.diff_parser.extract_functions_from_source(content, language)
 
-            # Check for deleted functions
-            if file_change['is_deleted']:
-                for base_func in base_functions:
-                    base_complexity = self._calculate_function_complexity(
-                        base_content,
-                        base_func,
-                        language_config
-                    )
+    def _analyze_function_change(
+        self,
+        file_path: str,
+        file_change: Dict[str, Any],
+        target_func: Dict[str, Any],
+        base_functions: List[Dict[str, Any]],
+        base_content: str,
+        target_content: str,
+        language_config: Dict[str, Any]
+    ) -> Optional[FunctionChange]:
+        """Analyze a single function change and return FunctionChange object."""
+        func_name = target_func['name']
+        base_func = self._find_function_by_name(base_functions, func_name)
 
-                    base_cognitive = self._calculate_function_cognitive_complexity(
-                        base_content,
-                        base_func,
-                        file_path
-                    )
+        if base_func:
+            return self._create_modified_function_change(
+                file_path, file_change, target_func, base_func,
+                base_content, target_content, language_config
+            )
+        else:
+            return self._create_added_function_change(
+                file_path, file_change, target_func,
+                target_content, language_config
+            )
 
-                    function_change = FunctionChange(
-                        file_path=file_path,
-                        function_name=base_func['name'],
-                        start_line=base_func['start_line'],
-                        end_line=base_func['end_line'],
-                        change_type=ChangeType.DELETED,
-                        complexity_before=base_complexity,
-                        complexity_after=None,
-                        complexity_delta=-base_complexity,
-                        cognitive_complexity_before=base_cognitive,
-                        cognitive_complexity_after=None,
-                        cognitive_complexity_delta=-base_cognitive,
-                        churn=1,
-                        hotspot_score=0.0,
-                        last_author="unknown",
-                        last_modified=datetime.now(),
-                        lines_changed=0,
-                        review_time_minutes=0
-                    )
+    def _create_modified_function_change(
+        self,
+        file_path: str,
+        file_change: Dict[str, Any],
+        target_func: Dict[str, Any],
+        base_func: Dict[str, Any],
+        base_content: str,
+        target_content: str,
+        language_config: Dict[str, Any]
+    ) -> FunctionChange:
+        """Create FunctionChange for a modified function."""
+        base_complexity = self._calculate_function_complexity(base_content, base_func, language_config)
+        target_complexity = self._calculate_function_complexity(target_content, target_func, language_config)
+        base_cognitive = self._calculate_function_cognitive_complexity(base_content, base_func, file_path)
+        target_cognitive = self._calculate_function_cognitive_complexity(target_content, target_func, file_path)
 
-                    deleted_functions.append(function_change)
-
-        # Calculate totals
-        total_complexity_delta = sum(
-            f.complexity_delta for f in (added_functions + modified_functions + deleted_functions)
+        return FunctionChange(
+            file_path=file_path,
+            function_name=target_func['name'],
+            start_line=target_func['start_line'],
+            end_line=target_func['end_line'],
+            change_type=ChangeType.MODIFIED,
+            complexity_before=base_complexity,
+            complexity_after=target_complexity,
+            complexity_delta=target_complexity - base_complexity,
+            cognitive_complexity_before=base_cognitive,
+            cognitive_complexity_after=target_cognitive,
+            cognitive_complexity_delta=target_cognitive - base_cognitive,
+            churn=1,
+            hotspot_score=float(target_complexity * 1),
+            last_author="unknown",
+            last_modified=datetime.now(),
+            lines_changed=len(file_change['changed_lines']),
+            review_time_minutes=self._estimate_review_time(target_complexity)
         )
-        total_review_time = sum(
-            f.review_time_minutes for f in (added_functions + modified_functions + deleted_functions)
+
+    def _create_added_function_change(
+        self,
+        file_path: str,
+        file_change: Dict[str, Any],
+        target_func: Dict[str, Any],
+        target_content: str,
+        language_config: Dict[str, Any]
+    ) -> FunctionChange:
+        """Create FunctionChange for an added function."""
+        target_complexity = self._calculate_function_complexity(target_content, target_func, language_config)
+        target_cognitive = self._calculate_function_cognitive_complexity(target_content, target_func, file_path)
+
+        return FunctionChange(
+            file_path=file_path,
+            function_name=target_func['name'],
+            start_line=target_func['start_line'],
+            end_line=target_func['end_line'],
+            change_type=ChangeType.ADDED,
+            complexity_before=None,
+            complexity_after=target_complexity,
+            complexity_delta=target_complexity,
+            cognitive_complexity_before=None,
+            cognitive_complexity_after=target_cognitive,
+            cognitive_complexity_delta=target_cognitive,
+            churn=1,
+            hotspot_score=float(target_complexity * 1),
+            last_author="unknown",
+            last_modified=datetime.now(),
+            lines_changed=len(file_change['changed_lines']),
+            review_time_minutes=self._estimate_review_time(target_complexity)
         )
+
+    def _get_deleted_functions(
+        self,
+        file_path: str,
+        base_functions: List[Dict[str, Any]],
+        base_content: str,
+        language_config: Dict[str, Any]
+    ) -> List[FunctionChange]:
+        """Get FunctionChange objects for all deleted functions."""
+        deleted = []
+        for base_func in base_functions:
+            base_complexity = self._calculate_function_complexity(base_content, base_func, language_config)
+            base_cognitive = self._calculate_function_cognitive_complexity(base_content, base_func, file_path)
+
+            deleted.append(FunctionChange(
+                file_path=file_path,
+                function_name=base_func['name'],
+                start_line=base_func['start_line'],
+                end_line=base_func['end_line'],
+                change_type=ChangeType.DELETED,
+                complexity_before=base_complexity,
+                complexity_after=None,
+                complexity_delta=-base_complexity,
+                cognitive_complexity_before=base_cognitive,
+                cognitive_complexity_after=None,
+                cognitive_complexity_delta=-base_cognitive,
+                churn=1,
+                hotspot_score=0.0,
+                last_author="unknown",
+                last_modified=datetime.now(),
+                lines_changed=0,
+                review_time_minutes=0
+            ))
+        return deleted
+
+    def _build_delta_diff(
+        self,
+        base_commit: str,
+        target_commit: str,
+        added_functions: List[FunctionChange],
+        modified_functions: List[FunctionChange],
+        deleted_functions: List[FunctionChange]
+    ) -> DeltaDiff:
+        """Build the final DeltaDiff object from categorized function changes."""
+        all_changes = added_functions + modified_functions + deleted_functions
+
+        total_complexity_delta = sum(f.complexity_delta for f in all_changes)
+        total_review_time = sum(f.review_time_minutes for f in all_changes)
 
         # Identify critical changes (top 10 by hotspot score)
-        all_changes = added_functions + modified_functions
-        critical_changes = sorted(all_changes, key=lambda f: f.hotspot_score, reverse=True)[:10]
+        active_changes = added_functions + modified_functions
+        critical_changes = sorted(active_changes, key=lambda f: f.hotspot_score, reverse=True)[:10]
 
         # Identify refactorings (complexity decreased)
         refactorings = [f for f in modified_functions if f.complexity_delta < 0]
