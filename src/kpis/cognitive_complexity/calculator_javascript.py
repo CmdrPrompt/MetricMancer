@@ -106,86 +106,119 @@ class JavaScriptCognitiveComplexityCalculator(CognitiveComplexityCalculatorBase)
 
     def _get_function_name(self, node: Node) -> str:
         """Extract function name from node."""
-        # For function_declaration, the name is in an 'identifier' child
-        if node.type == 'function_declaration':
-            for child in node.children:
-                if child.type == 'identifier':
-                    return child.text.decode('utf8')
-
-        # For arrow_function, look for variable_declarator parent
-        if node.type == 'arrow_function':
-            # Look for parent variable_declarator
-            parent = node.parent
-            while parent:
-                if parent.type == 'variable_declarator':
-                    # Get the identifier (name) from variable_declarator
-                    for child in parent.children:
-                        if child.type == 'identifier':
-                            return child.text.decode('utf8')
-                parent = parent.parent
-
-        # For method_definition
-        if node.type == 'method_definition':
-            for child in node.children:
-                if child.type == 'property_identifier':
-                    return child.text.decode('utf8')
-
+        name = self._get_function_declaration_name(node)
+        if name:
+            return name
+        name = self._get_arrow_function_name(node)
+        if name:
+            return name
+        name = self._get_method_definition_name(node)
+        if name:
+            return name
         return 'anonymous'
+
+    def _get_function_declaration_name(self, node: Node) -> str:
+        """Get name from function_declaration node."""
+        if node.type != 'function_declaration':
+            return None
+        for child in node.children:
+            if child.type == 'identifier':
+                return child.text.decode('utf8')
+        return None
+
+    def _get_arrow_function_name(self, node: Node) -> str:
+        """Get name from arrow_function by looking at parent variable_declarator."""
+        if node.type != 'arrow_function':
+            return None
+        parent = node.parent
+        while parent:
+            if parent.type == 'variable_declarator':
+                for child in parent.children:
+                    if child.type == 'identifier':
+                        return child.text.decode('utf8')
+            parent = parent.parent
+        return None
+
+    def _get_method_definition_name(self, node: Node) -> str:
+        """Get name from method_definition node."""
+        if node.type != 'method_definition':
+            return None
+        for child in node.children:
+            if child.type == 'property_identifier':
+                return child.text.decode('utf8')
+        return None
+
+    # Node types that indicate nested functions (should stop traversal)
+    NESTED_FUNCTION_TYPES = ('function_declaration', 'function', 'arrow_function', 'method_definition')
 
     def _calculate_complexity(self, function_node: Node) -> int:
         """Calculate complexity for a single function."""
         self.current_function_name = self._get_function_name(function_node)
 
-        # Find function body (statement_block or expression)
         body = self._get_function_body(function_node)
         if body is None:
             return 0
 
-        complexity = 0
+        return self._traverse_for_complexity(body)
+
+    def _traverse_for_complexity(self, body: Node) -> int:
+        """Traverse the AST and calculate total complexity."""
+        complexity = [0]  # Use list to allow modification in nested function
 
         def traverse(node: Node, nesting_level: int):
-            nonlocal complexity
-
-            # Stop traversal if we encounter a nested function
-            # Nested functions should be analyzed separately
-            if node != body and node.type in ('function_declaration', 'function',
-                                              'arrow_function', 'method_definition'):
+            if self._should_skip_node(node, body):
                 return
 
-            # Check if this node increments complexity
-            if node.type in self.INCREMENTS:
-                increment = self.INCREMENTS[node.type]
-                complexity += increment + nesting_level
+            complexity[0] += self._get_node_complexity(node, nesting_level)
+            new_nesting = self._get_new_nesting_level(node, nesting_level)
 
-            # Handle else clause separately (always adds +1 + nesting)
-            # In tree-sitter JavaScript, else is part of if_statement's children
-            if node.type == 'if_statement':
-                # Check for else clause
-                for i, child in enumerate(node.children):
-                    if child.type == 'else_clause':
-                        # else clause adds +1 + nesting
-                        complexity += 1 + nesting_level
-
-            # Handle binary expressions (&&, ||)
-            # According to SonarSource: each operator sequence adds +1
-            if node.type == 'binary_expression':
-                operator = self._get_binary_operator(node)
-                if operator in self.LOGICAL_OPERATORS:
-                    complexity += 1
-
-            # Calculate new nesting level for children
-            new_nesting = nesting_level
-            if node.type in self.NESTING_INCREMENTS:
-                new_nesting += 1
-
-            # Recursively process children
             for child in node.children:
                 traverse(child, new_nesting)
 
-        # Start traversal from function body
         traverse(body, nesting_level=0)
+        return complexity[0]
 
+    def _should_skip_node(self, node: Node, body: Node) -> bool:
+        """Check if node should be skipped during traversal."""
+        return node != body and node.type in self.NESTED_FUNCTION_TYPES
+
+    def _get_node_complexity(self, node: Node, nesting_level: int) -> int:
+        """Calculate complexity contribution of a single node."""
+        complexity = 0
+        complexity += self._get_control_flow_complexity(node, nesting_level)
+        complexity += self._get_else_clause_complexity(node, nesting_level)
+        complexity += self._get_logical_operator_complexity(node)
         return complexity
+
+    def _get_control_flow_complexity(self, node: Node, nesting_level: int) -> int:
+        """Calculate complexity for control flow structures."""
+        if node.type not in self.INCREMENTS:
+            return 0
+        return self.INCREMENTS[node.type] + nesting_level
+
+    def _get_else_clause_complexity(self, node: Node, nesting_level: int) -> int:
+        """Calculate complexity for else clauses in if statements."""
+        if node.type != 'if_statement':
+            return 0
+        for child in node.children:
+            if child.type == 'else_clause':
+                return 1 + nesting_level
+        return 0
+
+    def _get_logical_operator_complexity(self, node: Node) -> int:
+        """Calculate complexity for logical operators (&&, ||)."""
+        if node.type != 'binary_expression':
+            return 0
+        operator = self._get_binary_operator(node)
+        if operator in self.LOGICAL_OPERATORS:
+            return 1
+        return 0
+
+    def _get_new_nesting_level(self, node: Node, current_level: int) -> int:
+        """Calculate new nesting level for children."""
+        if node.type in self.NESTING_INCREMENTS:
+            return current_level + 1
+        return current_level
 
     def _get_function_body(self, node: Node) -> Node:
         """Get the body node of a function (statement_block or expression)."""

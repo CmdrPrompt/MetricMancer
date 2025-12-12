@@ -115,50 +115,63 @@ class JavaCognitiveComplexityCalculator(CognitiveComplexityCalculatorBase):
         """Calculate complexity for a single method."""
         self.current_method_name = self._get_method_name(method_node)
 
-        # Find method body (block node)
         body = self._get_method_body(method_node)
         if body is None:
             return 0
 
-        complexity = 0
+        return self._traverse_for_complexity(body)
+
+    def _traverse_for_complexity(self, body: Node) -> int:
+        """Traverse the AST and calculate total complexity."""
+        complexity = [0]  # Use list to allow modification in nested function
 
         def traverse(node: Node, nesting_level: int):
-            nonlocal complexity
+            complexity[0] += self._get_node_complexity(node, nesting_level)
+            new_nesting = self._get_new_nesting_level(node, nesting_level)
 
-            # Check if this node increments complexity
-            if node.type in self.INCREMENTS:
-                increment = self.INCREMENTS[node.type]
-                complexity += increment + nesting_level
-
-            # Handle else clause separately (always adds +1 + nesting)
-            # In tree-sitter Java, else is part of if_statement's children
-            if node.type == 'if_statement':
-                # Check for else clause
-                for i, child in enumerate(node.children):
-                    if child.type == 'else':
-                        # Next node after 'else' keyword is the else body
-                        complexity += 1 + nesting_level
-
-            # Handle binary expressions (&&, ||)
-            # According to SonarSource: each operator sequence adds +1
-            if node.type == 'binary_expression':
-                operator = self._get_binary_operator(node)
-                if operator in self.LOGICAL_OPERATORS:
-                    complexity += 1
-
-            # Calculate new nesting level for children
-            new_nesting = nesting_level
-            if node.type in self.NESTING_INCREMENTS:
-                new_nesting += 1
-
-            # Recursively process children
             for child in node.children:
                 traverse(child, new_nesting)
 
-        # Start traversal from method body
         traverse(body, nesting_level=0)
+        return complexity[0]
 
+    def _get_node_complexity(self, node: Node, nesting_level: int) -> int:
+        """Calculate complexity contribution of a single node."""
+        complexity = 0
+        complexity += self._get_control_flow_complexity(node, nesting_level)
+        complexity += self._get_else_clause_complexity(node, nesting_level)
+        complexity += self._get_logical_operator_complexity(node)
         return complexity
+
+    def _get_control_flow_complexity(self, node: Node, nesting_level: int) -> int:
+        """Calculate complexity for control flow structures."""
+        if node.type not in self.INCREMENTS:
+            return 0
+        return self.INCREMENTS[node.type] + nesting_level
+
+    def _get_else_clause_complexity(self, node: Node, nesting_level: int) -> int:
+        """Calculate complexity for else clauses in if statements."""
+        if node.type != 'if_statement':
+            return 0
+        for child in node.children:
+            if child.type == 'else':
+                return 1 + nesting_level
+        return 0
+
+    def _get_logical_operator_complexity(self, node: Node) -> int:
+        """Calculate complexity for logical operators (&&, ||)."""
+        if node.type != 'binary_expression':
+            return 0
+        operator = self._get_binary_operator(node)
+        if operator in self.LOGICAL_OPERATORS:
+            return 1
+        return 0
+
+    def _get_new_nesting_level(self, node: Node, current_level: int) -> int:
+        """Calculate new nesting level for children."""
+        if node.type in self.NESTING_INCREMENTS:
+            return current_level + 1
+        return current_level
 
     def _get_method_body(self, node: Node) -> Node:
         """Get the body node of a method (block)."""
