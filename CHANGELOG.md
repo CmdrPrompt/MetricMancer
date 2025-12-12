@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.3.0] - 2025-12-12
+
+### Changed
+
+- **Major Refactoring (v3.3.0)**: Reduced cyclomatic complexity across codebase
+  - `git_cache.py`: CC reduced from 170 to 75 (-56%) by extracting `run_git_command()` to `git_helpers.py`
+  - `delta_analyzer.py`: Refactored for improved maintainability
+  - `delta_review_format.py`: Cleaned up unused imports and simplified code
+  - Language calculators (C, Go, Java, JavaScript, TypeScript): Complexity optimizations
+  - Maximum cyclomatic complexity reduced from 170 to 93 across all files
+
+### Removed
+
+- **pydriller dependency**: Replaced with native git subprocess commands
+  - Lighter dependency footprint
+  - More direct control over git operations
+  - All git-based functionality preserved via `git_helpers.run_git_command()`
+
+### Fixed
+
+- All flake8 linting errors resolved (was ~100 errors)
+  - Removed unused imports across source and test files
+  - Fixed line length violations (E501)
+  - Cleaned up whitespace issues
+  - Fixed f-string without placeholder warnings
+
+### Added
+
+- `src/utilities/git_helpers.py`: New centralized git command execution helper
+- 165 new tests for git_helpers and refactored components (total: 1004 tests)
+
 ## [3.2.0] - 2025-10-31
 
 ### Added
