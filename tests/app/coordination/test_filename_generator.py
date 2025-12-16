@@ -9,6 +9,7 @@ from src.app.coordination.filename_generator import FileNameGenerator
 
 class MockRepoInfo:
     """Mock repository info for testing."""
+
     def __init__(self, name):
         self.repo_name = name
 
@@ -28,10 +29,6 @@ class TestFileNameGenerator(unittest.TestCase):
         base, ext = self.generator.get_base_and_extension('json', is_multi_format=False)
         self.assertEqual(base, 'complexity_report')
         self.assertEqual(ext, '.json')
-
-        base, ext = self.generator.get_base_and_extension('machine', is_multi_format=False)
-        self.assertEqual(base, 'complexity_report')
-        self.assertEqual(ext, '.csv')
 
     def test_get_base_and_extension_cli_format_single(self):
         """Test base and extension for CLI format with single output."""

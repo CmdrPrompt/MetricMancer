@@ -20,7 +20,6 @@ class FormatMapper:
     # Format to extension mappings
     SIMPLE_FORMATS: Dict[str, str] = {
         'json': '.json',
-        'machine': '.csv',
         'html': '.html'
     }
 
