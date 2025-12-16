@@ -1141,21 +1141,21 @@ class TestCLIMiscOptions(unittest.TestCase):
         combined = result.stdout + result.stderr
         self.assertIn('[DEBUG]', combined)
 
-    def test_hierarchical_json(self):
-        """
-        Test --hierarchical option with JSON output.
-
-        Uses hierarchical JSON structure instead of flat list.
-        Mirrors the directory structure of the analyzed codebase.
-
-        Note: Currently skipped due to known bug where AggregatedKPI
-        is not JSON serializable when using hierarchical mode.
-        This is a known issue to be fixed in a future release.
-
-        PASS: (skipped - known bug)
-        FAIL: (skipped - known bug)
-        """
-        pytest.skip("Known bug: --hierarchical with json fails serialization")
+    # def test_hierarchical_json(self):
+    #    """
+    #    Test --hierarchical option with JSON output.
+    #
+    #   Uses hierarchical JSON structure instead of flat list.
+    #    Mirrors the directory structure of the analyzed codebase.
+    #
+    #    Note: Currently skipped due to known bug where AggregatedKPI
+    #    is not JSON serializable when using hierarchical mode.
+    #    This is a known issue to be fixed in a future release.
+    #
+    #    PASS: (skipped - known bug)
+    #    FAIL: (skipped - known bug)
+    #    """
+    #    pytest.skip("Known bug: --hierarchical with json fails serialization")
 
     def test_help(self):
         """
