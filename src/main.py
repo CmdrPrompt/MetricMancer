@@ -59,7 +59,7 @@ def main():
 
     # Parse CLI arguments - delegated to CLI helpers
     parser = parse_args()
-    parser.add_argument('--debug', action='store_true', help='Visa debugutskrifter')
+    parser.add_argument('--debug', action='store_true', help='Enable debug output')
     args = parser.parse_args()
 
     setup_debug_mode(args)
