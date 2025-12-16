@@ -6,7 +6,7 @@ configuration data and construction.
 
 
 VALID_OUTPUT_FORMATS = {
-    'summary', 'quick-wins', 'human', 'human-tree', 'tree',
+    'summary', 'quick-wins', 'tree',
     'html', 'json', 'machine',
     'review-strategy', 'review-strategy-branch'
 }

@@ -278,7 +278,7 @@ class CLISummaryFormat(CLIFormatBase, ReportFormatStrategy):
         self._print_html_report_link(kwargs)
         print("   Hotspot Report: Run with --list-hotspots")
         print("   Review Strategy: Run with --review-strategy")
-        print("   File Tree:      Run with --output-format human-tree")
+        print("   File Tree:      Run with --output-format tree")
         print()
 
     def _print_html_report_link(self, kwargs: Dict):

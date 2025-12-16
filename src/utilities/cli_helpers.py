@@ -32,7 +32,7 @@ def _print_output_options():
     """Print output formatting options."""
     print("\nOUTPUT FORMATTING:")
     print("  --output-format <format>     Set the output format. Options: 'summary' (default dashboard), "
-          "'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json'.")
+          "'quick-wins' (prioritized improvements), 'tree' (file tree), 'html', 'json'.")
     print("  --output-formats <formats>   Generate multiple formats in one run (comma-separated). "
           "Example: 'html,json,summary,review-strategy'. Includes 'review-strategy' and 'review-strategy-branch'. "
           "Scans code once, generates all formats.")
@@ -181,7 +181,7 @@ def _add_output_args(parser):
         type=str,
         default=Defaults.OUTPUT_FORMAT,
         help=f"Output format: '{Defaults.OUTPUT_FORMAT}' (default dashboard), 'quick-wins' (prioritized improvements), "
-        "'human-tree' (file tree), 'html', 'json'."
+        "'tree' (file tree), 'html', 'json'."
     )
     parser.add_argument(
         "--output-formats",

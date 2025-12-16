@@ -42,7 +42,7 @@ Running These Tests:
 Test Coverage:
 --------------
 CLI Options Tested:
-- Output formats: --output-format (summary, quick-wins, human-tree, human, html, json)
+- Output formats: --output-format (summary, quick-wins, tree, html, json)
 - Multi-format: --output-formats (comma-separated list)
 - Thresholds: --threshold-low, --threshold-high, --problem-file-threshold,
               --extreme-complexity-threshold
@@ -86,14 +86,13 @@ class TestCLIOutputFormats(unittest.TestCase):
     MetricMancer supports multiple output formats for different use cases:
     - summary: Executive summary with key metrics for quick overview
     - quick-wins: Prioritized list of improvements with highest impact
-    - human-tree: Tree view of files with complexity indicators (for terminals)
-    - human: Alias for human-tree
+    - tree: Tree view of files with complexity indicators (for terminals)
     - html: Interactive HTML report for detailed exploration
     - json: Machine-readable format for tool integration
 
     Success Criteria:
     - CLI exits with code 0
-    - For CLI formats (summary, quick-wins, human-tree): Expected text in stdout
+    - For CLI formats (summary, quick-wins, tree): Expected text in stdout
     - For file formats (html, json): Output file created in report-folder
 
     Failure Criteria:
@@ -212,33 +211,21 @@ class TestCLIOutputFormats(unittest.TestCase):
         result = self._run_cli('--output-format', 'quick-wins')
         self.assertIn('QUICK WIN', result.stdout.upper())
 
-    def test_output_format_human_tree(self):
+    def test_output_format_tree(self):
         """
-        Test --output-format human-tree produces file tree.
+        Test --output-format tree produces file tree.
 
-        Human-tree format shows a hierarchical view of the codebase
+        Tree format shows a hierarchical view of the codebase
         with complexity indicators, suitable for terminal display.
         Files are shown with their complexity scores.
 
         PASS: Exit code 0 AND both 'simple.py' and 'complex.py' in stdout
         FAIL: Non-zero exit code OR any test file missing from stdout
         """
-        result = self._run_cli('--output-format', 'human-tree')
+        result = self._run_cli('--output-format', 'tree')
         # Tree output includes file names
         self.assertIn('simple.py', result.stdout)
         self.assertIn('complex.py', result.stdout)
-
-    def test_output_format_human(self):
-        """
-        Test --output-format human produces file tree (alias).
-
-        'human' is an alias for 'human-tree' for backwards compatibility.
-
-        PASS: Exit code 0 AND 'simple.py' in stdout
-        FAIL: Non-zero exit code OR 'simple.py' missing from stdout
-        """
-        result = self._run_cli('--output-format', 'human')
-        self.assertIn('simple.py', result.stdout)
 
     def test_output_format_html(self):
         """
@@ -1054,7 +1041,7 @@ class TestCLILevelOptions(unittest.TestCase):
         PASS: Exit code 0 (CLI accepts --level file)
         FAIL: Non-zero exit code or argument error
         """
-        result = self._run_cli('--level', 'file', '--output-format', 'human-tree')
+        result = self._run_cli('--level', 'file', '--output-format', 'tree')
         self.assertEqual(result.returncode, 0)
 
     def test_level_function(self):
@@ -1067,7 +1054,7 @@ class TestCLILevelOptions(unittest.TestCase):
         PASS: Exit code 0 (CLI accepts --level function)
         FAIL: Non-zero exit code or argument error
         """
-        result = self._run_cli('--level', 'function', '--output-format', 'human-tree')
+        result = self._run_cli('--level', 'function', '--output-format', 'tree')
         self.assertEqual(result.returncode, 0)
 
 

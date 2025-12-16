@@ -30,8 +30,6 @@ class ReportGeneratorFactory:
         'json': JSONReportGenerator,
         'summary': CLIReportGenerator,
         'quick-wins': CLIReportGenerator,
-        'human': CLIReportGenerator,
-        'human-tree': CLIReportGenerator,
         'tree': CLIReportGenerator,
     }
 
