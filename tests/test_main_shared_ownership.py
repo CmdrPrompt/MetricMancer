@@ -25,7 +25,7 @@ class TestMainSharedOwnership(unittest.TestCase):
 
         # Run CLI against this directory with detailed tree format (not summary)
         cls.result = subprocess.run([
-            sys.executable, "-m", "src.main", str(cls.test_dir), "--output-format", "human-tree"
+            sys.executable, "-m", "src.main", str(cls.test_dir), "--output-format", "tree"
         ], capture_output=True, text=True, cwd=Path(__file__).parent.parent)
         # Help-result
         cls.help_result = subprocess.run([

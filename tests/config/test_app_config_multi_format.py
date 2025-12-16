@@ -222,8 +222,7 @@ class TestAppConfigValidationMultiFormat:
 
     def test_validate_all_supported_formats(self):
         """Test validation passes for all supported formats."""
-        all_formats = ['summary', 'quick-wins', 'human', 'human-tree',
-                       'tree', 'html', 'json', 'machine']
+        all_formats = ['summary', 'quick-wins', 'tree', 'html', 'json', 'machine']
 
         config = AppConfig(
             directories=['src'],

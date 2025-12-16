@@ -17,7 +17,7 @@ class TestMetricMancerApp(unittest.TestCase):
             output_file='out.html',
             level='file',
             hierarchical=True,
-            output_format='human'
+            output_format='tree'
         )
         app = MetricMancerApp(config=config)
         # After Refactoring #6: Use app.app_config instead of duplicate attributes
@@ -28,7 +28,7 @@ class TestMetricMancerApp(unittest.TestCase):
         self.assertEqual(app.app_config.output_file, 'out.html')
         self.assertEqual(app.app_config.level, 'file')
         self.assertTrue(app.app_config.hierarchical)
-        self.assertEqual(app.app_config.output_format, 'human')
+        self.assertEqual(app.app_config.output_format, 'tree')
         self.assertIsNotNone(app.config)  # Backward compatibility alias
         self.assertIs(app.config, app.app_config)  # Should be same object
         self.assertIsNotNone(app.scanner)
@@ -52,7 +52,7 @@ class TestMetricMancerApp(unittest.TestCase):
         config = AppConfig(
             directories=['dir'],
             output_file='report.html',
-            output_format='human'  # Match legacy default
+            output_format='tree'
         )
         app = MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
         app.run()
@@ -64,7 +64,7 @@ class TestMetricMancerApp(unittest.TestCase):
         self.assertEqual(kwargs['output_file'], 'output/report.html')
         self.assertEqual(kwargs['level'], 'file')
         self.assertEqual(kwargs['hierarchical'], False)
-        self.assertEqual(kwargs['output_format'], 'human')
+        self.assertEqual(kwargs['output_format'], 'tree')
         self.assertEqual(kwargs['report_links'], [])
 
     @patch('src.app.metric_mancer_app.Config')
@@ -87,7 +87,7 @@ class TestMetricMancerApp(unittest.TestCase):
         config = AppConfig(
             directories=['dir'],
             output_file='report.html',
-            output_format='human'  # Match legacy default
+            output_format='tree'
         )
         app = MetricMancerApp(config=config, report_generator_cls=mock_report_cls)
         app.run()

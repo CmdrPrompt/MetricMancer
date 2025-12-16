@@ -30,18 +30,6 @@ class TestReportGeneratorFactoryCreate:
 
         assert generator_cls is CLIReportGenerator
 
-    def test_create_human_generator(self):
-        """Test creating human-readable report generator."""
-        generator_cls = ReportGeneratorFactory.create('human')
-
-        assert generator_cls is CLIReportGenerator
-
-    def test_create_human_tree_generator(self):
-        """Test creating human-tree report generator."""
-        generator_cls = ReportGeneratorFactory.create('human-tree')
-
-        assert generator_cls is CLIReportGenerator
-
     def test_create_tree_generator(self):
         """Test creating tree report generator."""
         generator_cls = ReportGeneratorFactory.create('tree')
@@ -73,8 +61,6 @@ class TestReportGeneratorFactoryFormats:
         assert 'summary' in formats
         assert 'quick-wins' in formats
         assert 'html' in formats
-        assert 'human' in formats
-        assert 'human-tree' in formats
         assert 'tree' in formats
 
     def test_is_format_supported_valid(self):

@@ -14,13 +14,11 @@ class CLIReportGenerator(ReportInterface):
         self.threshold_high = threshold_high
         self.problem_file_threshold = problem_file_threshold
 
-    def generate(self, output_file=None, level="file", output_format="human", save_cli_to_file=False, **kwargs):
+    def generate(self, output_file=None, level="file", output_format="tree", save_cli_to_file=False, **kwargs):
         strategies = {
             "summary": CLISummaryFormat,
             "quick-wins": CLIQuickWinsFormat,
-            "human": CLIReportFormat,
-            "human-tree": CLIReportFormat,  # Alias for backward compatibility
-            "tree": CLIReportFormat,  # Alias for backward compatibility
+            "tree": CLIReportFormat,
         }
 
         strategy_class = strategies.get(output_format)

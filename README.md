@@ -42,7 +42,7 @@ python -m src.main <directories> [options]
 
 **Output Formats:**
 - `--output-formats <formats>`: Generate multiple formats in one run (comma-separated): 'html', 'json', 'summary',
-  'quick-wins', 'human-tree', 'review-strategy', 'review-strategy-branch'. Scans once, 50-70% faster than separate runs
+  'quick-wins', 'tree', 'review-strategy', 'review-strategy-branch'. Scans once, 50-70% faster than separate runs
 
 **Analysis Options:**
 - `--list-hotspots`: Display high-risk files after analysis
