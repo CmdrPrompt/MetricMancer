@@ -58,11 +58,14 @@ testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
+addopts = "-v --tb=short --ignore=tests/integration"
 pythonpath = [
     "src",
     "tests", 
     "."
+]
+markers = [
+    "integration: marks tests as integration tests (excluded by default, run with: pytest tests/integration/)"
 ]
 
 [tool.coverage.run]
