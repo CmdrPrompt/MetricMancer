@@ -13,7 +13,6 @@ class TestFormatMapper(unittest.TestCase):
     def test_get_extension_simple_formats(self):
         """Test extension retrieval for simple formats."""
         self.assertEqual(FormatMapper.get_extension('json'), '.json')
-        self.assertEqual(FormatMapper.get_extension('machine'), '.csv')
         self.assertEqual(FormatMapper.get_extension('html'), '.html')
 
     def test_get_extension_non_simple_format(self):
@@ -45,7 +44,6 @@ class TestFormatMapper(unittest.TestCase):
     def test_is_simple_format(self):
         """Test simple format detection."""
         self.assertTrue(FormatMapper.is_simple_format('json'))
-        self.assertTrue(FormatMapper.is_simple_format('machine'))
         self.assertTrue(FormatMapper.is_simple_format('html'))
         self.assertFalse(FormatMapper.is_simple_format('summary'))
         self.assertFalse(FormatMapper.is_simple_format('quick-wins'))

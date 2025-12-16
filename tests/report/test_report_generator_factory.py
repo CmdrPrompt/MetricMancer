@@ -18,12 +18,6 @@ class TestReportGeneratorFactoryCreate:
 
         assert generator_cls is JSONReportGenerator
 
-    def test_create_machine_generator(self):
-        """Test creating machine (CSV) report generator."""
-        generator_cls = ReportGeneratorFactory.create('machine')
-
-        assert generator_cls is CLIReportGenerator
-
     def test_create_summary_generator(self):
         """Test creating summary report generator."""
         generator_cls = ReportGeneratorFactory.create('summary')
@@ -76,7 +70,6 @@ class TestReportGeneratorFactoryFormats:
 
         assert isinstance(formats, list)
         assert 'json' in formats
-        assert 'machine' in formats
         assert 'summary' in formats
         assert 'quick-wins' in formats
         assert 'html' in formats
@@ -88,7 +81,6 @@ class TestReportGeneratorFactoryFormats:
         """Test is_format_supported with valid formats."""
         assert ReportGeneratorFactory.is_format_supported('json') is True
         assert ReportGeneratorFactory.is_format_supported('html') is True
-        assert ReportGeneratorFactory.is_format_supported('machine') is True
         assert ReportGeneratorFactory.is_format_supported('summary') is True
 
     def test_is_format_supported_invalid(self):

@@ -28,7 +28,6 @@ class ReportGeneratorFactory:
     # Mapping of output formats to their corresponding generator classes
     _GENERATORS = {
         'json': JSONReportGenerator,
-        'machine': CLIReportGenerator,
         'summary': CLIReportGenerator,
         'quick-wins': CLIReportGenerator,
         'human': CLIReportGenerator,
