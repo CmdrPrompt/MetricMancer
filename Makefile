@@ -146,7 +146,7 @@ analyze-summary:
 	@echo "📊 Running summary analysis on MetricMancer codebase..."
 	@echo "   (High-level overview of code quality metrics)"
 	@source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
-		--summary \
+		--output-format summary \
 		--report-folder output/self-analysis \
 		--churn-period 90 \
 		--threshold-high 15
