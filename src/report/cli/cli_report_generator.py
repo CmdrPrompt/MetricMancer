@@ -1,6 +1,5 @@
 import os
 
-from src.report.cli.cli_csv_report_format import CLICSVReportFormat
 from src.report.cli.cli_report_format import CLIReportFormat
 from src.report.cli.cli_summary_format import CLISummaryFormat
 from src.report.cli.cli_quick_wins_format import CLIQuickWinsFormat
@@ -15,14 +14,11 @@ class CLIReportGenerator(ReportInterface):
         self.threshold_high = threshold_high
         self.problem_file_threshold = problem_file_threshold
 
-    def generate(self, output_file=None, level="file", output_format="human", save_cli_to_file=False, **kwargs):
+    def generate(self, output_file=None, level="file", output_format="tree", save_cli_to_file=False, **kwargs):
         strategies = {
             "summary": CLISummaryFormat,
             "quick-wins": CLIQuickWinsFormat,
-            "human": CLIReportFormat,
-            "human-tree": CLIReportFormat,  # Alias for backward compatibility
-            "tree": CLIReportFormat,  # Alias for backward compatibility
-            "machine": CLICSVReportFormat
+            "tree": CLIReportFormat,
         }
 
         strategy_class = strategies.get(output_format)
@@ -32,7 +28,7 @@ class CLIReportGenerator(ReportInterface):
         format_strategy = strategy_class()
 
         # If save_cli_to_file is True (multi-format mode), capture output to file
-        if save_cli_to_file and output_file and output_format != "machine" and (
+        if save_cli_to_file and output_file and (
                 output_file.endswith('.md') or output_file.endswith('.html')):
             import sys
             from io import StringIO

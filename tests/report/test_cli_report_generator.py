@@ -14,22 +14,11 @@ class TestCLIReportGenerator(unittest.TestCase):
         )
 
     @patch("src.report.cli.cli_report_generator.CLIReportFormat")
-    def test_generate_human_calls_cli_report_format(self, MockCLIReportFormat):
+    def test_generate_tree_calls_cli_report_format(self, MockCLIReportFormat):
         mock_format = MockCLIReportFormat.return_value
         mock_format.print_report = MagicMock()
         generator = CLIReportGenerator(self.repo_info)
-        generator.generate(output_format="human", level="file")
-        mock_format.print_report.assert_called_once()
-        args, kwargs = mock_format.print_report.call_args
-        self.assertEqual(args[0], self.repo_info)
-        self.assertEqual(kwargs["level"], "file")
-
-    @patch("src.report.cli.cli_report_generator.CLICSVReportFormat")
-    def test_generate_machine_calls_cli_csv_report_format(self, MockCLICSVReportFormat):
-        mock_format = MockCLICSVReportFormat.return_value
-        mock_format.print_report = MagicMock()
-        generator = CLIReportGenerator(self.repo_info)
-        generator.generate(output_format="machine", level="file")
+        generator.generate(output_format="tree", level="file")
         mock_format.print_report.assert_called_once()
         args, kwargs = mock_format.print_report.call_args
         self.assertEqual(args[0], self.repo_info)

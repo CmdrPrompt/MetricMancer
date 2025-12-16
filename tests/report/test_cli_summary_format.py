@@ -539,7 +539,7 @@ class TestPrintMethods(TestCLISummaryFormat):
         self.assertIn('📁 DETAILED REPORTS', output)
         self.assertIn('--list-hotspots', output)
         self.assertIn('--review-strategy', output)
-        self.assertIn('--output-format human-tree', output)
+        self.assertIn('--output-format tree', output)
 
     def test_print_footer(self):
         """Test footer printing - now empty as timing is shown in global TIME SUMMARY."""

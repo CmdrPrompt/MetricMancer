@@ -124,7 +124,7 @@ class TestMainErrorHandling:
     @patch('src.main.parse_args')
     @patch('sys.argv', ['metricmancer', '/test/path'])
     def test_main_handles_app_creation_exception(self, mock_parse_args, mock_app_class):
-        """Test main() handles exceptions during app creation."""
+        """Test main() handles exceptions during app creation with clean error message."""
         # Setup mock arguments
         mock_args = MagicMock()
         mock_args.directories = ['/test/path']
@@ -138,10 +138,11 @@ class TestMainErrorHandling:
         # Setup app to raise exception during creation
         mock_app_class.side_effect = Exception("App creation failed")
 
-        # Execute and verify exception is propagated
+        # Execute and verify SystemExit with code 1 (no stack trace)
         with patch('src.main.AppConfig.from_cli_args', return_value=MagicMock()):
-            with pytest.raises(Exception, match="App creation failed"):
+            with pytest.raises(SystemExit) as exc_info:
                 main()
+            assert exc_info.value.code == 1
 
 
 class TestMainIntegration:
