@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test coverage licenses serve check clean format-md lint-md check-md analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
+.PHONY: help install format lint test test-integration test-all coverage licenses serve check clean format-md lint-md check-md analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -17,6 +17,8 @@ help:
 	@echo "  make format-md            - Auto-format Markdown files with mdformat"
 	@echo "  make lint-md              - Check Markdown files with mdformat"
 	@echo "  make test                 - Run all tests with pytest"
+	@echo "  make test-integration     - Run CLI integration tests only"
+	@echo "  make test-all             - Run ALL tests including integration"
 	@echo "  make coverage             - Run tests with coverage report (HTML + terminal)"
 	@echo "  make licenses             - Check license compliance"
 	@echo "  make serve                - Start Python HTTP server for testing web pages"
@@ -92,6 +94,16 @@ test:
 	@echo "🧪 Running tests with pytest..."
 	@source .venv/bin/activate && python -m pytest tests/ -v --tb=short
 	@echo "✅ Tests complete!"
+
+test-integration:
+	@echo "🔌 Running CLI integration tests..."
+	@source .venv/bin/activate && python -m pytest tests/integration/ -v --tb=short
+	@echo "✅ Integration tests complete!"
+
+test-all:
+	@echo "🧪 Running ALL tests (unit + integration)..."
+	@source .venv/bin/activate && python -m pytest tests/ -v --tb=short -o addopts=""
+	@echo "✅ All tests complete!"
 
 coverage:
 	@echo "📊 Running tests with coverage analysis..."
