@@ -32,13 +32,10 @@ def _print_output_options():
     """Print output formatting options."""
     print("\nOUTPUT FORMATTING:")
     print("  --output-format <format>     Set the output format. Options: 'summary' (default dashboard), "
-          "'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json', 'machine' (CSV).")
+          "'quick-wins' (prioritized improvements), 'human-tree' (file tree), 'html', 'json'.")
     print("  --output-formats <formats>   Generate multiple formats in one run (comma-separated). "
           "Example: 'html,json,summary,review-strategy'. Includes 'review-strategy' and 'review-strategy-branch'. "
           "Scans code once, generates all formats.")
-    print("  --summary                    Show executive summary dashboard (default).")
-    print("  --quick-wins                 Show prioritized quick win suggestions (impact vs. effort).")
-    print("  --detailed                   Show detailed file tree output.")
     print("  --level <level>              Set the detail level for reports. Options: 'file' (default), 'function'.")
     print("  --hierarchical               (JSON only) Output the full hierarchical data model "
           "instead of a flat list.")
@@ -184,7 +181,7 @@ def _add_output_args(parser):
         type=str,
         default=Defaults.OUTPUT_FORMAT,
         help=f"Output format: '{Defaults.OUTPUT_FORMAT}' (default dashboard), 'quick-wins' (prioritized improvements), "
-        "'human-tree' (file tree), 'html', 'json', 'machine' (CSV)."
+        "'human-tree' (file tree), 'html', 'json'."
     )
     parser.add_argument(
         "--output-formats",
@@ -194,27 +191,6 @@ def _add_output_args(parser):
              "Example: 'html,json,summary,review-strategy'. "
              "Includes 'review-strategy' (full repo) and 'review-strategy-branch' (changed files only). "
              "Eliminates redundant scanning for multiple formats."
-    )
-    parser.add_argument(
-        "--summary",
-        action="store_const",
-        const="summary",
-        dest="output_format",
-        help="Show executive summary dashboard (default)."
-    )
-    parser.add_argument(
-        "--quick-wins",
-        action="store_const",
-        const="quick-wins",
-        dest="output_format",
-        help="Show prioritized quick win suggestions (impact vs. effort)."
-    )
-    parser.add_argument(
-        "--detailed",
-        action="store_const",
-        const="human-tree",
-        dest="output_format",
-        help="Show detailed file tree output."
     )
     parser.add_argument(
         "--level",
