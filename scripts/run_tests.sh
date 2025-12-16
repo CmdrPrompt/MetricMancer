@@ -3,7 +3,6 @@
 # This script runs all tests (both unittest and pytest style)
 
 echo "🧪 Running MetricMancer Test Suite..."
-echo "Total expected tests: 142"
 echo ""
 
 # Run pytest with verbose output

@@ -5,7 +5,7 @@ MetricMancers HEALTH METRICS.
 
 ## 1. Identifiera problemområden
 
-- Kör MetricMancer med `--summary` och `--quick-wins` för att hitta:
+- Kör MetricMancer med `--output-format summary` och `--output-format quick-wins` för att hitta:
   - Filer med hög komplexitet (>15)
   - Filer med hög churn
   - Hotspots och kritiska moduler

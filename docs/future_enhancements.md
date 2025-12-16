@@ -329,9 +329,8 @@ Replace the file tree with an actionable summary that gives developers immediate
 **Implementation:**
 
 - Create new `CLISummaryFormatter` class in `src/report/cli/`
-- Make it default for `--output-format human`
-- Keep current tree view as `--output-format human-tree` or with `--verbose` flag
-- Add `--summary` / `--detailed` flags for quick switching
+- Make it default for `--output-format summary`
+- Keep current tree view as `--output-format human-tree`
 
 #### Option 2: Top Risks Table
 
@@ -461,7 +460,7 @@ Prioritize improvements by impact and effort:
 
 - Calculate impact based on hotspot score, churn, ownership
 - Estimate effort based on complexity and file size
-- Add `--quick-wins N` flag to show top N opportunities
+- Use `--output-format quick-wins` to show opportunities
 - Consider team velocity and preferences
 
 #### Option 5: Hybrid Summary + Expandable Details

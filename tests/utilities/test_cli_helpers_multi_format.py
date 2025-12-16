@@ -81,31 +81,6 @@ class TestCLIBackwardCompatibility:
         assert args.output_format == 'summary'
 
 
-class TestCLIShortcutFlags:
-    """Test that shortcut flags like --summary, --quick-wins still work."""
-
-    def test_summary_flag_works(self):
-        """Test --summary flag still sets output_format."""
-        parser = parse_args()
-        args = parser.parse_args(['src', '--summary'])
-
-        assert args.output_format == 'summary'
-
-    def test_quick_wins_flag_works(self):
-        """Test --quick-wins flag still sets output_format."""
-        parser = parse_args()
-        args = parser.parse_args(['src', '--quick-wins'])
-
-        assert args.output_format == 'quick-wins'
-
-    def test_detailed_flag_works(self):
-        """Test --detailed flag still sets output_format to human-tree."""
-        parser = parse_args()
-        args = parser.parse_args(['src', '--detailed'])
-
-        assert args.output_format == 'human-tree'
-
-
 class TestCLIHelpText:
     """Test that help text documents the new argument."""
 

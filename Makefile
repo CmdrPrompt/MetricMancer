@@ -2,7 +2,7 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test coverage licenses serve check clean format-md lint-md check-md analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
+.PHONY: help install format lint test test-integration test-all coverage licenses serve check clean format-md lint-md check-md analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
@@ -17,6 +17,8 @@ help:
 	@echo "  make format-md            - Auto-format Markdown files with mdformat"
 	@echo "  make lint-md              - Check Markdown files with mdformat"
 	@echo "  make test                 - Run all tests with pytest"
+	@echo "  make test-integration     - Run CLI integration tests only"
+	@echo "  make test-all             - Run ALL tests including integration"
 	@echo "  make coverage             - Run tests with coverage report (HTML + terminal)"
 	@echo "  make licenses             - Check license compliance"
 	@echo "  make serve                - Start Python HTTP server for testing web pages"
@@ -72,7 +74,11 @@ format:
 
 lint:
 	@echo "🔍 Checking Python code with flake8..."
-	@source .venv/bin/activate && python -m flake8 src/ tests/
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m flake8 src/ tests/; \
+	else \
+		python -m flake8 src/ tests/; \
+	fi
 	@echo "✅ Python linting complete!"
 
 format-md:
@@ -90,8 +96,30 @@ check-md: format-md lint-md
 
 test:
 	@echo "🧪 Running tests with pytest..."
-	@source .venv/bin/activate && python -m pytest tests/ -v --tb=short
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m pytest tests/ -v --tb=short; \
+	else \
+		python -m pytest tests/ -v --tb=short; \
+	fi
 	@echo "✅ Tests complete!"
+
+test-integration:
+	@echo "🔌 Running CLI integration tests..."
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m pytest tests/integration/ -v --tb=short; \
+	else \
+		python -m pytest tests/integration/ -v --tb=short; \
+	fi
+	@echo "✅ Integration tests complete!"
+
+test-all:
+	@echo "🧪 Running ALL tests (unit + integration)..."
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m pytest tests/ -v --tb=short -o addopts=""; \
+	else \
+		python -m pytest tests/ -v --tb=short -o addopts=""; \
+	fi
+	@echo "✅ All tests complete!"
 
 coverage:
 	@echo "📊 Running tests with coverage analysis..."
@@ -146,7 +174,7 @@ analyze-summary:
 	@echo "📊 Running summary analysis on MetricMancer codebase..."
 	@echo "   (High-level overview of code quality metrics)"
 	@source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ \
-		--summary \
+		--output-format summary \
 		--report-folder output/self-analysis \
 		--churn-period 90 \
 		--threshold-high 15

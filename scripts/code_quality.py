@@ -66,21 +66,21 @@ def lint_markdown():
 
 def check_markdown():
     """Run Markdown formatting and linting."""
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Running Markdown quality checks")
-    print("="*50)
+    print("=" * 50)
 
     format_ok = format_markdown()
     lint_ok = lint_markdown()
 
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     if format_ok and lint_ok:
         print("✅ All Markdown checks passed!")
-        print("="*50)
+        print("=" * 50)
         return True
     else:
         print("❌ Some Markdown checks failed!")
-        print("="*50)
+        print("=" * 50)
         return False
 
 
@@ -102,22 +102,22 @@ def check_licenses():
 
 def check_all():
     """Run linting, tests, and license checks."""
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("Running all code quality checks")
-    print("="*50)
-    
+    print("=" * 50)
+
     lint_ok = lint_code()
     test_ok = run_tests()
     licenses_ok = check_licenses()
-    
-    print("\n" + "="*50)
+
+    print("\n" + "=" * 50)
     if lint_ok and test_ok and licenses_ok:
         print("✅ All checks passed!")
-        print("="*50)
+        print("=" * 50)
         return True
     else:
         print("❌ Some checks failed!")
-        print("="*50)
+        print("=" * 50)
         return False
 
 
@@ -130,7 +130,7 @@ def clean():
         'find . -type d -name "*.egg-info" -exec rm -rf {} + 2>/dev/null || true',
         'rm -rf .pytest_cache build dist'
     ]
-    
+
     print("\n🧹 Cleaning temporary files...")
     for cmd in commands:
         subprocess.run(cmd, shell=True, check=False)
@@ -143,7 +143,7 @@ def analyze_quick():
     print("   (Identifies low-effort, high-impact improvements)")
     return run_command(
         "source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ "
-        "--quick-wins --report-folder output/self-analysis "
+        "--output-format quick-wins --report-folder output/self-analysis "
         "--churn-period 90 --threshold-high 15",
         "Quick wins analysis"
     )
@@ -155,7 +155,7 @@ def analyze_summary():
     print("   (High-level overview of code quality metrics)")
     return run_command(
         "source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ "
-        "--summary --report-folder output/self-analysis "
+        "--output-format summary --report-folder output/self-analysis "
         "--churn-period 90 --threshold-high 15",
         "Summary analysis"
     )
@@ -180,13 +180,13 @@ def analyze_review_branch():
     # Get current branch name
     try:
         import subprocess
-        result = subprocess.run(['git', 'branch', '--show-current'], 
-                              capture_output=True, text=True, check=True)
+        result = subprocess.run(['git', 'branch', '--show-current'],
+                                capture_output=True, text=True, check=True)
         branch_name = result.stdout.strip()
         print(f"   Current branch: {branch_name}")
     except Exception:
         pass
-    
+
     return run_command(
         "source .venv/bin/activate && PYTHONPATH=. python src/main.py src/ tests/ "
         "--output-formats review-strategy-branch --report-folder output/self-analysis "
@@ -250,9 +250,9 @@ def main():
     if len(sys.argv) < 2:
         show_help()
         sys.exit(1)
-    
+
     command = sys.argv[1].lower()
-    
+
     commands = {
         'format': format_code,
         'lint': lint_code,
@@ -270,14 +270,14 @@ def main():
         'analyze-full': analyze_full,
         'help': show_help,
     }
-    
+
     if command not in commands:
         print(f"❌ Unknown command: {command}")
         show_help()
         sys.exit(1)
-    
+
     success = commands[command]()
-    
+
     # Exit with appropriate code for check command
     if command == 'check' and not success:
         sys.exit(1)

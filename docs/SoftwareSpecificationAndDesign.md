@@ -782,14 +782,15 @@ StartCLI[Start MetricMancerApp run]
 StartCLI --> Analyze[Analyzer analyze files]
 Analyze --> CLIGen[CLIReportGenerator generate]
 CLIGen --> FormatSel{Output format}
-FormatSel -- human --> PrintReport[CLIReportFormat print report]
-FormatSel -- machine --> PrintCSV[CLICSVReportFormat print report]
+FormatSel -- human/human-tree --> PrintReport[CLIReportFormat print report]
+FormatSel -- summary --> PrintSummary[CLISummaryFormat print report]
+FormatSel -- quick-wins --> PrintQuickWins[CLIQuickWinsFormat print report]
 FormatSel -- other --> RaiseExc[Raise exception]
 PrintReport --> ToTerminal[Report to terminal tree]
-PrintCSV --> ToCSV[Report to terminal CSV]
+PrintSummary --> ToTerminal
+PrintQuickWins --> ToTerminal
 RaiseExc --> ErrorMsg[Error message]
 ToTerminal --> EndNode[End]
-ToCSV --> EndNode
 ErrorMsg --> EndNode
 %% Edge cases and error handling can be added as needed
 style StartCLI fill:#e8f5e9,stroke:#388e3c,stroke-width:2px,color:#212121

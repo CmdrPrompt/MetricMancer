@@ -50,26 +50,50 @@ def main():
     Follows Single Responsibility Principle: main() only orchestrates high-level flow.
     All business logic delegated to specialized components per Configuration Object Pattern.
     """
-    setup_utf8_encoding()
+    try:
+        setup_utf8_encoding()
 
-    debug_print(f"[DEBUG] main: sys.argv={sys.argv}")
-    if len(sys.argv) == 1:
-        print_usage()
-        return
+        debug_print(f"[DEBUG] main: sys.argv={sys.argv}")
+        if len(sys.argv) == 1:
+            print_usage()
+            return
 
-    # Parse CLI arguments - delegated to CLI helpers
-    parser = parse_args()
-    parser.add_argument('--debug', action='store_true', help='Visa debugutskrifter')
-    args = parser.parse_args()
+        # Parse CLI arguments - delegated to CLI helpers
+        parser = parse_args()
+        parser.add_argument('--debug', action='store_true', help='Enable debug output')
+        args = parser.parse_args()
 
-    setup_debug_mode(args)
+        setup_debug_mode(args)
 
-    # Create configuration - Configuration Object Pattern
-    config = AppConfig.from_cli_args(args)
+        # Create configuration - Configuration Object Pattern
+        config = AppConfig.from_cli_args(args)
 
-    # Create and run application - all logic delegated to MetricMancerApp
-    app = create_app_from_config(config)
-    app.run()
+        # Create and run application - all logic delegated to MetricMancerApp
+        app = create_app_from_config(config)
+        app.run()
+
+    except ValueError as e:
+        # User input errors (invalid formats, thresholds, etc.)
+        print(f"\nError: {e}", file=sys.stderr)
+        print("\nRun 'python -m src.main --help' for usage information.", file=sys.stderr)
+        sys.exit(1)
+    except FileNotFoundError as e:
+        # Missing directories or files
+        print(f"\nError: {e}", file=sys.stderr)
+        sys.exit(1)
+    except KeyboardInterrupt:
+        # User cancelled (Ctrl+C)
+        print("\n\nOperation cancelled by user.", file=sys.stderr)
+        sys.exit(130)
+    except Exception as e:
+        # Unexpected errors - show stack trace for debugging
+        print(f"\nUnexpected error: {e}", file=sys.stderr)
+        if getattr(args, 'debug', False) if 'args' in locals() else False:
+            import traceback
+            traceback.print_exc()
+        else:
+            print("Run with --debug for detailed error information.", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == "__main__":

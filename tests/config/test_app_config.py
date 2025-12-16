@@ -221,8 +221,7 @@ class TestAppConfigValidation:
     def test_validate_all_valid_formats(self):
         """Test validation passes for all valid output formats."""
         valid_formats = [
-            'summary', 'quick-wins', 'human', 'human-tree',
-            'tree', 'html', 'json', 'machine'
+            'summary', 'quick-wins', 'tree', 'html', 'json', 'machine'
         ]
 
         for fmt in valid_formats:

@@ -20,7 +20,6 @@ class FormatMapper:
     # Format to extension mappings
     SIMPLE_FORMATS: Dict[str, str] = {
         'json': '.json',
-        'machine': '.csv',
         'html': '.html'
     }
 
@@ -28,7 +27,7 @@ class FormatMapper:
     CLI_FORMATS: Dict[str, str] = {
         'summary': 'summary_report',
         'quick-wins': 'quick_wins_report',
-        'human-tree': 'file_tree_report'
+        'tree': 'file_tree_report'
     }
 
     # Review strategy formats and their output filenames
