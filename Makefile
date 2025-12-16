@@ -74,7 +74,11 @@ format:
 
 lint:
 	@echo "🔍 Checking Python code with flake8..."
-	@source .venv/bin/activate && python -m flake8 src/ tests/
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m flake8 src/ tests/; \
+	else \
+		python -m flake8 src/ tests/; \
+	fi
 	@echo "✅ Python linting complete!"
 
 format-md:
@@ -92,17 +96,29 @@ check-md: format-md lint-md
 
 test:
 	@echo "🧪 Running tests with pytest..."
-	@source .venv/bin/activate && python -m pytest tests/ -v --tb=short
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m pytest tests/ -v --tb=short; \
+	else \
+		python -m pytest tests/ -v --tb=short; \
+	fi
 	@echo "✅ Tests complete!"
 
 test-integration:
 	@echo "🔌 Running CLI integration tests..."
-	@source .venv/bin/activate && python -m pytest tests/integration/ -v --tb=short
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m pytest tests/integration/ -v --tb=short; \
+	else \
+		python -m pytest tests/integration/ -v --tb=short; \
+	fi
 	@echo "✅ Integration tests complete!"
 
 test-all:
 	@echo "🧪 Running ALL tests (unit + integration)..."
-	@source .venv/bin/activate && python -m pytest tests/ -v --tb=short -o addopts=""
+	@if [ -d ".venv" ]; then \
+		source .venv/bin/activate && python -m pytest tests/ -v --tb=short -o addopts=""; \
+	else \
+		python -m pytest tests/ -v --tb=short -o addopts=""; \
+	fi
 	@echo "✅ All tests complete!"
 
 coverage:
