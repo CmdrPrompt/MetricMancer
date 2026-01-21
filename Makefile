@@ -2,13 +2,14 @@
 
 SHELL := /bin/bash
 
-.PHONY: help install format lint test test-integration test-all coverage licenses serve check clean format-md lint-md check-md analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
+.PHONY: help venv install format lint test test-integration test-all coverage licenses serve check clean format-md lint-md check-md analyze-quick analyze-summary analyze-review analyze-review-branch analyze-delta-review analyze-full
 
 help:
 	@echo "MetricMancer Code Quality Tools"
 	@echo "================================"
 	@echo ""
 	@echo "Setup Commands:"
+	@echo "  make venv                 - Create virtual environment (.venv)"
 	@echo "  make install              - Install all dependencies in venv"
 	@echo ""
 	@echo "Code Quality Commands:"
@@ -34,6 +35,20 @@ help:
 	@echo "  make analyze-delta-review - Delta review for function-level changes (current branch)"
 	@echo "  make analyze-full         - Complete analysis with all reports"
 	@echo ""
+
+venv:
+	@echo "🐍 Creating virtual environment..."
+	@if [ -d ".venv" ]; then \
+		echo "⚠️  Virtual environment .venv already exists!"; \
+		echo "   Remove it first with: rm -rf .venv"; \
+		exit 1; \
+	fi
+	@python3.10 -m venv .venv || python3 -m venv .venv || python -m venv .venv
+	@echo "✅ Virtual environment created at .venv"
+	@echo ""
+	@echo "Next steps:"
+	@echo "  1. Run: make install"
+	@echo "  2. Or manually: source .venv/bin/activate && pip install -e '.[dev]'"
 
 install:
 	@echo "📦 Installing MetricMancer dependencies..."
