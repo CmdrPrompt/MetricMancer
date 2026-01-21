@@ -1,0 +1,1 @@
+"""Coupling analysis test package."""
