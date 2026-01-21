@@ -223,16 +223,16 @@ def get_commit_history(
 ) -> List[dict]:
     """
     Extract commit history with changed files for coupling analysis.
-    
+
     This function retrieves git commit history including the files changed
     in each commit, which is used to detect temporal coupling (files that
     change together).
-    
+
     Args:
         repo_root: Root directory of the git repository
         since_date: Time period for history (e.g., "90 days ago", "6 months ago")
         exclude_merges: Whether to exclude merge commits (default: True)
-    
+
     Returns:
         List of commit dictionaries with structure:
         [{
@@ -241,9 +241,9 @@ def get_commit_history(
             'author': str,
             'changed_files': List[str]
         }]
-        
+
         Returns empty list if no commits found or git command fails.
-    
+
     Example:
         >>> history = get_commit_history("/my/repo", since_date="30 days ago")
         >>> len(history)
@@ -254,7 +254,7 @@ def get_commit_history(
         3
     """
     repo_root = os.path.abspath(repo_root)
-    
+
     try:
         # Build git log command
         cmd = [
@@ -263,27 +263,27 @@ def get_commit_history(
             '--pretty=format:%H|%at|%an',
             '--name-only'
         ]
-        
+
         if exclude_merges:
             cmd.append('--no-merges')
-        
+
         output = run_git_command(repo_root, cmd)
-        
+
         if not output:
             return []
-        
+
         # Parse output
         commits = []
         lines = output.strip().split('\n')
-        
+
         i = 0
         while i < len(lines):
             line = lines[i].strip()
-            
+
             if not line:
                 i += 1
                 continue
-            
+
             # Check if this is a commit header line (contains |)
             if '|' in line:
                 parts = line.split('|')
@@ -291,11 +291,11 @@ def get_commit_history(
                     commit_hash = parts[0]
                     timestamp = int(parts[1])
                     author = '|'.join(parts[2:])  # Handle names with |
-                    
+
                     # Collect changed files (lines after commit header until next commit or blank)
                     changed_files = []
                     i += 1
-                    
+
                     while i < len(lines):
                         file_line = lines[i].strip()
                         if not file_line:
@@ -305,7 +305,7 @@ def get_commit_history(
                             break
                         changed_files.append(file_line)
                         i += 1
-                    
+
                     if changed_files:  # Only add commits that have changed files
                         commits.append({
                             'commit_hash': commit_hash,
@@ -314,11 +314,11 @@ def get_commit_history(
                             'changed_files': changed_files
                         })
                     continue
-            
+
             i += 1
-        
+
         return commits
-        
+
     except Exception as e:
         debug_print(f"[GIT] Error getting commit history: {e}")
         return []
@@ -330,39 +330,39 @@ def get_changed_files_in_commit(
 ) -> List[str]:
     """
     Get list of files changed in a specific commit.
-    
+
     Args:
         repo_root: Root directory of the git repository
         commit_hash: Git commit hash
-    
+
     Returns:
         List of file paths (relative to repo root) that were changed in the commit.
         Returns empty list if commit not found or error occurs.
-    
+
     Raises:
         subprocess.CalledProcessError: If commit hash is invalid
-    
+
     Example:
         >>> files = get_changed_files_in_commit("/my/repo", "abc123def")
         >>> files
         ['src/main.py', 'tests/test_main.py']
     """
     repo_root = os.path.abspath(repo_root)
-    
+
     try:
         # Use git show with --name-only to get just filenames
         output = run_git_command(
             repo_root,
             ['show', '--name-only', '--pretty=format:', commit_hash]
         )
-        
+
         if not output:
             raise subprocess.CalledProcessError(1, 'git show')
-        
+
         # Filter out empty lines and return
         files = [line.strip() for line in output.strip().split('\n') if line.strip()]
         return files
-        
+
     except Exception as e:
         debug_print(f"[GIT] Error getting changed files for commit {commit_hash}: {e}")
         raise
@@ -375,19 +375,19 @@ def get_commits_affecting_file(
 ) -> List[str]:
     """
     Get all commits that modified a specific file within a time period.
-    
+
     This is used to calculate how frequently a file changes, which is
     needed for coupling analysis.
-    
+
     Args:
         repo_root: Root directory of the git repository
         file_path: Path to file (relative to repo root)
         since_date: Time period for history (e.g., "90 days ago")
-    
+
     Returns:
         List of commit hashes (full 40-char hashes) that modified the file.
         Returns empty list if file has no commits or doesn't exist.
-    
+
     Example:
         >>> commits = get_commits_affecting_file("/my/repo", "src/main.py", "30 days ago")
         >>> len(commits)
@@ -396,20 +396,20 @@ def get_commits_affecting_file(
         40  # Full commit hash
     """
     repo_root = os.path.abspath(repo_root)
-    
+
     try:
         output = run_git_command(
             repo_root,
             ['log', f'--since={since_date}', '--pretty=format:%H', '--', file_path]
         )
-        
+
         if not output:
             return []
-        
+
         # Split by newline and filter empty lines
         commits = [line.strip() for line in output.strip().split('\n') if line.strip()]
         return commits
-        
+
     except Exception as e:
         debug_print(f"[GIT] Error getting commits for file {file_path}: {e}")
         return []

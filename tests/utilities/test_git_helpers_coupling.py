@@ -26,13 +26,13 @@ class TestGetCommitHistory(unittest.TestCase):
         """Create temporary git repository for testing."""
         self.temp_dir = tempfile.mkdtemp()
         self.repo_path = Path(self.temp_dir)
-        
+
         # Initialize git repo
         subprocess.run(['git', 'init'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                      cwd=self.repo_path, check=True, capture_output=True)
+                       cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                      cwd=self.repo_path, check=True, capture_output=True)
+                       cwd=self.repo_path, check=True, capture_output=True)
 
     def tearDown(self):
         """Clean up temporary directory."""
@@ -43,7 +43,7 @@ class TestGetCommitHistory(unittest.TestCase):
     def test_get_commit_history_empty_repo(self):
         """Test get_commit_history returns empty list for repo with no commits."""
         history = get_commit_history(str(self.repo_path))
-        
+
         self.assertIsInstance(history, list)
         self.assertEqual(len(history), 0)
 
@@ -54,10 +54,10 @@ class TestGetCommitHistory(unittest.TestCase):
         test_file.write_text("def test(): pass")
         subprocess.run(['git', 'add', 'test.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Initial commit'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         history = get_commit_history(str(self.repo_path))
-        
+
         self.assertEqual(len(history), 1)
         self.assertIn('commit_hash', history[0])
         self.assertIn('timestamp', history[0])
@@ -73,27 +73,27 @@ class TestGetCommitHistory(unittest.TestCase):
         file1.write_text("# File 1")
         subprocess.run(['git', 'add', 'file1.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add file1'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Create second commit
         file2 = self.repo_path / "file2.py"
         file2.write_text("# File 2")
         subprocess.run(['git', 'add', 'file2.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add file2'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Create third commit with both files
         file1.write_text("# File 1 modified")
         file2.write_text("# File 2 modified")
         subprocess.run(['git', 'add', '.'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Modify both files'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         history = get_commit_history(str(self.repo_path))
-        
+
         # Should have 3 commits (reverse chronological order)
         self.assertEqual(len(history), 3)
-        
+
         # Latest commit should have 2 changed files
         latest_commit = history[0]
         self.assertEqual(len(latest_commit['changed_files']), 2)
@@ -107,18 +107,18 @@ class TestGetCommitHistory(unittest.TestCase):
         file1.write_text("# Old file")
         subprocess.run(['git', 'add', 'old_file.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Old commit'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Create recent commit
         file2 = self.repo_path / "new_file.py"
         file2.write_text("# New file")
         subprocess.run(['git', 'add', 'new_file.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Recent commit'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Get history for last 1 day (should get both since they're recent in test)
         history = get_commit_history(str(self.repo_path), since_date="1 day ago")
-        
+
         # In real scenario with proper dates, this would filter
         # For now, just verify it accepts the parameter
         self.assertGreaterEqual(len(history), 1)
@@ -130,14 +130,14 @@ class TestGetCommitHistory(unittest.TestCase):
         file1.write_text("# File")
         subprocess.run(['git', 'add', 'file.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Regular commit'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Test with exclude_merges=True (default)
         history_no_merges = get_commit_history(str(self.repo_path), exclude_merges=True)
-        
+
         # Test with exclude_merges=False
         history_with_merges = get_commit_history(str(self.repo_path), exclude_merges=False)
-        
+
         # Both should work (no merges in this simple repo)
         self.assertEqual(len(history_no_merges), len(history_with_merges))
 
@@ -147,10 +147,10 @@ class TestGetCommitHistory(unittest.TestCase):
         file1.write_text("# Test")
         subprocess.run(['git', 'add', 'test.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Test commit'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         history = get_commit_history(str(self.repo_path))
-        
+
         self.assertEqual(len(history), 1)
         self.assertEqual(history[0]['author'], 'Test User')
 
@@ -161,17 +161,17 @@ class TestGetCommitHistory(unittest.TestCase):
         subdir.mkdir()
         file1 = subdir / "module.py"
         file1.write_text("# Module")
-        
+
         subprocess.run(['git', 'add', '.'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add nested file'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         history = get_commit_history(str(self.repo_path))
-        
+
         self.assertEqual(len(history), 1)
         # Should have relative path from repo root
-        self.assertTrue(any('src/module.py' in f or 'src\\module.py' in f 
-                          for f in history[0]['changed_files']))
+        self.assertTrue(any('src/module.py' in f or 'src\\module.py' in f
+                            for f in history[0]['changed_files']))
 
 
 class TestGetChangedFilesInCommit(unittest.TestCase):
@@ -181,13 +181,13 @@ class TestGetChangedFilesInCommit(unittest.TestCase):
         """Create temporary git repository for testing."""
         self.temp_dir = tempfile.mkdtemp()
         self.repo_path = Path(self.temp_dir)
-        
+
         # Initialize git repo
         subprocess.run(['git', 'init'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                      cwd=self.repo_path, check=True, capture_output=True)
+                       cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                      cwd=self.repo_path, check=True, capture_output=True)
+                       cwd=self.repo_path, check=True, capture_output=True)
 
     def tearDown(self):
         """Clean up temporary directory."""
@@ -201,15 +201,15 @@ class TestGetChangedFilesInCommit(unittest.TestCase):
         file1.write_text("# Test")
         subprocess.run(['git', 'add', 'test.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add test'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Get commit hash
         result = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                              cwd=self.repo_path, check=True, capture_output=True, text=True)
+                                cwd=self.repo_path, check=True, capture_output=True, text=True)
         commit_hash = result.stdout.strip()
-        
+
         changed_files = get_changed_files_in_commit(str(self.repo_path), commit_hash)
-        
+
         self.assertEqual(len(changed_files), 1)
         self.assertIn('test.py', changed_files[0])
 
@@ -219,18 +219,18 @@ class TestGetChangedFilesInCommit(unittest.TestCase):
         file2 = self.repo_path / "file2.py"
         file1.write_text("# File 1")
         file2.write_text("# File 2")
-        
+
         subprocess.run(['git', 'add', '.'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add multiple files'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Get commit hash
         result = subprocess.run(['git', 'rev-parse', 'HEAD'],
-                              cwd=self.repo_path, check=True, capture_output=True, text=True)
+                                cwd=self.repo_path, check=True, capture_output=True, text=True)
         commit_hash = result.stdout.strip()
-        
+
         changed_files = get_changed_files_in_commit(str(self.repo_path), commit_hash)
-        
+
         self.assertEqual(len(changed_files), 2)
         filenames = [os.path.basename(f) for f in changed_files]
         self.assertIn('file1.py', filenames)
@@ -250,13 +250,13 @@ class TestGetCommitsAffectingFile(unittest.TestCase):
         """Create temporary git repository for testing."""
         self.temp_dir = tempfile.mkdtemp()
         self.repo_path = Path(self.temp_dir)
-        
+
         # Initialize git repo
         subprocess.run(['git', 'init'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.email', 'test@example.com'],
-                      cwd=self.repo_path, check=True, capture_output=True)
+                       cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'config', 'user.name', 'Test User'],
-                      cwd=self.repo_path, check=True, capture_output=True)
+                       cwd=self.repo_path, check=True, capture_output=True)
 
     def tearDown(self):
         """Clean up temporary directory."""
@@ -270,37 +270,37 @@ class TestGetCommitsAffectingFile(unittest.TestCase):
         file1.write_text("# Version 1")
         subprocess.run(['git', 'add', 'target.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Initial version'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         commits = get_commits_affecting_file(str(self.repo_path), "target.py")
-        
+
         self.assertEqual(len(commits), 1)
         self.assertEqual(len(commits[0]), 40)  # Git commit hash length
 
     def test_get_commits_affecting_file_multiple_commits(self):
         """Test getting commits for file with multiple changes."""
         file1 = self.repo_path / "target.py"
-        
+
         # First commit
         file1.write_text("# Version 1")
         subprocess.run(['git', 'add', 'target.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Version 1'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Second commit
         file1.write_text("# Version 2")
         subprocess.run(['git', 'add', 'target.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Version 2'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Third commit
         file1.write_text("# Version 3")
         subprocess.run(['git', 'add', 'target.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Version 3'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         commits = get_commits_affecting_file(str(self.repo_path), "target.py")
-        
+
         self.assertEqual(len(commits), 3)
         # All should be valid commit hashes
         for commit_hash in commits:
@@ -313,15 +313,15 @@ class TestGetCommitsAffectingFile(unittest.TestCase):
         file1.write_text("# File 1")
         subprocess.run(['git', 'add', 'file1.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add file1'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # Create and commit file2 (different file)
         file2 = self.repo_path / "file2.py"
         file2.write_text("# File 2")
         subprocess.run(['git', 'add', 'file2.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add file2'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         # file1 should only have 1 commit
         commits = get_commits_affecting_file(str(self.repo_path), "file1.py")
         self.assertEqual(len(commits), 1)
@@ -333,27 +333,27 @@ class TestGetCommitsAffectingFile(unittest.TestCase):
         file1.write_text("# Exists")
         subprocess.run(['git', 'add', 'exists.py'], cwd=self.repo_path, check=True, capture_output=True)
         subprocess.run(['git', 'commit', '-m', 'Add file'],
-                      cwd=self.repo_path, check=True, capture_output=True)
-        
+                       cwd=self.repo_path, check=True, capture_output=True)
+
         commits = get_commits_affecting_file(str(self.repo_path), "nonexistent.py")
-        
+
         # Should return empty list for file that doesn't exist
         self.assertEqual(len(commits), 0)
 
     def test_get_commits_affecting_file_with_time_filter(self):
         """Test getting commits with time period filter."""
         file1 = self.repo_path / "target.py"
-        
+
         # Create multiple commits
         for i in range(3):
-            file1.write_text(f"# Version {i+1}")
+            file1.write_text(f"# Version {i + 1}")
             subprocess.run(['git', 'add', 'target.py'], cwd=self.repo_path, check=True, capture_output=True)
-            subprocess.run(['git', 'commit', '-m', f'Version {i+1}'],
-                          cwd=self.repo_path, check=True, capture_output=True)
-        
+            subprocess.run(['git', 'commit', '-m', f'Version {i + 1}'],
+                           cwd=self.repo_path, check=True, capture_output=True)
+
         # Get commits with time filter (all should be recent in test)
         commits = get_commits_affecting_file(str(self.repo_path), "target.py", since_date="1 day ago")
-        
+
         # Should get all commits in test environment (they're all recent)
         self.assertGreaterEqual(len(commits), 1)
 
