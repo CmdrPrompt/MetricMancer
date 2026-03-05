@@ -356,13 +356,11 @@ coupling_score = commits_together / (total_commits_a + total_commits_b - commits
 
 ______________________________________________________________________
 
-#### 2.2 Coupling Cache Integration ⏳ NEXT STEP
-
-#### 2.2 Coupling Cache Integration ⏳ NEXT STEP
+#### 2.2 Coupling Cache Integration ✅ COMPLETE (2026-03-05)
 
 **File:** `src/utilities/git_cache.py`
 
-**Status:** Not started - This is the next step to implement
+**Status:** Complete - Coupling cache integrated into `GitDataCache`
 
 **Additions:**
 
@@ -417,6 +415,27 @@ class GitDataCache:
 - ✅ Cache invalidation works
 - ✅ Performance improvement (10x faster on cache hit)
 - ✅ All tests passing
+
+**Implementation Details (2026-03-05):**
+
+- ✅ Added coupling cache storage to `GitDataCache`:
+  - `self.coupling_cache`
+  - `self.coupling_cache_timestamp`
+- ✅ Implemented coupling cache API methods:
+  - `get_coupling_matrix(repo_root, force_recalculate=False)`
+  - `get_coupling_data(repo_root, file_path)`
+  - `invalidate_coupling_cache(repo_root)`
+- ✅ Added TTL support (default 1 hour) via `_is_coupling_cache_valid()`
+- ✅ Extended cache lifecycle methods (`clear_cache`) to include coupling cache
+- ✅ Extended cache statistics with coupling metrics:
+  - `coupling_repos_cached`
+  - `total_coupling_pairs`
+- ✅ Added test suite `tests/utilities/test_git_cache_coupling.py` (5 tests)
+- ✅ Updated existing tests in `tests/utilities/test_git_cache.py` for new cache fields/stats
+- ✅ Verification: targeted test runs passed
+  - `tests/utilities/test_git_cache.py`: pass
+  - `tests/utilities/test_git_cache_coupling.py`: pass
+  - `tests/kpis/coupling/test_coupling_analyzer.py`: pass
 
 ______________________________________________________________________
 

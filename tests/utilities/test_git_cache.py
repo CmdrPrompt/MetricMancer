@@ -30,6 +30,8 @@ class TestGitDataCache(unittest.TestCase):
         self.assertEqual(cache.churn_cache, {})
         self.assertEqual(cache.blame_cache, {})
         self.assertEqual(cache.tracked_files_cache, {})
+        self.assertEqual(cache.coupling_cache, {})
+        self.assertEqual(cache.coupling_cache_timestamp, {})
 
     def test_singleton_instance(self):
         """Test that get_git_cache returns the same instance."""
@@ -238,7 +240,9 @@ class TestGitDataCache(unittest.TestCase):
             "total_ownership_entries": 3,
             "total_churn_entries": 1,
             "total_blame_entries": 0,
-            "total_tracked_files": 2
+            "total_tracked_files": 2,
+            "coupling_repos_cached": 0,
+            "total_coupling_pairs": 0
         }
         self.assertEqual(stats, expected)
 

@@ -4,8 +4,9 @@ Git Data Cache
 Shared cache for git data to minimize redundant git calls across KPIs.
 Implements the cache design from Issue #38.
 """
-from typing import Dict, Optional, Any, Set
+from typing import Dict, Optional, Any, Set, Tuple, List
 import os
+import time
 from collections import Counter
 from src.utilities.debug import debug_print
 from src.utilities.git_helpers import run_git_command
@@ -45,11 +46,21 @@ class GitDataCache:
         self.blame_cache: Dict[str, Dict[str, str]] = {}  # Raw git blame output
         self.tracked_files_cache: Dict[str, Set[str]] = {}
 
+        # Cache for coupling analysis data
+        self.coupling_cache: Dict[str, Dict[Tuple[str, str], Any]] = {}
+        self.coupling_cache_timestamp: Dict[str, float] = {}
+
         # Cache for git commands used by multiple KPIs
         self._ls_files_cache: Dict[str, Set[str]] = {}
 
         # Churn calculation settings
         self.churn_period_days = churn_period_days
+
+        # Coupling calculation settings
+        self.coupling_time_period_days = 90
+        self.coupling_min_threshold = 0.3
+        self.coupling_min_commits = 3
+        self.coupling_cache_ttl_seconds = 3600
 
     # ============================================================================
     # Path and Cache Management Helpers
@@ -252,11 +263,14 @@ class GitDataCache:
 
     def _clear_repo_cache(self, repo_root: str):
         """Clear all caches for a specific repository."""
-        self.ownership_cache.pop(repo_root, None)
-        self.churn_cache.pop(repo_root, None)
-        self.blame_cache.pop(repo_root, None)
-        self.tracked_files_cache.pop(repo_root, None)
-        self._ls_files_cache.pop(repo_root, None)
+        normalized_root = self._normalize_repo_path(repo_root)
+        self.ownership_cache.pop(normalized_root, None)
+        self.churn_cache.pop(normalized_root, None)
+        self.blame_cache.pop(normalized_root, None)
+        self.tracked_files_cache.pop(normalized_root, None)
+        self.coupling_cache.pop(normalized_root, None)
+        self.coupling_cache_timestamp.pop(normalized_root, None)
+        self._ls_files_cache.pop(normalized_root, None)
         debug_print(f"[CACHE] Cleared cache for repo: {repo_root}")
 
     def _clear_all_caches(self):
@@ -265,8 +279,83 @@ class GitDataCache:
         self.churn_cache.clear()
         self.blame_cache.clear()
         self.tracked_files_cache.clear()
+        self.coupling_cache.clear()
+        self.coupling_cache_timestamp.clear()
         self._ls_files_cache.clear()
         debug_print("[CACHE] Cleared all caches")
+
+    def _is_coupling_cache_valid(self, repo_root: str) -> bool:
+        """Check if coupling cache is still valid for repository based on TTL."""
+        if repo_root not in self.coupling_cache or repo_root not in self.coupling_cache_timestamp:
+            return False
+
+        cache_age = time.time() - self.coupling_cache_timestamp[repo_root]
+        return cache_age <= self.coupling_cache_ttl_seconds
+
+    def get_coupling_matrix(
+        self,
+        repo_root: str,
+        force_recalculate: bool = False
+    ) -> Dict[Tuple[str, str], Any]:
+        """
+        Get coupling matrix for repository with cache support.
+
+        Args:
+            repo_root: Repository root path
+            force_recalculate: Force recalculation bypassing cache
+
+        Returns:
+            Coupling matrix: {(file_a, file_b): CouplingData}
+        """
+        repo_root = self._normalize_repo_path(repo_root)
+
+        if not force_recalculate and self._is_coupling_cache_valid(repo_root):
+            debug_print(f"[CACHE] Hit: coupling matrix for repo {repo_root}")
+            return self.coupling_cache[repo_root]
+
+        debug_print(f"[CACHE] Miss: coupling matrix for repo {repo_root}")
+
+        # Local import avoids unnecessary dependency loading unless coupling is requested.
+        from src.kpis.coupling.coupling_analyzer import CouplingAnalyzer
+
+        analyzer = CouplingAnalyzer(
+            time_period_days=self.coupling_time_period_days,
+            min_coupling_threshold=self.coupling_min_threshold,
+            min_commits=self.coupling_min_commits
+        )
+
+        coupling_matrix = analyzer.calculate_coupling_matrix(repo_root, force_recalculate=True)
+
+        self.coupling_cache[repo_root] = coupling_matrix
+        self.coupling_cache_timestamp[repo_root] = time.time()
+
+        return coupling_matrix
+
+    def get_coupling_data(self, repo_root: str, file_path: str) -> List[Tuple[str, float]]:
+        """
+        Get coupling data for a file.
+
+        Returns:
+            List of (coupled_file, coupling_score), sorted descending by score.
+        """
+        coupling_matrix = self.get_coupling_matrix(repo_root)
+        coupled_files: List[Tuple[str, float]] = []
+
+        for coupling_data in coupling_matrix.values():
+            if coupling_data.file_a == file_path:
+                coupled_files.append((coupling_data.file_b, coupling_data.coupling_score))
+            elif coupling_data.file_b == file_path:
+                coupled_files.append((coupling_data.file_a, coupling_data.coupling_score))
+
+        coupled_files.sort(key=lambda x: x[1], reverse=True)
+        return coupled_files
+
+    def invalidate_coupling_cache(self, repo_root: str):
+        """Invalidate coupling cache for a specific repository."""
+        repo_root = self._normalize_repo_path(repo_root)
+        self.coupling_cache.pop(repo_root, None)
+        self.coupling_cache_timestamp.pop(repo_root, None)
+        debug_print(f"[CACHE] Invalidated coupling cache for repo: {repo_root}")
 
     def is_file_tracked(self, repo_root: str, file_path: str) -> bool:
         """
@@ -516,7 +605,9 @@ class GitDataCache:
             "total_ownership_entries": sum(len(repo_cache) for repo_cache in self.ownership_cache.values()),
             "total_churn_entries": sum(len(repo_cache) for repo_cache in self.churn_cache.values()),
             "total_blame_entries": sum(len(repo_cache) for repo_cache in self.blame_cache.values()),
-            "total_tracked_files": sum(len(files) for files in self.tracked_files_cache.values())
+            "total_tracked_files": sum(len(files) for files in self.tracked_files_cache.values()),
+            "coupling_repos_cached": len(self.coupling_cache),
+            "total_coupling_pairs": sum(len(repo_cache) for repo_cache in self.coupling_cache.values())
         }
         return stats
 
