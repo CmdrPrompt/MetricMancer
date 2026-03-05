@@ -327,7 +327,8 @@ tests/
 4. **Follow ARCHITECTURE.md** - Use Strategy pattern, SOLID principles, etc.
 5. **Claude Code can always run tests without user confirmation** - Test execution is encouraged and never requires
    permission
-6. **When a specific task is completed** suggest stageing changes that correlate to that task and propose a suitable
+6. **When a specific task is completed** run "make check" and adress any linting errors or test errors that are reported.
+7. **When a "make check" runs clean** suggest stageing changes that correlate to that task and propose a suitable
    commit message. Never refer to Claude or any other LLM.
 
 ## Documentation
