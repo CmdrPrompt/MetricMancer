@@ -42,7 +42,7 @@ class TestChangeCoupledHotspotKPIBasics:
             churn=5,
             coupling_data=[]
         )
-        
+
         assert result is kpi  # Should return self for chaining
         # base_hotspot = 10 * 5 = 50
         # No strong couplings, so multiplier = 1.0
@@ -57,15 +57,15 @@ class TestChangeCoupledHotspotKPIBasics:
         """Test calculation with single strong coupling."""
         kpi = ChangeCoupledHotspotKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=10,
             churn=5,
             coupling_data=coupling_data
         )
-        
+
         # base_hotspot = 10 * 5 = 50
         # max_coupling = 0.75
         # num_strong_couplings = 1
@@ -86,15 +86,15 @@ class TestChangeCoupledHotspotKPIBasics:
             ("src/file_c.py", 0.52),
             ("src/file_d.py", 0.45),  # Weak coupling, not counted
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=15,
             churn=8,
             coupling_data=coupling_data
         )
-        
+
         # base_hotspot = 15 * 8 = 120
         # max_coupling = 0.85
         # num_strong_couplings = 3 (0.85, 0.65, 0.52 are >= 0.5)
@@ -113,10 +113,10 @@ class TestChangeCoupledHotspotKPIBasics:
             ("src/a.py", 0.8),
             ("src/b.py", 0.6),
         ]
-        
+
         complexity = 20
         churn = 10
-        
+
         kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
@@ -124,20 +124,20 @@ class TestChangeCoupledHotspotKPIBasics:
             churn=churn,
             coupling_data=coupling_data
         )
-        
+
         base = complexity * churn  # 200
         max_coupling = 0.8
         strong_count = 2  # Both >= 0.5
         multiplier = 1 + (strong_count * 0.1)  # 1.2
         expected = base * max_coupling * multiplier  # 200 * 0.8 * 1.2 = 192
-        
+
         assert kpi.value == pytest.approx(expected)
 
     def test_calculate_returns_self(self):
         """Test that calculate returns self for method chaining."""
         kpi = ChangeCoupledHotspotKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
+
         result = kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
@@ -145,7 +145,7 @@ class TestChangeCoupledHotspotKPIBasics:
             churn=5,
             coupling_data=coupling_data
         )
-        
+
         assert result is kpi
 
 
@@ -190,7 +190,7 @@ class TestChangeCoupledHotspotKPIRiskLevels:
     def test_risk_level_edge_cases(self):
         """Test edge cases at risk level boundaries."""
         kpi = ChangeCoupledHotspotKPI()
-        
+
         # Test exact boundaries
         assert kpi.get_risk_level(99.99) == "LOW"
         assert kpi.get_risk_level(100.0) == "MEDIUM"
@@ -209,15 +209,15 @@ class TestChangeCoupledHotspotKPIEdgeCases:
         """Test with zero complexity and churn."""
         kpi = ChangeCoupledHotspotKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=0,
             churn=0,
             coupling_data=coupling_data
         )
-        
+
         # base_hotspot = 0 * 0 = 0
         # coupled_hotspot = 0 * max_coupling * multiplier = 0
         assert kpi.value == 0
@@ -227,30 +227,30 @@ class TestChangeCoupledHotspotKPIEdgeCases:
         """Test with zero complexity but nonzero churn."""
         kpi = ChangeCoupledHotspotKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=0,
             churn=10,
             coupling_data=coupling_data
         )
-        
+
         assert kpi.value == 0
         assert kpi.calculation_values["base_hotspot"] == 0
 
     def test_calculate_high_complexity_high_churn_no_coupling(self):
         """Test with high complexity and churn but no coupling."""
         kpi = ChangeCoupledHotspotKPI()
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=50,
             churn=50,
             coupling_data=[]
         )
-        
+
         # base_hotspot = 50 * 50 = 2500
         # No coupling: coupling_multiplier = 1.0
         # coupled_hotspot = 2500 * 1.0 = 2500
@@ -266,15 +266,15 @@ class TestChangeCoupledHotspotKPIEdgeCases:
             ("src/d.py", 0.65),
             ("src/e.py", 0.58),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=50,
             churn=50,
             coupling_data=coupling_data
         )
-        
+
         # base_hotspot = 50 * 50 = 2500
         # max_coupling = 0.95
         # num_strong_couplings = 5 (all >= 0.5)
@@ -286,14 +286,14 @@ class TestChangeCoupledHotspotKPIEdgeCases:
     def test_calculate_empty_coupling_data(self):
         """Test with empty coupling data list."""
         kpi = ChangeCoupledHotspotKPI()
-        result = kpi.calculate(
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=10,
             churn=5,
             coupling_data=[]
         )
-        
+
         assert kpi.value == 50
         assert kpi.calculation_values["max_coupling"] == 0.0
         assert kpi.calculation_values["num_strong_couplings"] == 0
@@ -301,14 +301,14 @@ class TestChangeCoupledHotspotKPIEdgeCases:
     def test_calculate_none_coupling_data(self):
         """Test with None coupling data."""
         kpi = ChangeCoupledHotspotKPI()
-        result = kpi.calculate(
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=10,
             churn=5,
             coupling_data=None
         )
-        
+
         assert kpi.value == 50
         assert kpi.calculation_values["max_coupling"] == 0.0
         assert kpi.calculation_values["num_strong_couplings"] == 0
@@ -321,15 +321,15 @@ class TestChangeCoupledHotspotKPIEdgeCases:
             ("src/b.py", 0.35),
             ("src/c.py", 0.25),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=10,
             churn=8,
             coupling_data=coupling_data
         )
-        
+
         # base_hotspot = 10 * 8 = 80
         # max_coupling = 0.4
         # num_strong_couplings = 0 (none >= 0.5)
@@ -346,15 +346,15 @@ class TestChangeCoupledHotspotKPIEdgeCases:
             ("src/a.py", 0.5),
             ("src/b.py", 0.499),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=10,
             churn=10,
             coupling_data=coupling_data
         )
-        
+
         # base_hotspot = 10 * 10 = 100
         # max_coupling = 0.5
         # num_strong_couplings = 1 (only 0.5, not 0.499)
@@ -371,7 +371,7 @@ class TestChangeCoupledHotspotKPIDataTypes:
         """Test structure of calculation_values dict."""
         kpi = ChangeCoupledHotspotKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
+
         kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
@@ -379,12 +379,12 @@ class TestChangeCoupledHotspotKPIDataTypes:
             churn=5,
             coupling_data=coupling_data
         )
-        
+
         assert "base_hotspot" in kpi.calculation_values
         assert "max_coupling" in kpi.calculation_values
         assert "num_strong_couplings" in kpi.calculation_values
         assert "coupling_multiplier" in kpi.calculation_values
-        
+
         assert isinstance(kpi.calculation_values["base_hotspot"], (int, float))
         assert isinstance(kpi.calculation_values["max_coupling"], float)
         assert isinstance(kpi.calculation_values["num_strong_couplings"], int)
@@ -394,7 +394,7 @@ class TestChangeCoupledHotspotKPIDataTypes:
         """Test calculation ignores extra kwargs gracefully."""
         kpi = ChangeCoupledHotspotKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
+
         result = kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
@@ -404,7 +404,7 @@ class TestChangeCoupledHotspotKPIDataTypes:
             extra_param="ignored",
             another_param=123
         )
-        
+
         assert kpi.value == pytest.approx(41.25)
         assert result is kpi
 
@@ -415,15 +415,15 @@ class TestChangeCoupledHotspotKPIDataTypes:
             ("src/a.py", 0.333),
             ("src/b.py", 0.777),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             complexity=7,
             churn=3,
             coupling_data=coupling_data
         )
-        
+
         # base_hotspot = 7 * 3 = 21
         # max_coupling = 0.777
         # num_strong_couplings = 1 (0.777 >= 0.5, 0.333 < 0.5)

@@ -35,7 +35,7 @@ class TestLogicalCouplingKPIBasics:
             repo_root="/repo",
             coupling_data=[]
         )
-        
+
         assert result is kpi  # Should return self for chaining
         assert kpi.value == 0
         assert kpi.calculation_values["coupled_files"] == []
@@ -46,13 +46,13 @@ class TestLogicalCouplingKPIBasics:
         """Test calculation with single weak coupling (< 0.5)."""
         kpi = LogicalCouplingKPI()
         coupling_data = [("src/other.py", 0.4)]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         assert kpi.value == 0  # Only count strong couplings (>= 0.5)
         assert kpi.calculation_values["coupled_files"] == coupling_data
         assert kpi.calculation_values["max_coupling"] == 0.4
@@ -62,13 +62,13 @@ class TestLogicalCouplingKPIBasics:
         """Test calculation with single strong coupling (>= 0.5)."""
         kpi = LogicalCouplingKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         assert kpi.value == 1  # One strong coupling
         assert kpi.calculation_values["coupled_files"] == coupling_data
         assert kpi.calculation_values["max_coupling"] == 0.75
@@ -83,13 +83,13 @@ class TestLogicalCouplingKPIBasics:
             ("src/file_c.py", 0.45),
             ("src/file_d.py", 0.52),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         # Should count: 0.85, 0.65, 0.52 (>= 0.5)
         assert kpi.value == 3
         assert kpi.calculation_values["coupled_files"] == coupling_data
@@ -104,13 +104,13 @@ class TestLogicalCouplingKPIBasics:
             ("src/file_b.py", 0.499),
             ("src/file_c.py", 0.501),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         # Should count: 0.5, 0.501 (>= 0.5, but < 0.5 is excluded)
         assert kpi.value == 2
 
@@ -122,13 +122,13 @@ class TestLogicalCouplingKPIBasics:
             ("src/file_b.py", 0.87),
             ("src/file_c.py", 0.72),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         assert kpi.value == 3
         assert kpi.calculation_values["max_coupling"] == 0.95
         assert kpi.calculation_values["avg_coupling"] == pytest.approx(0.8466, rel=1e-4)
@@ -137,13 +137,13 @@ class TestLogicalCouplingKPIBasics:
         """Test that calculate returns self for method chaining."""
         kpi = LogicalCouplingKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
+
         result = kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         assert result is kpi
 
 
@@ -153,12 +153,12 @@ class TestLogicalCouplingKPIEdgeCases:
     def test_calculate_empty_coupling_data(self):
         """Test with empty coupling data list."""
         kpi = LogicalCouplingKPI()
-        result = kpi.calculate(
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=[]
         )
-        
+
         assert kpi.value == 0
         assert kpi.calculation_values["max_coupling"] == 0.0
         assert kpi.calculation_values["avg_coupling"] == 0.0
@@ -166,12 +166,12 @@ class TestLogicalCouplingKPIEdgeCases:
     def test_calculate_none_coupling_data(self):
         """Test with None coupling data."""
         kpi = LogicalCouplingKPI()
-        result = kpi.calculate(
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=None
         )
-        
+
         assert kpi.value == 0
         assert kpi.calculation_values["max_coupling"] == 0.0
         assert kpi.calculation_values["avg_coupling"] == 0.0
@@ -184,13 +184,13 @@ class TestLogicalCouplingKPIEdgeCases:
             ("src/file_b.py", 0.99),
             ("src/file_c.py", 0.98),
         ]
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         assert kpi.value == 3
         assert kpi.calculation_values["max_coupling"] == 1.0
 
@@ -202,13 +202,13 @@ class TestLogicalCouplingKPIEdgeCases:
             for i in range(10)
         ]
         # Scores: 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.55, 0.6, 0.65
-        
-        result = kpi.calculate(
+
+        kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         # Strong couplings (>= 0.5): 0.5, 0.55, 0.6, 0.65 = 4
         assert kpi.value == 4
 
@@ -220,7 +220,7 @@ class TestLogicalCouplingKPIDataTypes:
         """Test calculation ignores extra kwargs gracefully."""
         kpi = LogicalCouplingKPI()
         coupling_data = [("src/other.py", 0.75)]
-        
+
         result = kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
@@ -228,7 +228,7 @@ class TestLogicalCouplingKPIDataTypes:
             extra_param="ignored",
             another_param=123
         )
-        
+
         assert kpi.value == 1
         assert result is kpi
 
@@ -239,17 +239,17 @@ class TestLogicalCouplingKPIDataTypes:
             ("src/file_a.py", 0.85),
             ("src/file_b.py", 0.65),
         ]
-        
+
         kpi.calculate(
             file_path="src/file.py",
             repo_root="/repo",
             coupling_data=coupling_data
         )
-        
+
         assert "coupled_files" in kpi.calculation_values
         assert "max_coupling" in kpi.calculation_values
         assert "avg_coupling" in kpi.calculation_values
-        
+
         assert kpi.calculation_values["coupled_files"] == coupling_data
         assert isinstance(kpi.calculation_values["max_coupling"], float)
         assert isinstance(kpi.calculation_values["avg_coupling"], float)
