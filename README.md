@@ -12,16 +12,19 @@ For detailed requirements, architecture, and design, see the
 
 - **Multi-language support:** Analyze Python, JavaScript, TypeScript, Java, C#, C, C++, Go, Ada, Shell scripts, JSON,
   YAML, and IDL files with extensible parser architecture for adding new languages.
-- **Cognitive complexity** **[New in v3.2.0]:** Human-centric code understandability metric (SonarSource algorithm) for
-  Python, Java, Go, JavaScript, TypeScript, and C. See [Cognitive Complexity Guide](docs/COGNITIVE_COMPLEXITY_USER_GUIDE.md)
+- **Cognitive complexity** **\[New in v3.2.0\]:** Human-centric code understandability metric (SonarSource algorithm)
+  for Python, Java, Go, JavaScript, TypeScript, and C. See
+  [Cognitive Complexity Guide](docs/COGNITIVE_COMPLEXITY_USER_GUIDE.md)
 - **Code churn:** Tracks commit frequency per file to identify frequently changing code.
 - **Hotspot analysis:** Identifies high-risk files/functions with both high complexity and high churn.
-- **Code review advisor:** Generates data-driven review recommendations based on complexity, churn, and ownership metrics.
+- **Code review advisor:** Generates data-driven review recommendations based on complexity, churn, and ownership
+  metrics.
 - **Flexible reporting:** CLI, HTML, JSON formats, plus specialized hotspot and review strategy reports. Generate
-  multiple formats in one run with `--output-formats` (50-70% faster). JSON output is OpenSearch/Elasticsearch-ready
-  for historical trend analysis.
+  multiple formats in one run with `--output-formats` (50-70% faster). JSON output is OpenSearch/Elasticsearch-ready for
+  historical trend analysis.
 - **Configurable thresholds:** Customize complexity thresholds and severity grades.
-- **Extensible architecture:** Easy to add new KPIs, languages, or report formats. See [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Extensible architecture:** Easy to add new KPIs, languages, or report formats. See
+  [CONTRIBUTING.md](CONTRIBUTING.md)
 - **CI/CD ready:** Scriptable CLI with machine-readable JSON output.
 
 ## Usage
@@ -35,16 +38,19 @@ python -m src.main <directories> [options]
 ### Common Options
 
 **Basic Options:**
+
 - `<directories>`: One or more root folders to scan
 - `--threshold-low <value>`: Low complexity threshold (default: 10.0)
 - `--threshold-high <value>`: High complexity threshold (default: 20.0)
 - `--report-folder <folder>`: Output folder (default: 'output')
 
 **Output Formats:**
+
 - `--output-formats <formats>`: Generate multiple formats in one run (comma-separated): 'html', 'json', 'summary',
   'quick-wins', 'tree', 'review-strategy', 'review-strategy-branch'. Scans once, 50-70% faster than separate runs
 
 **Analysis Options:**
+
 - `--list-hotspots`: Display high-risk files after analysis
 - `--hotspot-output <file>`: Save hotspot list to file (.md or .txt)
 - `--review-strategy`: Generate code review recommendations

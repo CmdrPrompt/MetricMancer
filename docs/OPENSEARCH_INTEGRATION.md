@@ -1,17 +1,19 @@
 # OpenSearch Integration Guide
 
-This guide shows how to integrate MetricMancer with OpenSearch (or Elasticsearch) to enable **historical trend analysis**,
-**quality dashboards**, and **automated alerting** based on code quality metrics.
+This guide shows how to integrate MetricMancer with OpenSearch (or Elasticsearch) to enable **historical trend
+analysis**, **quality dashboards**, and **automated alerting** based on code quality metrics.
 
 ## Overview
 
 MetricMancer's JSON output format is designed to be OpenSearch-compatible, with built-in support for:
+
 - **Timestamps** - Track when each analysis was run
 - **Repository metadata** - Repo name, component, team
 - **All KPIs** - Complexity, cognitive complexity, churn, hotspot score, ownership
 - **File and package levels** - Granular and aggregated metrics
 
 By regularly exporting MetricMancer metrics to OpenSearch, you can:
+
 - **Track quality trends** over weeks, months, or years
 - **Identify degrading hotspots** before they become critical
 - **Monitor team performance** and code ownership patterns
@@ -63,6 +65,7 @@ python -m src.main src/ tests/ --output-formats json --report-filename "metrics-
 ```
 
 The JSON output includes timestamps automatically:
+
 ```json
 {
   "filename": "src/app/metric_mancer_app.py",
@@ -185,6 +188,7 @@ if __name__ == "__main__":
 ```
 
 Dependencies:
+
 ```bash
 pip install opensearch-py
 ```
@@ -194,6 +198,7 @@ pip install opensearch-py
 Example queries using OpenSearch DSL:
 
 **Get complexity trend for a specific file:**
+
 ```json
 GET metricmancer-metrics/_search
 {
@@ -206,6 +211,7 @@ GET metricmancer-metrics/_search
 ```
 
 **Find files with increasing hotspot scores:**
+
 ```json
 GET metricmancer-metrics/_search
 {
@@ -230,6 +236,7 @@ GET metricmancer-metrics/_search
 ```
 
 **Identify top 10 current hotspots:**
+
 ```json
 GET metricmancer-metrics/_search
 {
@@ -242,6 +249,7 @@ GET metricmancer-metrics/_search
 ```
 
 **Team performance comparison:**
+
 ```json
 GET metricmancer-metrics/_search
 {
@@ -267,6 +275,7 @@ GET metricmancer-metrics/_search
 ### 1. Complexity Trend Dashboard
 
 **Visualization:** Line chart
+
 - X-axis: timestamp
 - Y-axis: cyclomatic_complexity (avg)
 - Group by: filename (top 10 files)
@@ -276,6 +285,7 @@ GET metricmancer-metrics/_search
 ### 2. Hotspot Heatmap
 
 **Visualization:** Heatmap
+
 - Rows: filename
 - Columns: timestamp (weekly buckets)
 - Color: hotspot_score (red = high, green = low)
@@ -285,6 +295,7 @@ GET metricmancer-metrics/_search
 ### 3. Team Quality Metrics
 
 **Visualization:** Bar chart
+
 - X-axis: team
 - Y-axis: Average cognitive_complexity
 - Filter: Last 30 days
@@ -294,6 +305,7 @@ GET metricmancer-metrics/_search
 ### 4. Cognitive Complexity Distribution
 
 **Visualization:** Histogram
+
 - Buckets: 0-10, 11-20, 21-50, 50+
 - Count: Number of files in each bucket
 - Trend line: Compare current vs. 3 months ago
@@ -564,6 +576,7 @@ curl -X PUT "localhost:9200/_ilm/policy/metricmancer-lifecycle" -H 'Content-Type
 ### 2. Sampling Strategy
 
 For large repositories, consider:
+
 - **Daily full scans** for critical paths (e.g., `src/core/`)
 - **Weekly full scans** for entire repository
 - **On-demand scans** for pull requests
@@ -571,6 +584,7 @@ For large repositories, consider:
 ### 3. Data Enrichment
 
 Add metadata to MetricMancer runs:
+
 ```bash
 python -m src.main src/ \
   --output-formats json \
@@ -595,6 +609,7 @@ python -m src.main src/ \
 ### Issue: Bulk upload fails
 
 **Solution:** Check JSON format - ensure it's an array of objects:
+
 ```json
 [
   {"filename": "...", "timestamp": "...", ...},
@@ -605,6 +620,7 @@ python -m src.main src/ \
 ### Issue: Queries are slow
 
 **Solutions:**
+
 - Add time range filters: `{ "range": { "timestamp": { "gte": "now-30d" } } }`
 - Use index patterns: `metricmancer-metrics-2025-*`
 - Enable index caching for repeated queries
@@ -612,6 +628,7 @@ python -m src.main src/ \
 ### Issue: Dashboard shows duplicate data
 
 **Solution:** Use aggregations with `top_hits` to get latest value per file:
+
 ```json
 {
   "aggs": {
@@ -635,6 +652,7 @@ python -m src.main src/ \
 ### 1. Pull Request Quality Gates
 
 Fail PR if hotspot score increases:
+
 ```bash
 # In CI/CD
 CURRENT_HOTSPOT=$(python -m src.main src/ --output-formats json | jq '[.[].hotspot_score] | max')
@@ -649,6 +667,7 @@ fi
 ### 2. Technical Debt Tracking
 
 Calculate total debt based on complexity:
+
 ```json
 GET metricmancer-metrics/_search
 {
@@ -673,6 +692,7 @@ GET metricmancer-metrics/_search
 ### 3. Code Review Prioritization
 
 Export high-risk files for review:
+
 ```bash
 curl "localhost:9200/metricmancer-metrics/_search" \
   -H 'Content-Type: application/json' \
@@ -692,5 +712,6 @@ curl "localhost:9200/metricmancer-metrics/_search" \
 ## Support
 
 For questions or issues with OpenSearch integration:
+
 - Open an issue: https://github.com/YourOrg/MetricMancer/issues
 - Contribute improvements: See [CONTRIBUTING.md](../CONTRIBUTING.md)

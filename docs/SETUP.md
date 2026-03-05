@@ -5,15 +5,15 @@ CI/CD pipelines.
 
 ## Table of Contents
 
-1. [Quick Start](#quick-start)
-2. [Dependency Management](#dependency-management)
-3. [Environment-Specific Setup](#environment-specific-setup)
-4. [Troubleshooting](#troubleshooting)
-5. [Verification](#verification)
+1. [Quick Start](#1-quick-start)
+2. [Dependency Management](#2-dependency-management)
+3. [Environment-Specific Setup](#3-environment-specific-setup)
+4. [Troubleshooting](#4-troubleshooting)
+5. [Verification](#5-verification)
 
 ______________________________________________________________________
 
-## Quick Start
+## 1 Quick Start
 
 ### Prerequisites
 
@@ -21,23 +21,20 @@ ______________________________________________________________________
 - **Git** installed and configured
 - **Virtual environment** recommended
 
-### One-Command Setup
+### Recommended Setup (Makefile)
 
 ```bash
-# Create virtual environment
-python3.10 -m venv .venv
-
-# Install all dependencies (runtime + dev tools)
-source .venv/bin/activate
+# Create and populate virtual environment
+make venv
 make install
 
 # Verify installation
-python -m pytest tests/ -v
+make test
 ```
 
 ______________________________________________________________________
 
-## Dependency Management
+## 2 Dependency Management
 
 MetricMancer uses **`pyproject.toml`** as the single source of truth for dependencies (PEP 621 standard).
 
@@ -77,11 +74,16 @@ dev = [
   "pytest-cov>=4.0.0",       # Coverage reporting
   "coverage>=7.0.0",         # Coverage analysis
   "autopep8>=2.0.0",         # Code formatting
-  "flake8>=6.0.0"            # Linting
+  "flake8>=6.0.0",           # Linting
+  "mdformat>=0.7.17",        # Markdown formatting
+  "mdformat-gfm>=0.3.5",     # GitHub Flavored Markdown support
+  "mdformat-tables>=0.4.1"   # Markdown table formatting
 ]
 ```
 
-#### 3. Build Dependencies (Optional)
+#### 3 Build Dependencies (Optional)
+
+Future plan is to possibly make this available through PyPI. Here is some info regarding how to prepare for uploading to PyPI. This is currently not in the pipeline. Just provided as notes for possible future use.
 
 PyPI publishing tools. Installed with `pip install -e ".[build]"`:
 
@@ -119,17 +121,14 @@ ______________________________________________________________________
 git clone https://github.com/CmdrPrompt/MetricMancer.git
 cd MetricMancer
 
-# Create virtual environment (Python 3.10+)
-python3.10 -m venv .venv
-
-# Activate virtual environment
-source .venv/bin/activate      # macOS/Linux
-.venv\Scripts\activate         # Windows
-
-# Install all dependencies using Makefile
+# Recommended workflow using Makefile
+make venv
 make install
 
 # OR install manually:
+python3.10 -m venv .venv
+source .venv/bin/activate      # macOS/Linux
+.venv\Scripts\activate         # Windows
 pip install --upgrade pip
 pip install -e .               # Runtime dependencies
 pip install -e ".[dev]"        # + Development dependencies
@@ -159,10 +158,13 @@ Codespaces uses the GitHub-hosted environment with pre-installed Python.
 # Codespaces auto-activates Python, but verify version
 python --version  # Should be 3.10+
 
-# Install dependencies
+# Makefile workflow (required)
+make venv
 make install
 
 # OR manual install:
+python3.10 -m venv .venv || python3 -m venv .venv || python -m venv .venv
+source .venv/bin/activate
 pip install --upgrade pip
 pip install -e ".[dev]"
 ```
@@ -218,7 +220,9 @@ Current workflow: `.github/workflows/python-app.yml`
     pip install -e ".[dev]"  # Includes pytest, coverage, etc.
 ```
 
-### 4. PyPI Installation (End Users)
+### 4 PyPI Installation (End Users)
+
+As previously mentioned, this is provided as future reference.
 
 After publishing to PyPI:
 
@@ -356,7 +360,7 @@ grep SHELL Makefile
 
 ______________________________________________________________________
 
-## Verification
+## 5 Verification
 
 ### Step 1: Check Python Version
 

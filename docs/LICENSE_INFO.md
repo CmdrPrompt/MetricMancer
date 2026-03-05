@@ -20,31 +20,31 @@ free use, modification, and distribution.
 
 ### Core Functionality
 
-| Package                                                                           | Version | License            | Purpose                                         |
-| --------------------------------------------------------------------------------- | ------- | ------------------ | ----------------------------------------------- |
-| [Jinja2](https://jinja.palletsprojects.com/)                                      | 3.1.6   | BSD License        | Template engine for HTML report generation      |
-| [PyYAML](https://pyyaml.org/)                                                     | 6.0.3   | MIT License        | YAML file parsing and configuration             |
-| [tqdm](https://github.com/tqdm/tqdm)                                              | 4.67.1  | MIT / MPL 2.0      | Progress bars for CLI                           |
-| [tree-sitter](https://tree-sitter.github.io/)                                     | 0.25.2  | MIT License        | Multi-language parsing for cognitive complexity |
-| [tree-sitter-language-pack](https://github.com/Goldziher/tree-sitter-language-pack) | 0.11.0  | MIT OR Apache 2.0  | Pre-compiled tree-sitter language grammars      |
-| [unidiff](https://github.com/matiasb/python-unidiff)                              | 0.7.5   | MIT License        | Unified diff parsing                            |
+| Package                                                                             | Version | License           | Purpose                                         |
+| ----------------------------------------------------------------------------------- | ------- | ----------------- | ----------------------------------------------- |
+| [Jinja2](https://jinja.palletsprojects.com/)                                        | 3.1.6   | BSD License       | Template engine for HTML report generation      |
+| [PyYAML](https://pyyaml.org/)                                                       | 6.0.3   | MIT License       | YAML file parsing and configuration             |
+| [tqdm](https://github.com/tqdm/tqdm)                                                | 4.67.1  | MIT / MPL 2.0     | Progress bars for CLI                           |
+| [tree-sitter](https://tree-sitter.github.io/)                                       | 0.25.2  | MIT License       | Multi-language parsing for cognitive complexity |
+| [tree-sitter-language-pack](https://github.com/Goldziher/tree-sitter-language-pack) | 0.11.0  | MIT OR Apache 2.0 | Pre-compiled tree-sitter language grammars      |
+| [unidiff](https://github.com/matiasb/python-unidiff)                                | 0.7.5   | MIT License       | Unified diff parsing                            |
 
 ### Testing & Development
 
-| Package                                                     | Version | License     | Purpose                         |
-| ----------------------------------------------------------- | ------- | ----------- | ------------------------------- |
-| [pytest](https://pytest.org/)                               | 8.4.2   | MIT License | Testing framework               |
-| [pytest-cov](https://github.com/pytest-dev/pytest-cov)      | 7.0.0   | MIT License | Test coverage reporting         |
-| [coverage](https://coverage.readthedocs.io/)                | 7.10.7  | Apache 2.0  | Code coverage measurement       |
-| [autopep8](https://github.com/hhatto/autopep8)              | 2.3.2   | MIT License | Automatic PEP 8 code formatting |
-| [flake8](https://flake8.pycqa.org/)                         | 7.3.0   | MIT License | Code linting and style checking |
-| [mdformat](https://github.com/executablebooks/mdformat)     | 0.7.22  | MIT License | Markdown formatter              |
-| [mdformat-gfm](https://github.com/hukkin/mdformat-gfm)      | 1.0.0   | MIT License | GitHub Flavored Markdown plugin |
+| Package                                                               | Version | License     | Purpose                          |
+| --------------------------------------------------------------------- | ------- | ----------- | -------------------------------- |
+| [pytest](https://pytest.org/)                                         | 8.4.2   | MIT License | Testing framework                |
+| [pytest-cov](https://github.com/pytest-dev/pytest-cov)                | 7.0.0   | MIT License | Test coverage reporting          |
+| [coverage](https://coverage.readthedocs.io/)                          | 7.10.7  | Apache 2.0  | Code coverage measurement        |
+| [autopep8](https://github.com/hhatto/autopep8)                        | 2.3.2   | MIT License | Automatic PEP 8 code formatting  |
+| [flake8](https://flake8.pycqa.org/)                                   | 7.3.0   | MIT License | Code linting and style checking  |
+| [mdformat](https://github.com/executablebooks/mdformat)               | 0.7.22  | MIT License | Markdown formatter               |
+| [mdformat-gfm](https://github.com/hukkin/mdformat-gfm)                | 1.0.0   | MIT License | GitHub Flavored Markdown plugin  |
 | [mdformat-tables](https://github.com/executablebooks/mdformat-tables) | 1.0.0   | MIT License | Markdown table formatting plugin |
-| [jsonschema](https://github.com/python-jsonschema/jsonschema) | 4.25.1  | MIT License | JSON schema validation          |
-| [pipdeptree](https://github.com/tox-dev/pipdeptree)         | 2.30.0  | MIT License | Dependency tree visualization   |
-| [requests](https://github.com/psf/requests)                 | 2.32.5  | Apache 2.0  | HTTP library                    |
-| [toml](https://github.com/uiri/toml)                        | 0.10.2  | MIT License | TOML parser                     |
+| [jsonschema](https://github.com/python-jsonschema/jsonschema)         | 4.25.1  | MIT License | JSON schema validation           |
+| [pipdeptree](https://github.com/tox-dev/pipdeptree)                   | 2.30.0  | MIT License | Dependency tree visualization    |
+| [requests](https://github.com/psf/requests)                           | 2.32.5  | Apache 2.0  | HTTP library                     |
+| [toml](https://github.com/uiri/toml)                                  | 0.10.2  | MIT License | TOML parser                      |
 
 ## Transitive Dependencies
 
@@ -58,26 +58,26 @@ free use, modification, and distribution.
 
 ### Utilities
 
-| Package                                                      | Version           | License       | Purpose                           |
-| ------------------------------------------------------------ | ----------------- | ------------- | --------------------------------- |
-| [MarkupSafe](https://palletsprojects.com/p/markupsafe/)      | 3.0.2             | BSD License   | String escaping for Jinja2        |
-| [Pygments](https://pygments.org/)                            | 2.19.2            | BSD License   | Syntax highlighting               |
-| [packaging](https://github.com/pypa/packaging)               | 25.0              | Apache 2.0 / BSD | Version parsing utilities      |
-| [pytz](https://pythonhosted.org/pytz/)                       | 2025.2            | MIT License   | Timezone definitions              |
-| [rpds-py](https://github.com/orium/rpds)                     | 0.28.0            | MIT License   | Rust-powered data structures      |
-| [typing_extensions](https://github.com/python/typing_extensions) | 4.15.0        | PSF           | Backports for typing module       |
-| [urllib3](https://github.com/urllib3/urllib3)                | 2.5.0             | MIT License   | HTTP client for Python            |
-| [types-pytz](https://github.com/python/typeshed)             | 2025.2.0.20250809 | Apache 2.0    | Typing stubs for pytz             |
-| [pathspec](https://github.com/cpburnz/python-pathspec)       | 0.12.1            | MPL 2.0       | Path pattern matching             |
-| [certifi](https://github.com/certifi/python-certifi)         | 2025.11.12        | MPL 2.0       | Mozilla's CA bundle               |
-| [charset-normalizer](https://github.com/jawah/charset_normalizer) | 3.4.4        | MIT License   | Character encoding detection      |
-| [idna](https://github.com/kjd/idna)                          | 3.11              | BSD-3-Clause  | Internationalized domain names    |
-| [attrs](https://github.com/python-attrs/attrs)               | 25.4.0            | MIT License   | Python classes without boilerplate |
-| [jsonschema-specifications](https://github.com/python-jsonschema/jsonschema-specifications) | 2025.9.1 | MIT License | JSON Schema meta-schemas |
-| [referencing](https://github.com/python-jsonschema/referencing) | 0.37.0         | MIT License   | JSON reference resolution         |
-| [markdown-it-py](https://github.com/executablebooks/markdown-it-py) | 3.0.0      | MIT License   | Markdown parser                   |
-| [mdit-py-plugins](https://github.com/executablebooks/mdit-py-plugins) | 0.5.0    | MIT License   | Markdown-it plugins               |
-| [mdurl](https://github.com/executablebooks/mdurl)            | 0.1.2             | MIT License   | URL utilities for Markdown        |
+| Package                                                                                     | Version           | License          | Purpose                            |
+| ------------------------------------------------------------------------------------------- | ----------------- | ---------------- | ---------------------------------- |
+| [MarkupSafe](https://palletsprojects.com/p/markupsafe/)                                     | 3.0.2             | BSD License      | String escaping for Jinja2         |
+| [Pygments](https://pygments.org/)                                                           | 2.19.2            | BSD License      | Syntax highlighting                |
+| [packaging](https://github.com/pypa/packaging)                                              | 25.0              | Apache 2.0 / BSD | Version parsing utilities          |
+| [pytz](https://pythonhosted.org/pytz/)                                                      | 2025.2            | MIT License      | Timezone definitions               |
+| [rpds-py](https://github.com/orium/rpds)                                                    | 0.28.0            | MIT License      | Rust-powered data structures       |
+| [typing_extensions](https://github.com/python/typing_extensions)                            | 4.15.0            | PSF              | Backports for typing module        |
+| [urllib3](https://github.com/urllib3/urllib3)                                               | 2.5.0             | MIT License      | HTTP client for Python             |
+| [types-pytz](https://github.com/python/typeshed)                                            | 2025.2.0.20250809 | Apache 2.0       | Typing stubs for pytz              |
+| [pathspec](https://github.com/cpburnz/python-pathspec)                                      | 0.12.1            | MPL 2.0          | Path pattern matching              |
+| [certifi](https://github.com/certifi/python-certifi)                                        | 2025.11.12        | MPL 2.0          | Mozilla's CA bundle                |
+| [charset-normalizer](https://github.com/jawah/charset_normalizer)                           | 3.4.4             | MIT License      | Character encoding detection       |
+| [idna](https://github.com/kjd/idna)                                                         | 3.11              | BSD-3-Clause     | Internationalized domain names     |
+| [attrs](https://github.com/python-attrs/attrs)                                              | 25.4.0            | MIT License      | Python classes without boilerplate |
+| [jsonschema-specifications](https://github.com/python-jsonschema/jsonschema-specifications) | 2025.9.1          | MIT License      | JSON Schema meta-schemas           |
+| [referencing](https://github.com/python-jsonschema/referencing)                             | 0.37.0            | MIT License      | JSON reference resolution          |
+| [markdown-it-py](https://github.com/executablebooks/markdown-it-py)                         | 3.0.0             | MIT License      | Markdown parser                    |
+| [mdit-py-plugins](https://github.com/executablebooks/mdit-py-plugins)                       | 0.5.0             | MIT License      | Markdown-it plugins                |
+| [mdurl](https://github.com/executablebooks/mdurl)                                           | 0.1.2             | MIT License      | URL utilities for Markdown         |
 
 ### Testing Tools
 
@@ -91,16 +91,16 @@ free use, modification, and distribution.
 
 ### Tree-Sitter Language Support
 
-| Package                                              | Version | License     | Purpose                       |
-| ---------------------------------------------------- | ------- | ----------- | ----------------------------- |
-| [tree-sitter-c-sharp](https://github.com/tree-sitter/tree-sitter-c-sharp) | 0.23.1 | MIT License | C# grammar for tree-sitter |
-| [tree-sitter-embedded-template](https://github.com/tree-sitter/tree-sitter-embedded-template) | 0.25.0 | MIT License | Embedded template grammar |
-| [tree-sitter-yaml](https://github.com/tree-sitter-grammars/tree-sitter-yaml) | 0.7.2 | MIT License | YAML grammar for tree-sitter |
+| Package                                                                                       | Version | License     | Purpose                      |
+| --------------------------------------------------------------------------------------------- | ------- | ----------- | ---------------------------- |
+| [tree-sitter-c-sharp](https://github.com/tree-sitter/tree-sitter-c-sharp)                     | 0.23.1  | MIT License | C# grammar for tree-sitter   |
+| [tree-sitter-embedded-template](https://github.com/tree-sitter/tree-sitter-embedded-template) | 0.25.0  | MIT License | Embedded template grammar    |
+| [tree-sitter-yaml](https://github.com/tree-sitter-grammars/tree-sitter-yaml)                  | 0.7.2   | MIT License | YAML grammar for tree-sitter |
 
 ### Git and Version Control
 
-| Package                                              | Version | License     | Purpose                       |
-| ---------------------------------------------------- | ------- | ----------- | ----------------------------- |
+| Package                                                        | Version | License      | Purpose                    |
+| -------------------------------------------------------------- | ------- | ------------ | -------------------------- |
 | [GitPython](https://github.com/gitpython-developers/GitPython) | 3.1.45  | BSD-3-Clause | Git repository interaction |
 
 ## License Compatibility
@@ -142,8 +142,9 @@ MetricMancer complies with all license requirements:
 4. ✅ **Patent Grants**: Apache 2.0 dependencies provide explicit patent protection
 
 **Note**: Some packages may show as "UNKNOWN" in automated license checking tools due to these tools not fully
-supporting the newer `License-Expression` metadata format (PEP 639). All packages with "UNKNOWN" status have been manually
-verified by checking their GitHub repositories and license files to confirm they use permissive licenses compatible with MIT.
+supporting the newer `License-Expression` metadata format (PEP 639). All packages with "UNKNOWN" status have been
+manually verified by checking their GitHub repositories and license files to confirm they use permissive licenses
+compatible with MIT.
 
 ## Updates
 
@@ -151,7 +152,8 @@ This document was last updated: **November 19, 2025**
 
 ### November 19, 2025
 
-- **Major dependency update**: Migrated from `tree-sitter-languages` to `tree-sitter-language-pack` (v0.11.0, MIT OR Apache 2.0)
+- **Major dependency update**: Migrated from `tree-sitter-languages` to `tree-sitter-language-pack` (v0.11.0, MIT OR
+  Apache 2.0)
 - Updated `tree-sitter` version from 0.21.3 to 0.25.2
 - Added new direct dependencies:
   - unidiff (0.7.5, MIT License) - Unified diff parsing

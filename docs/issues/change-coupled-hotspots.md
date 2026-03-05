@@ -1,21 +1,23 @@
 # Change-Coupled Hotspots Implementation Plan
 
-**Issue Type:** Feature Enhancement  
-**Priority:** High  
-**Estimated Effort:** 3-4 weeks  
-**Target Version:** 3.4.0  
-**Alignment:** Adam Tornhill's "Your Code as a Crime Scene" methodology  
-**Created:** 2026-01-21  
-**Updated:** 2026-01-21  
+**Issue Type:** Feature Enhancement\
+**Priority:** High\
+**Estimated Effort:** 3-4 weeks\
+**Target Version:** 3.4.0\
+**Alignment:** Adam Tornhill's "Your Code as a Crime Scene" methodology\
+**Created:** 2026-01-21\
+**Updated:** 2026-01-21\
 **Status:** 🚧 In Progress - Phase 2 (Coupling Analysis Engine)
 
----
+______________________________________________________________________
 
 ## 🎯 Overview
 
 ### Summary
 
-Implement **Change-Coupled Hotspots** analysis to identify files that frequently change together, revealing hidden architectural dependencies and high-risk coupling patterns. This extends MetricMancer's existing hotspot analysis (complexity × churn) with **temporal coupling** detection based on git commit history.
+Implement **Change-Coupled Hotspots** analysis to identify files that frequently change together, revealing hidden
+architectural dependencies and high-risk coupling patterns. This extends MetricMancer's existing hotspot analysis
+(complexity × churn) with **temporal coupling** detection based on git commit history.
 
 ### Goals
 
@@ -25,23 +27,26 @@ Implement **Change-Coupled Hotspots** analysis to identify files that frequently
 4. **Visualize Dependencies**: Show coupling graphs in reports
 5. **Enable Architectural Insights**: Help teams identify modular boundaries and refactoring candidates
 
----
+______________________________________________________________________
 
 ## 🔥 Problem Statement
 
 ### Current Limitations
 
 1. **No Coupling Detection**: Current hotspot analysis only considers individual file metrics
+
    - Missing **hidden dependencies** revealed by co-change patterns
    - Can't identify **architectural coupling** issues
    - No visibility into **change propagation** across modules
 
 2. **Incomplete Risk Assessment**: Existing hotspot = complexity × churn
+
    - Doesn't account for **ripple effects** when coupled files change
    - Missing **blast radius** of changes
    - Can't prioritize refactoring based on **architectural impact**
 
 3. **Limited Architectural Guidance**: No data-driven insights about modularity
+
    - Can't identify **tight coupling** between components
    - Missing **Conway's Law** violations (team structure vs code structure)
    - No early warning for **architectural erosion**
@@ -71,28 +76,29 @@ Change-Coupled Hotspot Analysis:
     └── Risk Level: 🔴 CRITICAL - Architectural refactoring needed
 ```
 
----
+______________________________________________________________________
 
 ## 📊 Adam Tornhill Methodology Alignment
 
-| Principle                    | Implementation in MetricMancer                              |
-| ---------------------------- | ----------------------------------------------------------- |
-| **Temporal Coupling**        | Analyze commit history to find files that change together   |
-| **Hidden Dependencies**      | Reveal coupling not visible in static code analysis        |
-| **Change Blast Radius**      | Quantify impact radius of changes                           |
-| **Architectural Boundaries** | Identify where modular boundaries should be strengthened    |
-| **Conway's Law**             | Detect misalignment between team and code structure         |
-| **Prioritize by Impact**     | Rank coupling by combined complexity and change frequency   |
+| Principle                    | Implementation in MetricMancer                            |
+| ---------------------------- | --------------------------------------------------------- |
+| **Temporal Coupling**        | Analyze commit history to find files that change together |
+| **Hidden Dependencies**      | Reveal coupling not visible in static code analysis       |
+| **Change Blast Radius**      | Quantify impact radius of changes                         |
+| **Architectural Boundaries** | Identify where modular boundaries should be strengthened  |
+| **Conway's Law**             | Detect misalignment between team and code structure       |
+| **Prioritize by Impact**     | Rank coupling by combined complexity and change frequency |
 
 **Book Quotes:**
 
-> "Temporal coupling reveals hidden dependencies. If two modules always change together, they're coupled whether the code shows it or not."  
+> "Temporal coupling reveals hidden dependencies. If two modules always change together, they're coupled whether the
+> code shows it or not."\
 > — _Your Code as a Crime Scene_, Chapter 4
 
-> "The most dangerous hotspots aren't just complex—they're complex AND coupled to other complex code."  
+> "The most dangerous hotspots aren't just complex—they're complex AND coupled to other complex code."\
 > — _Your Code as a Crime Scene_, Chapter 5
 
----
+______________________________________________________________________
 
 ## 🏗️ Architecture Design
 
@@ -133,7 +139,7 @@ graph TD
     I -->|HTML/JSON/CLI| J[Output Reports]
 ```
 
----
+______________________________________________________________________
 
 ## 🔧 Implementation Plan
 
@@ -195,6 +201,7 @@ class CommitInfo:
 ```
 
 **Tests:** `tests/utilities/test_git_helpers_coupling.py`
+
 - Test commit history extraction
 - Test filtering merge commits
 - Test time-based filtering
@@ -202,12 +209,13 @@ class CommitInfo:
 - Test performance with large repos
 
 **Acceptance Criteria:**
+
 - ✅ Extract 90 days of commit history in < 2 seconds for typical repo
 - ✅ Correctly parse git log output
 - ✅ Handle edge cases (empty repos, no commits in period)
 - ✅ All tests passing
 
----
+______________________________________________________________________
 
 ### Phase 2: Coupling Analysis Engine (Week 1-2) 🚧 IN PROGRESS
 
@@ -314,6 +322,7 @@ coupling_score = commits_together / (total_commits_a + total_commits_b - commits
 ```
 
 **Tests:** `tests/kpis/coupling/test_coupling_analyzer.py` ✅
+
 - ✅ Test coupling calculation for file pairs
 - ✅ Test threshold filtering
 - ✅ Test strongest couplings ranking
@@ -323,12 +332,14 @@ coupling_score = commits_together / (total_commits_a + total_commits_b - commits
 - **Result:** 24 tests, all passing
 
 **Acceptance Criteria:**
+
 - ✅ Accurate coupling scores matching manual calculation
 - ✅ Efficient calculation (< 5 seconds for 1000 files)
 - ✅ Proper threshold filtering
 - ✅ All tests passing with >95% coverage
 
 **Implementation Details (2026-01-21):**
+
 - ✅ Created `src/kpis/coupling/` module structure
 - ✅ Implemented `CouplingData` dataclass with strength property
 - ✅ Implemented `CouplingAnalyzer` with full functionality:
@@ -343,7 +354,7 @@ coupling_score = commits_together / (total_commits_a + total_commits_b - commits
   - Caching behavior
   - Score calculation accuracy
 
----
+______________________________________________________________________
 
 #### 2.2 Coupling Cache Integration ⏳ NEXT STEP
 
@@ -388,23 +399,26 @@ class GitDataCache:
 ```
 
 **Cache Strategy:**
+
 - Cache coupling matrix per repository
 - Invalidate on time-based TTL (default: 1 hour)
 - Option to force recalculation
 
 **Tests:** `tests/utilities/test_git_cache_coupling.py`
+
 - Test coupling cache hit/miss
 - Test cache invalidation
 - Test cache TTL
 - Test multi-repo caching
 
 **Acceptance Criteria:**
+
 - ✅ Coupling data cached correctly
 - ✅ Cache invalidation works
 - ✅ Performance improvement (10x faster on cache hit)
 - ✅ All tests passing
 
----
+______________________________________________________________________
 
 ### Phase 3: KPI Implementation (Week 2)
 
@@ -449,12 +463,13 @@ class LogicalCouplingKPI(BaseKPI):
 ```
 
 **Tests:** `tests/kpis/coupling/test_logical_coupling_kpi.py`
+
 - Test coupling count calculation
 - Test no coupling case
 - Test multiple couplings
 - Test threshold filtering
 
----
+______________________________________________________________________
 
 #### 3.2 Change-Coupled Hotspot KPI
 
@@ -532,12 +547,13 @@ def get_risk_level(coupled_hotspot_score: float) -> str:
 ```
 
 **Tests:** `tests/kpis/coupling/test_change_coupled_hotspot_kpi.py`
+
 - Test basic calculation
 - Test coupling multiplier effect
 - Test risk level categorization
 - Test edge cases (no coupling, high coupling)
 
----
+______________________________________________________________________
 
 ### Phase 4: KPI Calculator Integration (Week 2-3)
 
@@ -651,12 +667,13 @@ class KPICalculator:
 ```
 
 **Tests:** `tests/app/kpi/test_kpi_calculator_coupling.py`
+
 - Test coupling KPI strategy
 - Test change-coupled hotspot strategy
 - Test KPI calculation order/dependencies
 - Test timing collection
 
----
+______________________________________________________________________
 
 ### Phase 5: Configuration Integration (Week 3)
 
@@ -725,12 +742,13 @@ def main():
 ```
 
 **Tests:** `tests/config/test_app_config_coupling.py`
+
 - Test coupling config creation
 - Test validation (thresholds, periods)
 - Test default values
 - Test CLI argument parsing
 
----
+______________________________________________________________________
 
 ### Phase 6: Report Generation (Week 3-4)
 
@@ -781,7 +799,7 @@ def _format_coupling_section(self, data: Dict[str, Any]) -> List[str]:
     return lines
 ```
 
----
+______________________________________________________________________
 
 #### 6.2 JSON Coupling Export
 
@@ -854,7 +872,7 @@ def _add_coupling_data(self, file_data: Dict, file_obj) -> None:
 }
 ```
 
----
+______________________________________________________________________
 
 #### 6.3 HTML Coupling Visualization
 
@@ -909,7 +927,7 @@ def _generate_coupling_page(self, data: Dict[str, Any]) -> str:
     )
 ```
 
----
+______________________________________________________________________
 
 ### Phase 7: Documentation & Testing (Week 4)
 
@@ -918,23 +936,27 @@ def _generate_coupling_page(self, data: Dict[str, Any]) -> str:
 **Files to Create/Update:**
 
 1. `docs/COUPLING_ANALYSIS.md` - User guide for coupling analysis
+
    - What is temporal coupling?
    - How to interpret coupling scores
    - Examples and use cases
    - Configuration options
 
 2. `docs/SoftwareSpecificationAndDesign.md` - Update with coupling KPIs
+
    - Add FR6: Logical Coupling requirement
    - Add FR7: Change-Coupled Hotspots requirement
    - Update KPI table
    - Add test mappings
 
 3. `README.md` - Update with coupling examples
+
    - Add coupling to quick start
    - Show example CLI output
    - Link to detailed docs
 
 4. `CHANGELOG.md` - Add v3.4.0 entry
+
    - List new features
    - Document breaking changes (if any)
    - Usage examples
@@ -970,12 +992,14 @@ class TestCouplingWorkflow:
 #### 7.3 Comprehensive Test Suite
 
 **Test Coverage Goals:**
+
 - Unit tests: >95% coverage
 - Integration tests: All major workflows
 - Performance tests: Benchmarks for large repos
 - Edge case tests: Empty repos, single commit, etc.
 
 **Test Files:**
+
 - `tests/utilities/test_git_helpers_coupling.py` (✅ Phase 1)
 - `tests/kpis/coupling/test_coupling_analyzer.py` (✅ Phase 2)
 - `tests/kpis/coupling/test_logical_coupling_kpi.py` (✅ Phase 3)
@@ -985,7 +1009,7 @@ class TestCouplingWorkflow:
 - `tests/report/test_coupling_reports.py` (✅ Phase 6)
 - `tests/integration/test_coupling_workflow.py` (✅ Phase 7)
 
----
+______________________________________________________________________
 
 ## 🎯 Acceptance Criteria
 
@@ -1020,7 +1044,7 @@ class TestCouplingWorkflow:
 - [ ] SOLID principles followed
 - [ ] Comprehensive error handling
 
----
+______________________________________________________________________
 
 ## 📊 Example Output
 
@@ -1082,7 +1106,7 @@ Top 20 Change-Coupled Hotspots:
 }
 ```
 
----
+______________________________________________________________________
 
 ## 🔧 Configuration Examples
 
@@ -1116,48 +1140,55 @@ config = AppConfig(
 )
 ```
 
----
+______________________________________________________________________
 
 ## 🚀 Future Enhancements (Post-MVP)
 
 ### Phase 8: Advanced Features (Future)
 
 1. **Temporal Patterns**
+
    - Track coupling changes over time
    - Detect emerging vs. decaying coupling
    - Trend visualization
 
 2. **Team-Based Coupling**
+
    - Coupling within vs. between teams
    - Conway's Law violation detection
    - Cross-team dependency metrics
 
 3. **Architectural Insights**
+
    - Module boundary recommendations
    - Suggested refactorings based on coupling
    - Modular decomposition scores
 
 4. **CI/CD Integration**
+
    - Coupling quality gates
    - Alert on new strong couplings
    - PR comments with coupling impact
 
 5. **Machine Learning**
+
    - Predict future coupling based on patterns
    - Anomaly detection (unusual coupling spikes)
    - Risk prediction models
 
----
+______________________________________________________________________
 
 ## 📚 References
 
 ### Adam Tornhill's Books
 
 1. **Your Code as a Crime Scene** (2015)
+
    - Chapter 4: "Temporal Coupling - Mining for Hidden Dependencies"
    - Chapter 5: "Prioritize Technical Debt"
 
 2. **Software Design X-Rays** (2018)
+
    - Chapter 3: "Coupling in Time"
    - Chapter 6: "Architectural Impact Analysis"
 
@@ -1172,7 +1203,7 @@ config = AppConfig(
 - **Code Maat** - Open source mining tool
 - **git-of-theseus** - Git history analysis
 
----
+______________________________________________________________________
 
 ## 🎯 Success Metrics
 
@@ -1192,7 +1223,7 @@ config = AppConfig(
 - [ ] **Maintainability**: Code follows existing architecture patterns
 - [ ] **Extensibility**: Easy to add new coupling types in future
 
----
+______________________________________________________________________
 
 ## 🐛 Known Limitations & Future Work
 
@@ -1211,33 +1242,36 @@ config = AppConfig(
 4. **Cross-Repository**: Analyze coupling across microservices
 5. **Semantic Coupling**: Combine with code similarity analysis
 
----
+______________________________________________________________________
 
 ## 📅 Timeline Summary
 
-| Phase | Duration | Deliverables                                  | Dependencies |
-| ----- | -------- | --------------------------------------------- | ------------ |
-| 1     | Week 1   | Git history extraction, CommitInfo model      | None         |
-| 2     | Week 1-2 | CouplingAnalyzer, cache integration           | Phase 1      |
-| 3     | Week 2   | KPI implementations                           | Phase 2      |
-| 4     | Week 2-3 | KPICalculator integration                     | Phase 3      |
-| 5     | Week 3   | Configuration, CLI arguments                  | Phase 4      |
-| 6     | Week 3-4 | Report generation (CLI, JSON, HTML)           | Phase 5      |
-| 7     | Week 4   | Documentation, integration tests              | Phase 6      |
-| **Total** | **3-4 weeks** | **Complete change-coupled hotspots feature** | - |
+| Phase     | Duration      | Deliverables                                 | Dependencies |
+| --------- | ------------- | -------------------------------------------- | ------------ |
+| 1         | Week 1        | Git history extraction, CommitInfo model     | None         |
+| 2         | Week 1-2      | CouplingAnalyzer, cache integration          | Phase 1      |
+| 3         | Week 2        | KPI implementations                          | Phase 2      |
+| 4         | Week 2-3      | KPICalculator integration                    | Phase 3      |
+| 5         | Week 3        | Configuration, CLI arguments                 | Phase 4      |
+| 6         | Week 3-4      | Report generation (CLI, JSON, HTML)          | Phase 5      |
+| 7         | Week 4        | Documentation, integration tests             | Phase 6      |
+| **Total** | **3-4 weeks** | **Complete change-coupled hotspots feature** | -            |
 
----
+______________________________________________________________________
 
 ## 📊 Progress Summary (Updated: 2026-01-21)
 
 ### Completed ✅
+
 - **Phase 1 (Complete):** Git history extraction with commit history analysis
+
   - `get_commit_history()` implemented and tested
   - `get_changed_files_in_commit()` implemented and tested
   - `get_commits_affecting_file()` implemented and tested
   - All tests passing (997 total tests in suite)
 
 - **Phase 2 (Partial - 2.1 Complete):** Coupling Analysis Engine
+
   - `CouplingData` dataclass with strength categorization
   - `CouplingAnalyzer` class with full functionality
   - 24 comprehensive unit tests, all passing
@@ -1245,11 +1279,13 @@ config = AppConfig(
   - Performance requirements met
 
 ### In Progress 🚧
+
 - **Phase 2.2:** Coupling cache integration into `GitDataCache`
   - Not started yet
   - Next immediate step
 
 ### Remaining Work ⏳
+
 - **Phase 2.2:** Coupling Cache Integration
 - **Phase 3:** KPI Implementation (LogicalCouplingKPI, ChangeCoupledHotspotKPI)
 - **Phase 4:** KPI Calculator Integration
@@ -1258,16 +1294,18 @@ config = AppConfig(
 - **Phase 7:** Documentation & Testing
 
 ### Test Statistics
+
 - **Total suite tests:** 997 passing (before coupling tests)
 - **New coupling tests:** 24 passing
 - **Coverage:** >95% for new coupling analyzer code
 
 ### Next Session Tasks
+
 1. Implement coupling cache in `GitDataCache`
 2. Create tests for coupling cache (`test_git_cache_coupling.py`)
 3. Begin Phase 3: KPI implementations
 
----
+______________________________________________________________________
 
 ## ✅ Definition of Done
 
@@ -1286,15 +1324,18 @@ config = AppConfig(
 - [ ] Type hints complete
 - [ ] Ready for release in v3.4.0
 
----
+______________________________________________________________________
 
-**Status:** � In Progress - Phase 2.1 Complete, Phase 2.2 Next  
-**Next Step:** Implement coupling cache integration in `GitDataCache`  
+**Status:** � In Progress - Phase 2.1 Complete, Phase 2.2 Next\
+**Next Step:** Implement coupling cache integration in `GitDataCache`\
 **Completed Today (2026-01-21):**
+
 - ✅ `CouplingAnalyzer` implementation
-- ✅ `CouplingData` dataclass  
+- ✅ `CouplingData` dataclass
 - ✅ 24 comprehensive unit tests
 
----
+______________________________________________________________________
 
-*This implementation plan follows MetricMancer's architecture principles: SOLID, TDD, Configuration Object Pattern, Strategy Pattern, and separation of concerns. All changes maintain backward compatibility and extend the existing codebase rather than modifying core components.*
+*This implementation plan follows MetricMancer's architecture principles: SOLID, TDD, Configuration Object Pattern,
+Strategy Pattern, and separation of concerns. All changes maintain backward compatibility and extend the existing
+codebase rather than modifying core components.*
