@@ -10,7 +10,6 @@ import tempfile
 import subprocess
 import os
 from pathlib import Path
-from datetime import datetime, timedelta
 
 from src.utilities.git_helpers import (
     get_commit_history,

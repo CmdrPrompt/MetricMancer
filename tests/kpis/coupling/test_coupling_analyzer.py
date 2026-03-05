@@ -5,10 +5,7 @@ Tests coupling calculation, threshold filtering, and edge cases.
 """
 
 import unittest
-from unittest.mock import patch, MagicMock
-import os
-import tempfile
-from pathlib import Path
+from unittest.mock import patch
 
 from src.kpis.coupling.coupling_analyzer import CouplingAnalyzer, CouplingData
 
@@ -414,10 +411,10 @@ class TestCouplingAnalyzer(unittest.TestCase):
         ]
 
         # First call
-        matrix1 = self.analyzer.calculate_coupling_matrix("/fake/repo")
+        self.analyzer.calculate_coupling_matrix("/fake/repo")
 
         # Second call with force_recalculate
-        matrix2 = self.analyzer.calculate_coupling_matrix("/fake/repo", force_recalculate=True)
+        self.analyzer.calculate_coupling_matrix("/fake/repo", force_recalculate=True)
 
         # get_commit_history should be called twice
         self.assertEqual(mock_get_history.call_count, 2)
