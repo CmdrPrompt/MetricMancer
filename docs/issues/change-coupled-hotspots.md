@@ -1265,20 +1265,20 @@ ______________________________________________________________________
 
 ## 📅 Timeline Summary
 
-| Phase     | Duration      | Deliverables                                 | Dependencies |
-| --------- | ------------- | -------------------------------------------- | ------------ |
-| 1         | Week 1        | Git history extraction, CommitInfo model     | None         |
-| 2         | Week 1-2      | CouplingAnalyzer, cache integration          | Phase 1      |
-| 3         | Week 2        | KPI implementations                          | Phase 2      |
-| 4         | Week 2-3      | KPICalculator integration                    | Phase 3      |
-| 5         | Week 3        | Configuration, CLI arguments                 | Phase 4      |
-| 6         | Week 3-4      | Report generation (CLI, JSON, HTML)          | Phase 5      |
-| 7         | Week 4        | Documentation, integration tests             | Phase 6      |
-| **Total** | **3-4 weeks** | **Complete change-coupled hotspots feature** | -            |
+| Phase     | Duration      | Status          | Deliverables                                 | Dependencies |
+| --------- | ------------- | --------------- | -------------------------------------------- | ------------ |
+| 1         | Week 1        | ✅ Complete     | Git history extraction, CommitInfo model     | None         |
+| 2         | Week 1-2      | ✅ Complete     | CouplingAnalyzer, cache integration          | Phase 1      |
+| 3         | Week 2        | ✅ Complete (03-05) | KPI implementations                          | Phase 2      |
+| 4         | Week 2-3      | 🚧 In Progress  | KPICalculator integration                    | Phase 3      |
+| 5         | Week 3        | ⏳ Planned       | Configuration, CLI arguments                 | Phase 4      |
+| 6         | Week 3-4      | ⏳ Planned       | Report generation (CLI, JSON, HTML)          | Phase 5      |
+| 7         | Week 4        | ⏳ Planned       | Documentation, integration tests             | Phase 6      |
+| **Total** | **3-4 weeks** | **In Progress** | **Complete change-coupled hotspots feature** | -            |
 
 ______________________________________________________________________
 
-## 📊 Progress Summary (Updated: 2026-01-21)
+## 📊 Progress Summary (Updated: 2026-03-05)
 
 ### Completed ✅
 
@@ -1289,46 +1289,89 @@ ______________________________________________________________________
   - `get_commits_affecting_file()` implemented and tested
   - All tests passing (997 total tests in suite)
 
-- **Phase 2 (Partial - 2.1 Complete):** Coupling Analysis Engine
+- **Phase 2 (Complete):** Coupling Analysis Engine
 
-  - `CouplingData` dataclass with strength categorization
-  - `CouplingAnalyzer` class with full functionality
-  - 24 comprehensive unit tests, all passing
-  - Coupling score calculation algorithm validated
-  - Performance requirements met
+  - Phase 2.1: `CouplingAnalyzer` class with full functionality
+    - Coupling score calculation with configurable thresholds
+    - File pair coupling detection
+    - Get coupled files for a target file
+    - Get strongest couplings in repository
+    - 24 unit tests, all passing
+  - Phase 2.2: Coupling cache integration into `GitDataCache`
+    - `get_coupling_matrix()` with caching
+    - `get_coupling_data(repo_root, file_path)`
+    - `invalidate_coupling_cache()`
+    - TTL support (1 hour default)
+    - 5 unit tests, all passing
+
+- **Phase 3 (Complete - March 5, 2026):** KPI Implementation
+
+  - Phase 3.1: `LogicalCouplingKPI` implementation
+    - Measures temporal coupling for a file
+    - Counts strongly coupled files (>= 0.5 threshold)
+    - Stores max/avg coupling metrics
+    - 15 comprehensive tests, all passing
+  - Phase 3.2: `ChangeCoupledHotspotKPI` implementation
+    - Combines complexity × churn × coupling
+    - Formula: `base_hotspot × max_coupling × coupling_multiplier`
+    - Risk level categorization (CRITICAL, VERY_HIGH, HIGH, MEDIUM, LOW)
+    - Graceful handling of no-coupling edge case
+    - 24 comprehensive tests, all passing
+  - Module integration: Updated `src/kpis/coupling/__init__.py`
+  - All KPIs follow BaseKPI interface
+  - Support method chaining (return self)
 
 ### In Progress 🚧
 
-- **Phase 2.2:** Coupling cache integration into `GitDataCache`
-  - Not started yet
+- **Phase 4:** KPI Calculator Integration
+  - Integrating LogicalCouplingKPIStrategy and ChangeCoupledHotspotKPIStrategy
   - Next immediate step
 
 ### Remaining Work ⏳
 
-- **Phase 2.2:** Coupling Cache Integration
-- **Phase 3:** KPI Implementation (LogicalCouplingKPI, ChangeCoupledHotspotKPI)
-- **Phase 4:** KPI Calculator Integration
+- **Phase 4:** KPI Calculator Integration (in-progress)
 - **Phase 5:** Configuration Integration
 - **Phase 6:** Report Generation
 - **Phase 7:** Documentation & Testing
 
 ### Test Statistics
 
-- **Total suite tests:** 997 passing (before coupling tests)
-- **New coupling tests:** 24 passing
-- **Coverage:** >95% for new coupling analyzer code
+- **Total suite tests:** 1080 passing ✅
+- **New coupling KPI tests:** 39 (15 LogicalCoupling + 24 ChangeCoupledHotspot)
+- **Total coupling tests:** 63 (analyzer 24 + KPIs 39)
+- **Phase 3 status:** ✅ 100% Complete
+- **Coverage:** >95% for all new coupling code
+
+### Recent Completions (2026-03-05)
+
+1. ✅ Phase 3.1: LogicalCouplingKPI implementation
+   - Counts strongly coupled files (>= 0.5 threshold)
+   - Stores max/avg coupling metrics
+   - 15 comprehensive tests, all passing
+
+2. ✅ Phase 3.2: ChangeCoupledHotspotKPI implementation
+   - Formula: base_hotspot × max_coupling × coupling_multiplier
+   - Risk level categorization (CRITICAL, VERY_HIGH, HIGH, MEDIUM, LOW)
+   - Handles no-coupling edge case gracefully
+   - 24 comprehensive tests, all passing
+
+3. ✅ Module Integration
+   - Updated `src/kpis/coupling/__init__.py`
+   - Both KPIs follow BaseKPI interface correctly
+   - Support method chaining (return self)
 
 ### Next Session Tasks
 
-1. Implement coupling cache in `GitDataCache`
-2. Create tests for coupling cache (`test_git_cache_coupling.py`)
-3. Begin Phase 3: KPI implementations
+1. Implement LogicalCouplingKPIStrategy in `src/app/kpi/kpi_calculator.py`
+2. Implement ChangeCoupledHotspotKPIStrategy in `src/app/kpi/kpi_calculator.py`
+3. Integrate both strategies into KPICalculator.calculate_all()
+4. Add tests for Phase 4 strategies
 
 ______________________________________________________________________
 
 ## ✅ Definition of Done
 
-- [ ] All phases completed (Phase 1 ✅, Phase 2.1 ✅, Phase 2.2-7 ⏳)
+- [ ] All phases completed (Phase 1 ✅, Phase 2 ✅, Phase 3 ✅, Phase 4-7 ⏳)
 - [ ] All tests passing (>1100 total tests expected)
 - [ ] Test coverage >95% for new code
 - [ ] Documentation complete and reviewed
@@ -1345,13 +1388,17 @@ ______________________________________________________________________
 
 ______________________________________________________________________
 
-**Status:** � In Progress - Phase 2.1 Complete, Phase 2.2 Next\
-**Next Step:** Implement coupling cache integration in `GitDataCache`\
-**Completed Today (2026-01-21):**
+**Status:** 🚧 In Progress - Phase 1-3 Complete (100%), Phase 4 Next\
 
-- ✅ `CouplingAnalyzer` implementation
-- ✅ `CouplingData` dataclass
-- ✅ 24 comprehensive unit tests
+**Next Step:** Implement KPI Calculator integration (Phase 4)\
+
+**Completed Today (2026-03-05):**
+
+- ✅ LogicalCouplingKPI (15 tests)
+- ✅ ChangeCoupledHotspotKPI (24 tests)
+- ✅ Risk level categorization
+- ✅ Module __init__.py updates
+- ✅ All 1080 tests passing (no regressions)
 
 ______________________________________________________________________
 
