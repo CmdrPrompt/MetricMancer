@@ -9,6 +9,7 @@ Exits with error code 1 if any non-permissive licenses are found.
 import sys
 import subprocess
 import json
+import re
 import requests
 
 
@@ -28,6 +29,8 @@ ALLOWED_LICENSES = {
     'ISC',
     'Mozilla Public License 2.0 (MPL 2.0)',
     'MPL-2.0',
+    'PSF-2.0',
+    'Python Software Foundation License',
     'zlib/libpng License',
     'Freeware',  # lizard reports as Freeware but is MIT
     'UNKNOWN',  # Local/development packages
@@ -36,6 +39,18 @@ ALLOWED_LICENSES = {
 # Known licenses that contain multiple options (e.g., "MIT License; MPL 2.0")
 # We allow these if ANY of the options is permissive
 MULTI_LICENSE_SEPARATOR = ';'
+
+
+LICENSE_NORMALIZATION_MAP = {
+    'Apache Software License': 'Apache-2.0',
+    'Apache 2.0': 'Apache-2.0',
+    'Apache License 2.0': 'Apache-2.0',
+    'BSD License': 'BSD',
+    'BSD-3-Clause License': 'BSD-3-Clause',
+    'BSD-2-Clause License': 'BSD-2-Clause',
+    'Mozilla Public License 2.0 (MPL 2.0)': 'MPL-2.0',
+    'Python Software Foundation License': 'PSF-2.0',
+}
 
 # Forbidden licenses (copyleft)
 FORBIDDEN_LICENSES = {
@@ -51,6 +66,49 @@ FORBIDDEN_LICENSES = {
     'AGPLv3',
     'GNU Affero General Public License',
 }
+
+
+def normalize_license_name(license_name):
+    """Normalize common license aliases to canonical identifiers."""
+    cleaned = (license_name or '').strip()
+    return LICENSE_NORMALIZATION_MAP.get(cleaned, cleaned)
+
+
+def split_license_expression(license_str):
+    """
+    Split a license expression into comparable license terms.
+
+    Handles typical pip-licenses outputs such as:
+    - "MIT OR Apache-2.0"
+    - "MPL-2.0 AND MIT"
+    - "MIT License; BSD-3-Clause"
+    """
+    if not license_str:
+        return []
+
+    # Split on SPDX operators and semicolon, but keep license names intact.
+    def trim_wrapping_parentheses(value):
+        value = value.strip()
+        while value.startswith('(') and value.endswith(')'):
+            value = value[1:-1].strip()
+        return value
+
+    raw_parts = [
+        trim_wrapping_parentheses(part)
+        for part in re.split(r';|\bAND\b|\bOR\b|\bWITH\b', license_str, flags=re.IGNORECASE)
+    ]
+
+    return [normalize_license_name(part) for part in raw_parts if part]
+
+
+def is_allowed_license_term(license_term):
+    """Check if a single normalized license term is permissive."""
+    if license_term in ALLOWED_LICENSES:
+        return True
+
+    # Conservative substring fallback for common, permissive families.
+    permissive_markers = ['MIT', 'BSD', 'Apache', 'MPL-2.0', 'ISC', 'PSF-2.0', 'zlib']
+    return any(marker in license_term for marker in permissive_markers)
 
 
 def get_installed_licenses():
@@ -105,7 +163,8 @@ def check_license(package_name, license_str):
         pypi_license, github_url = get_license_from_pypi(package_name)
         if pypi_license and pypi_license != 'UNKNOWN':
             # Om licensen är tillåten, returnera som permissiv
-            if pypi_license in ALLOWED_LICENSES:
+            normalized_pypi_license = normalize_license_name(pypi_license)
+            if is_allowed_license_term(normalized_pypi_license):
                 return True, f"Permissive license from PyPI: {pypi_license}"
             else:
                 return None, f"PyPI license needs review: {pypi_license} (GitHub: {github_url})"
@@ -114,8 +173,8 @@ def check_license(package_name, license_str):
             return None, f"License UNKNOWN, check GitHub: {github_url}"
         return None, "License UNKNOWN, no PyPI or GitHub info found"
 
-    # Check if any part of a multi-license is forbidden
-    license_parts = [part.strip() for part in license_str.split(MULTI_LICENSE_SEPARATOR)]
+    # Parse SPDX-style expressions and multi-license strings
+    license_parts = split_license_expression(license_str)
 
     for license_part in license_parts:
         # Check forbidden first
@@ -124,7 +183,7 @@ def check_license(package_name, license_str):
 
     # Check if at least one part is allowed (for multi-license packages)
     for license_part in license_parts:
-        if license_part in ALLOWED_LICENSES:
+        if is_allowed_license_term(license_part):
             return True, f"Permissive license: {license_part}"
 
     # If we get here, the license might be okay but not in our known list
