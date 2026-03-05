@@ -83,7 +83,8 @@ dev = [
 
 #### 3 Build Dependencies (Optional)
 
-Future plan is to possibly make this available through PyPI. Here is some info regarding how to prepare for uploading to PyPI. This is currently not in the pipeline. Just provided as notes for possible future use.
+Future plan is to possibly make this available through PyPI. Here is some info regarding how to prepare for uploading to
+PyPI. This is currently not in the pipeline. Just provided as notes for possible future use.
 
 PyPI publishing tools. Installed with `pip install -e ".[build]"`:
 
